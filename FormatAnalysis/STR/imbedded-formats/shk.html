@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>SHK Format Documentation</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+    </head>
+
+    <body style="padding: 1.5rem;padding-top: 2rem;">
+
+        <h1>Shock Resource (.shk)</h1>
+
+        <p>The <code>.shk</code> format stores controller haptic feedback (vibration/rumble) commands with timing information.</p>
+
+        <h2>Header</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>UInt32</td>
+                    <td>NameHash</td>
+                    <td>Hash of the resource name.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>Int16</td>
+                    <td>Version</td>
+                    <td>Format version.</td>
+                </tr>
+                <tr>
+                    <td>0x06</td>
+                    <td>Int16</td>
+                    <td>CommandCount</td>
+                    <td>Number of haptic feedback commands.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>Byte[4]</td>
+                    <td>Padding</td>
+                    <td>Unused.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Command Entry</h2>
+
+        <p>Each command entry is <strong>4 bytes</strong> long. Located immediately after the header.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>UInt16</td>
+                    <td>TimeOffset</td>
+                    <td>Timing offset in milliseconds.</td>
+                </tr>
+                <tr>
+                    <td>0x02</td>
+                    <td>UInt8</td>
+                    <td>MotorID</td>
+                    <td>Motor/actuator identifier.</td>
+                </tr>
+                <tr>
+                    <td>0x03</td>
+                    <td>UInt8</td>
+                    <td>ActuatorValue</td>
+                    <td>Motor intensity/intensity value (0-255 range typical).</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </body>
+
+</html>

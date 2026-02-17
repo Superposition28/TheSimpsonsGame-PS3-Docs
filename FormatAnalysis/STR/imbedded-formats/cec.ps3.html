@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>Controller Event Config Format Documentation</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+    </head>
+
+    <body style="padding: 1.5rem;padding-top: 2rem;">
+
+        <h1>Controller Event Config (.cec.ps3)</h1>
+
+        <p>Defines controller input patterns and their mapped events.</p>
+
+        <h2>Header</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>UInt8</td>
+                    <td>Version</td>
+                    <td>Format version.</td>
+                </tr>
+                <tr>
+                    <td>0x01</td>
+                    <td>Byte</td>
+                    <td>Padding</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>0x02</td>
+                    <td>Int16</td>
+                    <td>EventCount</td>
+                    <td>Number of event entries.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>UInt32</td>
+                    <td>ConfigHash</td>
+                    <td>Hash of configuration.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>Char[33]</td>
+                    <td>ConfigName</td>
+                    <td>Configuration name (null-terminated).</td>
+                </tr>
+                <tr>
+                    <td>0x29</td>
+                    <td>Char[143]</td>
+                    <td>Location</td>
+                    <td>Source location path (null-terminated).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Event Entry</h2>
+
+        <p>Events start at offset <code>0xC0</code>.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset (Rel)</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>UInt32</td>
+                    <td>EventHash</td>
+                    <td>Hash identifier for the event.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>UInt8</td>
+                    <td>SequenceLength</td>
+                    <td>Length of the input sequence.</td>
+                </tr>
+                <tr>
+                    <td>0x05</td>
+                    <td>Char[26]</td>
+                    <td>EventName</td>
+                    <td>Event name (null-terminated).</td>
+                </tr>
+                <tr>
+                    <td>0x1F</td>
+                    <td>Char[13]</td>
+                    <td>Category</td>
+                    <td>Event category (null-terminated).</td>
+                </tr>
+                <tr>
+                    <td>0x2C</td>
+                    <td>Pattern[7]</td>
+                    <td>Patterns</td>
+                    <td>Array of 7 input pattern structures.</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </body>
+
+</html>

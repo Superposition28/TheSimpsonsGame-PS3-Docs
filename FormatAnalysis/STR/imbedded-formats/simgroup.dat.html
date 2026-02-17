@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>SimGroup Format Documentation</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+    </head>
+
+    <body style="padding: 1.5rem;padding-top: 2rem;">
+
+        <h1>SimGroup (.dat)</h1>
+
+        <p>Defines groups of entities, their behaviors, and attributes.</p>
+
+        <h2>Header</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x08</td>
+                    <td>UInt32</td>
+                    <td>Magic</td>
+                    <td><code>0x53696D47</code> ("SimG").</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>UInt32</td>
+                    <td>GUIDHash</td>
+                    <td>Hash of GUID.</td>
+                </tr>
+                <tr>
+                    <td>0x10</td>
+                    <td>UInt32</td>
+                    <td>EntityCount</td>
+                    <td>Number of entities in the group.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Entity Entry</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>UInt8</td>
+                    <td>SpawnMask</td>
+                    <td>Spawn configuration mask.</td>
+                </tr>
+                <tr>
+                    <td>Byte[16]</td>
+                    <td>GUID</td>
+                    <td>Entity GUID (looked up via GuidOffset in header).</td>
+                </tr>
+                <tr>
+                    <td>UInt32</td>
+                    <td>BehaviorID</td>
+                    <td>Behavior identifier.</td>
+                </tr>
+                <tr>
+                    <td>Bitfield</td>
+                    <td>Attributes</td>
+                    <td>Bitfield defining which attributes are active. Attributes are 4-byte values (Int, Float, or Pointers).</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </body>
+
+</html>

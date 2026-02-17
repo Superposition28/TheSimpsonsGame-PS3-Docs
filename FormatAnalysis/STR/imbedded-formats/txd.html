@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Texture Dictionary (.txd) - Complete Format Analysis</title>
+    <link rel="stylesheet" href="../../../style/main.css">
+</head>
+<body style="padding: 1.5rem;padding-top: 2rem;">
+    <h1>RenderWare Texture Dictionary (.txd)</h1>
+
+    <p><strong>Version:</strong> 1.0<br>
+    <strong>Last Updated:</strong> 2025-02-17<br>
+    <strong>Author(s):</strong> samarixum</p>
+
+    <p>The <code>.txd</code> (Texture Dictionary) format is a custom EA/RenderWare variant used by The Simpsons Game on PS3. While it carries the name from standard RenderWare texture containers, it uses bespoke markers and structure instead of canonical RW chunk headers. The format stores textures with various compression and swizzling schemes.</p>
+
+    <p><strong>Endianness:</strong> Mixed (see details per section).<br>
+    <strong>Character Encoding:</strong> UTF-8 for texture names.</p>
+
+    <h2>Parsing Algorithm Overview</h2>
+
+    <ol>
+        <li>Verify file starts with magic marker: <code>16 00 00 00</code> (0x00000016 LE, or "TexDict" identifier)</li>
+        <li>Scan entire file linearly for segment markers:
+            <ul>
+                <li>SIG_BLOCK_START: <code>03 00 00 00 14 00 00 00 2D 00 02 1C</code></li>
+                <li>Texture Name Signature pairs with data</li>
+            </ul>
+        </li>
+        <li>Extract texture names (null-terminated UTF-8, terminated by <code>00 00</code>)</li>
+        <li>Locate metadata block (search for preamble <code>01 &lt;format_code&gt;</code>)</li>
+        <li>Parse 16-byte metadata block</li>
+        <li>Extract and unswizzle/decompress pixel data</li>
+        <li>Export to standard image format (DDS)</li>
+    </ol>
+
+    <h2>File Header</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Offset</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Endian</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0x00</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>LE</td>
+                <td>Magic marker: 0x00000016. Identifies as Texture Dictionary.</td>
+            </tr>
+            <tr>
+                <td>0x04</td>
+                <td>...</td>
+                <td>Variable</td>
+                <td>-</td>
+                <td>Scan forward for texture records (see Texture Record section).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Segment Markers</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Marker (Hex)</th>
+                <th>Purpose</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="font-family: monospace;">03 00 00 00 14 00 00 00 2D 00 02 1C 2F EA 00 00 08 00 00 00 2D 00 02 1C</td>
+                <td>SIG_BLOCK_START + variable data</td>
+                <td>Marks start of a texture block or section transition. Variable 8-byte area may contain timestamps/metadata.</td>
+            </tr>
+            <tr>
+                <td style="font-family: monospace;">2D 00 02 1C 00 00 00 0A</td>
+                <td>Texture Name Signature</td>
+                <td>Precedes texture name string. Followed by 12 bytes of padding/data, then UTF-8 name terminated by <code>00 00</code>.</td>
+            </tr>
+            <tr>
+                <td style="font-family: monospace;">03 00 00 00 00 00 00 00 2D 00 02 1C</td>
+                <td>EOF_SUFFIX</td>
+                <td>Marks end of file. Appears exactly once at the end of valid TXD files.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Texture Record Structure</h2>
+
+    <p><strong>Scanning algorithm:</strong> Locate the texture name signature (<code>2D 00 02 1C 00 00 00 0A</code>) in the file. When found, extract the texture name and locate its associated metadata.</p>
+
+    <h3>Step 1: Texture Name Extraction</h3>
+
+    <ol>
+        <li>Find pattern: <code>2D 00 02 1C 00 00 00 0A</code> (8 bytes)</li>
+        <li>Append 12 byte skip (usually zeros)</li>
+        <li>Read UTF-8 characters until double null terminator (<code>00 00</code>)</li>
+        <li>Sanitize string: remove non-alphanumeric chars except <code>._-</code></li>
+        <li>Validate: if empty after sanitization, use fallback name <code>texture_at_0x&lt;OFFSET&gt;</code></li>
+    </ol>
+
+    <p><strong>Example:</strong> File contains <code>2D 00 02 1C 00 00 00 0A 00 00 00 00 00 00 00 00 00 00 00 00 48 65 6C 6C 6F 00 00</code><br>
+    Extract: offset +20 bytes reads "Hello" (48 65 6C 6C 6F), then double null (00 00) terminates.</p>
+
+    <h3>Step 2: Metadata Block Location and Parsing</h3>
+
+    <ol>
+        <li>After texture name, skip zeros until a non-zero byte is encountered</li>
+        <li>Search forward from this point for the preamble pattern: <code>01 &lt;format_code&gt;</code>
+            <ul>
+                <li>If found at offset X, metadata block starts at X - 2</li>
+                <li>If not found, texture is malformed; skip it</li>
+            </ul>
+        </li>
+        <li>Read exactly 16 bytes starting from (X - 2) as the metadata block</li>
+    </ol>
+
+    <h3>16-Byte Metadata Block (Little-Endian)</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Offset</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Endian</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0x00</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>-</td>
+                <td>Meta0</td>
+                <td>Unknown/reserved. Usually 0x00 or carries flag bits.</td>
+            </tr>
+            <tr>
+                <td>0x01</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>-</td>
+                <td>Meta1</td>
+                <td>Unknown/reserved. Usually 0x00.</td>
+            </tr>
+            <tr>
+                <td>0x02</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>-</td>
+                <td>Preamble_0x01</td>
+                <td>Must be 0x01. This is the preamble marker we searched for.</td>
+            </tr>
+            <tr>
+                <td>0x03</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>-</td>
+                <td>Format Code</td>
+                <td>Pixel format identifier. See Format Code Table below.</td>
+            </tr>
+            <tr>
+                <td>0x04</td>
+                <td>2</td>
+                <td>UInt16</td>
+                <td>BE</td>
+                <td>Width</td>
+                <td>Image width in pixels. Big-Endian. Validate: &gt; 0.</td>
+            </tr>
+            <tr>
+                <td>0x06</td>
+                <td>2</td>
+                <td>UInt16</td>
+                <td>BE</td>
+                <td>Height</td>
+                <td>Image height in pixels. Big-Endian. Validate: &gt; 0.</td>
+            </tr>
+            <tr>
+                <td>0x08</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>-</td>
+                <td>MetaA</td>
+                <td>Unknown. Often 0x1 or related to mipmaps.</td>
+            </tr>
+            <tr>
+                <td>0x09</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>-</td>
+                <td>Mip Map Count</td>
+                <td>Number of mipmap levels. If 0, assume 1 (base only). Used for DDS header.</td>
+            </tr>
+            <tr>
+                <td>0x0A</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>-</td>
+                <td>MetaB</td>
+                <td>Unknown. Usually 0x00.</td>
+            </tr>
+            <tr>
+                <td>0x0B</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>-</td>
+                <td>Padding</td>
+                <td>Unused. Usually 0x00.</td>
+            </tr>
+            <tr>
+                <td>0x0C</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>LE</td>
+                <td>Total Pixel Data Size</td>
+                <td>Size in bytes of the pixel data blob following this metadata. Must be &gt; 0 and fit within segment.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Validation Rules</h3>
+
+    <ul>
+        <li>Width and Height must both be &gt; 0. If both are 0, skip this texture (placeholder).</li>
+        <li>Total Pixel Data Size must be &gt; 0 and must not exceed remaining file/segment.</li>
+        <li>Format Code must match the code from the preamble (byte 0x03 == byte at search location + 1).</li>
+        <li>If any validation fails, mark texture as corrupted and skip.</li>
+    </ul>
+
+    <h2>Pixel Data Blob</h2>
+
+    <p><strong>Location:</strong> Immediately after the 16-byte metadata block (at offset metadata_block_start + 16).<br>
+    <strong>Length:</strong> Total Pixel Data Size bytes (from metadata).</p>
+
+    <h3>Format Codes</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Format Code (Hex)</th>
+                <th>Format Name</th>
+                <th>Compression</th>
+                <th>Bytes Per Pixel (if uncompressed)</th>
+                <th>Handling</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0x52</td>
+                <td>DXT1</td>
+                <td>Block-Compressed (4:1 ratio)</td>
+                <td>N/A</td>
+                <td>Copy raw data to DDS with DXT1 FourCC. No further processing.</td>
+            </tr>
+            <tr>
+                <td>0x53</td>
+                <td>DXT3</td>
+                <td>Block-Compressed (2:1 ratio)</td>
+                <td>N/A</td>
+                <td>Copy raw data to DDS with DXT3 FourCC. No further processing.</td>
+            </tr>
+            <tr>
+                <td>0x54</td>
+                <td>DXT5</td>
+                <td>Block-Compressed (2:1 ratio)</td>
+                <td>N/A</td>
+                <td>Copy raw data to DDS with DXT5 FourCC. No further processing.</td>
+            </tr>
+            <tr>
+                <td>0x86</td>
+                <td>Swizzled BGRA</td>
+                <td>Uncompressed (Morton-swizzled)</td>
+                <td>4</td>
+                <td>Unswizzle using Morton/Z-order decoding. Output is 32-bit BGRA. Export as DDS RGBA8888.</td>
+            </tr>
+            <tr>
+                <td>0x02</td>
+                <td>Swizzled Indexed (A8 or P8A8)</td>
+                <td>Uncompressed (Morton-swizzled)</td>
+                <td>1 or 2</td>
+                <td>Unswizzle. Output is palettized or alpha-only. May require palette lookup.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Morton Unswizzling (for Swizzled Formats)</h2>
+
+    <p><strong>Purpose:</strong> PS3 stores textures in Morton/Z-order to improve cache coherency. Data must be reordered to linear memory layout.</p>
+
+    <p><strong>Morton Encoding Function (pseudo-code):</strong></p>
+
+    <pre><code>
+function morton_encode_2d(x, y) {
+    // Interleave bits of x and y
+    x = (x | (x << 8)) & 0x00FF00FF;
+    x = (x | (x << 4)) & 0x0F0F0F0F;
+    x = (x | (x << 2)) & 0x33333333;
+    x = (x | (x << 1)) & 0x55555555;
+    
+    y = (y | (y << 8)) & 0x00FF00FF;
+    y = (y | (y << 4)) & 0x0F0F0F0F;
+    y = (y | (y << 2)) & 0x33333333;
+    y = (y | (y << 1)) & 0x55555555;
+    
+    return x | (y << 1);
+}
+    </code></pre>
+
+    <p><strong>Unswizzling Algorithm:</strong></p>
+
+    <ol>
+        <li>Allocate output buffer: width * height * bytes_per_pixel</li>
+        <li>For each y from 0 to (height - 1):
+            <ol>
+                <li>For each x from 0 to (width - 1):
+                    <ol>
+                        <li>Compute morton_index = morton_encode_2d(x, y)</li>
+                        <li>Source offset = morton_index * bytes_per_pixel</li>
+                        <li>Dest offset = (y * width + x) * bytes_per_pixel</li>
+                        <li>Copy bytes_per_pixel bytes from source to dest</li>
+                    </ol>
+                </li>
+            </ol>
+        </li>
+        <li>Return unswizzled buffer</li>
+    </ol>
+
+    <h2>Mipmaps</h2>
+
+    <p><strong>Current Implementation:</strong> The pixel data blob contains only the base mipmap level (highest resolution). Additional mipmap levels are not separately parsed or extracted.</p>
+
+    <p><strong>DDS Export:</strong> If Mip Map Count &gt; 0, set the DDSD_MIPMAPCOUNT flag in the DDS header to inform readers that mipmaps <em>should exist</em> (even though only base level is exported). This maintains compatibility with engines that expect mipmap headers.</p>
+
+    <h2>DDS Export Helper</h2>
+
+    <p><strong>For DXT Formats (0x52, 0x53, 0x54):</strong></p>
+
+    <ul>
+        <li>Create DDS magic: <code>44 44 53 20</code> ("DDS ")</li>
+        <li>Set DDSD_LINEARSIZE flag (for compressed textures)</li>
+        <li>Set FourCC to "DXT1", "DXT3", or "DXT5" accordingly</li>
+        <li>Calculate linear size: <code>(width/4) * (height/4) * block_size</code> where block_size = 8 (DXT1) or 16 (DXT3/DXT5)</li>
+    </ul>
+
+    <p><strong>For RGBA Formats (0x86 after unswizzle):</strong></p>
+
+    <ul>
+        <li>Create DDS header for uncompressed RGBA888</li>
+        <li>Set pitch = width * 4</li>
+        <li>No FourCC needed (use pixel format flags)</li>
+    </ul>
+
+    <h2>Complete Parsing Example (Pseudocode)</h2>
+
+    <pre><code>
+function parse_txd(file_data) {
+    textures = []
+    
+    // Validate header
+    if (read_u32_le(0) != 0x16) return []
+    
+    // Scan entire file for texture name signatures
+    pos = 0
+    while (pos < len(file_data)) {
+        if (matches_pattern(file_data, pos, "2D 00 02 1C 00 00 00 0A")) {
+            pos += 8
+            pos += 12  // Skip known padding
+            
+            // Read texture name
+            name_start = pos
+            while (file_data[pos:pos+2] != "00 00") {
+                pos += 1
+            }
+            name = sanitize(file_data[name_start:pos])
+            pos += 2  // Skip terminator
+            
+            // Find metadata
+            while (pos < len(file_data) && file_data[pos] == 0x00) {
+                pos += 1
+            }
+            
+            search_pos = pos
+            while (search_pos < min(pos + 4096, len(file_data))) {
+                if (file_data[search_pos] == 0x01) {
+                    format_code = file_data[search_pos + 1]
+                    meta_start = search_pos - 2
+                    break
+                }
+                search_pos += 1
+            }
+            
+            if (meta_start not found) continue  // Malformed
+            
+            // Parse metadata
+            metadata = read_metadata_block(file_data, meta_start)
+            width = metadata.width
+            height = metadata.height
+            fmt = metadata.format_code
+            data_size = metadata.total_pixel_data_size
+            
+            if (width == 0 || height == 0) continue  // Placeholder
+            
+            // Extract pixel data
+            pixel_data_start = meta_start + 16
+            pixel_data = file_data[pixel_data_start : pixel_data_start + data_size]
+            
+            // Unswizzle if needed
+            if (fmt == 0x86) {    // Swizzled BGRA
+                pixel_data = unswizzle_morton(pixel_data, width, height, 4)
+            } else if (fmt == 0x02) {  // Swizzled indexed
+                pixel_data = unswizzle_morton(pixel_data, width, height, 1)
+            }
+            // For DXT formats (0x52/0x53/0x54), use as-is
+            
+            textures.append({
+                name: name,
+                width: width,
+                height: height,
+                format: fmt,
+                data: pixel_data
+            })
+            
+            pos = pixel_data_start + data_size
+        } else {
+            pos += 1
+        }
+    }
+    
+    return textures
+}
+    </code></pre>
+
+</body>
+</html>

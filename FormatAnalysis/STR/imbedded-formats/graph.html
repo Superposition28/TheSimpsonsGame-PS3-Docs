@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>GRAPH Format Documentation</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+    </head>
+
+    <body style="padding: 1.5rem;padding-top: 2rem;">
+
+        <h1>Navigation Graph (.graph)</h1>
+
+        <p>The <code>.graph</code> format stores navigation nodes and connections (edges) for AI pathfinding.</p>
+
+        <h2>File Header</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>Byte[12]</td>
+                    <td>Unknown</td>
+                    <td>Skipped padding or header data.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>UInt16</td>
+                    <td>NodeCount</td>
+                    <td>Number of navigation nodes.</td>
+                </tr>
+                <tr>
+                    <td>0x0E</td>
+                    <td>UInt16</td>
+                    <td>ConnectionCount</td>
+                    <td>Number of connections between nodes.</td>
+                </tr>
+                <tr>
+                    <td>0x10</td>
+                    <td>Byte[16]</td>
+                    <td>GUID</td>
+                    <td>Unique identifier for the graph.</td>
+                </tr>
+                <tr>
+                    <td>0x20</td>
+                    <td>UInt32</td>
+                    <td>NodeArrayOffset</td>
+                    <td>Absolute offset to the start of the node array.</td>
+                </tr>
+                <tr>
+                    <td>0x24</td>
+                    <td>UInt32</td>
+                    <td>ConnectionArrayOffset</td>
+                    <td>Absolute offset to the start of the connection array.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Node Structure</h2>
+
+        <p>Each node entry is <strong>32 bytes</strong> long.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>Float</td>
+                    <td>X</td>
+                    <td>Position X coordinate.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>Float</td>
+                    <td>Y</td>
+                    <td>Position Y coordinate.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>Float</td>
+                    <td>Z</td>
+                    <td>Position Z coordinate.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>Float</td>
+                    <td>Radius</td>
+                    <td>Node radius.</td>
+                </tr>
+                <tr>
+                    <td>0x10</td>
+                    <td>Int16</td>
+                    <td>ConnStartIndex</td>
+                    <td>Index into Connection Array for the first connection.</td>
+                </tr>
+                <tr>
+                    <td>0x12</td>
+                    <td>Int16</td>
+                    <td>PropInstance</td>
+                    <td>Index of associated property instance.</td>
+                </tr>
+                <tr>
+                    <td>0x14</td>
+                    <td>UInt8</td>
+                    <td>ConnCount</td>
+                    <td>Number of connections starting from this node.</td>
+                </tr>
+                <tr>
+                    <td>0x15</td>
+                    <td>UInt8</td>
+                    <td>NeighborCount</td>
+                    <td>Number of neighbors.</td>
+                </tr>
+                <tr>
+                    <td>0x16</td>
+                    <td>Int16</td>
+                    <td>NeighborStartIndex</td>
+                    <td>Index for neighbors (usage context dependent).</td>
+                </tr>
+                <tr>
+                    <td>0x18</td>
+                    <td>UInt16</td>
+                    <td>Flags</td>
+                    <td>Node flags (bitfield).</td>
+                </tr>
+                <tr>
+                    <td>0x1A</td>
+                    <td>Byte[6]</td>
+                    <td>Padding</td>
+                    <td>Unused.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Connection Structure</h2>
+
+        <p>Each connection entry is <strong>16 bytes</strong> long.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>Float</td>
+                    <td>Length</td>
+                    <td>Distance/Cost of the edge.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>Int16</td>
+                    <td>DestNodeIndex</td>
+                    <td>Index of the target node.</td>
+                </tr>
+                <tr>
+                    <td>0x06</td>
+                    <td>Int16</td>
+                    <td>SrcNodeIndex</td>
+                    <td>Index of the source node.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>Int16</td>
+                    <td>PropInstance</td>
+                    <td>Associated property instance.</td>
+                </tr>
+                <tr>
+                    <td>0x0A</td>
+                    <td>UInt16</td>
+                    <td>Flags</td>
+                    <td>Edge flags.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>UInt8</td>
+                    <td>Blocked</td>
+                    <td>1 if blocked, 0 otherwise.</td>
+                </tr>
+                <tr>
+                    <td>0x0D</td>
+                    <td>Byte[3]</td>
+                    <td>Padding</td>
+                    <td>Unused.</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </body>
+
+</html>

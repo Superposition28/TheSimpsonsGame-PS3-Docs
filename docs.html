@@ -1,0 +1,48 @@
+
+overview of html docs
+
+./index.html
+    - single page with iframe for each subpage, to prevent navigation and allows easy updates to the sidebar without needing to edit every page.
+    - Also allows for a "home" page with general info and links to the various sections.
+    - the sub pages dont contain any extra components like nav bars or footers, just the content, to make it easier to edit and maintain when no build tooling is used
+
+the html files are layed out in a structure that primarily mimics the ps3 games file structure
+the structure will follow the normalised structure with refernces to the original file locations
+most files documented wil be the EU version, they should be the same as the us version with some additional files
+PS3_GAME/ -contains main folder and icons
+    USRDIR/ - contains the game data, including all the files we are interested in. This is where the .STR archives and their contents are located.
+
+
+        FormatAnalysis/
+            - contains a low level revearse engineering analysis of all file formats independently of their location in the game or relationship to other files.
+            - each format analysis will contain a detailed breakdown of the file structure, including headers, sections, and any relevant metadata. It will also include notes on endianness, data types, and any patterns observed across multiple files of the same format.
+            - it will also list every instance of that format found in the game, with notes on their location and any differences between them
+            - each instance will have its own detailed docs focusing more on purpose and use in game these files will exist in the USRDIR folder under there relevent level (exact location mapped to in game file location)
+
+        A1_Audio/ - individual docs for all .exa and .mus audio files
+        A1_Video/ - individual docs for all .vp6 video files
+
+        A2_Characters/
+        A2_Frontend/
+
+        L01_LandOfChocolate/
+        L02_BartmanBegins/
+        L03_HungryHungryHomer/
+        L04_TreeHugger/
+        L05_MobRules/
+        L06_EnterTheCheatrix/
+        L07_DayOfTheDolphin/
+        L08_TheColossalDonut/
+        L09_Invasion/
+        L10_BargainBin/
+        L11_NeverQuest/
+        L12_GrandTheftScratchy/
+        L13_MedalOfHomer/
+        L14_BigSuperHappy/
+        L15_Rhymes/
+        L16_MeetThyPlayer/
+
+        LHub-00_GameHub/
+        LHub-00_SprHub/
+
+

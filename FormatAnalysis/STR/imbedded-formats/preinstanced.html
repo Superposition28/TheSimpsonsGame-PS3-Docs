@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="../../../style/main.css">
+    </head>
+    <body style="padding: 1.5rem;padding-top: 2rem;">
+        <h1>Preinstanced Asset Format (EARS_MESH) - Complete Implementation Guide</h1>
+        <p><strong>Version:</strong> 2.0</p>
+        <p><strong>Last Updated:</strong> 2025-02-17</p>
+        <p><strong>Author(s):</strong> samarixum (based on reverse-engineering research)</p>
+
+        <h2>Overview</h2>
+        <ul>
+            <li><strong>Format Name:</strong> Simpsons Game Preinstanced Asset / EARS_MESH</li>
+            <li><strong>Common File Extension(s):</strong> <code>.dff.preinstanced</code>, <code>.rws.preinstanced</code> (embedded in STR sections)</li>
+            <li><strong>Purpose/Domain:</strong> Defines 3D model geometry, multiple UV maps, and texture name associations for assets in <em>The Simpsons Game</em> (PS3).</li>
+            <li><strong>Originating Application/System:</strong> A heavily modified version of RenderWare customized by EA for <em>The Simpsons Game</em>.</li>
+            <li><strong>Format Type:</strong> Binary, sequential chunk-based (no global header).</li>
+            <li><strong>General Structure:</strong> File is composed of sequential chunks: texture headers + texture names, TLFD delimiters, mesh chunks with geometry, and an EOF marker. No single magic number identifies the format; instead, look for characteristic signatures.</li>
+            <li><strong>Endianness:</strong> <strong>Mixed-Endian</strong>. Almost all data is Big-Endian, except for <code>FaceDataOff</code> and <code>MeshDataSize</code> in mesh chunk headers (Little-Endian).</li>
+        </ul>
+
+        <h2>Parsing Algorithm Overview</h2>
+
+        <ol>
+            <li>Scan file sequentially from byte 0 to EOF</li>
+            <li>Maintain a "pending_texture_list" (empty initially)</li>
+            <li>Maintain a "texture_snapshots" array (empty initially)</li>
+            <li>Maintain a "meshes" array (empty initially)</li>
+            <li>For each detected signature:
+                <ul>
+                    <li>Texture Header → Extract texture name → Push to pending_texture_list</li>
+                    <li>TLFD Marker → Save pending_texture_list to texture_snapshots → Clear pending_texture_list</li>
+                    <li>Mesh Chunk → Parse mesh data → Link with most recent texture_snapshots → Push to meshes</li>
+                    <li>EOF Marker → Stop parsing</li>
+                </ul>
+            </li>
+            <li>Return meshes array with texture bindings</li>
+        </ol>
+
+        <h2>Identification Signatures</h2>
+
+        <h3>Texture Header (3 Known Variants)</h3>
+        <p>These 16-byte signatures precede a texture name string.</p>
+        <ul>
+            <li><code>02 11 01 00 02 00 00 00 14 00 00 00 2D 00 02 1C</code> (Type A)</li>
+            <li><code>02 11 01 00 02 00 00 00 18 00 00 00 2D 00 02 1C</code> (Type B)</li>
+            <li><code>02 11 01 00 02 00 00 00 10 00 00 00 2D 00 02 1C</code> (Type C)</li>
+        </ul>
+        <p><strong>Interpretation:</strong> All three variants have the same format. The differences at offsets 8-11 (0x14, 0x18, 0x10) may indicate offset or size variants, but all point to a texture name immediately following.</p>
+
+        <h3>Texture List Delimiter (TLFD)</h3>
+        <p><code>54 4C 46 44</code> (ASCII "TLFD")</p>
+        <p><strong>Function:</strong> Signals end of a block of texture names. The next mesh chunk found will use the accumulated texture list up to this point.</p>
+
+        <h3>Mesh Chunk Signature</h3>
+        <p><code>33 EA 00 00</code> followed by 4 bytes (wildcard), then <code>2D 00 02 1C</code></p>
+        <p><strong>Pattern:</strong> <code>33 EA 00 00 ?? ?? ?? ?? 2D 00 02 1C</code></p>
+        <p><strong>Function:</strong> Marks the start of a mesh chunk header.</p>
+
+        <h3>EOF Marker</h3>
+        <p><code>16 EA 00 00 05 00 00 00 2D 00 02 1C 01 00 00 00 00</code></p>
+        <p><strong>Function:</strong> Signals end of valid file data. Parsing should stop here.</p>
+
+        <h2>Texture Name Extraction</h2>
+
+        <p><strong>Location:</strong> Immediately after a Texture Header signature (16 bytes).</p>
+
+        <p><strong>Format:</strong> Null-terminated ASCII string.</p>
+
+        <p><strong>Algorithm:</strong></p>
+        <ol>
+            <li>Position reader after the 16-byte Texture Header</li>
+            <li>Read bytes until null terminator (0x00) is found</li>
+            <li>Convert bytes to ASCII string</li>
+            <li>Sanitize: Remove non-alphanumeric characters except <code>._-</code></li>
+            <li>If result is empty, use fallback: <code>texture_at_0x&lt;HEX_OFFSET&gt;</code></li>
+            <li>Add string to pending_texture_list</li>
+        </ol>
+
+        <h2>Mesh Chunk Header Structure</h2>
+
+        <p><strong>Location:</strong> Starts at the byte after the mesh chunk signature (<code>33 EA 00 00 ?? ?? ?? ?? 2D 00 02 1C</code>).</p>
+
+        <p><strong>Total Header Size:</strong> Variable (typically 80-128 bytes). Determined by field offsets and the presence of sub-tables.</p>
+
+        <h3>Header Layout (Big-Endian unless noted)</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                    <th>Endian</th>
+                    <th>Field Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>mVersion</td>
+                    <td>Version or identifier. Typically 0x00000000 or similar.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>mDataTableCount</td>
+                    <td>Count of entries in a data table below. Often 0 or small value.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>mDataTableCount * 8</td>
+                    <td>Unknown Table</td>
+                    <td>BE</td>
+                    <td>mDataTable[]</td>
+                    <td>Array of 8-byte entries. Purpose unclear; typically skipped in parsers.</td>
+                </tr>
+                <tr>
+                    <td>0x08 + (mDataTableCount * 8)</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>VertexInfoCount</td>
+                    <td>Number of vertex info groups (almost always 1).</td>
+                </tr>
+                <tr>
+                    <td>+4</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>VertChunkSize</td>
+                    <td>Bytes per vertex. Typically 36, 48, or 64 depending on attributes.</td>
+                </tr>
+                <tr>
+                    <td>+8</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>VertChunkTotalSize</td>
+                    <td>Total size of vertex data block (= VertChunkSize * number_of_vertices).</td>
+                </tr>
+                <tr>
+                    <td>+12</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>VertexStart</td>
+                    <td>Offset within the mesh data area to first vertex.</td>
+                </tr>
+                <tr>
+                    <td>+16</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>FaceStart</td>
+                    <td>Offset within the mesh data area to first face/index.</td>
+                </tr>
+                <tr>
+                    <td>+20</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>FaceDataByteLength</td>
+                    <td>Size in bytes of the face/index data block.</td>
+                </tr>
+                <tr>
+                    <td>+24 (varies)</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>LE</td>
+                    <td>FaceDataOff</td>
+                    <td><strong>Little-Endian!</strong> Offset used for mesh data calculation. Purpose unclear.</td>
+                </tr>
+                <tr>
+                    <td>+28 (varies)</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>LE</td>
+                    <td>MeshDataSize</td>
+                    <td><strong>Little-Endian!</strong> Total size of mesh data block. Purpose partially unclear.</td>
+                </tr>
+                <tr>
+                    <td>+32 to end</td>
+                    <td>Variable</td>
+                    <td>Unknown</td>
+                    <td>BE</td>
+                    <td>Reserved/Unknown</td>
+                    <td>Additional metadata or flags. Not used by typical parsers.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Header Traversal Algorithm</h3>
+
+        <p><strong>Pseudocode for finding the mesh header end:</strong></p>
+        <pre><code>
+function find_header_end(mesh_chunk_start):
+    // We know the header contains offset/size fields at variable positions
+    // Scan forward from chunk start until we find non-sequential data
+    
+    version = read_u32_be(mesh_chunk_start + 0x00)
+    data_table_count = read_u32_be(mesh_chunk_start + 0x04)
+    
+    // Skip data table
+    header_pos = mesh_chunk_start + 0x08 + (data_table_count * 8)
+    
+    // Read vertex info
+    vert_info_count = read_u32_be(header_pos)
+    vert_chunk_size = read_u32_be(header_pos + 0x04)
+    vert_chunk_total = read_u32_be(header_pos + 0x08)
+    vert_start = read_u32_be(header_pos + 0x0C)
+    face_start = read_u32_be(header_pos + 0x10)
+    face_data_byte_len = read_u32_be(header_pos + 0x14)
+    
+    // The actual mesh data starts ~32-48 bytes after vertex info begins
+    // Conservative approach: skip to known offset
+    header_end = header_pos + 0x24  // Typical header size after vertex info
+    
+    return header_end
+        </code></pre>
+
+        <h2>Mesh Data Extraction</h2>
+
+        <h3>Vertex Buffer</h3>
+
+        <p><strong>Location:</strong> mesh_chunk_start + FaceDataOff + VertexStart (note: FaceDataOff is Little-Endian)</p>
+
+        <p><strong>Vertex Count:</strong> VertChunkTotalSize / VertChunkSize</p>
+
+        <p><strong>Vertex Structure (per vertex, Big-Endian):</strong></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                    <th>Field</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>12</td>
+                    <td>float[3]</td>
+                    <td>Position (X, Y, Z)</td>
+                    <td>3D vertex coordinates.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>8</td>
+                    <td>bytes[8]</td>
+                    <td>Unknown</td>
+                    <td>Likely normals or other attributes.</td>
+                </tr>
+                <tr>
+                    <td>0x14</td>
+                    <td>4</td>
+                    <td>float</td>
+                    <td>UV0 U (Primary Texture)</td>
+                    <td>U coordinate for main texture map.</td>
+                </tr>
+                <tr>
+                    <td>0x18</td>
+                    <td>4</td>
+                    <td>float</td>
+                    <td>UV0 V (Primary Texture)</td>
+                    <td>V coordinate. <strong>Must flip: (1.0 - V)</strong> for proper rendering.</td>
+                </tr>
+                <tr>
+                    <td>0x1C</td>
+                    <td>4</td>
+                    <td>float</td>
+                    <td>UV1 U (Secondary/CM Texture)</td>
+                    <td>U coordinate for secondary (color/environment map).</td>
+                </tr>
+                <tr>
+                    <td>0x20</td>
+                    <td>4</td>
+                    <td>float</td>
+                    <td>UV1 V (Secondary/CM Texture)</td>
+                    <td>V coordinate. <strong>Must flip: (1.0 - V)</strong>.</td>
+                </tr>
+                <tr>
+                    <td>0x24+</td>
+                    <td>VertChunkSize - 36</td>
+                    <td>bytes[N]</td>
+                    <td>Additional Attributes</td>
+                    <td>Vertex colors, bone weights, normals, or tangents. Layout varies.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Face/Index Buffer</h3>
+
+        <p><strong>Location:</strong> mesh_chunk_start + FaceDataOff + FaceStart</p>
+
+        <p><strong>Index Count:</strong> FaceDataByteLength / 2</p>
+
+        <p><strong>Index Structure (per index):</strong></p>
+        <ul>
+            <li><code>2 bytes</code> UInt16 (Big-Endian): Vertex index</li>
+            <li><strong>Special Value:</strong> 0xFFFF (65535) is a "strip cut" delimiter. This marks the end of one triangle strip and the start of another. It should <strong>not</strong> be rendered as an index.</li>
+        </ul>
+
+        <p><strong>Triangle Strip Conversion Algorithm:</strong></p>
+        <pre><code>
+function build_triangle_list(indices):
+    triangles = []
+    current_strip = []
+    
+    for each index in indices:
+        if index == 0xFFFF:  // Strip cut
+            if current_strip.length >= 3:
+                // Convert triangle strip to individual triangles
+                for i = 0 to current_strip.length - 3:
+                    if i % 2 == 0:
+                        triangles.append({
+                            v0: current_strip[i],
+                            v1: current_strip[i+1],
+                            v2: current_strip[i+2]
+                        })
+                    else:
+                        // Reverse winding for even-indexed triangles
+                        triangles.append({
+                            v0: current_strip[i],
+                            v1: current_strip[i+2],
+                            v2: current_strip[i+1]
+                        })
+            current_strip = []
+        else:
+            current_strip.append(index)
+    
+    return triangles
+        </code></pre>
+
+        <h2>Complete Parsing Example (Pseudocode)</h2>
+
+        <pre><code>
+function parse_preinstanced(file_data):
+    meshes = []
+    pending_textures = []
+    current_texture_snapshot = null
+    
+    pos = 0
+    while pos < len(file_data):
+        // Check for Texture Header (3 variants)
+        if match_pattern(file_data, pos, "02 11 01 00 02 00 00 00 14 00 00 00 2D 00 02 1C") or
+           match_pattern(file_data, pos, "02 11 01 00 02 00 00 00 18 00 00 00 2D 00 02 1C") or
+           match_pattern(file_data, pos, "02 11 01 00 02 00 00 00 10 00 00 00 2D 00 02 1C"):
+            
+            pos += 16  // Skip signature
+            
+            // Extract texture name
+            name_start = pos
+            while file_data[pos] != 0x00 and pos < len(file_data):
+                pos += 1
+            
+            name = sanitize(file_data[name_start:pos])
+            pending_textures.append(name)
+            pos += 1  // Skip null terminator
+        
+        // Check for TLFD marker
+        else if match_pattern(file_data, pos, "54 4C 46 44"):
+            current_texture_snapshot = copy(pending_textures)
+            pending_textures = []
+            pos += 4
+        
+        // Check for EOF marker
+        else if match_pattern(file_data, pos, "16 EA 00 00 05 00 00 00 2D 00 02 1C 01 00 00 00 00"):
+            break  // End of valid file
+        
+        // Check for Mesh Chunk
+        else if match_pattern(file_data, pos, "33 EA 00 00 ?? ?? ?? ?? 2D 00 02 1C"):
+            mesh_start = pos
+            pos += 16  // Skip signature
+            
+            // Parse header
+            version = read_u32_be(pos)
+            data_table_count = read_u32_be(pos + 0x04)
+            
+            header_offset = pos + 0x08 + (data_table_count * 8)
+            vert_info_count = read_u32_be(header_offset)
+            vert_chunk_size = read_u32_be(header_offset + 0x04)
+            vert_chunk_total = read_u32_be(header_offset + 0x08)
+            vert_start = read_u32_be(header_offset + 0x0C)
+            face_start = read_u32_be(header_offset + 0x10)
+            face_data_byte_len = read_u32_be(header_offset + 0x14)
+            face_data_off_le = read_u32_le(header_offset + 0x18)
+            mesh_data_size_le = read_u32_le(header_offset + 0x1C)
+            
+            // Extract vertex data
+            vertex_count = vert_chunk_total / vert_chunk_size
+            vert_data_offset = mesh_start + face_data_off_le + vert_start
+            vertices = []
+            
+            for v = 0 to vertex_count - 1:
+                v_offset = vert_data_offset + (v * vert_chunk_size)
+                
+                position = read_float3_be(v_offset + 0x00)
+                tex0_u = read_float_be(v_offset + 0x14)
+                tex0_v = 1.0 - read_float_be(v_offset + 0x18)  // Flip V
+                tex1_u = read_float_be(v_offset + 0x1C)
+                tex1_v = 1.0 - read_float_be(v_offset + 0x20)  // Flip V
+                
+                vertices.append({
+                    position: position,
+                    uv0: {u: tex0_u, v: tex0_v},
+                    uv1: {u: tex1_u, v: tex1_v}
+                })
+            
+            // Extract face/index data
+            index_count = face_data_byte_len / 2
+            face_data_offset = mesh_start + face_data_off_le + face_start
+            indices = []
+            
+            for i = 0 to index_count - 1:
+                index = read_u16_be(face_data_offset + (i * 2))
+                if index != 0xFFFF:
+                    indices.append(index)
+            
+            // Convert triangle strips
+            triangles = build_triangle_list(indices)
+            
+            mesh = {
+                vertices: vertices,
+                triangles: triangles,
+                textures: current_texture_snapshot
+            }
+            
+            meshes.append(mesh)
+            
+            // Skip to next chunk (rough estimate)
+            pos = mesh_start + mesh_data_size_le + 32
+        
+        else:
+            pos += 1  // Advance byte-by-byte until next signature
+    
+    return meshes
+        </code></pre>
+
+        <h2>Validation Rules</h2>
+
+        <ul>
+            <li><strong>Vertex Count:</strong> Must be &gt; 0. If 0, mesh is invalid.</li>
+            <li><strong>Triangle Count:</strong> Must be &gt; 0. If all indices are 0xFFFF, mesh is invalid.</li>
+            <li><strong>Index Bounds:</strong> All non-delimiter indices must be &lt; vertex_count.</li>
+            <li><strong>VertChunkSize:</strong> Should match actual stride in vertex data (typically 36, 48, or 64).</li>
+            <li><strong>Endianness Check:</strong> If vert_chunk_size appears impossibly large (&gt; 1000), may have endianness error. Verify byte order.</li>
+            <li><strong>Texture Count:</strong> Should match or exceed the number of vertices/triangles that reference textures.</li>
+        </ul>
+
+        <h2>Known Limitations & Unknowns</h2>
+
+        <ul>
+            <li><strong>mDataTable:</strong> Purpose unclear. Most parsers skip it entirely.</li>
+            <li><strong>FaceDataOff / MeshDataSize:</strong> Exact semantics unclear. Used as offsets but specific meaning not documented in reverse-engineering.</li>
+            <li><strong>Full Vertex Stride:</strong> Only position and two UV pairs are documented. Additional fields (normals, vertex colors, bone info) exist but layout varies.</li>
+            <li><strong>Mipmap Handling:</strong> Not addressed in this format. Assume single resolution.</li>
+            <li><strong>Bone/Skinning Data:</strong> May be embedded in the "unknown" vertex stride bytes. Not extracted by current parsers.</li>
+        </ul>
+
+    </body>
+</html>

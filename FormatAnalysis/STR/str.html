@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="../../style/main.css">
+    </head>
+    <body style="padding: 1.5rem;padding-top: 2rem;">
+        <h1>.STR Archive Structure (EA Stream File)</h1>
+        <p><strong>Version:</strong> 1.0<br>
+        <strong>Last Updated:</strong> 2025-02-17<br>
+        <strong>Author(s):</strong> samarixum</p>
+
+        <p>The <code>.str</code> file is EA's streaming container format used by the RenderWare engine on PS3/Xbox 360. It contains a metadata header pointing to section descriptors and data, with support for compression (Refpack) and lazy-loading of resources.</p>
+
+        <p><strong>Endianness:</strong> Big-Endian throughout.</p>
+
+        <h2>Parsing Algorithm Overview</h2>
+
+        <ol>
+            <li>Read and validate file header at offset 0x00</li>
+            <li>Navigate to StreamFile struct at header offset <code>pStreamFile</code></li>
+            <li>Navigate to Section array at header offset <code>pSectionArr</code></li>
+            <li>For each section:
+                <ol>
+                    <li>Read section descriptor (6 × UInt32)</li>
+                    <li>Decompress data if CompressorID indicates Refpack (0xB9F0B9EC)</li>
+                    <li>Scan decompressed/raw section data for chunk markers (0x1607, 0x2207, 0x2307, 0x10FB)</li>
+                    <li>Parse each chunk based on its type</li>
+                </ol>
+            </li>
+        </ol>
+
+        <h2>File Header Structure</h2>
+
+        <p>Located at offset <code>0x00</code>. <strong>Size: 16 bytes.</strong></p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>4</td>
+                    <td>Char[4]</td>
+                    <td>Magic</td>
+                    <td>Must be <code>SToc</code> (0x53546F63 BE). If not, abort parsing.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>4</td>
+                    <td>UInt32 BE</td>
+                    <td>Version</td>
+                    <td>Format version. Typically expect a known version (e.g., 0x00000001).</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>1</td>
+                    <td>UInt8</td>
+                    <td>nSections</td>
+                    <td>Number of Section Descriptor entries to read. Validate: typically 1-4.</td>
+                </tr>
+                <tr>
+                    <td>0x09</td>
+                    <td>1</td>
+                    <td>UInt8</td>
+                    <td>PlatformID</td>
+                    <td>Target platform (e.g., 0x07 = PS3). Informational.</td>
+                </tr>
+                <tr>
+                    <td>0x0A</td>
+                    <td>2</td>
+                    <td>Byte[2]</td>
+                    <td>Padding</td>
+                    <td>Unused, typically 0x00.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>4</td>
+                    <td>Int32 BE</td>
+                    <td>pStreamFile</td>
+                    <td>Absolute offset to StreamFile struct. Validate: must be ≥ 0x14.</td>
+                </tr>
+                <tr>
+                    <td>0x10</td>
+                    <td>4</td>
+                    <td>Int32 BE</td>
+                    <td>pSectionArr</td>
+                    <td>Absolute offset to Section Descriptor array. Validate: must be ≥ pStreamFile + 32.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>StreamFile Struct</h2>
+
+        <p>Located at file offset = header.pStreamFile. <strong>Size: ~48+ bytes</strong> (variable due to string).</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset (Rel)</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>4</td>
+                    <td>UInt32 BE</td>
+                    <td>GUID</td>
+                    <td>Unique ID, often SDBM hash of filename. Used to identify the stream asset.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>4</td>
+                    <td>Int32 BE</td>
+                    <td>pFileName</td>
+                    <td>Relative pointer to null-terminated filename string. Add current offset (0x04) to this value, then seek to read until null byte.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>1</td>
+                    <td>UInt8</td>
+                    <td>nParents</td>
+                    <td>Number of parent/dependency stream files. Usually 0 or 1.</td>
+                </tr>
+                <tr>
+                    <td>0x09</td>
+                    <td>1</td>
+                    <td>UInt8</td>
+                    <td>nForceLoad</td>
+                    <td>Flags for force-load behavior. Typically 0.</td>
+                </tr>
+                <tr>
+                    <td>0x0A</td>
+                    <td>1</td>
+                    <td>UInt8</td>
+                    <td>nSections</td>
+                    <td>Duplicate of header.nSections. Verify consistency.</td>
+                </tr>
+                <tr>
+                    <td>0x0B</td>
+                    <td>1</td>
+                    <td>UInt8</td>
+                    <td>Flags</td>
+                    <td>Bitfield (flags). Meaning context-dependent.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>4</td>
+                    <td>Int32 BE</td>
+                    <td>Unk</td>
+                    <td>Unknown/reserved field. Typically 0.</td>
+                </tr>
+                <tr>
+                    <td>0x10</td>
+                    <td>4</td>
+                    <td>Int32 BE</td>
+                    <td>pRelatives</td>
+                    <td>Offset to related stream info. Often 0 (none).</td>
+                </tr>
+                <tr>
+                    <td>0x14</td>
+                    <td>4</td>
+                    <td>Int32 BE</td>
+                    <td>pSectionInfo</td>
+                    <td>Offset to additional section metadata. Often 0 (none).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Section Descriptor Array</h2>
+
+        <p>Located at file offset = header.pSectionArr. Array of nSections entries, each <strong>24 bytes</strong>.</p>
+
+        <p><strong>To parse:</strong> For i = 0 to nSections-1, seek to (pSectionArr + i*24) and read 24 bytes.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset (Rel)</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>4</td>
+                    <td>UInt32 BE</td>
+                    <td>MemPolicyID</td>
+                    <td>Memory allocation policy. Informational; typically 0.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>4</td>
+                    <td>UInt32 BE</td>
+                    <td>CompressorID</td>
+                    <td><strong>Critical:</strong> Determines if section data is compressed.
+                        <ul>
+                            <li>0xB9F0B9EC = Refpack compression</li>
+                            <li>0x0EAC15C8 = Uncompressed (raw data)</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>4</td>
+                    <td>Int32 BE</td>
+                    <td>DataSize</td>
+                    <td><strong>Critical:</strong> Size of decompressed data (or raw data if uncompressed). Use this to allocate buffer or validate size.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>4</td>
+                    <td>Int32 BE</td>
+                    <td>AllocSize</td>
+                    <td>Size to reserve in memory. Typically ≥ DataSize. May include padding.</td>
+                </tr>
+                <tr>
+                    <td>0x10</td>
+                    <td>4</td>
+                    <td>Int32 BE</td>
+                    <td>ReadSize</td>
+                    <td><strong>Critical:</strong> Amount of bytes to read from disk. If CompressorID is Refpack, this is compressed size; otherwise equals DataSize.</td>
+                </tr>
+                <tr>
+                    <td>0x14</td>
+                    <td>4</td>
+                    <td>Int32 BE</td>
+                    <td>ReadOffset</td>
+                    <td><strong>Critical:</strong> Absolute file offset where section data begins. Seek here before reading ReadSize bytes.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Section Data Decompression</h2>
+
+        <p><strong>Algorithm:</strong></p>
+        <ol>
+            <li>Seek to file offset = ReadOffset</li>
+            <li>Read ReadSize bytes into a buffer</li>
+            <li>If CompressorID == 0xB9F0B9EC:
+                <ul>
+                    <li>Decompress using Refpack algorithm. Output buffer size should be DataSize.</li>
+                    <li>Validate: decompressed output must be exactly DataSize bytes.</li>
+                </ul>
+            </li>
+            <li>If CompressorID == 0x0EAC15C8:
+                <ul>
+                    <li>Data is uncompressed; use buffer directly (which has ReadSize == DataSize).</li>
+                </ul>
+            </li>
+            <li>If CompressorID is any other value:
+                <ul>
+                    <li>Can attempt to treat as uncompressed, or abort with error.</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h2>Chunk Scanning and Parsing</h2>
+
+        <p>After decompression/acquisition of section data, scan the data for embedded chunks. Chunks are identified by 2-byte type identifiers (Big-Endian UInt16).</p>
+
+        <p><strong>Chunk Scanning Algorithm:</strong></p>
+        <ol>
+            <li>current_pos = 0</li>
+            <li>While current_pos &lt; data.length:
+                <ul>
+                    <li>Read UInt16 BE at current_pos as chunk_type</li>
+                    <li>If chunk_type is a known type (see table below):
+                        <ul>
+                            <li>Handle this chunk (read size, parse data, extract resources)</li>
+                            <li>Advance current_pos appropriately (depends on chunk type)</li>
+                        </ul>
+                    </li>
+                    <li>Else:
+                        <ul>
+                            <li>Advance current_pos by 1 and continue scanning</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ol>
+
+        <h2>Known Chunk Types</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Type ID</th>
+                    <th>Hex</th>
+                    <th>Name</th>
+                    <th>Size Field</th>
+                    <th>Handling Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x10FB</td>
+                    <td>0x10, 0xFB</td>
+                    <td>Refpack Compressed Data</td>
+                    <td>After type: 4-byte size (BE)</td>
+                    <td>Raw Refpack-compressed payload. Decompress to get contents. Used for embedded asset data.</td>
+                </tr>
+                <tr>
+                    <td>0x1607</td>
+                    <td>0x16, 0x07</td>
+                    <td>Embedded Asset</td>
+                    <td>After type: 4-byte size (BE)</td>
+                    <td><strong>Most important.</strong> Contains resource filename, type, and binary data. Parse to extract game assets (textures, meshes, scripts, etc.). See Embedded Asset section below.</td>
+                </tr>
+                <tr>
+                    <td>0x2207</td>
+                    <td>0x22, 0x07</td>
+                    <td>SimGroup</td>
+                    <td>After type: 4-byte size (BE)</td>
+                    <td>Contains entity definitions. Parse as SimGroup resource. See embedded format documentation.</td>
+                </tr>
+                <tr>
+                    <td>0x2307</td>
+                    <td>0x23, 0x07</td>
+                    <td>Embedded Asset (Compact)</td>
+                    <td>After type: 4-byte size (BE)</td>
+                    <td>Variant of Embedded Asset with different layout. Handle similar to 0x1607 but with adjusted offset calculations.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Embedded Asset Chunk (0x1607)</h2>
+
+        <p><strong>Location:</strong> Within section data, identified by type marker 0x1607.</p>
+
+        <p><strong>Structure:</strong></p>
+        <ol>
+            <li>Offset +0x00: UInt16 BE = 0x1607 (type, already read during scan)</li>
+            <li>Offset +0x02: UInt16 BE = padding (0x0000)</li>
+            <li>Offset +0x04: UInt32 BE = chunk_payload_size (total size of data following this field)</li>
+            <li>Offset +0x08: **Embedded Asset Header** (variable structure)
+                <ul>
+                    <li>Read resource filename (null-terminated UTF-8 string)</li>
+                    <li>Skip padding to align to next 4-byte boundary</li>
+                    <li>Read resource type identifier (can be any of: graph, lh2, meta.xml, lighttoc, dff, rws, txd, cec.ps3, dat, shk, tob, etc.)</li>
+                    <li>Skip metadata/flags as needed</li>
+                    <li>Read remaining bytes until payload_size boundary as binary resource data</li>
+                </ul>
+            </li>
+        </ol>
+
+        <p><strong>Parsing Pseudocode:</strong></p>
+
+        <pre><code>
+// At chunk start (0x00 = type marker 0x1607)
+current = 0;
+type = read_u16_be(current);  // Expect 0x1607
+current += 2;
+padding = read_u16_be(current);
+current += 2;
+chunk_size = read_u32_be(current);
+current += 4;
+chunk_end = current + chunk_size;
+
+// Read filename
+filename = read_null_terminated_string(current);
+current += strlen(filename) + 1;
+
+// Align to 4-byte boundary
+while (current % 4 != 0) current++;
+
+// Read resource type (varies, can peek ahead)
+// Many resources have a magic/header at this point
+resource_data_start = current;
+resource_data_size = chunk_end - current;
+
+// Extract and store resource (filename, type, binary data)
+        </code></pre>
+
+        <h2>Summary: Parsing Workflow</h2>
+
+        <ol>
+            <li><strong>Validate magic</strong>: Read header, verify "SToc"</li>
+            <li><strong>Read header fields</strong>: nSections, pStreamFile, pSectionArr</li>
+            <li><strong>Iterate sections</strong>:
+                <ol>
+                    <li>Seek to section descriptor at (pSectionArr + i*24)</li>
+                    <li>Read descriptor (MemPolicyID, CompressorID, DataSize, AllocSize, ReadSize, ReadOffset)</li>
+                    <li>Seek to ReadOffset, read ReadSize bytes</li>
+                    <li>If Refpack: decompress to DataSize bytes</li>
+                    <li>If uncompressed: use buffer as-is</li>
+                </ol>
+            </li>
+            <li><strong>Scan decompressed section data</strong>:
+                <ol>
+                    <li>Scan for chunk type markers (0x1607, 0x2207, 0x2307, 0x10FB)</li>
+                    <li>For each chunk found, parse based on type</li>
+                </ol>
+            </li>
+            <li><strong>Validate and store results</strong>: Build list of extracted resources (filenames, types, binary data)</li>
+        </ol>
+
+    </body>
+</html>

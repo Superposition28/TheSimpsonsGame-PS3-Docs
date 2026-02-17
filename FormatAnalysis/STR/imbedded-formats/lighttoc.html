@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>LightTOC Format Documentation</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+    </head>
+
+    <body style="padding: 1.5rem;padding-top: 2rem;">
+
+        <h1>LightTOC (Lighting Table of Contents)</h1>
+
+        <p>A table of contents for lighting data, defining light instances and box lights.</p>
+
+        <h2>Header</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>UInt16 (LE)</td>
+                    <td>Magic</td>
+                    <td>File magic.</td>
+                </tr>
+                <tr>
+                    <td>0x02</td>
+                    <td>UInt16 (LE)</td>
+                    <td>Version</td>
+                    <td>Version.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>UInt32</td>
+                    <td>LightArrayOffset</td>
+                    <td>Absolute offset to Light array.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>UInt32</td>
+                    <td>BoxArrayOffset</td>
+                    <td>Absolute offset to Box Light array.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>UInt16</td>
+                    <td>LightCount</td>
+                    <td>Number of lights.</td>
+                </tr>
+                <tr>
+                    <td>0x0E</td>
+                    <td>UInt16</td>
+                    <td>BoxCount</td>
+                    <td>Number of box lights.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Light Entry</h2>
+
+        <p>Located at <code>LightArrayOffset</code>.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Byte[16]</td>
+                    <td>GUID</td>
+                    <td>Light GUID.</td>
+                </tr>
+                <tr>
+                    <td>Float[16]</td>
+                    <td>Matrix</td>
+                    <td>4x4 Transform Matrix (Pos X=Index 12, Y=13, Z=14).</td>
+                </tr>
+                <tr>
+                    <td>UInt8</td>
+                    <td>Type</td>
+                    <td>RW Light Type.</td>
+                </tr>
+                <tr>
+                    <td>UInt8</td>
+                    <td>Flags</td>
+                    <td>RW Light Flags.</td>
+                </tr>
+                <tr>
+                    <td>UInt8</td>
+                    <td>InsideOut</td>
+                    <td>Inside/Outside flag.</td>
+                </tr>
+                <tr>
+                    <td>UInt8</td>
+                    <td>Padding</td>
+                    <td>Unused.</td>
+                </tr>
+                <tr>
+                    <td>Float</td>
+                    <td>DiffAmbient</td>
+                    <td>Diffuse Ambient factor.</td>
+                </tr>
+                <tr>
+                    <td>UInt8</td>
+                    <td>R</td>
+                    <td>Red.</td>
+                </tr>
+                <tr>
+                    <td>UInt8</td>
+                    <td>G</td>
+                    <td>Green.</td>
+                </tr>
+                <tr>
+                    <td>UInt8</td>
+                    <td>B</td>
+                    <td>Blue.</td>
+                </tr>
+                <tr>
+                    <td>UInt8</td>
+                    <td>A</td>
+                    <td>Alpha.</td>
+                </tr>
+                <tr>
+                    <td>Float</td>
+                    <td>Intensity</td>
+                    <td>Light intensity.</td>
+                </tr>
+                <tr>
+                    <td>Float</td>
+                    <td>Radius</td>
+                    <td>Light radius.</td>
+                </tr>
+                <tr>
+                    <td>Float</td>
+                    <td>FBRadius</td>
+                    <td>Full Bright Radius.</td>
+                </tr>
+                <tr>
+                    <td>Float</td>
+                    <td>ConeAngle</td>
+                    <td>Cone Angle.</td>
+                </tr>
+                <tr>
+                    <td>Float</td>
+                    <td>FBAngle</td>
+                    <td>Full Bright Angle.</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </body>
+
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>MetaModel Binary Format Documentation</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+    </head>
+
+    <body style="padding: 1.5rem;padding-top: 2rem;">
+
+        <h1>MetaModel Binary (.meta.xml)</h1>
+
+        <p>Despite the extension <code>.xml</code>, these files in the STR container are compiled binary MetaModel resources containing class definitions, attributes, and object states.</p>
+
+        <h2>Header</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>UInt32</td>
+                    <td>Magic</td>
+                    <td>File signature.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>UInt32</td>
+                    <td>Version</td>
+                    <td>Format version.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>UInt32</td>
+                    <td>Size</td>
+                    <td>Total file size.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>UInt32</td>
+                    <td>Flags</td>
+                    <td>Meta flags.</td>
+                </tr>
+                <tr>
+                    <td>0x10</td>
+                    <td>UInt128</td>
+                    <td>GUID</td>
+                    <td>16-byte resource GUID.</td>
+                </tr>
+                <tr>
+                    <td>0x20</td>
+                    <td>UInt32</td>
+                    <td>NameHash</td>
+                    <td>Hash of the name.</td>
+                </tr>
+                <tr>
+                    <td>0x24</td>
+                    <td>UInt32</td>
+                    <td>PathHash</td>
+                    <td>Hash of the path.</td>
+                </tr>
+                <tr>
+                    <td>0x28</td>
+                    <td>UInt32</td>
+                    <td>SourceHash</td>
+                    <td>Hash of the source.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Section Offsets (Int32)</h2>
+
+        <p>Offsets are absolute. If 0 or negative, the section is empty.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x2C</td>
+                    <td>AssetOffset</td>
+                    <td>Start of Asset array.</td>
+                </tr>
+                <tr>
+                    <td>0x30</td>
+                    <td>StateOffset</td>
+                    <td>Start of State array.</td>
+                </tr>
+                <tr>
+                    <td>0x34</td>
+                    <td>VariableOffset</td>
+                    <td>Start of Variable array.</td>
+                </tr>
+                <tr>
+                    <td>0x38</td>
+                    <td>AttributeOffset</td>
+                    <td>Start of Attribute array.</td>
+                </tr>
+                <tr>
+                    <td>0x3C</td>
+                    <td>PredicateOffset</td>
+                    <td>Start of Predicate array.</td>
+                </tr>
+                <tr>
+                    <td>0x40</td>
+                    <td>PartOffset</td>
+                    <td>Start of Part array.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Section Counts (UInt16)</h2>
+
+        <p>Located at <code>0x4C</code>.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x4C</td>
+                    <td>AssetCount</td>
+                </tr>
+                <tr>
+                    <td>0x4E</td>
+                    <td>StateCount</td>
+                </tr>
+                <tr>
+                    <td>0x50</td>
+                    <td>VariableCount</td>
+                </tr>
+                <tr>
+                    <td>0x52</td>
+                    <td>AttributeCount</td>
+                </tr>
+                <tr>
+                    <td>0x54</td>
+                    <td>PredicateCount</td>
+                </tr>
+                <tr>
+                    <td>0x56</td>
+                    <td>PartCount</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Data Structures</h2>
+
+        <h3>Strings</h3>
+
+        <p>Strings are stored as relative pointers (<code>Int32</code>) to null-terminated arrays. The pointer is relative to the current position.</p>
+
+        <h3>Attribute Structure</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Byte[4]</td>
+                    <td>Value</td>
+                    <td>Raw value (interpretation depends on type).</td>
+                </tr>
+                <tr>
+                    <td>RelPtr</td>
+                    <td>Name</td>
+                    <td>Attribute name.</td>
+                </tr>
+                <tr>
+                    <td>RelPtr</td>
+                    <td>Scope</td>
+                    <td>Scope name.</td>
+                </tr>
+                <tr>
+                    <td>UInt32</td>
+                    <td>UIndex</td>
+                    <td>Unknown index.</td>
+                </tr>
+                <tr>
+                    <td>UInt32</td>
+                    <td>ID</td>
+                    <td>Attribute ID.</td>
+                </tr>
+                <tr>
+                    <td>Int32</td>
+                    <td>Type</td>
+                    <td>Value Type Flags.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Value Type Flags</h3>
+
+        <ul>
+            <li><strong>0x01:</strong> Boolean (Value[0])</li>
+            <li><strong>0x02:</strong> Integer (Big Endian)</li>
+            <li><strong>0x04:</strong> Float</li>
+            <li><strong>0x08:</strong> String Pointer (Absolute offset to string)</li>
+            <li><strong>0x10:</strong> Asset Pointer (Absolute offset to Asset)</li>
+            <li><strong>0x20:</strong> Matrix Pointer (Absolute offset)</li>
+        </ul>
+
+        <h3>State Structure</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>UInt32</td>
+                    <td>ClassID</td>
+                    <td>Class identifier.</td>
+                </tr>
+                <tr>
+                    <td>RelPtr</td>
+                    <td>ClassName</td>
+                    <td>Class name string.</td>
+                </tr>
+                <tr>
+                    <td>RelPtr</td>
+                    <td>Name</td>
+                    <td>State name string.</td>
+                </tr>
+                <tr>
+                    <td>Int32</td>
+                    <td>AttrArrOffset</td>
+                    <td>Absolute offset to array of Attribute pointers (Int32).</td>
+                </tr>
+                <tr>
+                    <td>UInt16</td>
+                    <td>AttrCount</td>
+                    <td>Number of attributes.</td>
+                </tr>
+                <tr>
+                    <td>UInt16</td>
+                    <td>ObjType</td>
+                    <td>Object type.</td>
+                </tr>
+                <tr>
+                    <td>Int32</td>
+                    <td>PartArrOffset</td>
+                    <td>Absolute offset to array of Part pointers.</td>
+                </tr>
+                <tr>
+                    <td>Int32</td>
+                    <td>PredArrOffset</td>
+                    <td>Absolute offset to array of Predicate pointers.</td>
+                </tr>
+                <tr>
+                    <td>UInt16</td>
+                    <td>PartCount</td>
+                    <td>Number of parts.</td>
+                </tr>
+                <tr>
+                    <td>UInt16</td>
+                    <td>PredCount</td>
+                    <td>Number of predicates.</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </body>
+
+</html>

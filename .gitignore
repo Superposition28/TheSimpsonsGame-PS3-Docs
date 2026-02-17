@@ -1,0 +1,56 @@
+
+# vs code history extension directory
+/.history/
+**/.history/**
+
+
+# godot project artifacts, in Game.*/**
+*.uid
+*.md5
+**/GodotGame/
+
+# chache files
+*.db-shm
+*.db-wal
+
+# temporary experiment directories
+dev/
+test/
+
+
+# operations, generated files
+operations/Blender/asset_map.sqlite
+operations/Blender/blend.log
+config.toml
+# entire Simpsons Game iso image dump
+Source/
+# .str archive extraction output
+/GameFiles/
+
+**/STROUT/
+# temporary symlinks for 3d assets blender processing, blender 4.0 cannot handle long paths, if the import script is updated to run on 4.0+ this may be removable
+TMP_TSG_LNKS**/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+GameFiles*/
+config/old/
+indexer/old/
+test/
+.1gitignore
+
+reversing/Format-Analysis/ps3/hko/char_collision_spheres.hko.PS3
+reversing/Format-Analysis/ps3/hko/animatedcollisionmodel1.hko.PS3
+reversing/Format-Analysis/ps3/acs/marge.acs.PS3
+reversing/Format-Analysis/ps3/acs/bart.acs.PS3
+reversing/Format-Analysis/ps3/hkt/collisionmodel.hkt.PS3
+*.PS3
+
+**old**
+**.hko.PS3
+
+
+# temporarily ignore these files as they are empty, and theres 30000 of them...
+PS3_GAME/USRDIR/**

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>TOB Format Documentation</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+    </head>
+
+    <body style="padding: 1.5rem;padding-top: 2rem;">
+
+        <h1>Text Overlay File (.tob)</h1>
+
+        <p>The <code>.tob</code> format stores text overlay entries with timing information, typically used for subtitles or on-screen messages.</p>
+
+        <h2>Header</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>UInt32</td>
+                    <td>ChunkID</td>
+                    <td>Chunk identifier/magic.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>UInt32</td>
+                    <td>FileSize</td>
+                    <td>Total file size in bytes.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>UInt32</td>
+                    <td>Version</td>
+                    <td>Format version.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>UInt32</td>
+                    <td>EntryCount</td>
+                    <td>Number of text overlay entries.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Entry Structure</h2>
+
+        <p>Each entry is <strong>16 bytes</strong> long. Located immediately after the header.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>UInt32</td>
+                    <td>HashID</td>
+                    <td>Hash identifier for the text entry.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>UInt32</td>
+                    <td>StartMS</td>
+                    <td>Start time in milliseconds.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>UInt32</td>
+                    <td>DurationMS</td>
+                    <td>Display duration in milliseconds.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>Int32</td>
+                    <td>UserData</td>
+                    <td>User-defined data (flags, priority, or additional metadata).</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </body>
+
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>LH2 Format Documentation</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+    </head>
+
+    <body style="padding: 1.5rem;padding-top: 2rem;">
+
+        <h1>Localization Header 2 (.LH2)</h1>
+
+        <p>The <code>.LH2</code> format is a string table used for localization. Strings are typically encoded in Windows-1252.</p>
+
+        <h2>Header</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>Char[4]</td>
+                    <td>Magic</td>
+                    <td>"2HCL" signature.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>Byte[4]</td>
+                    <td>Padding</td>
+                    <td>Skipped.</td>
+                </tr>
+                <tr>
+                    <td>0x10</td>
+                    <td>UInt32</td>
+                    <td>EntryCount</td>
+                    <td>Number of string IDs.</td>
+                </tr>
+                <tr>
+                    <td>0x14</td>
+                    <td>UInt32</td>
+                    <td>TableCount</td>
+                    <td>Number of language tables (columns).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Data Structure</h2>
+
+        <p>The file uses a structure of offset arrays followed by string data. All offsets are absolute.</p>
+
+        <h3>1. ID Array</h3>
+
+        <p>Located at <code>0x20</code>.</p>
+
+        <ul>
+            <li>Array of <strong>EntryCount</strong> × <code>UInt32</code>.</li>
+            <li>Contains the unique String IDs (Hash or numeric ID).</li>
+        </ul>
+
+        <h3>2. Pointer Matrix</h3>
+
+        <p>Located immediately after the ID Array.</p>
+
+        <ul>
+            <li>A matrix of pointers with dimensions: <strong>TableCount</strong> rows × <strong>EntryCount</strong> columns.</li>
+            <li>Each entry is a <code>UInt32</code> absolute offset to a null-terminated string.</li>
+            <li><strong>Layout:</strong>
+                <ul>
+                    <li>Row 0 (Language 0) Pointers [0..EntryCount]</li>
+                    <li>Row 1 (Language 1) Pointers [0..EntryCount]</li>
+                    <li>...</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>3. String Data</h3>
+
+        <p>Strings are stored at the offsets pointed to by the matrix. Strings are null-terminated and typically use <code>cp1252</code> encoding.</p>
+
+    </body>
+
+</html>
