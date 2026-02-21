@@ -1,0 +1,159 @@
+
+
+
+# Simpsons Game `.mus` Audio Format
+
+**File Extension:** `.mus`
+
+**Origin:** The Simpsons Game (PAL PS3 Version), likely a proprietary format from EA Redwood Shores.
+
+**Purpose:** Used for background music streams.
+
+**Key Characteristics:**
+
+*   **Proprietary EA Format:**
+*   **Two Subtypes:** Identified by values in the header:
+    *   **Type 1:** Header bytes `0x08-0x0B` = `0F 00 00 00` (15 LE), bytes `0x0C-0x0F` = `78 01 32 00`.
+    *   **Type 2:** Header bytes `0x08-0x0B` = `0B 00 00 00` (11 LE), bytes `0x0C-0x0F` = `02 03 02 03`.
+*   **16-Byte Header:** Contains a per-file ID, an unknown variable integer (potentially sample count/size/loop info), and the type identifiers.
+*   **Fixed Chunking:** Data is processed in fixed 64-byte physical chunks.
+*   **Variable Bit Rate (VBR):** Logical audio frames can vary in size and may span across 64-byte chunks.
+*   **Padding Marker:** The sequence `0C 00 00 00` (12 LE) frequently appears, likely marking the end of valid audio data within a 64-byte chunk, followed by `0x00` padding bytes.
+
+
+
+
+1. High-Level Analysis: File Name Meanings
+
+Using the naming.md document, we can map your directory's .mus files directly to the game's levels. It is clear that these files contain the primary streaming background music tracks for each respective area:
+
+    80b_mus.mus: Around the World in 80 Bites
+
+    bin.mus: Bargain Bin
+
+    brt_mus.mus: Bartman Begins
+
+    bsh_mus.mus: Big Super Happy Fun Fun Game
+
+    cheater.mus: Enter the Cheatrix
+
+    gts_mus.mus: Grand Theft Scratchy
+
+    hub_mus.mus: Game Engine hub / Springfield Hub
+
+    loc_mus.mus: The Land of Chocolate
+
+    menu_mus.mus: Main Menu UI music (implied)
+
+    mob_mus.mus: Mob Rules
+
+    moh_mus.mus: Medal of Homer
+
+    mtp_mus.mus: Meet Thy Player / Game Over
+
+    nvq_mus.mus: NeverQuest
+
+    rwc_mus.mus: Five Characters in Search of an Author
+
+    spr_mus.mus: Springfield hub/house/interiors
+
+    sss_mus.mus: Invasion of the Yokel-Snatchers (The Day Springfield Stood Still)
+
+    treetemp.mus: Lisa the Tree Hugger
+
+
+
+    Here is a breakdown of what the output tells us:
+1. Discovery of New Header Signatures
+
+The readme.md only documented two subtypes, but your test1.py output found four distinct signatures. Notice the pattern in the first byte of the signature sequence:
+
+The "Type 1" Family (Ends in 78 01 32 00):
+
+    0F 00 00 00 78 01 32 00 (Known Type 1) - Found in brt_mus, hub_mus, loc_mus, mob_mus, mtp_mus, nvq_mus, rwc_mus, sss_mus.
+
+    0E 00 00 00 78 01 32 00 (New!) - Found in 80b_mus, gts_mus, menu_mus.
+
+The "Type 2" Family (Ends in 02 03 02 03):
+
+    0B 00 00 00 02 03 02 03 (Known Type 2) - Found in bsh_mus, spr_mus, treetemp.mus.
+
+    0C 00 00 00 02 03 02 03 (New!) - Found in bin.mus, cheater.mus, moh_mus.
+
+What this means: The first byte (0x0F/0x0E or 0x0B/0x0C) is likely a flag or a format version number, while the last 4 bytes are the true "magic number" identifying the encoding algorithm or block structure.
+2. The Unknown Integer is likely a "Cue/Track Count"
+
+In your output, the Unk/Size variable returned values ranging from 6 (for hub_mus.mus and gts_mus.mus) up to 249 (for nvq_mus.mus).
+
+Because these files are enormous (e.g., nvq_mus.mus is 188 MB but its integer is only 249), this integer is not a file size, byte offset, or total sample count. Since background music in modern games uses interactive stems (multiple layers of music fading in and out based on gameplay), this integer almost certainly represents the number of individual streams, cues, or layers multiplexed into the container.
+3. VBR Frame Delimiters Confirmed
+
+Your test2.py run on hub_mus.mus showed that the 0C 00 00 00 padding marker appears in 12.47% of the 64-byte chunks.
+
+What this means: If the marker was only used at the very end of the file, it would be 0.001%. Because it appears roughly 1 out of every 8 chunks (100/12.47≈8.01), this strongly supports the readme.md theory that this marker denotes the end of logical audio frames. An average audio frame in this format likely spans about 8 physical chunks (~512 bytes).
+
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>The Simpsons Game (2007) EA .mus Audio Format Analysis</title>
+    </head>
+    <body>
+
+    <h1>The Simpsons Game (2007) EA <code>.mus</code> Audio Format</h1>
+
+    <p><strong>File Extension:</strong> <code>.mus</code></p>
+    <p><strong>Origin:</strong> The Simpsons Game (PS3/Xbox 360), EA Redwood Shores.</p>
+    <p><strong>Purpose:</strong> Container archives for interactive, segmented, and layered background music.</p>
+
+    <hr>
+
+    <h2>1. What We think</h2>
+    <ul>
+        <li><strong>It is an Archive, Not a Stream:</strong> <code>.mus</code> files are not single continuous audio tracks. They are containers holding multiple distinct audio segments and layers. Treating them as a single raw stream results in corrupted audio (static/noise).</li>
+        <li><strong>Big-Endian Table of Contents (TOC):</strong> The archive structure relies on a directory/TOC that begins at offset <code>0x08</code>.</li>
+        <li><strong>Fixed-Size TOC Entries:</strong> Each entry in the TOC is 12 bytes (<code>0x0C</code>) long and contains the following Big-Endian fields:
+            <ul>
+                <li><code>0x00</code> (uint16): <strong>IDX</strong> (Stream index number)</li>
+                <li><code>0x02</code> (uint16): <strong>DUMMY</strong> (Unknown/Padding)</li>
+                <li><code>0x04</code> (uint32): <strong>HEADERPOS</strong> (Pointer to the entry's metadata word)</li>
+                <li><code>0x08</code> (uint32): <strong>OFFSET</strong> (Absolute pointer to where the audio payload begins)</li>
+            </ul>
+        </li>
+        <li><strong>Implicit File Sizes:</strong> The size of an individual audio segment is calculated by subtracting its <code>OFFSET</code> from the <code>OFFSET</code> of the next entry in the TOC (or EOF for the final entry).</li>
+        <li><strong>Block-Based ADPCM:</strong> The audio payloads are encoded in an EA ADPCM variant (EA-XAS for PS3, potentially XMA2 for Xbox 360). These codecs rely on strict frame/block alignments.</li>
+        <li><strong>Padding Behavior:</strong> The sequence <code>0C 00 00 00</code> followed by nulls is used as padding to align blocks. <strong>Crucially:</strong> Stripping this padding destroys the internal ADPCM frame alignment, causing decoders like <code>vgmstream</code> to lose sync and output maximum-amplitude static.</li>
+        <li><strong>Headerless Payloads:</strong> The raw data starting at <code>OFFSET</code> contains no self-describing headers. It cannot be decoded on its own.</li>
+    </ul>
+
+    <hr>
+
+    <h2>2. Current Assumptions & Working Theories</h2>
+    <ul>
+        <li><strong>The "Synthetic Header" Requirement:</strong> To properly decode an extracted payload, we assume a 32-byte (<code>0x20</code>) standard EA <code>.xas</code> header must be artificially constructed and prepended to the raw bytes.</li>
+        <li><strong>The INFO Word:</strong> The 32-bit value located at an entry's <code>HEADERPOS</code> is assumed to be the critical metadata (channels, sample rate, or block layout flags) required to build the synthetic <code>.xas</code> header.</li>
+        <li><strong>Companion Metadata Files (The "Missing Half"):</strong> We assume the <code>.mus</code> file only acts as a bulk reservoir of audio fragments. The logic for how these fragments are stitched together, layered, and looped during gameplay is stored in external MPF-variant metadata files (specifically <code>.msb</code> and <code>.msx</code> files found in the game directories).</li>
+        <li><strong>Subtype Signatures:</strong> The first few bytes of the file (e.g., <code>0F 00 00 00 78 01 32 00</code> vs <code>0B 00 00 00 02 03 02 03</code>) dictate format versioning or routing logic, though the exact routing differences between "Type 1" and "Type 2" remain unmapped.</li>
+    </ul>
+
+    <hr>
+
+    <h2>3. What We Don't Know (Pending Investigation)</h2>
+    <ul>
+        <li><strong>The Bit-Level Structure of the INFO Word:</strong> We know <code>HEADERPOS</code> points to metadata, but we do not yet know the exact bitmask of this 32-bit word (e.g., which bits represent sample rate vs. channel count).</li>
+        <li><strong>Internal MSB/MSX Structure:</strong> While we know <code>.msb</code>/<code>.msx</code> files control the interactive playback map, we do not know their internal grammar, nor how they reference the specific <code>IDX</code> values inside the <code>.mus</code> archives.</li>
+        <li><strong>Layer Multiplexing:</strong> It is unconfirmed whether multi-channel stems (e.g., Layers 1, 2, and 3) are interleaved within a single TOC payload, or if they are stored as separate consecutive TOC entries that the engine plays simultaneously.</li>
+        <li><strong>The Unknown Integer at 0x04:</strong> The purpose of the integer at offset <code>0x04</code> of the main file header (previously assumed to be a "cue count" ranging from 6 to 249) is not definitively proven, though it likely correlates with the total number of valid TOC entries.</li>
+    </ul>
+
+    </body>
+</html>
+
+
+
+
+currently no progress in decoding this format
+all attempts have failed
+
+
+
