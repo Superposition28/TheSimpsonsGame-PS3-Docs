@@ -52,6 +52,3 @@ reversing/Format-Analysis/ps3/hkt/collisionmodel.hkt.PS3
 **.hko.PS3
 **.mus
 
-
-# temporarily ignore these files as they are empty, and theres 30000 of them...
-PS3_GAME/USRDIR/**L**_**/
