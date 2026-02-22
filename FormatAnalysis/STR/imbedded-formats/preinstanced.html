@@ -84,15 +84,153 @@
 
         <p><strong>Location:</strong> Starts at the byte after the mesh chunk signature (<code>33 EA 00 00 ?? ?? ?? ?? 2D 00 02 1C</code>).</p>
 
-        <p><strong>Total Header Size:</strong> Variable (typically 80-128 bytes). Determined by field offsets and the presence of sub-tables.</p>
+        <p>The mesh chunk header uses a mixed-endian approach. While most architectural and count fields are Big-Endian (PS3), some core size and offset fields are Little-Endian.</p>
 
-        <h3>Header Layout (Big-Endian unless noted)</h3>
+        <h3>Header Layout</h3>
 
         <table>
             <thead>
                 <tr>
-                    <th>Offset</th>
+                    <th>Offset (Abs)</th>
+                    <th>Offset (Rel)</th>
                     <th>Size</th>
+                    <th>Type</th>
+                    <th>Endian</th>
+                    <th>Field Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>-</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>Signature (<code>33 EA 00 00</code>)</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>-</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>Unknown</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>-</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>Signature Verify (<code>2D 00 02 1C</code>)</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>0x00</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>Padding / mVersion</td>
+                </tr>
+                <tr>
+                    <td>0x10</td>
+                    <td>0x04</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td><strong>LE</strong></td>
+                    <td>FaceDataOff</td>
+                </tr>
+                <tr>
+                    <td>0x14</td>
+                    <td>0x08</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td><strong>LE</strong></td>
+                    <td>MeshDataSize</td>
+                </tr>
+                <tr>
+                    <td><strong>0x18</strong></td>
+                    <td><strong>0x0C</strong></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><strong>MeshChunkStart (Header Base)</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Navigation Table and Sub-Meshes</h3>
+
+        <p>Following <code>MeshChunkStart</code> (0x18 abs), there is a 28-byte block of padding before the table counts begin.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset (Rel to Base)</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                    <th>Endian</th>
+                    <th>Field Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x1C</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>TableCount</td>
+                </tr>
+                <tr>
+                    <td>0x20</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>BE</td>
+                    <td>SubmeshCount</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>Sub-Mesh Table Entries</h4>
+
+        <p>Located after the Table entries (each 8 bytes, total <code>TableCount * 8</code>). Each Sub-Mesh entry is 12 bytes.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset (Sub-Mesh)</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                    <th>Field Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>8</td>
+                    <td>bytes[8]</td>
+                    <td>Unknown</td>
+                    <td>Skipped.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>SubmeshRelOffset</td>
+                    <td>Offset to Sub-Mesh header (relative to <code>MeshChunkStart</code>).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Vertex Information Structure</h3>
+
+        <p>Located at <code>MeshChunkStart + SubmeshRelOffset + 12</code> is a pointer <code>VertInfoRelOffset</code>. Following that pointer (relative to <code>MeshChunkStart</code>):</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset (VertInfo)</th>
                     <th>Type</th>
                     <th>Endian</th>
                     <th>Field Name</th>
@@ -102,104 +240,43 @@
             <tbody>
                 <tr>
                     <td>0x00</td>
-                    <td>4</td>
                     <td>UInt32</td>
                     <td>BE</td>
-                    <td>mVersion</td>
-                    <td>Version or identifier. Typically 0x00000000 or similar.</td>
+                    <td>VertTotalSize</td>
+                    <td>Total size of vertex buffer.</td>
                 </tr>
                 <tr>
                     <td>0x04</td>
-                    <td>4</td>
                     <td>UInt32</td>
                     <td>BE</td>
-                    <td>mDataTableCount</td>
-                    <td>Count of entries in a data table below. Often 0 or small value.</td>
+                    <td>VertStride</td>
+                    <td>Bytes per vertex (stride).</td>
                 </tr>
                 <tr>
-                    <td>0x08</td>
-                    <td>mDataTableCount * 8</td>
-                    <td>Unknown Table</td>
-                    <td>BE</td>
-                    <td>mDataTable[]</td>
-                    <td>Array of 8-byte entries. Purpose unclear; typically skipped in parsers.</td>
-                </tr>
-                <tr>
-                    <td>0x08 + (mDataTableCount * 8)</td>
-                    <td>4</td>
+                    <td>0x0C</td>
                     <td>UInt32</td>
                     <td>BE</td>
-                    <td>VertexInfoCount</td>
-                    <td>Number of vertex info groups (almost always 1).</td>
+                    <td>VertStartRel</td>
+                    <td>Offset to vertex data (relative to <code>FaceDataOff</code>).</td>
                 </tr>
                 <tr>
-                    <td>+4</td>
-                    <td>4</td>
+                    <td>0x24</td>
                     <td>UInt32</td>
                     <td>BE</td>
-                    <td>VertChunkSize</td>
-                    <td>Bytes per vertex. Typically 36, 48, or 64 depending on attributes.</td>
+                    <td>FaceByteLen</td>
+                    <td>Total size of face index buffer (bytes).</td>
                 </tr>
                 <tr>
-                    <td>+8</td>
-                    <td>4</td>
+                    <td>0x2C</td>
                     <td>UInt32</td>
                     <td>BE</td>
-                    <td>VertChunkTotalSize</td>
-                    <td>Total size of vertex data block (= VertChunkSize * number_of_vertices).</td>
-                </tr>
-                <tr>
-                    <td>+12</td>
-                    <td>4</td>
-                    <td>UInt32</td>
-                    <td>BE</td>
-                    <td>VertexStart</td>
-                    <td>Offset within the mesh data area to first vertex.</td>
-                </tr>
-                <tr>
-                    <td>+16</td>
-                    <td>4</td>
-                    <td>UInt32</td>
-                    <td>BE</td>
-                    <td>FaceStart</td>
-                    <td>Offset within the mesh data area to first face/index.</td>
-                </tr>
-                <tr>
-                    <td>+20</td>
-                    <td>4</td>
-                    <td>UInt32</td>
-                    <td>BE</td>
-                    <td>FaceDataByteLength</td>
-                    <td>Size in bytes of the face/index data block.</td>
-                </tr>
-                <tr>
-                    <td>+24 (varies)</td>
-                    <td>4</td>
-                    <td>UInt32</td>
-                    <td>LE</td>
-                    <td>FaceDataOff</td>
-                    <td><strong>Little-Endian!</strong> Offset used for mesh data calculation. Purpose unclear.</td>
-                </tr>
-                <tr>
-                    <td>+28 (varies)</td>
-                    <td>4</td>
-                    <td>UInt32</td>
-                    <td>LE</td>
-                    <td>MeshDataSize</td>
-                    <td><strong>Little-Endian!</strong> Total size of mesh data block. Purpose partially unclear.</td>
-                </tr>
-                <tr>
-                    <td>+32 to end</td>
-                    <td>Variable</td>
-                    <td>Unknown</td>
-                    <td>BE</td>
-                    <td>Reserved/Unknown</td>
-                    <td>Additional metadata or flags. Not used by typical parsers.</td>
+                    <td>FaceStartRel</td>
+                    <td>Offset to face data (relative to <code>FaceDataOff</code>).</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3>Header Traversal Algorithm</h3>
+        <h3>Header Traversal Algorithm (Unified)</h3>
 
         <p><strong>Pseudocode for finding the mesh header end:</strong></p>
         <pre><code>
