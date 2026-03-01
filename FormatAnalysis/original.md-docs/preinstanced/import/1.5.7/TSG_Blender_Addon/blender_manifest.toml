@@ -6,6 +6,7 @@ name = "Blackened Bones"
 tagline = "Import/Export Havok 4.0.0-r1 HKX files from Super Smash Bros Brawl"
 maintainer = "Exul Anima"
 type = "add-on"
+license = ["SPDX:MIT"]
 
 # Blender 5.0 is typically backward compatible with 4.2 extensions, 
 # but you can specify a minimum version here.

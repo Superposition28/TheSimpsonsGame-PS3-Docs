@@ -8,7 +8,7 @@
 *.uid
 *.md5
 **/GodotGame/
-
+*.zip
 # chache files
 *.db-shm
 *.db-wal

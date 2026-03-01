@@ -617,7 +617,7 @@ class Importer(Operator, ImportHelper):
     filename_ext = ".hkx"
     
     filter_glob: StringProperty(
-        default="*.hkx",
+        default="*",
         options={"HIDDEN"}
     )
  
