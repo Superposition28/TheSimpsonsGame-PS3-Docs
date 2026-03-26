@@ -1,3 +1,163 @@
+
+# The Simpsons Game - Character Registry
+# Note: "Other Characters" are NPCs found in Springfield that Marge can recruit.
+# Source: https://simpsons.fandom.com/wiki/The_Simpsons_Game/Appearances
+# Note not all charactors are listed, including thematic variations of existing charactors (Rod and Todd Flanders vs rod and todd hobbits).
+# this distinction is important as the variations have unique voice lines and thus unique audio files
+-  character_registry:
+    -  playable_characters:
+        - Homer Simpson
+        - Marge Simpson
+        - Bart Simpson
+        - Lisa Simpson
+        - Maggie Simpson # Playable during Marge's segments
+
+    -  other_characters:
+        description: NPCs in Springfield
+        world:
+            - Ned Flanders
+            - Edna Krabappel
+            - Dr. Julius Hibbert
+            - Lenny Leonard
+            - Carl Carlson
+            - Professor Frink
+            - Cletus Spuckler
+            - Moe Szyslak
+            - Timothy Lovejoy Jr.
+            - Apu Nahasapeemapetilon
+            - Abraham Simpson
+            - Otto Mann
+            - Snake Jailbird
+            - Groundskeeper Willie
+            - Krusty the Clown
+            - Barney Gumble
+            - Patty Bouvier
+            - Selma Bouvier
+            - Kent Brockman
+            - Captain Horatio McCallister
+            - Rod Flanders
+            - Todd Flanders
+            - Ralph Wiggum
+            - Waylon Smithers, Jr.
+            - Seymour Skinner
+            - Comic Book Guy
+            - Bumblebee Man
+            - Jimbo Jones
+            - Kearney Zzyzwicz
+            - Dolph Starbeam
+            - Rafael
+            - Clancy Wiggum
+            - Charles Montgomery Burns
+            - Martin Prince
+            - Üter Zörker
+            - Wendell Borton
+            - Milhouse Van Houten
+            - Nina Skalka
+            - Lewis Clark
+            - Sherri and Terri
+            - Nelson Muntz
+            - Janey Powell
+            - Lewis' lookalike
+            - Lou
+            - Eddie
+            - Mayor Quimby
+            - Blue-haired Lawyer
+            - Rainier Wolfcastle
+            - Manjula Nahasapeemapetilon
+            - Bernice Hibbert
+            - The Rich Texan
+            - Agnes Skinner
+            - Gary Chalmers
+            - Gil Gunderson
+            - Squeaky-Voiced Teen
+            - Louie
+            - Brandine Spuckler
+            - Dewey Largo
+            - Elizabeth Hoover
+            - Hans Moleman
+            - Sarah Wiggum
+            - Doris Freedman
+            - Jasper Beardly
+            - Martin Prince, Sr.
+            - Luigi Risotto
+            - Legs
+            - Old Jewish Man
+            - Dr. Nick Riviera
+            - Larry
+            - Sam
+            - Charlie
+            - Kirk Van Houten
+            - Judge Snyder
+
+    -  enemies_by_level:
+        the_land_of_chocolate:
+            - Chocolate Rabbits
+            - White Chocolate Rabbit (Boss)
+        bartman_begins:
+            - Raphael Security Guards
+            - Sideshow Mel
+        around_the_world_in_80_bites:
+            - The Bullies: [Dolph, Kearney, Jimbo]
+            - Contestants: [Comic Book Guy, Bumblebee Man, Kearney, Groundskeeper Willie, Barney Gumble, Otto Mann, Chief Wiggum, Üter]
+        lisa_the_tree_hugger:
+            - Loggers
+            - Firing Loggers
+        mob_rules:
+            - GTS Fans: [Lewis, Sherri and Terri]
+            # Platform Exclusive: Xbox 360 and PS3
+            - GTS Fans Extended: [Jimbo Jones, Dolph Starbeam, Kearney Zzyzwicz, Milhouse Van Houten, Martin Prince, Ralph Wiggum, Nelson Muntz, Üter Zörker, Wendell Borton]
+        enter_the_cheatrix:
+            - Guards
+            - Eddie
+            - Lou
+            - Chief Wiggum
+            - American Football/Rugby Players
+            - Ryu
+            - Ken Masters
+            - Stubborn Ape (Boss)
+        the_day_of_the_dolphin:
+            - Dolphins
+            - Aliens
+            - Firing Dolphins
+            - King Snorky (Boss)
+        shadow_of_the_colossal_donut:
+            - Mini Krusties
+            - Aliens
+            - Lard Lad (Boss)
+        invasion_of_the_yokel_snatchers:
+            - Aliens
+        bargain_bin:
+            - Patty and Selma Dragon (Boss)
+            - Hobbit Flanderses (rod and todd)
+        neverquest:
+            - Orc-Moes
+            - Ghost-Ottos
+            - The French Üters
+            - Sailor Smithers
+            - Private Burns (Boss - Xbox 360/PS3 version)
+        big_super_happy_fun_fun_game:
+            - Comic Book Guy Sumos
+            - Fire CBGS
+            - Jimbo and his Sparklemon (Ratachu)
+            - Ice CBGS
+            - Ralph Wiggum and his Sparklemon (Poo)
+            - Air CBGS
+            - Sherri and Terri and their Sparklemon (Dirt Donkey)
+        grand_theft_scratchy:
+            - Itchy
+            - Scratchy
+            - Female Cats
+            - Poochie (Boss)
+        medal_of_homer:
+            -
+        game_over:
+            - Lawyers
+            - Bender bending rodriguez
+            - Dr. Zoidberg
+            - Matt Groening (Boss)
+            - God (Final Boss)
+
+
 # Source: \GAMEFILES\USRDIR\ASSETS_1_AUDIO_STREAMS\EN
 
 # KEY
@@ -12,103 +172,98 @@
 
 # <ch?> ambient audio files in the global folder often have _qd as an indicator that they are quad channel audio not duel channel
 
-#since every filename shows something like:
-# 00047cb
-# 0006552
-#that means it’s a zero-padded, fixed-width 7-digit hexadecimal ID.
-
 # snu format known by vgmstream
 
 ## 'EN' audio files
 
 # Dialogue -- 7315
 
--   EN-Dialogue:
-    -   OLD_DIR_NAME: 01_xxx_0  ## complete
+- EN-Dialogue:
+    -   OLD_DIR_NAME: 01_xxx_0
         NEW_DIR_NAME: generic_1
         files:
-        -   Name: Alien_1
+        -   CharacterName: Alien_1
             Level: Invasion of the Yokel-Snatchers?
             file_patterns:
                 file_pattern: d_as01_xxx_#######.exa.snu
                 file_regex: ^d_as01_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_as01_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: César or Ugolin
+        -   CharacterName: César or Ugolin
             Level: Medal of Homer
             Note: name César or Ugolin? (surrendering french guy)
             file_patterns:
                 file_pattern: d_fr01_xxx_#######.exa.snu
                 file_regex: ^d_fr01_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_fr01_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Logger_1
+        -   CharacterName: Logger_1
             Level: Lisa the Tree Hugger
             file_patterns:
                 file_pattern: d_lg01_xxx_#######.exa.snu
                 file_regex: ^d_lg01_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_lg01_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: 02_xxx_0  ## complete
+    -   OLD_DIR_NAME: 02_xxx_0
         NEW_DIR_NAME: generic_2
         files:
-        -   Name: Alien_2
+        -   CharacterName: Alien_2
             Level: Invasion of the Yokel-Snatchers?
             file_patterns:
                 file_pattern: d_as02_xxx_#######.exa.snu
                 file_regex: ^d_as02_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_as02_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: César or Ugolin
+        -   CharacterName: César or Ugolin
             Level: Medal of Homer
             file_patterns:
                 file_pattern: d_fr02_xxx_#######.exa.snu
                 file_regex: ^d_fr02_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_fr02_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Logger_2
+        -   CharacterName: Logger_2
             Level: Lisa the Tree Hugger
             file_patterns:
                 file_pattern: d_lg02_xxx_#######.exa.snu
                 file_regex: ^d_lg02_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_lg02_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: ab_xxx_0  ## complete
+    -   OLD_DIR_NAME: ab_xxx_0
         NEW_DIR_NAME: edna_krabappel
         files:
-        -   Name: Edna Krabappel
+        -   CharacterName: Edna Krabappel
             Level: world + Mob Rules
             file_patterns:
                 file_pattern: d_krab_xxx_#######.exa.snu
                 file_regex: ^d_krab_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_krab_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: ad_xxx_0  ## complete
+    -   OLD_DIR_NAME: ad_xxx_0
         NEW_DIR_NAME: lard_lad
         files:
-        -   Name: Lard Lad
+        -   CharacterName: Lard Lad
             Level: Shadow of the Colossal Donut
             file_patterns:
                 file_pattern: d_llad_xxx_#######.exa.snu
                 file_regex: ^d_llad_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_llad_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: ag_xxx_0  ## complete
+    -   OLD_DIR_NAME: ag_xxx_0
         NEW_DIR_NAME: two_headed_dragon
         files:
-        -   Name: two-headed Patty and Selma dragon
+        -   CharacterName: two-headed Patty and Selma dragon
             Level: NeverQuest
             file_patterns:
                 file_pattern: d_drag_xxx_#######.exa.snu
                 file_regex: ^d_drag_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_drag_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: ak_xxx_0  ## complete
+    -   OLD_DIR_NAME: ak_xxx_0
         NEW_DIR_NAME: shakespeare_jailbird
         files:
-        -   Name: William Shakespeare
+        -   CharacterName: William Shakespeare
             Level: Game Over
             file_patterns:
                 file_pattern: d_shak_xxx_#######.exa.snu
                 file_regex: ^d_shak_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_shak_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Snake Jailbird
+        -   CharacterName: Snake Jailbird
             Level: world + Mob Rules
             Note: contains voice lines for maultiple levels probably all
             file_patterns:
@@ -116,43 +271,43 @@
                 file_regex: ^d_snak_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_snak_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: al_xxx_0  ## complete
+    -   OLD_DIR_NAME: al_xxx_0
         NEW_DIR_NAME: gary_chalmers
         files:
-        -   Name: Gary Chalmers
+        -   CharacterName: Gary Chalmers
             Level: world
             file_patterns:
                 file_pattern: d_chal_xxx_#######.exa.snu
                 file_regex: ^d_chal_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_chal_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: an_xxx_0  ## complete
+    -   OLD_DIR_NAME: an_xxx_0
         NEW_DIR_NAME: brandine_duffman
         files:
-        -   Name: Brandine Spuckler
+        -   CharacterName: Brandine Spuckler
             Level: world + Mob Rules
             file_patterns:
                 file_pattern: d_bran_xxx_#######.exa.snu
                 file_regex: ^d_bran_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_bran_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Duffman
+        -   CharacterName: Duffman
             Level: Around the World in 80 Bites
             file_patterns:
                 file_pattern: d_dman_xxx_#######.exa.snu
                 file_regex: ^d_dman_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_dman_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: ar_xxx_0  ## complete
+    -   OLD_DIR_NAME: ar_xxx_0
         NEW_DIR_NAME: Charlie_Maze_Announcer_voice
         files:
-        -   Name: Charlie (SNPP)
+        -   CharacterName: Charlie (SNPP)
             Note: Charlie is the Dangerous Emissions Supervisor of Sector 7G at the (Springfield Nuclear Power Plant).
             Level: world + Mob Rules
             file_patterns:
                 file_pattern: d_char_xxx_#######.exa.snu
                 file_regex: ^d_char_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_char_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Maze Announcer voice
+        -   CharacterName: Maze Announcer voice
             Level: NeverQuest -   Dungeon
             Note: from NeverQuest in topdown view dungeon section
             file_patterns:
@@ -160,60 +315,60 @@
                 file_regex: ^d_gnar_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_gnar_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: av_xxx_0  ## complete
+    -   OLD_DIR_NAME: av_xxx_0
         NEW_DIR_NAME: heaven_voice
         files:
-        -   Name: heaven voice
+        -   CharacterName: heaven voice
             Level: Game Over
             file_patterns:
                 file_pattern: d_spav_xxx_#######.exa.snu
                 file_regex: ^d_spav_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_spav_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: bo_xxx_0  ## complete
+    -   OLD_DIR_NAME: bo_xxx_0
         NEW_DIR_NAME: jimbo_jones
         files:
-        -   Name: Jimbo Jones
+        -   CharacterName: Jimbo Jones
             Level: world + Bartman Begins
             file_patterns:
                 file_pattern: d_jmbo_xxx_#######.exa.snu
                 file_regex: ^d_jmbo_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_jmbo_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: cb_xxx_0  ## complete
+    -   OLD_DIR_NAME: cb_xxx_0
         NEW_DIR_NAME: chocolate_bunny
         files:
-        -   Name: Chocolate Bunny
+        -   CharacterName: Chocolate Bunny
             Level: Land_Of_Chocolate
             file_patterns:
                 file_pattern: d_chcb_xxx_#######.exa.snu
                 file_regex: ^d_chcb_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_chcb_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: cg_xxx_0  ## complete
+    -   OLD_DIR_NAME: cg_xxx_0
         NEW_DIR_NAME: itchy_the_mouse
         files:
-        -   Name: Itchy the Mouse
+        -   CharacterName: Itchy the Mouse
             Level: Grand Theft Scratchy
             file_patterns:
                 file_pattern: d_itcg_xxx_#######.exa.snu
                 file_regex: ^d_itcg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_itcg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: ch_xxx_0  ## complete
+    -   OLD_DIR_NAME: ch_xxx_0
         NEW_DIR_NAME: poochie_the_dog
         files:
-        -   Name: Poochie the Dog
+        -   CharacterName: Poochie the Dog
             Level: Grand Theft Scratchy
             file_patterns:
                 file_pattern: d_poch_xxx_#######.exa.snu
                 file_regex: ^d_poch_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_poch_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: cl_xxx_0  ## complete
+    -   OLD_DIR_NAME: cl_xxx_0
         NEW_DIR_NAME: sea_captain
         files:
-        -   Name: Horatio Peter McCallister
+        -   CharacterName: Horatio Peter McCallister
             Level: world + The Day of the Dolphin
             NickName: sea captain
             file_patterns:
@@ -221,10 +376,10 @@
                 file_regex: ^d_mccl_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_mccl_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: co_xxx_0  ## complete
+    -   OLD_DIR_NAME: co_xxx_0
         NEW_DIR_NAME: disco_stu
         files:
-        -   Name: Stu Discothèque
+        -   CharacterName: Stu Discothèque
             Level: world
             NickName: Disco Stu
             file_patterns:
@@ -232,72 +387,72 @@
                 file_regex: ^d_dsco_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_dsco_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: cp_xxx_0  ## complete
+    -   OLD_DIR_NAME: cp_xxx_0
         NEW_DIR_NAME: itchy_the_mouse_pimp
         files:
-        -   Name: Itchy the Mouse Pimp
+        -   CharacterName: Itchy the Mouse Pimp
             Level: Grand Theft Scratchy
             file_patterns:
                 file_pattern: d_itcp_xxx_#######.exa.snu
                 file_regex: ^d_itcp_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_itcp_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: df_xxx_0  ## complete
+    -   OLD_DIR_NAME: df_xxx_0
         NEW_DIR_NAME: Flanderses
         files:
-        -   Name: Ned Flanders
+        -   CharacterName: Ned Flanders
             Level: world + Mob Rules
             file_patterns:
                 file_pattern: d_nedf_xxx_#######.exa.snu
                 file_regex: ^d_nedf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_nedf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Rod Flanders
+        -   CharacterName: Rod Flanders
             Level: world + Mob Rules
             file_patterns:
                 file_pattern: d_rodf_xxx_#######.exa.snu
                 file_regex: ^d_rodf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_rodf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Todd Flanders
+        -   CharacterName: Todd Flanders
             Level: world + Mob Rules
             file_patterns:
                 file_pattern: d_todf_xxx_#######.exa.snu
                 file_regex: ^d_todf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_todf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: dg_xxx_0  ## complete
+    -   OLD_DIR_NAME: dg_xxx_0
         NEW_DIR_NAME: sad_sonic
         files:
-        -   Name: sonic the hedge hog
+        -   CharacterName: sonic the hedge hog
             Level: Enter the Cheatrix
             file_patterns:
                 file_pattern: d_hedg_xxx_#######.exa.snu
                 file_regex: ^d_hedg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_hedg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: ds_xxx_0  ## complete
+    -   OLD_DIR_NAME: ds_xxx_0
         NEW_DIR_NAME: comic_book_guy_sumo
         files:
-        -   Name: Sumo Comic Book Guy
+        -   CharacterName: Sumo Comic Book Guy
             Level: Big Super Happy Fun Fun Game
             file_patterns:
                 file_pattern: d_suds_xxx_#######.exa.snu
                 file_regex: ^d_suds_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_suds_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: dx_xxx_0  ## complete
+    -   OLD_DIR_NAME: dx_xxx_0
         NEW_DIR_NAME: god
         files:
-        -   Name: God
+        -   CharacterName: God
             Level: Game Over
             file_patterns:
                 file_pattern: d_godx_xxx_#######.exa.snu
                 file_regex: ^d_godx_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_godx_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    -   OLD_DIR_NAME: ef_xxx_0  ## complete
+    -   OLD_DIR_NAME: ef_xxx_0
         NEW_DIR_NAME: chef_luigi
         files:
-        -   Name: Luigi Risotto
+        -   CharacterName: Luigi Risotto
             Level: world?
             Note: real name Lothar Folkman, Chef Luigi
             NickName: Chef Luigi
@@ -309,7 +464,7 @@
     -   OLD_DIR_NAME: en_xxx_0
         NEW_DIR_NAME: squeaky_voiced_teen
         files:
-        -   Name: Jeremy Freedman
+        -   CharacterName: Jeremy Freedman
             Level: world + Mob Rules
             Note: more commonly known as Squeaky-Voiced Teen
             file_patterns:
@@ -320,13 +475,13 @@
     -   OLD_DIR_NAME: er_xxx_0
         NEW_DIR_NAME: moe_orc_uter
         files:
-        -   Name: Orc Moe Szyslak
+        -   CharacterName: Orc Moe Szyslak
             Level: NeverQuest
             file_patterns:
                 file_pattern: d_moer_xxx_#######.exa.snu
                 file_regex: ^d_moer_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_moer_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Üter Zörker
+        -   CharacterName: Üter Zörker
             Level: world + Medal of Homer
             file_patterns:
                 file_pattern: d_uter_xxx_#######.exa.snu
@@ -336,7 +491,7 @@
     -   OLD_DIR_NAME: es_xxx_0
         NEW_DIR_NAME: moe
         files:
-        -   Name: Moe Szyslak
+        -   CharacterName: Moe Szyslak
             Level: world + mob rules
             file_patterns:
                 file_pattern: d_moes_xxx_#######.exa.snu
@@ -346,7 +501,7 @@
     -   OLD_DIR_NAME: et_xxx_0
         NEW_DIR_NAME: cletus
         files:
-        -   Name: Cletus Spuckler
+        -   CharacterName: Cletus Spuckler
             Level: world
             file_patterns:
                 file_pattern: d_clet_xxx_#######.exa.snu
@@ -356,9 +511,9 @@
     -   OLD_DIR_NAME: ex_xxx_0
         NEW_DIR_NAME: rich_texan
         files:
-        -   Name: Richard Texan
-            Level: world?
-            Note: The Rich Texan
+        -   CharacterName: Richard Texan
+            Level: world + Mob Rules
+            Note: voice lines indicate mob participation, but mostly generic lines for world encounter
             file_patterns:
                 file_pattern: d_ctex_xxx_#######.exa.snu
                 file_regex: ^d_ctex_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -367,7 +522,7 @@
     -   OLD_DIR_NAME: fe_xxx_0
         NEW_DIR_NAME: museum_voice_female
         files:
-        -   Name: unknown
+        -   CharacterName: unknown
             Level: Bartman begins
             Note: female voice 'and woman'
             file_patterns:
@@ -378,13 +533,13 @@
     -   OLD_DIR_NAME: fh_xxx_0
         NEW_DIR_NAME: hobbits
         files:
-        -   Name: rod flanders (hobbit)
+        -   CharacterName: rod flanders (hobbit)
             Level: NeverQuest
             file_patterns:
                 file_pattern: d_rdfh_xxx_#######.exa.snu
                 file_regex: ^d_rdfh_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_rdfh_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: tod flanders (hobbit)
+        -   CharacterName: tod flanders (hobbit)
             Level: NeverQuest
             file_patterns:
                 file_pattern: d_tdfh_xxx_#######.exa.snu
@@ -394,7 +549,7 @@
     -   OLD_DIR_NAME: gf_xxx_0
         NEW_DIR_NAME: madden_football_player
         files:
-        -   Name:  Madden football player
+        -   CharacterName:  Madden football player
             Level: Enter the Cheatrix
             file_patterns:
                 file_pattern: d_gegf_xxx_#######.exa.snu
@@ -402,10 +557,11 @@
                 file_glob: d_gegf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: gg_xxx_0
-        NEW_DIR_NAME: TBD
+        NEW_DIR_NAME: generic_3
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: TBD
+            Level: enter the cheatrix
+            Note: only 5 lines, clearly from the game engeine level
             file_patterns:
                 file_pattern: d_digg_xxx_#######.exa.snu
                 file_regex: ^d_digg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -414,7 +570,7 @@
     -   OLD_DIR_NAME: gh_xxx_0
         NEW_DIR_NAME: otto_ghost
         files:
-        -   Name: otto mann (ghost)
+        -   CharacterName: otto mann (ghost)
             Level: NeverQuest
             file_patterns:
                 file_pattern: d_otgh_xxx_#######.exa.snu
@@ -424,7 +580,7 @@
     -   OLD_DIR_NAME: gn_xxx_0
         NEW_DIR_NAME: museum_voice_male
         files:
-        -   Name: voice over guy
+        -   CharacterName: voice over guy
             Level: Bartman begins
             file_patterns:
                 file_pattern: d_segn_xxx_#######.exa.snu
@@ -434,7 +590,7 @@
     -   OLD_DIR_NAME: go_xxx_0
         NEW_DIR_NAME: music_teacher
         files:
-        -   Name: Dewey Largo
+        -   CharacterName: Dewey Largo
             file_patterns:
                 file_pattern: d_lrgo_xxx_#######.exa.snu
                 file_regex: ^d_lrgo_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -443,7 +599,7 @@
     -   OLD_DIR_NAME: gr_xxx_0
         NEW_DIR_NAME: itchy_the_mouse
         files:
-        -   Name: itchy
+        -   CharacterName: itchy
             Level: grand theft itchy
             file_patterns:
                 file_pattern: d_itgr_xxx_#######.exa.snu
@@ -453,13 +609,13 @@
     -   OLD_DIR_NAME: gs_xxx_0
         NEW_DIR_NAME: Street_Fighter_Legs
         files:
-        -   Name: Street Fighter
+        -   CharacterName: Street Fighter
             Level: Enter the Cheatrix
             file_patterns:
                 file_pattern: d_gegs_xxx_#######.exa.snu
                 file_regex: ^d_gegs_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_gegs_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Legs
+        -   CharacterName: Legs
             Level: unknown
             Note: Springfield Mafia Member
             file_patterns:
@@ -470,7 +626,7 @@
     -   OLD_DIR_NAME: gy_xxx_0
         NEW_DIR_NAME: comic_book_guy
         files:
-        -   Name: Comic Book Guy
+        -   CharacterName: Comic Book Guy
             Level: world + Mob Rules
             Note: seems like all of his generic lines
             file_patterns:
@@ -481,7 +637,7 @@
     -   OLD_DIR_NAME: hr_xxx_0
         NEW_DIR_NAME: white_chocolate_rabbit
         files:
-        -   Name: White Chocolate Rabbit
+        -   CharacterName: White Chocolate Rabbit
             Level: Land_Of_Chocolate
             file_patterns:
                 file_pattern: d_wchr_xxx_#######.exa.snu
@@ -491,7 +647,7 @@
     -   OLD_DIR_NAME: ht_xxx_0
         NEW_DIR_NAME: kirk_van_houten
         files:
-        -   Name: Kirk Van Houten
+        -   CharacterName: Kirk Van Houten
             Level: world + Mob Rules
             Note: all generic
             file_patterns:
@@ -500,36 +656,36 @@
                 file_glob: d_kvht_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: ib_xxx_0
-        NEW_DIR_NAME: hibbert
+        NEW_DIR_NAME: Hibberts
         files:
-        -   Name: TBD
+        -   CharacterName: Bernice Hibbert
             Level: TBD
             file_patterns:
                 file_pattern: d_bhib_xxx_#######.exa.snu
                 file_regex: ^d_bhib_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_bhib_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Dr. Julius Hibbert
+            Level: World + Mob Rules
             file_patterns:
                 file_pattern: d_jhib_xxx_#######.exa.snu
                 file_regex: ^d_jhib_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_jhib_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: id_xxx_0
-        NEW_DIR_NAME: TBD
+        NEW_DIR_NAME: Zoidberg
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Dr. Zoidberg
+            Level: Game Over
             file_patterns:
                 file_pattern: d_zoid_xxx_#######.exa.snu
                 file_regex: ^d_zoid_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_zoid_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: ie_xxx_0
-        NEW_DIR_NAME: eddie
+        NEW_DIR_NAME: eddie_cop
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: eddie (Cop)
+            Level: World + Mob Rules
             file_patterns:
                 file_pattern: d_edie_xxx_#######.exa.snu
                 file_regex: ^d_edie_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -538,22 +694,22 @@
     -   OLD_DIR_NAME: ig_xxx_0
         NEW_DIR_NAME: wiggum
         files:
-        -   Name: Clancy Wiggum
-            Level: MobRules
+        -   CharacterName: Clancy Wiggum
+            Level: World + Mob Rules
             Note: 77 voice from wiggum during MobRules
             file_patterns:
                 file_pattern: d_cwig_xxx_#######.exa.snu
                 file_regex: ^d_cwig_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_cwig_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Ralph Wiggum
-            Level: MobRules
+        -   CharacterName: Ralph Wiggum
+            Level: World + Mob Rules
             Note: 126 voice from Ralph during MobRules
             file_patterns:
                 file_pattern: d_rwig_xxx_#######.exa.snu
                 file_regex: ^d_rwig_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_rwig_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Sarah Wiggum
-            Level: unknown
+        -   CharacterName: Sarah Wiggum
+            Level: World? + Mob Rules?
             Note: 25 voice from Sarah all just saying 'clancy' in different tones
             file_patterns:
                 file_pattern: d_swig_xxx_#######.exa.snu
@@ -563,14 +719,14 @@
     -   OLD_DIR_NAME: in_xxx_0
         NEW_DIR_NAME: frink_skinner
         files:
-        -   Name: Professor Jonathan Frink
-            Level: World?
+        -   CharacterName: Professor Jonathan Frink
+            Level: World + Mob Rules + Game Hub + Enter the Cheatrix
             file_patterns:
                 file_pattern: d_frin_xxx_#######.exa.snu
                 file_regex: ^d_frin_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_frin_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: Seymour Skinner
-            Level: World?
+        -   CharacterName: Seymour Skinner
+            Level: World + Mob Rules
             file_patterns:
                 file_pattern: d_skin_xxx_#######.exa.snu
                 file_regex: ^d_skin_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -579,7 +735,7 @@
     -   OLD_DIR_NAME: is_xxx_0
         NEW_DIR_NAME: lewis
         files:
-        -   Name: TBD
+        -   CharacterName: lewis clark
             Level: TBD
             file_patterns:
                 file_pattern: d_lwis_xxx_#######.exa.snu
@@ -589,14 +745,15 @@
     -   OLD_DIR_NAME: iv_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
+            Note: two lines, not a character, some kind of disembodied announcer, saying 'fire in the hole' and 'cover your ears', likely from medal_of_homer
             file_patterns:
                 file_pattern: d_dciv_xxx_#######.exa.snu
                 file_regex: ^d_dciv_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_dciv_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Dr. Nick Riviera
+            Level: World
             file_patterns:
                 file_pattern: d_nriv_xxx_#######.exa.snu
                 file_regex: ^d_nriv_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -605,43 +762,45 @@
     -   OLD_DIR_NAME: kn_xxx_0
         NEW_DIR_NAME: agnes_skinner
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Agnes Skinner
+            Level: World
             file_patterns:
                 file_pattern: d_askn_xxx_#######.exa.snu
                 file_regex: ^d_askn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_askn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: l1_xxx_0
-        NEW_DIR_NAME: TBD
+        NEW_DIR_NAME: diorama_voice1
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: unknown
+            Level: Bartman Begins
+            Note: single voice line for diorama "go on get, we dont like yours kind"
             file_patterns:
                 file_pattern: d_dyl1_xxx_#######.exa.snu
                 file_regex: ^d_dyl1_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_dyl1_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: l2_xxx_0
-        NEW_DIR_NAME: TBD
+        NEW_DIR_NAME: diorama_voice2
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: unknown
+            Level: Bartman Begins
+            Note: single voice line for diorama "get off my dadgum diorama injun's"
             file_patterns:
                 file_pattern: d_dyl2_xxx_#######.exa.snu
                 file_regex: ^d_dyl2_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_dyl2_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: lf_xxx_0
-        NEW_DIR_NAME: dolph_rainer_wolfcastle
+        NEW_DIR_NAME: Dolph_Wolfcastle
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Dolph Starbeam
+            Level: World + Bartman Begins
             file_patterns:
                 file_pattern: d_dolf_xxx_#######.exa.snu
                 file_regex: ^d_dolf_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_dolf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: Rainer Wolfcastle
             Level: TBD
             file_patterns:
                 file_pattern: d_rwlf_xxx_#######.exa.snu
@@ -649,10 +808,11 @@
                 file_glob: d_rwlf_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: lg_xxx_0
-        NEW_DIR_NAME: dolph
+        NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
+            Note: 11 non human lines, just short animal noises, very similar to the ones from ls_xxx_0
             file_patterns:
                 file_pattern: d_dolg_xxx_#######.exa.snu
                 file_regex: ^d_dolg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -661,8 +821,8 @@
     -   OLD_DIR_NAME: li_xxx_0
         NEW_DIR_NAME: groundskeeper_willie
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: TBD
+            Level: World + Around the World in 80 Bytes
             file_patterns:
                 file_pattern: d_wili_xxx_#######.exa.snu
                 file_regex: ^d_wili_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -671,7 +831,7 @@
     -   OLD_DIR_NAME: lk_xxx_0
         NEW_DIR_NAME: dolph
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_dolk_xxx_#######.exa.snu
@@ -681,7 +841,7 @@
     -   OLD_DIR_NAME: ll_xxx_0
         NEW_DIR_NAME: groundskeeper_willie
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_will_xxx_#######.exa.snu
@@ -691,14 +851,15 @@
     -   OLD_DIR_NAME: ls_xxx_0
         NEW_DIR_NAME: dolph_nelson
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
+            Note: non character, sounds like short animal noises?
             file_patterns:
                 file_pattern: d_dols_xxx_#######.exa.snu
                 file_regex: ^d_dols_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_dols_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Nelson Muntz
+            Level: World + Mob Rules
             file_patterns:
                 file_pattern: d_nels_xxx_#######.exa.snu
                 file_regex: ^d_nels_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -707,7 +868,7 @@
     -   OLD_DIR_NAME: lx_xxx_0
         NEW_DIR_NAME: gil_gunderson
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_gilx_xxx_#######.exa.snu
@@ -717,7 +878,7 @@
     -   OLD_DIR_NAME: m8_xxx_0
         NEW_DIR_NAME: homer_simpson
         files:
-        -   Name: 8-bit Homer
+        -   CharacterName: 8-bit Homer
             Level: TBD
             file_patterns:
                 file_pattern: d_hom8_xxx_#######.exa.snu
@@ -725,16 +886,16 @@
                 file_glob: d_hom8_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: ma_xxx_0
-        NEW_DIR_NAME: TBD
+        NEW_DIR_NAME: MuseumVoice_Selma
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Museum Voice
+            Level: bartman begins
             file_patterns:
                 file_pattern: d_mvma_xxx_#######.exa.snu
                 file_regex: ^d_mvma_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_mvma_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Selma Bouvier
+            Level: World + Mob Rules
             file_patterns:
                 file_pattern: d_slma_xxx_#######.exa.snu
                 file_regex: ^d_slma_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -743,7 +904,7 @@
     -   OLD_DIR_NAME: mb_xxx_0
         NEW_DIR_NAME: bumblebee_man
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_bumb_xxx_#######.exa.snu
@@ -753,7 +914,7 @@
     -   OLD_DIR_NAME: md_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_sumd_xxx_#######.exa.snu
@@ -763,7 +924,7 @@
     -   OLD_DIR_NAME: mi_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_sumi_xxx_#######.exa.snu
@@ -773,7 +934,7 @@
     -   OLD_DIR_NAME: ml_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_suml_xxx_#######.exa.snu
@@ -783,19 +944,19 @@
     -   OLD_DIR_NAME: mn_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_kbmn_xxx_#######.exa.snu
                 file_regex: ^d_kbmn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_kbmn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_mlmn_xxx_#######.exa.snu
                 file_regex: ^d_mlmn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_mlmn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_olmn_xxx_#######.exa.snu
@@ -805,7 +966,7 @@
     -   OLD_DIR_NAME: mp_xxx_0
         NEW_DIR_NAME: grampa_simpson
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_grmp_xxx_#######.exa.snu
@@ -815,7 +976,7 @@
     -   OLD_DIR_NAME: mr_xxx_0
         NEW_DIR_NAME: homer_simpson
         files:
-        -   Name: Homer Simpsons
+        -   CharacterName: Homer Simpsons
             Level: Global
             Note: contains 668 voice lines for Homer
             file_patterns:
@@ -826,7 +987,7 @@
     -   OLD_DIR_NAME: ms_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_sums_xxx_#######.exa.snu
@@ -836,7 +997,7 @@
     -   OLD_DIR_NAME: mx_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_samx_xxx_#######.exa.snu
@@ -846,7 +1007,7 @@
     -   OLD_DIR_NAME: my_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_pemy_xxx_#######.exa.snu
@@ -856,7 +1017,7 @@
     -   OLD_DIR_NAME: na_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_eana_xxx_#######.exa.snu
@@ -866,19 +1027,19 @@
     -   OLD_DIR_NAME: nd_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_bend_xxx_#######.exa.snu
                 file_regex: ^d_bend_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_bend_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_jsnd_xxx_#######.exa.snu
                 file_regex: ^d_jsnd_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_jsnd_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_wend_xxx_#######.exa.snu
@@ -888,7 +1049,7 @@
     -   OLD_DIR_NAME: nf_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_benf_xxx_#######.exa.snu
@@ -898,7 +1059,7 @@
     -   OLD_DIR_NAME: nj_xxx_0
         NEW_DIR_NAME: manjula
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_manj_xxx_#######.exa.snu
@@ -908,19 +1069,19 @@
     -   OLD_DIR_NAME: ny_xxx_0
         NEW_DIR_NAME: janey_kearney_lenny
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_jany_xxx_#######.exa.snu
                 file_regex: ^d_jany_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_jany_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_krny_xxx_#######.exa.snu
                 file_regex: ^d_krny_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_krny_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_lnny_xxx_#######.exa.snu
@@ -930,7 +1091,7 @@
     -   OLD_DIR_NAME: om_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_drom_xxx_#######.exa.snu
@@ -940,7 +1101,7 @@
     -   OLD_DIR_NAME: on_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_gron_xxx_#######.exa.snu
@@ -950,7 +1111,7 @@
     -   OLD_DIR_NAME: oy_xxx_0
         NEW_DIR_NAME: reverend_lovejoy
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_ljoy_xxx_#######.exa.snu
@@ -960,7 +1121,7 @@
     -   OLD_DIR_NAME: pa_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_frpa_xxx_#######.exa.snu
@@ -970,7 +1131,7 @@
     -   OLD_DIR_NAME: pb_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_gspb_xxx_#######.exa.snu
@@ -980,7 +1141,7 @@
     -   OLD_DIR_NAME: pg_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_gspg_xxx_#######.exa.snu
@@ -990,7 +1151,7 @@
     -   OLD_DIR_NAME: r8_xxx_0
         NEW_DIR_NAME: marge_simpson
         files:
-        -   Name: 8-bit Marge
+        -   CharacterName: 8-bit Marge
             Level: TBD
             file_patterns:
                 file_pattern: d_mar8_xxx_#######.exa.snu
@@ -1000,7 +1161,7 @@
     -   OLD_DIR_NAME: ra_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_sgra_xxx_#######.exa.snu
@@ -1010,7 +1171,7 @@
     -   OLD_DIR_NAME: rc_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_morc_xxx_#######.exa.snu
@@ -1020,13 +1181,13 @@
     -   OLD_DIR_NAME: rg_xxx_0
         NEW_DIR_NAME: marge_simpson_scratchy_the_cat
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_marg_xxx_#######.exa.snu
                 file_regex: ^d_marg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_marg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_scrg_xxx_#######.exa.snu
@@ -1036,7 +1197,7 @@
     -   OLD_DIR_NAME: rh_xxx_0
         NEW_DIR_NAME: scratchy_the_cat
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_scrh_xxx_#######.exa.snu
@@ -1046,13 +1207,13 @@
     -   OLD_DIR_NAME: ri_xxx_0
         NEW_DIR_NAME: sherri_terri
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_shri_xxx_#######.exa.snu
                 file_regex: ^d_shri_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_shri_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_teri_xxx_#######.exa.snu
@@ -1062,7 +1223,7 @@
     -   OLD_DIR_NAME: rk_xxx_0
         NEW_DIR_NAME: mr_sparkle
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_sprk_xxx_#######.exa.snu
@@ -1072,7 +1233,7 @@
     -   OLD_DIR_NAME: rl_xxx_0
         NEW_DIR_NAME: carl_carlson
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_carl_xxx_#######.exa.snu
@@ -1082,19 +1243,19 @@
     -   OLD_DIR_NAME: rn_xxx_0
         NEW_DIR_NAME: barney_mr_burns_martin_prince
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_barn_xxx_#######.exa.snu
                 file_regex: ^d_barn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_barn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_burn_xxx_#######.exa.snu
                 file_regex: ^d_burn_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_burn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_mprn_xxx_#######.exa.snu
@@ -1104,19 +1265,19 @@
     -   OLD_DIR_NAME: rt_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_bart_xxx_#######.exa.snu
                 file_regex: ^d_bart_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_bart_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_mart_xxx_#######.exa.snu
                 file_regex: ^d_mart_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_mart_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_turt_xxx_#######.exa.snu
@@ -1126,7 +1287,7 @@
     -   OLD_DIR_NAME: ry_xxx_0
         NEW_DIR_NAME: larry
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_lary_xxx_#######.exa.snu
@@ -1136,7 +1297,7 @@
     -   OLD_DIR_NAME: s8_xxx_0
         NEW_DIR_NAME: lisa_simpson
         files:
-        -   Name: 8-bit Lisa
+        -   CharacterName: 8-bit Lisa
             Level: TBD
             file_patterns:
                 file_pattern: d_lis8_xxx_#######.exa.snu
@@ -1146,7 +1307,7 @@
     -   OLD_DIR_NAME: sa_xxx_0
         NEW_DIR_NAME: lisa_simpson
         files:
-        -   Name: Lisa Simpson
+        -   CharacterName: Lisa Simpson
             Level: TBD
             file_patterns:
                 file_pattern: d_lisa_xxx_#######.exa.snu
@@ -1156,7 +1317,7 @@
     -   OLD_DIR_NAME: sd_xxx_0
         NEW_DIR_NAME: milhouse_van_houten
         files:
-        -   Name: bshffg Milhouse
+        -   CharacterName: bshffg Milhouse
             Level: Big Super Happy Fun Fun Game
             file_patterns:
                 file_pattern: d_mhsd_xxx_#######.exa.snu
@@ -1166,7 +1327,7 @@
     -   OLD_DIR_NAME: se_xxx_0
         NEW_DIR_NAME: milhouse_van_houten
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_mhse_xxx_#######.exa.snu
@@ -1176,7 +1337,7 @@
     -   OLD_DIR_NAME: sg_xxx_0
         NEW_DIR_NAME: wiseguy
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_wisg_xxx_#######.exa.snu
@@ -1184,16 +1345,16 @@
                 file_glob: d_wisg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: sm_xxx_0
-        NEW_DIR_NAME: krusty_the_clown_maggie_simpson
+        NEW_DIR_NAME: mini_krusty_sideshow_mel
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: evil mini krusty
+            Level: The Colossal Donut
             file_patterns:
                 file_pattern: d_krsm_xxx_#######.exa.snu
                 file_regex: ^d_krsm_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_krsm_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Museum Guard Sideshow Mel
+            Level: Bartman Begins
             file_patterns:
                 file_pattern: d_mgsm_xxx_#######.exa.snu
                 file_regex: ^d_mgsm_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1202,7 +1363,7 @@
     -   OLD_DIR_NAME: sp_xxx_0
         NEW_DIR_NAME: jasper_beardly
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_jasp_xxx_#######.exa.snu
@@ -1210,10 +1371,10 @@
                 file_glob: d_jasp_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: t8_xxx_0
-        NEW_DIR_NAME: bart_simpson
+        NEW_DIR_NAME: 8bit-bart_simpson
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Bart Simpson (8-bit)
+            Level: Game Hub
             file_patterns:
                 file_pattern: d_brt8_xxx_#######.exa.snu
                 file_regex: ^d_brt8_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1222,7 +1383,7 @@
     -   OLD_DIR_NAME: te_xxx_0
         NEW_DIR_NAME: TBD
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_gate_xxx_#######.exa.snu
@@ -1232,7 +1393,7 @@
     -   OLD_DIR_NAME: th_xxx_0
         NEW_DIR_NAME: smithers
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_smth_xxx_#######.exa.snu
@@ -1242,7 +1403,7 @@
     -   OLD_DIR_NAME: to_xxx_0
         NEW_DIR_NAME: otto_mann
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_otto_xxx_#######.exa.snu
@@ -1252,7 +1413,7 @@
     -   OLD_DIR_NAME: ty_xxx_0
         NEW_DIR_NAME: patty_bouvier
         files:
-        -   Name: TBD
+        -   CharacterName: TBD
             Level: TBD
             file_patterns:
                 file_pattern: d_ptty_xxx_#######.exa.snu
@@ -1262,18 +1423,18 @@
     -   OLD_DIR_NAME: ui_xxx_0
         NEW_DIR_NAME: louie
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Louie
+            Level: World
             file_patterns:
                 file_pattern: d_loui_xxx_#######.exa.snu
                 file_regex: ^d_loui_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_loui_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: um_xxx_0
-        NEW_DIR_NAME: TBD
+        NEW_DIR_NAME: mario
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Mario (totally generic plumber)
+            Level: Enter The Cheatrix
             file_patterns:
                 file_pattern: d_plum_xxx_#######.exa.snu
                 file_regex: ^d_plum_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1282,8 +1443,8 @@
     -   OLD_DIR_NAME: us_xxx_0
         NEW_DIR_NAME: krusty_the_clown
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Krusty the Clown
+            Level: World + Mob Rules
             file_patterns:
                 file_pattern: d_krus_xxx_#######.exa.snu
                 file_regex: ^d_krus_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1292,34 +1453,34 @@
     -   OLD_DIR_NAME: ux_xxx_0
         NEW_DIR_NAME: apu_lou
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Apu Nahasapeemapetilon
+            Level: World + Mob Rules
             file_patterns:
                 file_pattern: d_apux_xxx_#######.exa.snu
                 file_regex: ^d_apux_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_apux_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Louie
+            Level: World + Mob Rules
             file_patterns:
                 file_pattern: d_loux_xxx_#######.exa.snu
                 file_regex: ^d_loux_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_loux_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: wg_xxx_0
-        NEW_DIR_NAME: TBD
+        NEW_DIR_NAME: Raphael_Museum_Guard
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Raphael Museum Guard
+            Level: Bartman_Begins
             file_patterns:
                 file_pattern: d_mgwg_xxx_#######.exa.snu
                 file_regex: ^d_mgwg_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_mgwg_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: wm_xxx_0
-        NEW_DIR_NAME: TBD
+        NEW_DIR_NAME: generic_5
         files:
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: Surendering French Woman
+            Level: Medal of Homer
             file_patterns:
                 file_pattern: d_frwm_xxx_#######.exa.snu
                 file_regex: ^d_frwm_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1328,20 +1489,28 @@
     -   OLD_DIR_NAME: yr_xxx_0
         NEW_DIR_NAME: blue_haired_lawyer_mayor_quimby
         files:
-        -   Name: TBD
+        -   CharacterName: Blue-haired Lawyer
             Level: TBD
+            Note: likely the lawyer enemy in Game Over
             file_patterns:
                 file_pattern: d_lwyr_xxx_#######.exa.snu
                 file_regex: ^d_lwyr_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_lwyr_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   Name: TBD
-            Level: TBD
+        -   CharacterName: TBD
+            Level: World + Mob Rules
+            Note: world encounter lines and some cutscene lines, some Mob Rules specific lines
             file_patterns:
                 file_pattern: d_mayr_xxx_#######.exa.snu
                 file_regex: ^d_mayr_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_mayr_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
-    # Cutscenes audio, in game cutscenes
+
+#####
+#
+#    region Cutscenes audio
+#
+#####
+# Cutscenes audio, in game cutscenes
 -   EN-CUTSCENE:
     -   OLD_DIR_NAME: igc01.ex
         NEW_DIR_NAME: TBD
@@ -1602,16 +1771,6 @@
                 file_pattern: bsh_igc_14.exa.snu
                 file_regex: ^bsh_igc_14\.exa\.snu$
                 file_glob: bsh_igc_14.exa.snu
-
-
-
-
-
-
-
-
-
-
 
 #####
 # Source: EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT-EU_Full-audio_reorg-isRenamed\A1_Audio\Global
