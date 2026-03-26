@@ -879,7 +879,7 @@
         NEW_DIR_NAME: homer_simpson
         files:
         -   CharacterName: 8-bit Homer
-            Level: TBD
+            Level: Game Hub
             file_patterns:
                 file_pattern: d_hom8_xxx_#######.exa.snu
                 file_regex: ^d_hom8_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1363,8 +1363,8 @@
     -   OLD_DIR_NAME: sp_xxx_0
         NEW_DIR_NAME: jasper_beardly
         files:
-        -   CharacterName: TBD
-            Level: TBD
+        -   CharacterName: jasper beardly
+            Level: World
             file_patterns:
                 file_pattern: d_jasp_xxx_#######.exa.snu
                 file_regex: ^d_jasp_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1381,20 +1381,21 @@
                 file_glob: d_brt8_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: te_xxx_0
-        NEW_DIR_NAME: TBD
+        NEW_DIR_NAME: GameHub_Gate_Voice
         files:
-        -   CharacterName: TBD
-            Level: TBD
+        -   CharacterName: Game Hub Gate Voice
+            Level: Game Hub
+            Note: The Gate to the 'creators mansions' in game hub has a voice indicating key card requirements to enter.
             file_patterns:
                 file_pattern: d_gate_xxx_#######.exa.snu
                 file_regex: ^d_gate_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_gate_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: th_xxx_0
-        NEW_DIR_NAME: smithers
+        NEW_DIR_NAME: Waylon_Smithers_Jr
         files:
-        -   CharacterName: TBD
-            Level: TBD
+        -   CharacterName: Waylon Smithers, Jr
+            Level: World + Tree Hugger
             file_patterns:
                 file_pattern: d_smth_xxx_#######.exa.snu
                 file_regex: ^d_smth_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1403,8 +1404,8 @@
     -   OLD_DIR_NAME: to_xxx_0
         NEW_DIR_NAME: otto_mann
         files:
-        -   CharacterName: TBD
-            Level: TBD
+        -   CharacterName: Otto Mann
+            Level: World
             file_patterns:
                 file_pattern: d_otto_xxx_#######.exa.snu
                 file_regex: ^d_otto_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1413,8 +1414,8 @@
     -   OLD_DIR_NAME: ty_xxx_0
         NEW_DIR_NAME: patty_bouvier
         files:
-        -   CharacterName: TBD
-            Level: TBD
+        -   CharacterName: Patty Bouvier
+            Level: World + Mob Rules
             file_patterns:
                 file_pattern: d_ptty_xxx_#######.exa.snu
                 file_regex: ^d_ptty_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -1496,7 +1497,7 @@
                 file_pattern: d_lwyr_xxx_#######.exa.snu
                 file_regex: ^d_lwyr_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_lwyr_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
-        -   CharacterName: TBD
+        -   CharacterName: Mayor Quimby
             Level: World + Mob Rules
             Note: world encounter lines and some cutscene lines, some Mob Rules specific lines
             file_patterns:
