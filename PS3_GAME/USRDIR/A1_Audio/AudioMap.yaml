@@ -1848,7 +1848,6 @@
 
 
 -   Global-Sound:
-
     -   OLD_DIR_NAME: amb_ext_
         NEW_DIR_NAME: ambiant_exterior_springfield_hub
         LevelNum: 1.1
