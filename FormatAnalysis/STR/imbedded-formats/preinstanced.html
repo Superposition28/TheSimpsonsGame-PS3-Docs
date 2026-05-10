@@ -50,6 +50,7 @@
         </ul>
 
         <h2>Identification Signatures</h2>
+        <p><strong>Research references:</strong> keep this page aligned with <code>reversing/preinstanced_viewer.py</code> and <code>reversing/docs/FormatAnalysis/original.md-docs/preinstanced/test/check12.py</code>. The viewer is the live inspection tool; <code>check12.py</code> holds conservative validation patterns discovered during early reverse engineering and is useful for confirming whether a new sample still fits the current header family.</p>
 
         <h3>Texture Header (3 Known Variants)</h3>
         <p>These 16-byte signatures precede a texture name string.</p>
@@ -58,7 +59,7 @@
             <li><code>02 11 01 00 02 00 00 00 18 00 00 00 2D 00 02 1C</code> (Type B)</li>
             <li><code>02 11 01 00 02 00 00 00 10 00 00 00 2D 00 02 1C</code> (Type C)</li>
         </ul>
-        <p><strong>Interpretation:</strong> All three variants have the same format. The differences at offsets 8-11 (0x14, 0x18, 0x10) may indicate offset or size variants, but all point to a texture name immediately following.</p>
+        <p><strong>Interpretation:</strong> The 4-byte field at offsets 8-11 is not limited to the three values above. A sample captured by the viewer shows <code>0C 00 00 00</code> before the texture name <code>play_sound</code>, so this field should be treated as a variable length/size indicator rather than a fixed variant list. Observed values now include <code>0x0C</code>, <code>0x10</code>, <code>0x14</code>, and <code>0x18</code>.</p>
 
         <h3>Texture List Delimiter (TLFD)</h3>
         <p><code>54 4C 46 44</code> (ASCII "TLFD")</p>
@@ -301,13 +302,13 @@
 function find_header_end(mesh_chunk_start):
     // We know the header contains offset/size fields at variable positions
     // Scan forward from chunk start until we find non-sequential data
-    
+
     version = read_u32_be(mesh_chunk_start + 0x00)
     data_table_count = read_u32_be(mesh_chunk_start + 0x04)
-    
+
     // Skip data table
     header_pos = mesh_chunk_start + 0x08 + (data_table_count * 8)
-    
+
     // Read vertex info
     vert_info_count = read_u32_be(header_pos)
     vert_chunk_size = read_u32_be(header_pos + 0x04)
@@ -315,11 +316,11 @@ function find_header_end(mesh_chunk_start):
     vert_start = read_u32_be(header_pos + 0x0C)
     face_start = read_u32_be(header_pos + 0x10)
     face_data_byte_len = read_u32_be(header_pos + 0x14)
-    
+
     // The actual mesh data starts ~32-48 bytes after vertex info begins
     // Conservative approach: skip to known offset
     header_end = header_pos + 0x24  // Typical header size after vertex info
-    
+
     return header_end
         </code></pre>
 
@@ -413,7 +414,7 @@ function find_header_end(mesh_chunk_start):
 function build_triangle_list(indices):
     triangles = []
     current_strip = []
-    
+
     for each index in indices:
         if index == 0xFFFF:  // Strip cut
             if current_strip.length >= 3:
@@ -435,7 +436,7 @@ function build_triangle_list(indices):
             current_strip = []
         else:
             current_strip.append(index)
-    
+
     return triangles
         </code></pre>
 
@@ -446,44 +447,44 @@ function parse_preinstanced(file_data):
     meshes = []
     pending_textures = []
     current_texture_snapshot = null
-    
+
     pos = 0
     while pos < len(file_data):
         // Check for Texture Header (3 variants)
         if match_pattern(file_data, pos, "02 11 01 00 02 00 00 00 14 00 00 00 2D 00 02 1C") or
            match_pattern(file_data, pos, "02 11 01 00 02 00 00 00 18 00 00 00 2D 00 02 1C") or
            match_pattern(file_data, pos, "02 11 01 00 02 00 00 00 10 00 00 00 2D 00 02 1C"):
-            
+
             pos += 16  // Skip signature
-            
+
             // Extract texture name
             name_start = pos
             while file_data[pos] != 0x00 and pos < len(file_data):
                 pos += 1
-            
+
             name = sanitize(file_data[name_start:pos])
             pending_textures.append(name)
             pos += 1  // Skip null terminator
-        
+
         // Check for TLFD marker
         else if match_pattern(file_data, pos, "54 4C 46 44"):
             current_texture_snapshot = copy(pending_textures)
             pending_textures = []
             pos += 4
-        
+
         // Check for EOF marker
         else if match_pattern(file_data, pos, "16 EA 00 00 05 00 00 00 2D 00 02 1C 01 00 00 00 00"):
             break  // End of valid file
-        
+
         // Check for Mesh Chunk
         else if match_pattern(file_data, pos, "33 EA 00 00 ?? ?? ?? ?? 2D 00 02 1C"):
             mesh_start = pos
             pos += 16  // Skip signature
-            
+
             // Parse header
             version = read_u32_be(pos)
             data_table_count = read_u32_be(pos + 0x04)
-            
+
             header_offset = pos + 0x08 + (data_table_count * 8)
             vert_info_count = read_u32_be(header_offset)
             vert_chunk_size = read_u32_be(header_offset + 0x04)
@@ -493,54 +494,54 @@ function parse_preinstanced(file_data):
             face_data_byte_len = read_u32_be(header_offset + 0x14)
             face_data_off_le = read_u32_le(header_offset + 0x18)
             mesh_data_size_le = read_u32_le(header_offset + 0x1C)
-            
+
             // Extract vertex data
             vertex_count = vert_chunk_total / vert_chunk_size
             vert_data_offset = mesh_start + face_data_off_le + vert_start
             vertices = []
-            
+
             for v = 0 to vertex_count - 1:
                 v_offset = vert_data_offset + (v * vert_chunk_size)
-                
+
                 position = read_float3_be(v_offset + 0x00)
                 tex0_u = read_float_be(v_offset + 0x14)
                 tex0_v = 1.0 - read_float_be(v_offset + 0x18)  // Flip V
                 tex1_u = read_float_be(v_offset + 0x1C)
                 tex1_v = 1.0 - read_float_be(v_offset + 0x20)  // Flip V
-                
+
                 vertices.append({
                     position: position,
                     uv0: {u: tex0_u, v: tex0_v},
                     uv1: {u: tex1_u, v: tex1_v}
                 })
-            
+
             // Extract face/index data
             index_count = face_data_byte_len / 2
             face_data_offset = mesh_start + face_data_off_le + face_start
             indices = []
-            
+
             for i = 0 to index_count - 1:
                 index = read_u16_be(face_data_offset + (i * 2))
                 if index != 0xFFFF:
                     indices.append(index)
-            
+
             // Convert triangle strips
             triangles = build_triangle_list(indices)
-            
+
             mesh = {
                 vertices: vertices,
                 triangles: triangles,
                 textures: current_texture_snapshot
             }
-            
+
             meshes.append(mesh)
-            
+
             // Skip to next chunk (rough estimate)
             pos = mesh_start + mesh_data_size_le + 32
-        
+
         else:
             pos += 1  // Advance byte-by-byte until next signature
-    
+
     return meshes
         </code></pre>
 
@@ -564,6 +565,16 @@ function parse_preinstanced(file_data):
             <li><strong>Full Vertex Stride:</strong> Only position and two UV pairs are documented. Additional fields (normals, vertex colors, bone info) exist but layout varies.</li>
             <li><strong>Mipmap Handling:</strong> Not addressed in this format. Assume single resolution.</li>
             <li><strong>Bone/Skinning Data:</strong> May be embedded in the "unknown" vertex stride bytes. Not extracted by current parsers.</li>
+            <li><strong>Validation anchors:</strong> <code>check12.py</code> contains long-form header patterns for the SOF main, second, and third headers. These are useful for sanity-checking file families, but they should be treated as validation anchors rather than canonical field definitions.</li>
+            <li><strong>Shared section markers:</strong> The repeated family <code>13/15/16/33 EA 00 00 ... 2D 00 02 1C</code> is useful when tracing section boundaries. The viewer highlights these as shared/unknown section headers until the exact semantics are confirmed.</li>
+        </ul>
+
+        <h2>Research Log Notes</h2>
+
+        <ul>
+            <li><code>reversing/preinstanced_viewer.py</code> now decodes the main file header, texture headers, TLFD markers, mesh anchors, submesh blocks, vertex info, vertex buffers, and face buffers inline.</li>
+            <li><code>reversing/docs/FormatAnalysis/original.md-docs/preinstanced/test/check12.py</code> is the best place to keep long pattern families in sync while new samples are being validated.</li>
+            <li>If a new sample introduces another texture-header size or a new shared section ID, update both the viewer and this document together so the live inspection path and the written analysis do not diverge.</li>
         </ul>
 
     </body>

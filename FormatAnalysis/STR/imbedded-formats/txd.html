@@ -92,6 +92,16 @@
             </tr>
         </tbody>
     </table>
+    <h2>Related Research Artifacts</h2>
+
+    <p>The TXD notes are maintained alongside the preinstanced research tools, because the texture names recovered from preinstanced files are resolved against this archive format.</p>
+
+    <ul>
+        <li><code>reversing/preinstanced_viewer.py</code> - live hex viewer for the preinstanced wrapper and embedded string blocks.</li>
+        <li><code>reversing/docs/FormatAnalysis/original.md-docs/preinstanced/test/check12.py</code> - validation script with early reverse-engineering pattern families, useful for confirming shared markers and header consistency.</li>
+    </ul>
+
+    <p><strong>Maintenance note:</strong> When new samples expose additional header variants, update both the HTML analysis and the validation script so the documented marker families stay in sync with actual files.</p>
 
     <h2>Texture Record Structure</h2>
 
@@ -433,6 +443,7 @@ function parse_txd(file_data) {
             pos = pixel_data_start + data_size
         } else {
             pos += 1
+                    <li>Whether the texture-header length field is strictly a string length, an allocation size, or a related offset indicator in every sample.</li>
         }
     }
     
