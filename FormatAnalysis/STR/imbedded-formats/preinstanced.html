@@ -40,6 +40,15 @@
             <li>Return meshes array with texture bindings</li>
         </ol>
 
+        <h3>Current Working Assumptions</h3>
+
+        <ul>
+            <li><strong>Submesh table 8-byte prefix:</strong> The repeated 8-byte value before each submesh offset is not a texture index. Latest dumps show it is stable across many files and looks more like a structural marker than a selector.</li>
+            <li><strong>Submesh header interpretation:</strong> The 12-byte block at <code>MeshChunkStart + SubmeshRelOffset</code> is not entirely unknown. Bytes 0-3 look like vertex/primitive flags, bytes 4-7 appear to be a bounding volume or frustum radius float, and bytes 8-11 behave like a zero-based material index.</li>
+            <li><strong>Texture ordering:</strong> Texture strings appear to be stored sequentially in pairs per material, so material 0 maps to strings 0 and 1, material 1 maps to strings 2 and 3, and so on.</li>
+            <li><strong>Mapping caveat:</strong> Texture assignment is still incomplete. Many meshes or materials are being assigned the wrong texture, so the pair-based mapping should be treated as the current best fit rather than final truth.</li>
+        </ul>
+
         <h2>Identification Signatures</h2>
 
         <h3>Texture Header (3 Known Variants)</h3>
@@ -208,20 +217,29 @@
             <tbody>
                 <tr>
                     <td>0x00</td>
-                    <td>8</td>
-                    <td>bytes[8]</td>
-                    <td>Unknown</td>
-                    <td>Skipped.</td>
+                    <td>4</td>
+                    <td>UInt32</td>
+                    <td>Vertex Format Flags</td>
+                    <td>Likely flags or primitive-state bits. Stable across the current samples, but not fully decoded yet.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>4</td>
+                    <td>Float32</td>
+                    <td>Bounding Volume / Frustum Radius</td>
+                    <td>Often parses as a plausible negative or positive float when read as big-endian. Likely culling or bounds metadata.</td>
                 </tr>
                 <tr>
                     <td>0x08</td>
                     <td>4</td>
                     <td>UInt32</td>
-                    <td>SubmeshRelOffset</td>
-                    <td>Offset to Sub-Mesh header (relative to <code>MeshChunkStart</code>).</td>
+                    <td>Material ID</td>
+                    <td>Zero-based material index used to select the texture pair for this submesh.</td>
                 </tr>
             </tbody>
         </table>
+
+        <p><strong>Provisional note:</strong> The current importer treats the material ID as a material ordinal, then resolves textures by using a stride of two through the texture string list.</p>
 
         <h3>Vertex Information Structure</h3>
 
@@ -540,7 +558,8 @@ function parse_preinstanced(file_data):
         <h2>Known Limitations & Unknowns</h2>
 
         <ul>
-            <li><strong>mDataTable:</strong> Purpose unclear. Most parsers skip it entirely.</li>
+            <li><strong>mDataTable:</strong> Latest dumps do not support the old texture/material ID hypothesis. It looks more like an offset/flag table, but the exact semantics are still unclear.</li>
+            <li><strong>Texture assignment:</strong> The pair-based texture mapping is still incomplete. Several meshes continue to bind to the wrong texture, so the current logic should be treated as a best-fit heuristic.</li>
             <li><strong>FaceDataOff / MeshDataSize:</strong> Exact semantics unclear. Used as offsets but specific meaning not documented in reverse-engineering.</li>
             <li><strong>Full Vertex Stride:</strong> Only position and two UV pairs are documented. Additional fields (normals, vertex colors, bone info) exist but layout varies.</li>
             <li><strong>Mipmap Handling:</strong> Not addressed in this format. Assume single resolution.</li>
