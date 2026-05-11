@@ -3,7 +3,7 @@
 
     <head>
         <meta charset="utf-8">
-        <link rel="stylesheet" href="../../style/main.css">
+        <link rel="stylesheet" href="../../../style/main.css">
     </head>
     <body style="padding: 1.5rem;padding-top: 2rem;">
         <h1>.STR Archive Structure (EA Stream File)</h1>
@@ -349,7 +349,7 @@
                 <ul>
                     <li>Read resource filename (null-terminated UTF-8 string)</li>
                     <li>Skip padding to align to next 4-byte boundary</li>
-                    <li>Read resource type identifier (can be any of: graph, lh2, meta.xml, lighttoc, dff, rws, txd, cec.ps3, dat, shk, tob, etc.)</li>
+                    <li>Read resource type identifier (can be any of: graph, lh2, meta.xml, lighttoc, dff, rws, txd, cec.ps3, dat, shk, etc.)</li>
                     <li>Skip metadata/flags as needed</li>
                     <li>Read remaining bytes until payload_size boundary as binary resource data</li>
                 </ul>

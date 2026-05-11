@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>Format Analysis</title>
+		<link rel="stylesheet" href="../../style/main.css">
+	</head>
+	<body style="padding: 1.5rem;padding-top: 2rem;">
+
+		<h1>Format Analysis</h1>
+		<p>Entry point for file format notes and reverse-engineering writeups.</p>
+
+		<h1>Root Files</h1>
+
+		<pre>
+		--- .BIN ---
+
+		Name Count
+		---- -----
+		.BIN     1
+
+		--- .LUA ---
+
+		Name Count
+		---- -----
+		.lua     3
+
+		--- .MUS ---
+
+		Name Count
+		---- -----
+		.mus    17
+
+		--- .SNU ---
+
+		Name     Count
+		----     -----
+		.exa.snu 29430
+
+		--- .STR ---
+
+		Name Count
+		---- -----
+		.str   550
+
+		--- .TXT ---
+
+		Name Count
+		---- -----
+		.txt     1
+
+		--- .VP6 ---
+
+		Name Count
+		---- -----
+		.vp6   172
+		</pre>
+
+		<ul>
+			<li><a href="./STR/imbedded-formats/.bin.html">.vfb ()</a></li>
+		</ul>
+
+		<h2>Archives</h2>
+		<ul>
+			<li><a href="./STR/str.html">.STR (EA Stream File)</a></li>
+		</ul>
+
+		<h2>Embedded Formats (STR Contents, when extracted with qbms extractor)</h2>
+
+		<pre>
+		--- .ALB ---
+
+		Name Count
+		---- -----
+		.alb    13
+
+		--- .AMB ---
+
+		Name Count
+		---- -----
+		.amb     1
+
+		--- .BSP ---
+
+		Name Count
+		---- -----
+		.bsp     2
+
+		--- .CTB ---
+
+		Name Count
+		---- -----
+		.ctb    13
+
+		--- .DAT ---
+
+		Name Count
+		---- -----
+		.dat    11
+
+		--- .GRAPH ---
+
+		Name   Count
+		----   -----
+		.graph    13
+
+		--- .IMB ---
+
+		Name Count
+		---- -----
+		.imb     2
+
+		--- .LH2 ---
+
+		Name    Count
+		----    -----
+		.LH2       14
+		.en.LH2     1
+		.es.LH2     1
+		.fr.LH2     1
+		.it.LH2     1
+		.ss.LH2     1
+
+		--- .MIB ---
+
+		Name Count
+		---- -----
+		.mib     3
+
+		--- .MSB ---
+
+		Name Count
+		---- -----
+		.msb     1
+
+		--- .PREINSTANCED ---
+
+		Name                  Count
+		----                  -----
+		.rws.PS3.preinstanced    91
+		.dff.PS3.preinstanced    42
+
+		--- .PS3 ---
+
+		Name     Count
+		----     -----
+		.hkt.PS3    35
+		.bnk.PS3    22
+		.rcb.PS3    19
+		.hko.PS3    15
+		.acs.PS3     6
+		.xml.PS3     4
+		.bbn.PS3     3
+		.tox.PS3     2
+
+		--- .RCM_B ---
+
+		Name   Count
+		----   -----
+		.rcm_b     4
+
+		--- .SBK ---
+
+		Name Count
+		---- -----
+		.sbk     4
+
+		--- .SMB ---
+
+		Name Count
+		---- -----
+		.smb     4
+
+		--- .TOC ---
+
+		Name Count
+		---- -----
+		.toc     1
+
+		--- .TXD ---
+
+		Name Count
+		---- -----
+		.txd    18
+
+		--- .UIX ---
+
+		Name Count
+		---- -----
+		.uix     1
+
+		--- .VFB ---
+
+		Name Count
+		---- -----
+		.vfb   352
+
+		--- .XML ---
+
+		Name      Count
+		----      -----
+		.meta.xml    65
+
+		--- NO EXTENSION ---
+
+		Name         Count
+		----         -----
+		No Extension     1
+		</pre>
+
+		<ul>
+			<li><a href="./STR/imbedded-formats/graph.html">.graph (Navigation Graph)</a></li>
+			<li><a href="./STR/imbedded-formats/lighttoc.html">.lighttoc (Lighting Table of Contents)</a></li>
+			<li><a href="./STR/imbedded-formats/cec.ps3.html">.cec.ps3 (Controller Event Config)</a></li>
+
+			<li><a href="./STR/imbedded-formats/shk.html">.shk (Shock Resource)</a></li>
+
+
+
+			
+			<li><a href="./STR/imbedded-formats/.vfb.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.preinstanced.html">.preinstanced (3d Models)</a>
+				<ul>
+					<li><a href="./STR/imbedded-formats/.dff.preinstanced.html">.dff.PS3 (Preinstanced Mesh)</a></li>
+					<li><a href="./STR/imbedded-formats/.rws.preinstanced.html">.rws.PS3 (Preinstanced Mesh)</a></li>
+				</ul>
+			</li>
+			<li><a href="./STR/imbedded-formats/ps3/index.html">*.ps3 files ()</a>
+				<ul>
+					<li><a href="./STR/imbedded-formats/.hkt.PS3.html">.hkt.PS3</a></li>
+					<li><a href="./STR/imbedded-formats/.bnk.PS3.html">.bnk.PS3</a></li>
+					<li><a href="./STR/imbedded-formats/.rcb.PS3.html">.rcb.PS3</a></li>
+					<li><a href="./STR/imbedded-formats/.hko.PS3.html">.hko.PS3</a></li>
+					<li><a href="./STR/imbedded-formats/.acs.PS3.html">.acs.PS3</a></li>
+					<li><a href="./STR/imbedded-formats/.xml.PS3.html">.xml.PS3</a></li>
+					<li><a href="./STR/imbedded-formats/.bbn.PS3.html">.bbn.PS3</a></li>
+					<li><a href="./STR/imbedded-formats/.tox.PS3.html">.tox.PS3</a></li>
+				</ul>
+			</li>
+			<li><a href="./STR/imbedded-formats/meta.xml.html">.meta.xml (MetaModel Binary)</a></li>
+			<li><a href="./STR/imbedded-formats/txd.html">.txd (Texture Dictionary)</a></li>
+			<li><a href="./STR/imbedded-formats/lh2/index.html">*.lh2 localization files</a>
+				<ul>
+					<li><a href="./STR/imbedded-formats/.LH2.html">.LH2 (Localization Header 2)</a></li>
+					<li><a href="./STR/imbedded-formats/.en.LH2.html">.en.LH2 (Localization Header 2, English)</a></li>
+					<li><a href="./STR/imbedded-formats/.es.LH2.html">.es.LH2 (Localization Header 2, Spanish)</a></li>
+					<li><a href="./STR/imbedded-formats/.fr.LH2.html">.fr.LH2 (Localization Header 2, French)</a></li>
+					<li><a href="./STR/imbedded-formats/.it.LH2.html">.it.LH2 (Localization Header 2, Italian)</a></li>
+					<li><a href="./STR/imbedded-formats/.ss.LH2.html">.ss.LH2 (Localization Header 2, Spanish Latin America)</a></li>
+				</ul>
+			</li>
+			<li><a href="./STR/imbedded-formats/.alb.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.ctb.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/simgroup.dat.html">.dat (SimGroup)</a></li>
+			<li><a href="./STR/imbedded-formats/.graph.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.rcm_b.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.sbk.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.bsp.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.smb.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.mib.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.amb.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.uix.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.(No Extension).html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.imb.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.toc.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.msb.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.inf.html">.vfb ()</a></li>
+
+			<li><a href="./STR/imbedded-formats/.aub.html">.vfb ()</a></li>
+			<li><a href="./STR/imbedded-formats/.txt.html">.vfb ()</a></li>
+
+
+		</ul>
+
+	</body>
+</html>
