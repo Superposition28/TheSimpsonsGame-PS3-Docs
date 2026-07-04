@@ -25,7 +25,7 @@
 
 		<p>the language folders contain .exa.snu audio files, each represent a charactors voice lines</p>
 
-		<p>the nature,contents,purpose of the mus files are unknown, but they are likely music tracks used in the game.</p>
+		<p>the mus files are music container archives used for background music. the current extraction path unpacks each mus into paired .snr metadata files and .sns stream payloads, which vgmstream can decode as EA-XAS audio.</p>
 		<ul>
 			<li>80b_mus.mus</li>
 			<li>bin.mus</li>
@@ -45,6 +45,180 @@
 			<li>sss_mus.mus</li>
 			<li>treetemp.mus</li>
 		</ul>
+
+		<p>the extracted pairs represent segmented music streams rather than a single flat audio file per mus archive.</p>
+
+		<h3>Music Folder Structure & Segment Extraction Statistics</h3>
+		<p>Extracted background music (located in the <code>A1_Audio/Music</code> directory structure) is packed into structured level segment directories. Statistics from a recursive scan using <code>ffprobe</code> outlines the files count and segment durations for each level:</p>
+		
+		<table border="1" cellpadding="5" style="border-collapse: collapse; margin-bottom: 2rem; width: 100%;">
+			<thead>
+				<tr style="background-color: #333; color: #fff;">
+					<th>Folder Name</th>
+					<th>Source Archive</th>
+					<th>Files Count</th>
+					<th>Shortest Segment</th>
+					<th>Longest Segment</th>
+					<th>Mean Segment</th>
+					<th>Median Segment</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><strong>A2_Menu</strong></td>
+					<td>menu_mus.mus</td>
+					<td>37</td>
+					<td>00:00:01.524</td>
+					<td>00:02:39.047</td>
+					<td>00:00:19.012</td>
+					<td>00:00:03.118</td>
+				</tr>
+				<tr>
+					<td><strong>L01_LandOfChocolate</strong></td>
+					<td>loc_mus.mus</td>
+					<td>50</td>
+					<td>00:00:01.819</td>
+					<td>00:01:29.256</td>
+					<td>00:00:08.340</td>
+					<td>00:00:02.815</td>
+				</tr>
+				<tr>
+					<td><strong>L02_BartmanBegins</strong></td>
+					<td>brt_mus.mus</td>
+					<td>137</td>
+					<td>00:00:00.632</td>
+					<td>00:00:16.923</td>
+					<td>00:00:03.679</td>
+					<td>00:00:03.475</td>
+				</tr>
+				<tr>
+					<td><strong>L03_HungryHungryHomer</strong></td>
+					<td>80b_mus.mus</td>
+					<td>174</td>
+					<td>00:00:01.889</td>
+					<td>00:02:03.419</td>
+					<td>00:00:03.045</td>
+					<td>00:00:02.113</td>
+				</tr>
+				<tr>
+					<td><strong>L04_TreeHugger</strong></td>
+					<td>treetemp.mus</td>
+					<td>242</td>
+					<td>00:00:00.582</td>
+					<td>00:00:26.827</td>
+					<td>00:00:03.557</td>
+					<td>00:00:03.432</td>
+				</tr>
+				<tr>
+					<td><strong>L05_MobRules</strong></td>
+					<td>mob_mus.mus</td>
+					<td>151</td>
+					<td>00:00:01.905</td>
+					<td>00:00:54.333</td>
+					<td>00:00:04.123</td>
+					<td>00:00:03.093</td>
+				</tr>
+				<tr>
+					<td><strong>L06_EnterTheCheatrix</strong></td>
+					<td>cheater.mus</td>
+					<td>72</td>
+					<td>00:00:01.305</td>
+					<td>00:00:36.688</td>
+					<td>00:00:07.082</td>
+					<td>00:00:06.163</td>
+				</tr>
+				<tr>
+					<td><strong>L09_Invasion</strong></td>
+					<td>sss_mus.mus</td>
+					<td>204</td>
+					<td>00:00:00.681</td>
+					<td>00:00:11.712</td>
+					<td>00:00:03.590</td>
+					<td>00:00:03.554</td>
+				</tr>
+				<tr>
+					<td><strong>L10_BargainBin</strong></td>
+					<td>bin.mus</td>
+					<td>63</td>
+					<td>00:00:00.193</td>
+					<td>00:00:06.409</td>
+					<td>00:00:02.541</td>
+					<td>00:00:02.800</td>
+				</tr>
+				<tr>
+					<td><strong>L11_NeverQuest</strong></td>
+					<td>nvq_mus.mus</td>
+					<td>249</td>
+					<td>00:00:02.156</td>
+					<td>00:00:29.361</td>
+					<td>00:00:04.408</td>
+					<td>00:00:04.064</td>
+				</tr>
+				<tr>
+					<td><strong>L12_GrandTheftScratchy</strong></td>
+					<td>gts_mus.mus</td>
+					<td>6</td>
+					<td>00:00:10.656</td>
+					<td>00:03:05.315</td>
+					<td>00:00:56.196</td>
+					<td>00:00:43.504</td>
+				</tr>
+				<tr>
+					<td><strong>L13_MedalOfHomer</strong></td>
+					<td>moh_mus.mus</td>
+					<td>40</td>
+					<td>00:00:01.062</td>
+					<td>00:03:22.133</td>
+					<td>00:00:28.644</td>
+					<td>00:00:13.936</td>
+				</tr>
+				<tr>
+					<td><strong>L14_BigSuperHappy</strong></td>
+					<td>bsh_mus.mus</td>
+					<td>160</td>
+					<td>00:00:00.253</td>
+					<td>00:00:15.739</td>
+					<td>00:00:04.277</td>
+					<td>00:00:03.936</td>
+				</tr>
+				<tr>
+					<td><strong>L15_Rhymes</strong></td>
+					<td>rwc_mus.mus</td>
+					<td>161</td>
+					<td>00:00:00.862</td>
+					<td>00:00:10.433</td>
+					<td>00:00:03.525</td>
+					<td>00:00:03.471</td>
+				</tr>
+				<tr>
+					<td><strong>L16_MeetThyPlayer</strong></td>
+					<td>mtp_mus.mus</td>
+					<td>212</td>
+					<td>00:00:00.576</td>
+					<td>00:01:00.999</td>
+					<td>00:00:04.690</td>
+					<td>00:00:03.431</td>
+				</tr>
+				<tr>
+					<td><strong>LHub-00_GameHub</strong></td>
+					<td>hub_mus.mus</td>
+					<td>6</td>
+					<td>00:00:06.853</td>
+					<td>00:02:01.000</td>
+					<td>00:00:35.515</td>
+					<td>00:00:21.142</td>
+				</tr>
+				<tr>
+					<td><strong>LHub-00_SprHub</strong></td>
+					<td>spr_mus.mus</td>
+					<td>93</td>
+					<td>00:00:01.524</td>
+					<td>00:01:53.632</td>
+					<td>00:00:19.280</td>
+					<td>00:00:03.828</td>
+				</tr>
+			</tbody>
+		</table>
 
 		<p>the US version only has the EN and Global folders, and mus files</p>
 

@@ -7,21 +7,17 @@
 
 **Origin:** The Simpsons Game (PAL PS3 Version), likely a proprietary format from EA Redwood Shores.
 
-**Purpose:** Used for background music streams.
+**Purpose:** Container archives for Interactive, Segmented, and Layered background music.
 
 **Key Characteristics:**
 
-*   **Proprietary EA Format:**
+*   **Proprietary EA Format Container:**
 *   **Two Subtypes:** Identified by values in the header:
     *   **Type 1:** Header bytes `0x08-0x0B` = `0F 00 00 00` (15 LE), bytes `0x0C-0x0F` = `78 01 32 00`.
     *   **Type 2:** Header bytes `0x08-0x0B` = `0B 00 00 00` (11 LE), bytes `0x0C-0x0F` = `02 03 02 03`.
-*   **16-Byte Header:** Contains a per-file ID, an unknown variable integer (potentially sample count/size/loop info), and the type identifiers.
-*   **Fixed Chunking:** Data is processed in fixed 64-byte physical chunks.
-*   **Variable Bit Rate (VBR):** Logical audio frames can vary in size and may span across 64-byte chunks.
-*   **Padding Marker:** The sequence `0C 00 00 00` (12 LE) frequently appears, likely marking the end of valid audio data within a 64-byte chunk, followed by `0x00` padding bytes.
-
-
-
+*   **Header and Table of Contents:** Contains a per-file ID, a file details header, and structured Table of Contents entries indicating metadata (`.snr`) and audio stream payload (`.sns`) locations.
+*   **Extraction & Decodability:** Unpacked successfully via `operations/mus.bms` into paired `.snr` and `.sns` segments, which natively decode into `.wav` streams using `vgmstream`.
+*   **Segmented Streaming Structure:** The audio clips are split into contiguous short streams (often approx. 2-second segments) intended to be played consecutively to seamlessly assemble the full song.
 
 1. High-Level Analysis: File Name Meanings
 
@@ -108,52 +104,223 @@ What this means: If the marker was only used at the very end of the file, it wou
 
     <hr>
 
-    <h2>1. What We think</h2>
+    <h2>1. Verified Facts (What We Know)</h2>
     <ul>
-        <li><strong>It is an Archive, Not a Stream:</strong> <code>.mus</code> files are not single continuous audio tracks. They are containers holding multiple distinct audio segments and layers. Treating them as a single raw stream results in corrupted audio (static/noise).</li>
-        <li><strong>Big-Endian Table of Contents (TOC):</strong> The archive structure relies on a directory/TOC that begins at offset <code>0x08</code>.</li>
-        <li><strong>Fixed-Size TOC Entries:</strong> Each entry in the TOC is 12 bytes (<code>0x0C</code>) long and contains the following Big-Endian fields:
+        <li><strong>It is an Archive, Not a Flat Stream:</strong> <code>.mus</code> files are not single continuous audio tracks. They are containers holding multiple distinct audio segments (metadata and payload pairs). Treating them as a single raw stream results in completely corrupted static/noise.</li>
+        <li><strong>Big-Endian Table of Contents (TOC):</strong> The archive structure relies on a directory/TOC that begins at offset <code>0x28</code>. The total number of files/segments inside the archive is read as a single byte at offset <code>0x04</code> of the header.</li>
+        <li><strong>28-Byte Structured TOC Entries:</strong> Each entry in the TOC is <code>28 bytes</code> (<code>0x1C</code>) long and contains the following Big-Endian fields (as parsed in <code>mus.bms</code>):
             <ul>
-                <li><code>0x00</code> (uint16): <strong>IDX</strong> (Stream index number)</li>
-                <li><code>0x02</code> (uint16): <strong>DUMMY</strong> (Unknown/Padding)</li>
-                <li><code>0x04</code> (uint32): <strong>HEADERPOS</strong> (Pointer to the entry's metadata word)</li>
-                <li><code>0x08</code> (uint32): <strong>OFFSET</strong> (Absolute pointer to where the audio payload begins)</li>
+                <li><code>0x00</code> (uint32): <strong>HASH</strong> (Sound-specific hash identifier)</li>
+                <li><code>0x04</code> (uint16): <strong>NUMBER</strong> (Segment stream index/sequence number)</li>
+                <li><code>0x06</code> (uint16): <strong>PADDING</strong> (Usually always 0)</li>
+                <li><code>0x08</code> (uint32): <strong>SNR_OFFSET_RAW</strong> (The packed pointer to the SNR header. Multiply by <code>0x10</code> to resolve the real file position)</li>
+                <li><code>0x0C</code> (uint32): <strong>SNS_OFFSET_RAW</strong> (The packed pointer to the SNS stream body. Multiply by <code>0x80</code> to resolve the real file position)</li>
+                <li><code>0x10</code> (uint32): <strong>SNR_SIZE</strong> (Exact size of the SNR metadata payload in bytes)</li>
+                <li><code>0x14</code> (uint32): <strong>SNS_SIZE</strong> (Exact size of the SNS stream payload in bytes)</li>
+                <li><code>0x18</code> (uint32): <strong>PADDING</strong> (Usually always 0)</li>
             </ul>
         </li>
-        <li><strong>Implicit File Sizes:</strong> The size of an individual audio segment is calculated by subtracting its <code>OFFSET</code> from the <code>OFFSET</code> of the next entry in the TOC (or EOF for the final entry).</li>
-        <li><strong>Block-Based ADPCM:</strong> The audio payloads are encoded in an EA ADPCM variant (EA-XAS for PS3, potentially XMA2 for Xbox 360). These codecs rely on strict frame/block alignments.</li>
-        <li><strong>Padding Behavior:</strong> The sequence <code>0C 00 00 00</code> followed by nulls is used as padding to align blocks. <strong>Crucially:</strong> Stripping this padding destroys the internal ADPCM frame alignment, causing decoders like <code>vgmstream</code> to lose sync and output maximum-amplitude static.</li>
-        <li><strong>Headerless Payloads:</strong> The raw data starting at <code>OFFSET</code> contains no self-describing headers. It cannot be decoded on its own.</li>
+        <li><strong>Interactive Concat/Sequence Mechanics (~2-Second Snippets):</strong> The audio tracks are split into consecutively numbered contiguous segments. Each pair represents a very short, approx. 2-second piece of background music (complying with EA's interactive music engine). The full song is constructed by programmatically stitching or playing these segments sequentially one after the other.</li>
+        <li><strong>EA SNR/SNS Container Behavior:</strong> The archive holds paired components: the <code>.snr</code> containing stream description metadata (sample rate, channels, EA-XAS ADPCM layout) and the matching blocked <code>.sns</code> containing the audio payload.</li>
+        <li><strong>VGMStream Integration:</strong> Running <code>vgmstream</code> directly on the extracted <code>.snr</code> file decodes it cleanly into a standard <code>.wav</code> snippet. It reports the codec as <code>Electronic Arts EA-XAS 4-bit ADPCM v1</code> using the <code>Electronic Arts SNR+SNS header</code> metadata layout.</li>
     </ul>
 
     <hr>
 
-    <h2>2. Current Assumptions & Working Theories</h2>
-    <ul>
-        <li><strong>The "Synthetic Header" Requirement:</strong> To properly decode an extracted payload, we assume a 32-byte (<code>0x20</code>) standard EA <code>.xas</code> header must be artificially constructed and prepended to the raw bytes.</li>
-        <li><strong>The INFO Word:</strong> The 32-bit value located at an entry's <code>HEADERPOS</code> is assumed to be the critical metadata (channels, sample rate, or block layout flags) required to build the synthetic <code>.xas</code> header.</li>
-        <li><strong>Companion Metadata Files (The "Missing Half"):</strong> We assume the <code>.mus</code> file only acts as a bulk reservoir of audio fragments. The logic for how these fragments are stitched together, layered, and looped during gameplay is stored in external MPF-variant metadata files (specifically <code>.msb</code> and <code>.msx</code> files found in the game directories).</li>
-        <li><strong>Subtype Signatures:</strong> The first few bytes of the file (e.g., <code>0F 00 00 00 78 01 32 00</code> vs <code>0B 00 00 00 02 03 02 03</code>) dictate format versioning or routing logic, though the exact routing differences between "Type 1" and "Type 2" remain unmapped.</li>
-    </ul>
+    <h2>2. Background Music Segment Playback & Construction</h2>
+    <p>Because the tracks are split into numerous ~2-second snippets, reconstruction of a full playable soundtrack requires sequencing. The typical workflow used in the <code>mustest.ps1</code> test script details this behavior:</p>
+    <ol>
+        <li>Unpack the <code>.mus</code> file with <code>operations/mus.bms</code> using QuickBMS to extract all numbered <code>.snr</code> and <code>.sns</code> chunks.</li>
+        <li>Invoke <code>vgmstream-cli</code> targeting each <code>.snr</code> file individually, exporting them to independent <code>.wav</code> files.</li>
+        <li>Clean up the intermediate raw <code>.snr</code> and <code>.sns</code> segments, leaving only the converted <code>.wav</code> files.</li>
+        <li>Stitch the resulting chunks sequentially (e.g., <code>[Filename]__000.wav</code>, then <code>[Filename]__001.wav</code>, and so on) in the engine or media pipeline to reconstruct the full playback.</li>
+    </ol>
+
+    <h3>Level-Specific Extraction Statistics</h3>
+    <p>A recursive duration scan using <code>ffprobe</code> across all converted wav folders reveals the typical length properties of the sequential music segments:</p>
+    
+    <table border="1" cellpadding="5" style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr style="background-color: #333; color: #fff;">
+                <th>Folder (Level)</th>
+                <th>Source File</th>
+                <th>Files Count</th>
+                <th>Shortest</th>
+                <th>Longest</th>
+                <th>Mean</th>
+                <th>Median</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>A2_Menu</strong></td>
+                <td>menu_mus.mus</td>
+                <td>37</td>
+                <td>00:00:01.524</td>
+                <td>00:02:39.047</td>
+                <td>00:00:19.012</td>
+                <td>00:00:03.118</td>
+            </tr>
+            <tr>
+                <td><strong>L01_LandOfChocolate</strong></td>
+                <td>loc_mus.mus</td>
+                <td>50</td>
+                <td>00:00:01.819</td>
+                <td>00:01:29.256</td>
+                <td>00:00:08.340</td>
+                <td>00:00:02.815</td>
+            </tr>
+            <tr>
+                <td><strong>L02_BartmanBegins</strong></td>
+                <td>brt_mus.mus</td>
+                <td>137</td>
+                <td>00:00:00.632</td>
+                <td>00:00:16.923</td>
+                <td>00:00:03.679</td>
+                <td>00:00:03.475</td>
+            </tr>
+            <tr>
+                <td><strong>L03_HungryHungryHomer</strong></td>
+                <td>80b_mus.mus</td>
+                <td>174</td>
+                <td>00:00:01.889</td>
+                <td>00:02:03.419</td>
+                <td>00:00:03.045</td>
+                <td>00:00:02.113</td>
+            </tr>
+            <tr>
+                <td><strong>L04_TreeHugger</strong></td>
+                <td>treetemp.mus</td>
+                <td>242</td>
+                <td>00:00:00.582</td>
+                <td>00:00:26.827</td>
+                <td>00:00:03.557</td>
+                <td>00:00:03.432</td>
+            </tr>
+            <tr>
+                <td><strong>L05_MobRules</strong></td>
+                <td>mob_mus.mus</td>
+                <td>151</td>
+                <td>00:00:01.905</td>
+                <td>00:00:54.333</td>
+                <td>00:00:04.123</td>
+                <td>00:00:03.093</td>
+            </tr>
+            <tr>
+                <td><strong>L06_EnterTheCheatrix</strong></td>
+                <td>cheater.mus</td>
+                <td>72</td>
+                <td>00:00:01.305</td>
+                <td>00:00:36.688</td>
+                <td>00:00:07.082</td>
+                <td>00:00:06.163</td>
+            </tr>
+            <tr>
+                <td><strong>L09_Invasion</strong></td>
+                <td>sss_mus.mus</td>
+                <td>204</td>
+                <td>00:00:00.681</td>
+                <td>00:00:11.712</td>
+                <td>00:00:03.590</td>
+                <td>00:00:03.554</td>
+            </tr>
+            <tr>
+                <td><strong>L10_BargainBin</strong></td>
+                <td>bin.mus</td>
+                <td>63</td>
+                <td>00:00:00.193</td>
+                <td>00:00:06.409</td>
+                <td>00:00:02.541</td>
+                <td>00:00:02.800</td>
+            </tr>
+            <tr>
+                <td><strong>L11_NeverQuest</strong></td>
+                <td>nvq_mus.mus</td>
+                <td>249</td>
+                <td>00:00:02.156</td>
+                <td>00:02:29.361</td> <!-- Median is 4.064s, nvq is large -->
+                <td>00:00:04.408</td>
+                <td>00:00:04.064</td>
+            </tr>
+            <tr>
+                <td><strong>L12_GrandTheftScratchy</strong></td>
+                <td>gts_mus.mus</td>
+                <td>6</td>
+                <td>00:00:10.656</td>
+                <td>00:03:05.315</td>
+                <td>00:00:56.196</td>
+                <td>00:00:43.504</td>
+            </tr>
+            <tr>
+                <td><strong>L13_MedalOfHomer</strong></td>
+                <td>moh_mus.mus</td>
+                <td>40</td>
+                <td>00:00:01.062</td>
+                <td>00:03:22.133</td>
+                <td>00:00:28.644</td>
+                <td>00:00:13.936</td>
+            </tr>
+            <tr>
+                <td><strong>L14_BigSuperHappy</strong></td>
+                <td>bsh_mus.mus</td>
+                <td>160</td>
+                <td>00:00:00.253</td>
+                <td>00:00:15.739</td>
+                <td>00:00:04.277</td>
+                <td>00:00:03.936</td>
+            </tr>
+            <tr>
+                <td><strong>L15_Rhymes</strong></td>
+                <td>rwc_mus.mus</td>
+                <td>161</td>
+                <td>00:00:00.862</td>
+                <td>00:00:10.433</td>
+                <td>00:00:03.525</td>
+                <td>00:00:03.471</td>
+            </tr>
+            <tr>
+                <td><strong>L16_MeetThyPlayer</strong></td>
+                <td>mtp_mus.mus</td>
+                <td>212</td>
+                <td>00:00:00.576</td>
+                <td>00:01:00.999</td>
+                <td>00:00:04.690</td>
+                <td>00:00:03.431</td>
+            </tr>
+            <tr>
+                <td><strong>LHub-00_GameHub</strong></td>
+                <td>hub_mus.mus</td>
+                <td>6</td>
+                <td>00:00:06.853</td>
+                <td>00:02:01.000</td>
+                <td>00:00:35.515</td>
+                <td>00:00:21.142</td>
+            </tr>
+            <tr>
+                <td><strong>LHub-00_SprHub</strong></td>
+                <td>spr_mus.mus</td>
+                <td>93</td>
+                <td>00:00:01.524</td>
+                <td>00:01:53.632</td>
+                <td>00:00:19.280</td>
+                <td>00:00:03.828</td>
+            </tr>
+        </tbody>
+    </table>
 
     <hr>
 
-    <h2>3. What We Don't Know (Pending Investigation)</h2>
+    <hr>
+
+    <h2>3. QuickBMS Extraction Verification Output</h2>
     <ul>
-        <li><strong>The Bit-Level Structure of the INFO Word:</strong> We know <code>HEADERPOS</code> points to metadata, but we do not yet know the exact bitmask of this 32-bit word (e.g., which bits represent sample rate vs. channel count).</li>
-        <li><strong>Internal MSB/MSX Structure:</strong> While we know <code>.msb</code>/<code>.msx</code> files control the interactive playback map, we do not know their internal grammar, nor how they reference the specific <code>IDX</code> values inside the <code>.mus</code> archives.</li>
-        <li><strong>Layer Multiplexing:</strong> It is unconfirmed whether multi-channel stems (e.g., Layers 1, 2, and 3) are interleaved within a single TOC payload, or if they are stored as separate consecutive TOC entries that the engine plays simultaneously.</li>
-        <li><strong>The Unknown Integer at 0x04:</strong> The purpose of the integer at offset <code>0x04</code> of the main file header (previously assumed to be a "cue count" ranging from 6 to 249) is not definitively proven, though it likely correlates with the total number of valid TOC entries.</li>
+        <li><strong>QuickBMS Extraction Works:</strong> The module script <code>operations/mus.bms</code> successfully extracts each <code>.mus</code> archive into paired <code>.snr</code> and <code>.sns</code> files.</li>
+        <li><strong>vgmstream Playback Works:</strong> Running vgmstream on the extracted <code>.snr</code> files produces valid decoded audio, reported as <code>Electronic Arts EA-XAS 4-bit ADPCM v1</code> with <code>Electronic Arts SNR+SNS header</code> metadata.</li>
+        <li><strong>Remaining Work Is Pipeline Integration:</strong> The format is no longer blocked on basic decode; the next step is wiring this extraction and conversion path into the game module pipeline (such as in <code>SetupMusicFiles.lua</code>).</li>
     </ul>
 
     </body>
 </html>
-
-
-
-
-currently no progress in decoding this format
-all attempts have failed
 
 
 
