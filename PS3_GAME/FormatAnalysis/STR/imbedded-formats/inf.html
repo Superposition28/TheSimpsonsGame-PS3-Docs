@@ -1,0 +1,292 @@
+
+<p><strong>Version:</strong> 1.0<br>
+<strong>Last Updated:</strong> 2026-07-19<br>
+<strong>Author(s):</strong> yggdrasil-au</p>
+
+<p>The <code>.inf</code> format is a custom Electronic Arts / RenderWare binary file used in The Simpsons Game to map characters to a corresponding font texture atlas (usually a <code>.png</code> file). It contains precise coordinate bounding boxes, advancing metrics, and kerning pairs required to render text strings in the game's UI[cite: 8]. These files are typically found embedded within <code>.STR</code> archives alongside their companion textures[cite: 8, 9].</p>
+
+<p><strong>Endianness:</strong> Big-Endian throughout.<br>
+<strong>Character Encoding:</strong> ASCII / Custom PUA (Private Use Area) for button icons.</p>
+
+<h2>Parsing Algorithm Overview</h2>
+
+<ol>
+    <li>Verify file starts with the magic signature: <code>46 4F 4E 54</code> ("FONT")[cite: 5].</li>
+    <li>Read the 16-byte header to extract the total file size, format version, total glyph count, and total kerning pair count[cite: 5].</li>
+    <li>Skip the header padding to reach the start of the Glyph Table (fixed at offset <code>0x78</code> or 120 decimal).</li>
+    <li>Iterate through the specified Glyph Count, parsing 20 bytes per character to extract coordinate boxes (X, Y, Width, Height) and typing offsets[cite: 5].</li>
+    <li>Starting immediately after the last glyph struct, calculate the remaining file bytes and truncate any trailing garbage padding (dividing by 4).</li>
+    <li>Parse the 4-byte Kerning structs to extract the spacing modifiers between specific character pairs[cite: 5].</li>
+    <li>Export the mapped data to an AngelCode <code>.fnt</code> descriptor to bind it to the associated <code>.png</code> texture[cite: 5].</li>
+</ol>
+
+<h2>1. File Header</h2>
+
+<p>Located at offset <code>0x00</code>. <strong>Size: 16 bytes.</strong></p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Offset</th>
+            <th>Size</th>
+            <th>Type</th>
+            <th>Endian</th>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>0x00</td>
+            <td>4</td>
+            <td>Char[4]</td>
+            <td>-</td>
+            <td>Magic</td>
+            <td>Magic signature: <code>46 4F 4E 54</code> ("FONT"). Identifies the file as an EA Font map.</td>
+        </tr>
+        <tr>
+            <td>0x04</td>
+            <td>4</td>
+            <td>UInt32</td>
+            <td>BE</td>
+            <td>File Size</td>
+            <td>Total size of the <code>.inf</code> file in bytes.</td>
+        </tr>
+        <tr>
+            <td>0x08</td>
+            <td>2</td>
+            <td>UInt16</td>
+            <td>BE</td>
+            <td>Version</td>
+            <td>Format version identifier. Consistently observed as <code>0x0006</code>.</td>
+        </tr>
+        <tr>
+            <td>0x0A</td>
+            <td>2</td>
+            <td>UInt16</td>
+            <td>BE</td>
+            <td>Glyph Count</td>
+            <td>Total number of 20-byte character glyph structs contained in the file.</td>
+        </tr>
+        <tr>
+            <td>0x0C</td>
+            <td>4</td>
+            <td>UInt32</td>
+            <td>BE</td>
+            <td>Kerning Count</td>
+            <td>Total number of 4-byte kerning pair structs contained in the file.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>2. Glyph Table</h2>
+
+<p><strong>Location:</strong> Begins at a fixed offset of <code>0x78</code> (120 decimal), following the header and a block of padding.<br>
+<strong>Length:</strong> <code>Glyph Count * 20</code> bytes.</p>
+<p>Every character mapped in the font is defined by a 20-byte structure. Note: For generic UI buttons (e.g., <code>buttons_74860e.inf</code>), the character ID may map to non-standard indices.</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Offset (Rel)</th>
+            <th>Size</th>
+            <th>Type</th>
+            <th>Endian</th>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>0x00</td>
+            <td>2</td>
+            <td>UInt16</td>
+            <td>BE</td>
+            <td>X Coordinate</td>
+            <td>The X pixel coordinate of the top-left corner of the character on the texture atlas.</td>
+        </tr>
+        <tr>
+            <td>0x02</td>
+            <td>2</td>
+            <td>UInt16</td>
+            <td>BE</td>
+            <td>Y Coordinate</td>
+            <td>The Y pixel coordinate of the top-left corner of the character on the texture atlas.</td>
+        </tr>
+        <tr>
+            <td>0x04</td>
+            <td>4</td>
+            <td>UInt32</td>
+            <td>BE</td>
+            <td>Padding</td>
+            <td>Empty padding, usually <code>0x00000000</code>.</td>
+        </tr>
+        <tr>
+            <td>0x08</td>
+            <td>1</td>
+            <td>UInt8</td>
+            <td>-</td>
+            <td>Character Code</td>
+            <td>The 8-bit ID mapping this glyph to an ASCII key or controller button.</td>
+        </tr>
+        <tr>
+            <td>0x09</td>
+            <td>1</td>
+            <td>UInt8</td>
+            <td>-</td>
+            <td>Padding</td>
+            <td>Empty padding, usually <code>0x00</code>.</td>
+        </tr>
+        <tr>
+            <td>0x0A</td>
+            <td>2</td>
+            <td>UInt16</td>
+            <td>BE</td>
+            <td>Width</td>
+            <td>The width of the character bounding box in pixels.</td>
+        </tr>
+        <tr>
+            <td>0x0C</td>
+            <td>2</td>
+            <td>UInt16</td>
+            <td>BE</td>
+            <td>Height</td>
+            <td>The height of the character bounding box in pixels.</td>
+        </tr>
+        <tr>
+            <td>0x0E</td>
+            <td>2</td>
+            <td>UInt16</td>
+            <td>BE</td>
+            <td>X-Advance</td>
+            <td>How many pixels horizontally the cursor should advance after drawing this character.</td>
+        </tr>
+        <tr>
+            <td>0x10</td>
+            <td>2</td>
+            <td>Int16</td>
+            <td>BE</td>
+            <td>X-Offset</td>
+            <td>A signed value dictating the horizontal drawing offset relative to the cursor (e.g., to handle characters that lean left).</td>
+        </tr>
+        <tr>
+            <td>0x12</td>
+            <td>2</td>
+            <td>Int16</td>
+            <td>BE</td>
+            <td>Y-Offset</td>
+            <td>A signed value dictating the vertical drawing offset from the baseline.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2>3. Kerning Table</h2>
+
+<p><strong>Location:</strong> Starts immediately after the last byte of the Glyph Table (<code>0x78 + (Glyph Count * 20)</code>).<br>
+<strong>Length:</strong> <code>Kerning Count * 4</code> bytes.</p>
+<p>The kerning table adjusts the spacing between two specific characters when they appear sequentially (e.g., tucking a lowercase 'o' closer under an uppercase 'T').</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Offset (Rel)</th>
+            <th>Size</th>
+            <th>Type</th>
+            <th>Endian</th>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>0x00</td>
+            <td>1</td>
+            <td>UInt8</td>
+            <td>-</td>
+            <td>First Char</td>
+            <td>The ID of the first character in the kerning pair.</td>
+        </tr>
+        <tr>
+            <td>0x01</td>
+            <td>1</td>
+            <td>UInt8</td>
+            <td>-</td>
+            <td>Second Char</td>
+            <td>The ID of the second character in the kerning pair.</td>
+        </tr>
+        <tr>
+            <td>0x02</td>
+            <td>1</td>
+            <td>UInt8</td>
+            <td>-</td>
+            <td>Padding</td>
+            <td>Unused, usually <code>0x00</code>.</td>
+        </tr>
+        <tr>
+            <td>0x03</td>
+            <td>1</td>
+            <td>Int8</td>
+            <td>-</td>
+            <td>Kerning Amount</td>
+            <td>A signed 8-bit integer representing the spacing shift in pixels (e.g., <code>0xFA</code> = -6 pixels, <code>0x03</code> = +3 pixels).</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>Validation Rules & Padding</h3>
+<ul>
+    <li>Files often contain a few bytes of generic trailing padding at the end of the Kerning Table. Safely disregard any remaining bytes that are not perfectly divisible by 4.</li>
+    <li>Button icon atlases (like UI prompts) will map character codes identically, but standard ASCII parsers may read them as unprintable characters unless specifically mapped back to a custom unicode range.</li>
+</ul>
+
+<h2>Complete Parsing Example (Python Pseudocode)</h2>
+
+<pre><code>
+
+```
+
+def parse_inf(file_data) {
+// 1. Validate header
+if (file_data[0:4] != b'FONT') return error;
+
+```
+glyph_count = read_u16_be(file_data, 10);
+
+// 2. Parse Glyph Table
+offset = 120; // Fixed glyph start
+glyphs = [];
+
+for (i = 0 to glyph_count) {
+    x = read_u16_be(file_data, offset + 0);
+    y = read_u16_be(file_data, offset + 2);
+    char_id = file_data[offset + 8];
+    width = read_u16_be(file_data, offset + 10);
+    height = read_u16_be(file_data, offset + 12);
+    xadv = read_u16_be(file_data, offset + 14);
+    xoff = read_s16_be(file_data, offset + 16);
+    yoff = read_s16_be(file_data, offset + 18);
+    
+    glyphs.append({char_id, x, y, width, height, xadv, xoff, yoff});
+    offset += 20;
+}
+
+// 3. Parse Kerning Table
+remaining_bytes = len(file_data) - offset;
+kerning_count = remaining_bytes // 4; // Truncates trailing garbage
+kernings = [];
+
+for (i = 0 to kerning_count) {
+    char1 = file_data[offset + 0];
+    char2 = file_data[offset + 1];
+    amount = read_s8(file_data, offset + 3);
+    
+    if (char1 != 0 && char2 != 0) {
+        kernings.append({char1, char2, amount});
+    }
+    offset += 4;
+}
+
+// 4. Output to AngelCode .fnt mapping format
+export_to_fnt(glyphs, kernings);
+}
+```
