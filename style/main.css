@@ -386,6 +386,25 @@ a.documentation-tree-group-link:focus-visible {
     outline-offset: 2px;
 }
 
+@media (min-width: 1000px) {
+    .pages {
+        max-width: none;
+    }
+
+    #home {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+        align-items: start;
+    }
+
+    .format-coverage,
+    .documentation-tree {
+        max-width: none;
+        margin-bottom: 0;
+    }
+}
+
 @media (max-width: 600px) {
     .pages {
         padding-right: 12px;
