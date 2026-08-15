@@ -6,6 +6,56 @@ body {
     padding: 20px;
 }
 
+.format-counts {
+    width: 100%;
+    max-width: 720px;
+    margin: 1rem 0 2rem;
+    border-collapse: collapse;
+    border: 1px solid #343434;
+    background: #181818;
+}
+
+.format-counts caption {
+    padding: 0.75rem 1rem;
+    border: 1px solid #343434;
+    border-bottom: 0;
+    background: #121212;
+    color: #f0f4f8;
+    font-weight: 700;
+    text-align: left;
+}
+
+.format-counts th,
+.format-counts td {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid #2a2a2a;
+    text-align: left;
+}
+
+.format-counts thead th {
+    color: #f0f4f8;
+    background: #242424;
+}
+
+.format-counts tbody td:first-child {
+    color: #e6edf3;
+    font-family: monospace;
+}
+
+.format-counts td:last-child {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.format-counts tbody tr:last-child th,
+.format-counts tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.format-counts tbody tr:hover {
+    background: #20252b;
+}
+
 /* fixed topbar */
 .topbar {
     position: fixed;
@@ -27,13 +77,14 @@ body {
     text-decoration: none;
 }
 
-a {
-    color: #7aa2ff;
-}
-
 .topbar a:hover {
     text-decoration: underline;
 }
+a {
+    color: #7aa2ff;
+    text-decoration: none;
+}
+
 
 .brand {
     font-weight: 700;
@@ -70,6 +121,150 @@ a {
 /* if ANY page is targeted, hide the default */
 .pages:has(.page:target) #home {
     display: none;
+}
+
+.format-coverage {
+    max-width: 960px;
+    margin-bottom: 32px;
+    padding: 20px;
+    background: #181818;
+    border: 1px solid #343434;
+    border-radius: 6px;
+}
+
+.format-coverage-heading h1 {
+    margin: 0 0 8px;
+    color: #f0f4f8;
+    font-size: 1.35rem;
+}
+
+.format-coverage-heading p {
+    margin: 0;
+    color: #b6c0ca;
+    line-height: 1.5;
+}
+
+.format-coverage-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 18px 0;
+    padding: 12px 0;
+    list-style: none;
+    border-top: 1px solid #343434;
+    border-bottom: 1px solid #343434;
+    color: #b6c0ca;
+    font-size: 0.88rem;
+}
+
+.format-coverage-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.format-coverage-legend strong {
+    color: #e6edf3;
+}
+
+.coverage-icon {
+    display: inline-block;
+    flex: 0 0 10px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.coverage-green {
+    background: #3fb950;
+}
+
+.coverage-yellow {
+    background: #d29922;
+}
+
+.coverage-orange {
+    background: #db6d28;
+}
+
+.coverage-blue {
+    background: #58a6ff;
+}
+
+.coverage-grey {
+    background: #8b949e;
+}
+
+.coverage-red {
+    background: #f85149;
+}
+
+.format-coverage-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.format-coverage-item {
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.format-coverage-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.format-coverage-item .coverage-icon {
+    margin-top: 5px;
+}
+
+.format-coverage-item strong {
+    display: block;
+    color: #e6edf3;
+    overflow-wrap: anywhere;
+}
+
+.coverage-status {
+    display: inline-block;
+    margin: 4px 8px 0 0;
+    color: #c9d1d9;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.coverage-detail {
+    color: #9ba7b3;
+    font-size: 0.86rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 600px) {
+    .pages {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .format-coverage {
+        padding: 16px;
+    }
+
+    .format-coverage-legend {
+        gap: 8px 12px;
+    }
+
+    .coverage-status,
+    .coverage-detail {
+        display: block;
+        margin-right: 0;
+    }
 }
 
 

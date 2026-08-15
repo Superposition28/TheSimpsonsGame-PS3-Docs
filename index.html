@@ -18,6 +18,68 @@
 
         <main class="pages">
             <section class="page" id="home">
+                <section class="format-coverage" aria-labelledby="format-coverage-title">
+                    <div class="format-coverage-heading">
+                        <h1 id="format-coverage-title">Pipeline Format Coverage</h1>
+                        <p>Current extraction and conversion support from the registered operations and Lua/BMS pipeline. This reflects working code paths, not the completeness of reverse-engineering notes.</p>
+                    </div>
+
+                    <ul class="format-coverage-legend" aria-label="Coverage status legend">
+                        <li><span class="coverage-icon coverage-green" aria-hidden="true"></span><strong>Green</strong> Usable output</li>
+                        <li><span class="coverage-icon coverage-yellow" aria-hidden="true"></span><strong>Yellow</strong> Partial conversion</li>
+                        <li><span class="coverage-icon coverage-blue" aria-hidden="true"></span><strong>Blue</strong> Analysis only</li>
+                        <li><span class="coverage-icon coverage-orange" aria-hidden="true"></span><strong>Orange</strong> Legacy md analysis</li>
+                        <li><span class="coverage-icon coverage-grey" aria-hidden="true"></span><strong>Grey</strong> No current support</li>
+                    </ul>
+
+                    <ul class="format-coverage-list">
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-green" aria-hidden="true"></span>
+                            <div><strong>.str</strong><span class="coverage-status">Container extraction</span><span class="coverage-detail">QuickBMS extracts embedded resources; the archive itself is not converted.</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-green" aria-hidden="true"></span>
+                            <div><strong>.txd -&gt; .png</strong><span class="coverage-status">Usable output</span><span class="coverage-detail">Texture dictionaries are extracted to PNG files.</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-yellow" aria-hidden="true"></span>
+                            <div><strong>.dff.PS3.preinstanced, .rws.PS3.preinstanced -&gt; .blend, .glb/.fbx</strong><span class="coverage-status">Partial conversion</span><span class="coverage-detail">Geometry exports; material and texture assignment remain incomplete.</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-green" aria-hidden="true"></span>
+                            <div><strong>.LH2, .en.LH2, .es.LH2, .fr.LH2, .it.LH2, .ss.LH2 -&gt; .csv</strong><span class="coverage-status">Usable output</span><span class="coverage-detail">Localization tables export to CSV.</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-green" aria-hidden="true"></span>
+                            <div><strong>.exa.snu -&gt; .wav</strong><span class="coverage-status">Usable output</span><span class="coverage-detail">Voice and stream audio converts through vgmstream.</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-green" aria-hidden="true"></span>
+                            <div><strong>.mus -&gt; .wav</strong><span class="coverage-status">Usable output</span><span class="coverage-detail">QuickBMS extracts temporary .snr/.sns pairs, then vgmstream decodes WAV segments.</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-green" aria-hidden="true"></span>
+                            <div><strong>.vp6 -&gt; .ogv</strong><span class="coverage-status">Usable output</span><span class="coverage-detail">Videos convert through the registered ffmpeg operation.</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-yellow" aria-hidden="true"></span>
+                            <div><strong>.graph</strong><span class="coverage-status">Partial conversion</span><span class="coverage-detail">Imported manually through the independent Godot graph importer.</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-orange" aria-hidden="true"></span>
+                            <div><strong>.bin, .lua, .hud.bin, .txt, .alb, .amb, .bsp, .ctb, .hkt.PS3, .hko.PS3, .acs.PS3, .bbn.PS3, .bnk.PS3, .rcb.PS3, .shk.PS3, .tox.PS3, .xml.PS3, .rcm_b, .sbk, .smb, .toc (.occ.toc), .uix, .vfb</strong><span class="coverage-status">Legacy Markdown analysis</span><span class="coverage-detail">Analysis exists only in the old embedded-format Markdown notes; no extraction or conversion operation is registered.</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
+                            <div><strong>.dat, .meta.xml, .lighttoc, .cec.ps3, .shk, .inf</strong><span class="coverage-status">Analysis only</span><span class="coverage-detail">Format notes exist, but no extraction or conversion operation is registered.</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-grey" aria-hidden="true"></span>
+                            <div><strong>.imb, .mib, .msb, .aub, extensionless</strong><span class="coverage-status">No current support</span><span class="coverage-detail">No usable extraction or conversion route or format analysis is currently available.</span></div>
+                        </li>
+                    </ul>
+                </section>
+
                 <nav>
                     <ul style="list-style: none;">
                         <li>
@@ -54,6 +116,7 @@
                             <a href="#FormatAnalysis">FormatAnalysis</a>
                             <ul style="list-style: none;">
                                 <li><a href="#FormatAnalysis-str">.STR</a></li>
+                                <li><a href="#FormatAnalysis-preinstanced">.dff.PS3.preinstanced, .rws.PS3.preinstanced</a></li>
                                 <li><a href="#FormatAnalysis-dff">.dff (Preinstanced)</a></li>
                                 <li><a href="#FormatAnalysis-rws">.rws (Preinstanced)</a></li>
                                 <li><a href="#FormatAnalysis-txd">.txd (Texture Dictionary)</a></li>
@@ -64,6 +127,7 @@
                                 <li><a href="#FormatAnalysis-cec">.cec.ps3 (Controller Config)</a></li>
                                 <li><a href="#FormatAnalysis-simgroup">.dat (SimGroup)</a></li>
                                 <li><a href="#FormatAnalysis-shk">.shk (Shock Resource)</a></li>
+                                <li><a href="#FormatAnalysis-inf">.inf (Font Map)</a></li>
                             </ul>
                         </ul>
                     </ul>
@@ -101,6 +165,7 @@
             <section data-id="FormatAnalysis">
                 <iframe id="FormatAnalysis" class="page" src="./PS3_GAME/FormatAnalysis/index.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-str" class="page" src="./PS3_GAME/FormatAnalysis/STR/str.html" frameborder="0" loading="lazy"></iframe>
+                <iframe id="FormatAnalysis-preinstanced" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/preinstanced.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-dff" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/dff.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-rws" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/rws.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-txd" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/txd.html" frameborder="0" loading="lazy"></iframe>
@@ -111,6 +176,7 @@
                 <iframe id="FormatAnalysis-cec" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/cec.ps3.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-simgroup" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/simgroup.dat.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-shk" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/shk.html" frameborder="0" loading="lazy"></iframe>
+                <iframe id="FormatAnalysis-inf" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/inf.html" frameborder="0" loading="lazy"></iframe>
             </section>
 
         </main>
