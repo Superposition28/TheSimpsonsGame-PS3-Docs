@@ -20,7 +20,32 @@
 
 		<p>Global: Ambient sounds</p>
 
-		<p>a file by file breakdown of en/global can be found in AudioMap.yaml</p>
+		<section aria-labelledby="audio-map-title">
+			<h2 id="audio-map-title">AudioMap Registry</h2>
+			<p><a href="./AudioMap.yaml">View AudioMap.yaml</a></p>
+			<p>The registry maps English dialogue and Global ambient resources to their original directory names, character or sound labels, game levels, and filename patterns.</p>
+			<ul>
+				<li>Character records cover playable characters, Springfield NPCs, enemies, and level-specific variants.</li>
+				<li>Dialogue entries record the source folder, output grouping, known character, level context, and matching <code>.exa.snu</code> filename patterns.</li>
+				<li>Cutscene and Global sections document named streams and ambient sound resources by level and location.</li>
+			</ul>
+
+			<h3>Pipeline Usage</h3>
+			<p>The <a href="https://raw.githubusercontent.com/Superposition28/TheSimpsonsGame-PS3/refs/heads/main/operations/SetupAudioDir.lua"><code>SetupAudioDir.lua</code></a> script loads this YAML during the <strong>Reorganize Audio Files</strong> operation. If the file is missing, cannot be parsed, or contains no usable <code>Dialogue</code> rules, the map-based rename phases are skipped.</p>
+			<ul>
+				<li><code>Dialogue</code> rules are applied in each detected <code>EN</code>, <code>ES</code>, <code>FR</code>, and <code>IT</code> folder.</li>
+				<li><code>CUTSCENE</code> rules are applied in the same language folders.</li>
+				<li><code>Global-Sound</code> rules are applied in <code>Global</code> without character subfolders.</li>
+			</ul>
+
+			<h3>Rename Rule Fields</h3>
+			<ul>
+				<li><code>OLD_DIR_NAME</code> identifies the source folder and <code>NEW_DIR_NAME</code> names its destination. A blank or <code>TBD</code> destination falls back to the source name with a trailing <code>_xxx_0</code> removed.</li>
+				<li>For Dialogue and CUTSCENE rules, a usable <code>CharacterName</code> creates a character subfolder when its <code>file_patterns.file_pattern</code> matches a file. Empty, <code>unknown</code>, <code>TBD</code>, and <code>TBA</code> names are not used as folder names.</li>
+				<li>In <code>file_pattern</code>, <code>#######</code> matches a seven-digit hexadecimal line identifier. The current Lua renamer does not use <code>file_regex</code> or <code>file_glob</code>.</li>
+			</ul>
+		</section>
+
 		<p>the es,fr,it folders contain the same files as en</p>
 
 		<p>the language folders contain .exa.snu audio files, each represent a charactors voice lines</p>
