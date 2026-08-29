@@ -67,7 +67,7 @@
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-orange" aria-hidden="true"></span>
-                            <div><strong>.bin, .lua, .hud.bin, .txt, .alb, .amb, .bsp, .ctb, .hkt.PS3, .hko.PS3, .acs.PS3, .bbn.PS3, .bnk.PS3, .rcb.PS3, .shk.PS3, .tox.PS3, .xml.PS3, .rcm_b, .sbk, .smb, .toc (.occ.toc), .uix, .vfb</strong><span class="coverage-status">Legacy Markdown analysis</span><span class="coverage-detail">Analysis exists only in the old embedded-format Markdown notes; no extraction or conversion operation is registered.</span></div>
+                            <div><strong>.bin, .lua, .hud.bin, .txt, .alb, .aub, .amb, .bsp, .ctb, .hkt.PS3, .hko.PS3, .acs.PS3, .bbn.PS3, .bnk.PS3, .rcb.PS3, .shk.PS3, .tox.PS3, .xml.PS3, .rcm_b, .sbk, .smb, .toc (.occ.toc), .uix, .vfb</strong><span class="coverage-status">Legacy Markdown analysis</span><span class="coverage-detail">Analysis exists only in the old embedded-format Markdown notes; no extraction or conversion operation is registered.</span></div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
@@ -76,10 +76,6 @@
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
                             <div><strong>.meta.xml</strong><span class="coverage-status">Detailed structural map</span><span class="coverage-detail">Header, section offsets and counts, relative strings, attribute records, and value-type flags are documented. No extraction or conversion operation is registered.</span></div>
-                        </li>
-                        <li class="format-coverage-item">
-                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>.lighttoc</strong><span class="coverage-status">Partial record layout</span><span class="coverage-detail">The header and light-entry fields are documented; box-light data and a usable parser are still absent.</span></div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
@@ -94,8 +90,16 @@
                             <div><strong>.inf</strong><span class="coverage-status">Near-complete parsing specification</span><span class="coverage-detail">The signature, big-endian header, glyph and kerning tables, and .fnt export procedure are documented; no operation is registered.</span></div>
                         </li>
                         <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
+                            <div><strong>.imb</strong><span class="coverage-status">full hex dump and shallow ai analysis</span><span class="coverage-detail">...</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
+                            <div><strong>extensionless</strong><span class="coverage-status">full hex dump and shallow ai analysis</span><span class="coverage-detail">two files, LightTOC and StreamSetConfig</span></div>
+                        </li>
+                        <li class="format-coverage-item">
                             <span class="coverage-icon coverage-grey" aria-hidden="true"></span>
-                            <div><strong>.imb, .mib, .msb, .aub, extensionless</strong><span class="coverage-status">No current support</span><span class="coverage-detail">No usable extraction or conversion route or format analysis is currently available.</span></div>
+                            <div><strong>.mib, .msb</strong><span class="coverage-status">No current support</span><span class="coverage-detail">No usable extraction or conversion route or format analysis is currently available.</span></div>
                         </li>
                     </ul>
                 </section>
@@ -177,7 +181,7 @@
                                         <li><a href="#FormatAnalysis-lh2-it">.it.LH2</a></li>
                                         <li><a href="#FormatAnalysis-lh2-ss">.ss.LH2</a></li>
                                         <li><a href="#FormatAnalysis-meta">.meta.xml (MetaModel)</a></li>
-                                        <li><a href="#FormatAnalysis-lighttoc">.lighttoc (Lighting)</a></li>
+                                        <li><a href="#FormatAnalysis-imb">.imb</a></li>
                                         <li><a href="#FormatAnalysis-mib">.mib</a></li>
                                         <li><a href="#FormatAnalysis-msb">.msb</a></li>
                                         <li><a href="#FormatAnalysis-ps3">*.ps3 files</a></li>
@@ -198,7 +202,7 @@
                                         <li><a href="#FormatAnalysis-toc">.toc</a></li>
                                         <li><a href="#FormatAnalysis-uix">.uix</a></li>
                                         <li><a href="#FormatAnalysis-vfb">.vfb</a></li>
-                                        <li><a href="#FormatAnalysis-no-extension">No Extension</a></li>
+                                        <li><a href="#FormatAnalysis-no-extension">No Extension lighttoc (Lighting) and StreamSetConfig</a></li>
                                         <li><a href="#FormatAnalysis-inf">.inf (Font Map)</a></li>
                                     </ul>
                                 </li>
@@ -263,7 +267,7 @@
                 <iframe id="FormatAnalysis-lh2-it" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/it.LH2.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-lh2-ss" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ss.LH2.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-meta" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/meta.xml.html" frameborder="0" loading="lazy"></iframe>
-                <iframe id="FormatAnalysis-lighttoc" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/lighttoc.html" frameborder="0" loading="lazy"></iframe>
+                <iframe id="FormatAnalysis-imb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/.imb.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-mib" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/.mib.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-msb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/.msb.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-ps3" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ps3.html" frameborder="0" loading="lazy"></iframe>
