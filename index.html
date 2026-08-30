@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html>
-
     <head>
         <meta charset="utf-8">
         <title>The Simpsons Game - Reversing Documentation</title>
         <link rel="stylesheet" href="./style/main.css">
     </head>
     <body>
-
         <nav class="topbar">
             <a class="brand" href="">Home</a>
             <div class="topbar-links">
@@ -15,7 +13,6 @@
                 <a id="up-link">Up</a>
             </div>
         </nav>
-
         <main class="pages">
             <section class="page" id="home">
                 <section class="format-coverage" aria-labelledby="format-coverage-title">
@@ -23,101 +20,212 @@
                         <h1 id="format-coverage-title">Pipeline Format Coverage</h1>
                         <p>Current extraction and conversion support from the registered operations and Lua/BMS pipeline. This reflects working code paths, not the completeness of reverse-engineering notes.</p>
                     </div>
-
                     <ul class="format-coverage-legend" aria-label="Coverage status legend">
-                        <li><span class="coverage-icon coverage-green" aria-hidden="true"></span><strong>Green</strong> Usable output</li>
-                        <li><span class="coverage-icon coverage-yellow" aria-hidden="true"></span><strong>Yellow</strong> Partial conversion</li>
-                        <li><span class="coverage-icon coverage-blue" aria-hidden="true"></span><strong>Blue</strong> Analysis only</li>
-                        <li><span class="coverage-icon coverage-orange" aria-hidden="true"></span><strong>Orange</strong> todo</li>
-                        <li><span class="coverage-icon coverage-grey" aria-hidden="true"></span><strong>Grey</strong> No current support</li>
+                        <li>
+                            <span class="coverage-icon coverage-green" aria-hidden="true"></span>
+                            <strong>Green</strong> Usable output
+                        </li>
+                        <li>
+                            <span class="coverage-icon coverage-yellow" aria-hidden="true"></span>
+                            <strong>Yellow</strong> Partial conversion
+                        </li>
+                        <li>
+                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
+                            <strong>Blue</strong> Analysis only
+                        </li>
+                        <li>
+                            <span class="coverage-icon coverage-orange" aria-hidden="true"></span>
+                            <strong>Orange</strong> todo
+                        </li>
+                        <li>
+                            <span class="coverage-icon coverage-grey" aria-hidden="true"></span>
+                            <strong>Grey</strong> No current support
+                        </li>
                     </ul>
-
                     <ul class="format-coverage-list">
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-green" aria-hidden="true"></span>
-                            <div><strong>.str</strong><span class="coverage-status">Container extraction</span><span class="coverage-detail">QuickBMS extracts embedded resources; the archive itself is not converted.</span></div>
+                            <div>
+                                <strong>.str</strong>
+                                <span class="coverage-status">Container extraction</span>
+                                <span class="coverage-detail">QuickBMS extracts embedded resources; the archive itself is not converted.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-green" aria-hidden="true"></span>
-                            <div><strong>.txd -&gt; .png</strong><span class="coverage-status">Usable output</span><span class="coverage-detail">Texture dictionaries are extracted to PNG files.</span></div>
+                            <div>
+                                <strong>.txd -&gt; .png</strong>
+                                <span class="coverage-status">Usable output</span>
+                                <span class="coverage-detail">Texture dictionaries are extracted to PNG files.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-yellow" aria-hidden="true"></span>
-                            <div><strong>.dff.PS3.preinstanced, .rws.PS3.preinstanced -&gt; .blend, .glb/.fbx</strong><span class="coverage-status">Partial conversion</span><span class="coverage-detail">Geometry exports; material and texture assignment remain incomplete.</span></div>
+                            <div>
+                                <strong>.dff.PS3.preinstanced, .rws.PS3.preinstanced -&gt; .blend, .glb/.fbx</strong>
+                                <span class="coverage-status">Partial conversion</span>
+                                <span class="coverage-detail">Geometry exports; material and texture assignment remain incomplete.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-green" aria-hidden="true"></span>
-                            <div><strong>.LH2, .en.LH2, .es.LH2, .fr.LH2, .it.LH2, .ss.LH2 -&gt; .csv</strong><span class="coverage-status">Usable output</span><span class="coverage-detail">Localization tables export to CSV.</span></div>
+                            <div>
+                                <strong>.LH2, .en.LH2, .es.LH2, .fr.LH2, .it.LH2, .ss.LH2 -&gt; .csv</strong>
+                                <span class="coverage-status">Usable output</span>
+                                <span class="coverage-detail">Localization tables export to CSV.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-green" aria-hidden="true"></span>
-                            <div><strong>.exa.snu -&gt; .wav</strong><span class="coverage-status">Usable output</span><span class="coverage-detail">Voice and stream audio converts through vgmstream.</span></div>
+                            <div>
+                                <strong>.exa.snu -&gt; .wav</strong>
+                                <span class="coverage-status">Usable output</span>
+                                <span class="coverage-detail">Voice and stream audio converts through vgmstream.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-green" aria-hidden="true"></span>
-                            <div><strong>.mus -&gt; .wav</strong><span class="coverage-status">Usable output</span><span class="coverage-detail">QuickBMS extracts temporary .snr/.sns pairs, then vgmstream decodes WAV segments.</span></div>
+                            <div>
+                                <strong>.mus -&gt; .wav</strong>
+                                <span class="coverage-status">Usable output</span>
+                                <span class="coverage-detail">QuickBMS extracts temporary .snr/.sns pairs, then vgmstream decodes WAV segments.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-green" aria-hidden="true"></span>
-                            <div><strong>.vp6 -&gt; .ogv</strong><span class="coverage-status">Usable output</span><span class="coverage-detail">Videos convert through the registered ffmpeg operation.</span></div>
+                            <div>
+                                <strong>.vp6 -&gt; .ogv</strong>
+                                <span class="coverage-status">Usable output</span>
+                                <span class="coverage-detail">Videos convert through the registered ffmpeg operation.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-yellow" aria-hidden="true"></span>
-                            <div><strong>.graph</strong><span class="coverage-status">imported into godot via extension</span><span class="coverage-detail">importable into godot or blender, not fully usable yet</span></div>
+                            <div>
+                                <strong>.graph</strong>
+                                <span class="coverage-status">imported into godot via extension</span>
+                                <span class="coverage-detail">importable into godot or blender, not fully usable yet</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>.dat</strong><span class="coverage-status">Structural outline</span><span class="coverage-detail">Header and entity fields are documented, but entity sizing and attribute decoding remain incomplete. No extraction or conversion operation is registered.</span></div>
+                            <div>
+                                <strong>.dat</strong>
+                                <span class="coverage-status">Structural outline</span>
+                                <span class="coverage-detail">Header and entity fields are documented, but entity sizing and attribute decoding remain incomplete. No extraction or conversion operation is registered.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>.meta.xml</strong><span class="coverage-status">Detailed structural map</span><span class="coverage-detail">Header, section offsets and counts, relative strings, attribute records, and value-type flags are documented. No extraction or conversion operation is registered.</span></div>
+                            <div>
+                                <strong>.meta.xml</strong>
+                                <span class="coverage-status">Detailed structural map</span>
+                                <span class="coverage-detail">Header, section offsets and counts, relative strings, attribute records, and value-type flags are documented. No extraction or conversion operation is registered.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>.cec.ps3</strong><span class="coverage-status">Partial record layout</span><span class="coverage-detail">The fixed header and event-entry fields are documented, but input-pattern structures remain unspecified. No extraction or conversion operation is registered.</span></div>
+                            <div>
+                                <strong>.cec.ps3</strong>
+                                <span class="coverage-status">Partial record layout</span>
+                                <span class="coverage-detail">The fixed header and event-entry fields are documented, but input-pattern structures remain unspecified. No extraction or conversion operation is registered.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>.shk</strong><span class="coverage-status">Documented command layout</span><span class="coverage-detail">The haptic header and fixed-size command entries are documented, but no extraction or conversion operation is registered.</span></div>
+                            <div>
+                                <strong>.shk</strong>
+                                <span class="coverage-status">Documented command layout</span>
+                                <span class="coverage-detail">The haptic header and fixed-size command entries are documented, but no extraction or conversion operation is registered.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>.inf</strong><span class="coverage-status">Near-complete parsing specification</span><span class="coverage-detail">The signature, big-endian header, glyph and kerning tables, and .fnt export procedure are documented; no operation is registered.</span></div>
+                            <div>
+                                <strong>.inf</strong>
+                                <span class="coverage-status">Near-complete parsing specification</span>
+                                <span class="coverage-detail">The signature, big-endian header, glyph and kerning tables, and .fnt export procedure are documented; no operation is registered.</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>.imb</strong><span class="coverage-status">full hex dump and shallow ai analysis</span><span class="coverage-detail">...</span></div>
+                            <div>
+                                <strong>.imb</strong>
+                                <span class="coverage-status">full hex dump and shallow ai analysis</span>
+                                <span class="coverage-detail">...</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>extensionless</strong><span class="coverage-status">full hex dump and shallow ai analysis</span><span class="coverage-detail">two files, LightTOC and StreamSetConfig</span></div>
+                            <div>
+                                <strong>extensionless</strong>
+                                <span class="coverage-status">full hex dump and shallow ai analysis</span>
+                                <span class="coverage-detail">two files, LightTOC and StreamSetConfig</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>.mib</strong><span class="coverage-status">full hex dump and shallow ai analysis</span><span class="coverage-detail">...</span></div>
+                            <div>
+                                <strong>.mib</strong>
+                                <span class="coverage-status">full hex dump and shallow ai analysis</span>
+                                <span class="coverage-detail">...</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>.msb</strong><span class="coverage-status">full hex dump and shallow ai analysis</span><span class="coverage-detail">...</span></div>
+                            <div>
+                                <strong>.msb</strong>
+                                <span class="coverage-status">full hex dump and shallow ai analysis</span>
+                                <span class="coverage-detail">...</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
-                            <div><strong>.smb</strong><span class="coverage-status">Format Analysis</span><span class="coverage-detail">An index and metadata table for EA's streaming audio engine dictating how external .exa sound streams load and play[cite: 1].</span></div>
+                            <div>
+                                <strong>.smb</strong>
+                                <span class="coverage-status">Format Analysis</span>
+                                <span class="coverage-detail">An index and metadata table for EA's streaming audio engine dictating how external .exa sound streams load and play[cite: 1].</span>
+                            </div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
+                            <div>
+                                <strong>.tox.PS3,</strong>
+                                <span class="coverage-status">full hex dump and shallow ai analysis</span>
+                                <span class="coverage-detail">...</span>
+                            </div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
+                            <div>
+                                <strong>.uix,</strong>
+                                <span class="coverage-status">full hex dump and shallow ai analysis</span>
+                                <span class="coverage-detail">...</span>
+                            </div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
+                            <div>
+                                <strong>.sbk,</strong>
+                                <span class="coverage-status">full hex dump and shallow ai analysis</span>
+                                <span class="coverage-detail">...</span>
+                            </div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-orange" aria-hidden="true"></span>
-                            <div><strong>.bin, .lua, .hud.bin, .txt, .alb, .aub, .amb, .bsp, .ctb, .hkt.PS3, .hko.PS3, .acs.PS3, .bbn.PS3, .bnk.PS3, .rcb.PS3, .shk.PS3, .tox.PS3, .xml.PS3, .rcm_b, .sbk, .toc (.occ.toc), .uix, .vfb</strong><span class="coverage-status">incomplete or todo</span><span class="coverage-detail"></span></div>
+                            <div>
+                                <strong>.bin, .lua, .hud.bin, .txt, .alb, .aub, .amb, .bsp, .ctb, .hkt.PS3, .hko.PS3, .acs.PS3, .bbn.PS3, .bnk.PS3, .rcb.PS3, .shk.PS3, .xml.PS3, .rcm_b, .toc (.occ.toc), .vfb</strong>
+                                <span class="coverage-status">incomplete or todo</span>
+                                <span class="coverage-detail"></span>
+                            </div>
                         </li>
                     </ul>
                 </section>
-
                 <nav class="documentation-tree" aria-labelledby="documentation-tree-title">
                     <div class="documentation-tree-heading">
                         <h1 id="documentation-tree-title">Documentation Map</h1>
                         <p>Browse the extracted game structure and reverse-engineering notes.</p>
                     </div>
-
                     <ul class="documentation-tree-root">
                         <li class="documentation-tree-section documentation-tree-section-game">
                             <a class="documentation-tree-root-link" href="#PS3_GAME">
@@ -128,33 +236,76 @@
                                 <li>
                                     <a class="documentation-tree-group-link" href="#USRDIR">USRDIR</a>
                                     <ul class="documentation-tree-leaves">
-                                        <li><a href="#USRDIR-A1_Audio">A1_Audio</a></li>
-                                        <li><a href="#USRDIR-A1_Video">A1_Video</a></li>
-                                        <li><a href="#USRDIR-A2_Characters">A2_Characters</a></li>
-                                        <li><a href="#USRDIR-A2_Frontend">A2_Frontend</a></li>
-                                        <li><a href="#USRDIR-L01_LandOfChocolate">L01_LandOfChocolate</a></li>
-                                        <li><a href="#USRDIR-L02_BartmanBegins">L02_BartmanBegins</a></li>
-                                        <li><a href="#USRDIR-L03_HungryHungryHomer">L03_HungryHungryHomer</a></li>
-                                        <li><a href="#USRDIR-L04_TreeHugger">L04_TreeHugger</a></li>
-                                        <li><a href="#USRDIR-L05_MobRules">L05_MobRules</a></li>
-                                        <li><a href="#USRDIR-L06_EnterTheCheatrix">L06_EnterTheCheatrix</a></li>
-                                        <li><a href="#USRDIR-L07_DayOfTheDolphin">L07_DayOfTheDolphin</a></li>
-                                        <li><a href="#USRDIR-L08_TheColossalDonut">L08_TheColossalDonut</a></li>
-                                        <li><a href="#USRDIR-L09_Invasion">L09_Invasion</a></li>
-                                        <li><a href="#USRDIR-L10_BargainBin">L10_BargainBin</a></li>
-                                        <li><a href="#USRDIR-L11_NeverQuest">L11_NeverQuest</a></li>
-                                        <li><a href="#USRDIR-L12_GrandTheftScratchy">L12_GrandTheftScratchy</a></li>
-                                        <li><a href="#USRDIR-L13_MedalOfHomer">L13_MedalOfHomer</a></li>
-                                        <li><a href="#USRDIR-L14_BigSuperHappy">L14_BigSuperHappy</a></li>
-                                        <li><a href="#USRDIR-L15_Rhymes">L15_Rhymes</a></li>
-                                        <li><a href="#USRDIR-L16_MeetThyPlayer">L16_MeetThyPlayer</a></li>
-                                        <li><a href="#USRDIR-LHub-00_GameHub">LHub-00_GameHub</a></li>
-                                        <li><a href="#USRDIR-LHub-00_SprHub">LHub-00_SprHub</a></li>
+                                        <li>
+                                            <a href="#USRDIR-A1_Audio">A1_Audio</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-A1_Video">A1_Video</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-A2_Characters">A2_Characters</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-A2_Frontend">A2_Frontend</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L01_LandOfChocolate">L01_LandOfChocolate</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L02_BartmanBegins">L02_BartmanBegins</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L03_HungryHungryHomer">L03_HungryHungryHomer</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L04_TreeHugger">L04_TreeHugger</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L05_MobRules">L05_MobRules</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L06_EnterTheCheatrix">L06_EnterTheCheatrix</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L07_DayOfTheDolphin">L07_DayOfTheDolphin</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L08_TheColossalDonut">L08_TheColossalDonut</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L09_Invasion">L09_Invasion</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L10_BargainBin">L10_BargainBin</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L11_NeverQuest">L11_NeverQuest</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L12_GrandTheftScratchy">L12_GrandTheftScratchy</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L13_MedalOfHomer">L13_MedalOfHomer</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L14_BigSuperHappy">L14_BigSuperHappy</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L15_Rhymes">L15_Rhymes</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-L16_MeetThyPlayer">L16_MeetThyPlayer</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-LHub-00_GameHub">LHub-00_GameHub</a>
+                                        </li>
+                                        <li>
+                                            <a href="#USRDIR-LHub-00_SprHub">LHub-00_SprHub</a>
+                                        </li>
                                     </ul>
                                 </li>
                             </ul>
                         </li>
-
                         <li class="documentation-tree-section documentation-tree-section-formats">
                             <a class="documentation-tree-root-link" href="#FormatAnalysis">
                                 <span class="documentation-tree-kicker">Reverse engineering</span>
@@ -164,77 +315,181 @@
                                 <li>
                                     <span class="documentation-tree-group-link">Indexed formats</span>
                                     <ul class="documentation-tree-leaves" style="padding-bottom: 0.5rem;">
-                                        <li><a href="#FormatAnalysis-bin">.BIN</a></li>
-                                        <li><a href="#FormatAnalysis-lua">.lua</a></li>
-                                        <li><a href="#FormatAnalysis-mus">.mus</a></li>
-                                        <li><a href="#FormatAnalysis-exa-snu">.exa.snu</a></li>
-
+                                        <li>
+                                            <a href="#FormatAnalysis-bin">.BIN</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-lua">.lua</a>
+                                        </li>
+                                        <li>
+                                            <a>Audio files</a>
+                                            <ul style="list-style: none;">
+                                                <li>
+                                                    <a href="#FormatAnalysis-mus">.mus</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-exa-snu">.exa.snu</a>
+                                                </li>
+                                                <a> related files, sbk and smb listed bellow extracted from .str </a>
+                                            </ul>
+                                        </li>
                                     </ul>
-                                <ul class="documentation-tree-branch">
+                                    <ul class="documentation-tree-branch">
                                         <li>
                                             <a href="#FormatAnalysis-str">.STR (EA Stream File)</a>
                                             <ul style="list-style: none;" class="documentation-tree-leaves">
-                                                <li><a href="#FormatAnalysis-txt">.txt</a></li>
-                                                <li><a href="#FormatAnalysis-vp6">.vp6</a></li>
-                                                <li><a href="#FormatAnalysis-alb">.alb</a></li>
-                                                <li><a href="#FormatAnalysis-amb">.amb</a></li>
-                                                <li><a href="#FormatAnalysis-aub">.aub</a></li>
-                                                <li><a href="#FormatAnalysis-bsp">.bsp</a></li>
-                                                <li><a href="#FormatAnalysis-preinstanced">preinstanced</a></li>
-                                                <li><a href="#FormatAnalysis-dff">.dff (Preinstanced)</a></li>
-                                                <li><a href="#FormatAnalysis-rws">.rws (Preinstanced)</a></li>
-                                                <li><a href="#FormatAnalysis-ctb">.ctb</a></li>
-                                                <li><a href="#FormatAnalysis-txd">.txd (Texture Dictionary)</a></li>
-                                                <li><a href="#FormatAnalysis-graph">.graph (Navigation Graph)</a></li>
-                                                <li><a href="#FormatAnalysis-lh2">.lh2 (Localization)</a></li>
                                                 <li>
-                                                    <a href="#FormatAnalysis-lh2-base">.LH2</a>
-                                                    <ul style="list-style: none;">
-                                                        <li><a href="#FormatAnalysis-lh2-en">.en.LH2</a></li>
-                                                        <li><a href="#FormatAnalysis-lh2-es">.es.LH2</a></li>
-                                                        <li><a href="#FormatAnalysis-lh2-fr">.fr.LH2</a></li>
-                                                        <li><a href="#FormatAnalysis-lh2-it">.it.LH2</a></li>
-                                                        <li><a href="#FormatAnalysis-lh2-ss">.ss.LH2</a></li>
-                                                    </ul>
+                                                    <a href="#FormatAnalysis-txt">.txt</a>
                                                 </li>
-                                                <li><a href="#FormatAnalysis-meta">.meta.xml (MetaModel)</a></li>
-                                                <li><a href="#FormatAnalysis-imb">.imb</a></li>
-                                                <li><a href="#FormatAnalysis-mib">.mib</a></li>
-                                                <li><a href="#FormatAnalysis-msb">.msb</a></li>
                                                 <li>
-                                                    <a href="#FormatAnalysis-ps3">*.ps3 files</a>
-                                                    <ul style="list-style: none;">
-                                                        <li><a href="#FormatAnalysis-acs">.acs.PS3</a></li>
-                                                        <li><a href="#FormatAnalysis-bbn">.bbn.PS3</a></li>
-                                                        <li><a href="#FormatAnalysis-bnk">.bnk.PS3</a></li>
-                                                        <li><a href="#FormatAnalysis-hko">.hko.PS3</a></li>
-                                                        <li><a href="#FormatAnalysis-hkt">.hkt.PS3</a></li>
-                                                        <li><a href="#FormatAnalysis-rcb">.rcb.PS3</a></li>
-                                                        <li><a href="#FormatAnalysis-tox">.tox.PS3</a></li>
-                                                        <li><a href="#FormatAnalysis-xml">.xml.PS3</a></li>
-                                                        <li><a href="#FormatAnalysis-cec">.cec.ps3 (Controller Config)</a></li>
-                                                    </ul>
+                                                    <a href="#FormatAnalysis-vp6">.vp6</a>
                                                 </li>
-                                                <li><a href="#FormatAnalysis-rcm-b">.rcm_b</a></li>
-                                                <li><a href="#FormatAnalysis-sbk">.sbk</a></li>
-                                                <li><a href="#FormatAnalysis-simgroup">.dat (SimGroup)</a></li>
-                                                <li><a href="#FormatAnalysis-shk">.shk (Shock Resource)</a></li>
-                                                <li><a href="#FormatAnalysis-smb">.smb (Meta Bank)</a></li>
-                                                <li><a href="#FormatAnalysis-toc">.toc</a></li>
-                                                <li><a href="#FormatAnalysis-uix">.uix</a></li>
-                                                <li><a href="#FormatAnalysis-vfb">.vfb</a></li>
-                                                <li><a href="#FormatAnalysis-no-extension">No Extension lighttoc (Lighting) and StreamSetConfig</a></li>
-                                                <li><a href="#FormatAnalysis-inf">.inf (Font Map)</a></li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-alb">.alb</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-amb">.amb</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-aub">.aub</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-bsp">.bsp</a>
+                                                </li>
+                                                <li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-preinstanced">preinstanced</a>
+                                                </li>
+                                                <ul style="list-style: none;">
+                                                    <li>
+                                                        <a href="#FormatAnalysis-dff">.dff (Preinstanced)</a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="#FormatAnalysis-rws">.rws (Preinstanced)</a>
+                                                    </li>
+                                                </ul>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-ctb">.ctb</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-txd">.txd (Texture Dictionary)</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-graph">.graph (Navigation Graph)</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-lh2">.lh2 (Localization)</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-lh2-base">.LH2</a>
+                                            <ul style="list-style: none;">
+                                                <li>
+                                                    <a href="#FormatAnalysis-lh2-en">.en.LH2</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-lh2-es">.es.LH2</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-lh2-fr">.fr.LH2</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-lh2-it">.it.LH2</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-lh2-ss">.ss.LH2</a>
+                                                </li>
                                             </ul>
                                         </li>
-                                    </ul></li>
-
+                                        <li>
+                                            <a href="#FormatAnalysis-meta">.meta.xml (MetaModel)</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-imb">.imb</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-mib">.mib</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-msb">.msb</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-ps3">*.ps3 files</a>
+                                            <ul style="list-style: none;">
+                                                <li>
+                                                    <a href="#FormatAnalysis-acs">.acs.PS3</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-bbn">.bbn.PS3</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-bnk">.bnk.PS3</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-hko">.hko.PS3</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-hkt">.hkt.PS3</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-rcb">.rcb.PS3</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-tox">.tox.PS3</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-xml">.xml.PS3</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-cec">.cec.ps3 (Controller Config)</a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <a>Audio related files</a>
+                                            <ul style="list-style: none;">
+                                                <li>
+                                                    <a href="#FormatAnalysis-sbk">.sbk (Sound Bank)</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-smb">.smb (Meta Bank)</a>
+                                                </li>
+                                                <a> exa and mus audio formats listed above </a>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-rcm-b">.rcm_b</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-simgroup">.dat (SimGroup)</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-shk">.shk (Shock Resource)</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-toc">.toc</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-uix">.uix</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-vfb">.vfb</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-no-extension">No Extension lighttoc (Lighting) and StreamSetConfig</a>
+                                        </li>
+                                        <li>
+                                            <a href="#FormatAnalysis-inf">.inf (Font Map)</a>
+                                        </li>
+                                    </ul>
+                                </li>
                             </ul>
                         </li>
                     </ul>
+                    </li>
+                    </ul>
                 </nav>
             </section>
-
             <section data-id="PS3_GAME">
                 <iframe id="PS3_GAME" class="page" src="./PS3_GAME/index.html" frameborder="0" loading="lazy"></iframe>
                 <section data-id="USRDIR">
@@ -314,42 +569,33 @@
                 <iframe id="FormatAnalysis-no-extension" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/NoExtension.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-inf" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/inf.html" frameborder="0" loading="lazy"></iframe>
             </section>
-
         </main>
-
         <script>
             // The shell uses hashes to route to iframe IDs and data-id sections.
-            (function () {
+            (function() {
                 var upLink = document.getElementById("up-link");
-
                 // Normalize the current hash so it can be matched against an element ID.
                 function getCurrentId() {
                     var hash = window.location.hash || "";
                     return hash.replace(/^#/, "") || "";
                 }
-
                 // Resolve a route's structural parent. Section routes move up one
                 // data-id wrapper; iframe routes move up to their containing wrapper.
                 function findParentId(currentId) {
                     if (currentId === "home") {
                         return "";
                     }
-
                     var currentSection = document.querySelector('[data-id="' + currentId + '"]');
                     var parentSection = null;
                     if (currentSection) {
-                        parentSection = currentSection.parentElement
-                            ? currentSection.parentElement.closest("[data-id]")
-                            : null;
+                        parentSection = currentSection.parentElement ? currentSection.parentElement.closest("[data-id]") : null;
                     } else {
                         // Leaf pages are iframes with IDs, not data-id sections.
                         var currentPage = document.getElementById(currentId);
                         parentSection = currentPage ? currentPage.closest("[data-id]") : null;
                     }
-
                     return parentSection ? parentSection.getAttribute("data-id") : "";
                 }
-
                 // Update on load and after in-page navigation so Up always reflects
                 // the route currently selected by the URL hash.
                 function updateUpLink() {
@@ -357,11 +603,9 @@
                     var parentId = findParentId(currentId);
                     upLink.setAttribute("href", "#" + parentId);
                 }
-
                 window.addEventListener("hashchange", updateUpLink);
                 updateUpLink();
             })();
         </script>
-
     </body>
 </html>
