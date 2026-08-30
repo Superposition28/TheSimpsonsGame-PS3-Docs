@@ -1,87 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="utf-8">
+    <title>.tox.PS3 Format Documentation</title>
+    <link rel="stylesheet" href="../../../../style/main.css">
 
-tox files are small and start with header 1BOT (31 42 4F 54)
+</head>
 
+<body>
+    <div class="pages">
+        <div class="doc-overview" id="overview">
+These .tox.PS3 files are proprietary EA timing tables used to synchronize In-Game Cinematic (IGC) subtitles or Voice-Over (VO) audio.Because these are ripped from the PS3 version of the game, the data is entirely Big-Endian.File Structure OverviewThe file consists of a fixed 16-byte header, followed immediately by an array of 16-byte records.Header (16 Bytes)OffsetTypeDescriptionExample0x00char[4]Magic identifier (1BOT). Reads as TOB1 if parsed as a Little-Endian integer.31 42 4F 540x04uint32Total file size in bytes (including the header).00 00 00 C0 (192 bytes)0x08uint32Reserved / Padding. Always zero.00 00 00 000x0Cuint32Total record count.00 00 00 0B (11 records)Record Array (16 Bytes per Record)The exact number of records is defined by the integer at 0x0C.OffsetTypeDescriptionExample0x00uint32String Hash / Audio ID: Likely an EA string hash (e.g., EA FNV-1 variant) mapping to the localized text key or specific VO file.3F 02 A9 180x04uint32Start Time (ms): The execution timestamp in milliseconds.00 00 00 46 (70 ms)0x08uint32Duration (ms): The length of the subtitle display or audio clip in milliseconds.00 00 13 88 (5000 ms)0x0Cuint32Flags / Constant: Fixed value across all dumps. Likely a bitmask for rendering flags, language overrides, or unused compiler padding.00 12 FF 30Data ValidationLooking at the first few records of 80b_igc01.tox.PS3, the chronological progression of the timing variables confirms their purpose:Record 1: Starts at 70 ms, runs for 5000 ms (Ends at 5070 ms)Record 2: Starts at 5110 ms, runs for 3200 ms (Ends at 8310 ms)Record 3: Starts at 8380 ms, runs for 4600 ms (Ends at 12980 ms)Record 4: Starts at 13010 ms...The starts and durations track perfectly sequentially, leaving standard 30-40ms (1-2 frames at 30fps) buffering gaps between sequential subtitle lines.
+        </div>
 
+        <section class='bodyy'>
+            <h1>.tox.PS3 Files: Hex Dump Analysis</h1>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/80b_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 192 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B  |1BOT............|
+00000010  3F 02 A9 18 00 00 00 46 00 00 13 88 00 12 FF 30  |?......F.......0|
+00000020  42 46 63 5D 00 00 13 F6 00 00 0C 80 00 12 FF 30  |BFc]...........0|
+00000030  3F 03 A9 22 00 00 20 BC 00 00 11 F8 00 12 FF 30  |?..&quot;.. ........0|
+00000040  42 46 63 5F 00 00 32 D2 00 00 05 5A 00 12 FF 30  |BFc_..2....Z...0|
+00000050  5B 11 28 15 00 00 38 4A 00 00 15 86 00 12 FF 30  |[.(...8J.......0|
+00000060  42 46 63 61 00 00 4E 16 00 00 04 EC 00 12 FF 30  |BFca..N........0|
+00000070  DA 03 20 6C 00 00 55 C8 00 00 11 76 00 12 FF 30  |.. l..U....v...0|
+00000080  06 F1 F8 46 00 00 67 5C 00 00 18 E2 00 12 FF 30  |...F..g\.......0|
+00000090  0C 97 E7 E0 00 00 80 E8 00 00 09 60 00 12 FF 30  |...........`...0|
+000000A0  4C A4 55 AA 00 00 8A 70 00 00 09 C4 00 12 FF 30  |L.U....p.......0|
+000000B0  DA 03 20 70 00 00 94 70 00 00 15 04 00 12 FF 30  |.. p...p.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/80b_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 192 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B  |1BOT............|
+00000010  3F 03 A9 53 00 00 02 58 00 00 04 B0 00 12 FF 30  |?..S...X.......0|
+00000020  42 46 63 90 00 00 09 88 00 00 02 BC 00 12 FF 30  |BFc............0|
+00000030  3F 03 A9 55 00 00 11 76 00 00 0F 00 00 12 FF 30  |?..U...v.......0|
+00000040  DA 03 20 9C 00 00 23 DC 00 00 15 36 00 12 FF 30  |.. ...#....6...0|
+00000050  DA 03 20 9D 00 00 39 3A 00 00 15 5E 00 12 FF 30  |.. ...9:...^...0|
+00000060  DA 04 20 A6 00 00 61 80 00 00 0D 8E 00 12 FF 30  |.. ...a........0|
+00000070  42 47 63 9D 00 00 6F 2C 00 00 0B 7C 00 12 FF 30  |BGc...o,...|...0|
+00000080  55 A8 FA 65 00 00 7A C6 00 00 0A 8C 00 12 FF 30  |U..e..z........0|
+00000090  DA 04 20 A9 00 00 A5 AA 00 00 10 04 00 12 FF 30  |.. ............0|
+000000A0  06 F2 F8 83 00 00 D0 66 00 00 18 C4 00 12 FF 30  |.......f.......0|
+000000B0  4C A5 55 E6 00 00 E9 52 00 00 0A 46 00 12 FF 30  |L.U....R...F...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/bin_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 672 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 02 A0 00 00 00 00 00 00 00 29  |1BOT...........)|
+00000010  AE 54 1A 52 00 00 12 E8 00 00 08 52 00 12 FF 30  |.T.R.......R...0|
+00000020  5B 44 34 D0 00 00 1B C6 00 00 0A 0A 00 12 FF 30  |[D4............0|
+00000030  42 79 70 1C 00 00 25 EE 00 00 07 B2 00 12 FF 30  |Byp...%........0|
+00000040  42 C1 72 53 00 00 3C BE 00 00 03 84 00 12 FF 30  |B.rS..&lt;........0|
+00000050  5B 44 34 D2 00 00 51 54 00 00 14 32 00 12 FF 30  |[D4...QT...2...0|
+00000060  29 22 40 81 00 00 65 EA 00 00 19 F0 00 12 FF 30  |)&quot;@...e........0|
+00000070  24 5A C5 50 00 00 80 02 00 00 0E BA 00 12 FF 30  |$Z.P...........0|
+00000080  29 22 40 83 00 00 8E F8 00 00 0A D2 00 12 FF 30  |)&quot;@............0|
+00000090  24 A2 C7 52 00 00 9A 2E 00 00 16 30 00 12 FF 30  |$..R.......0...0|
+000000A0  29 6A 42 85 00 00 B0 7C 00 00 08 16 00 12 FF 30  |)jB....|.......0|
+000000B0  0E B3 B7 00 00 00 D0 48 00 00 19 AA 00 12 FF 30  |.......H.......0|
+000000C0  5B 8C 36 D9 00 00 EA 1A 00 00 07 D0 00 12 FF 30  |[.6............0|
+000000D0  AE 9C 1C 84 00 00 F2 08 00 00 0E D8 00 12 FF 30  |...............0|
+000000E0  5B 8C 36 DB 00 01 00 EA 00 00 0D 2A 00 12 FF 30  |[.6........*...0|
+000000F0  42 C1 72 27 00 01 13 C8 00 00 0C 8A 00 12 FF 30  |B.r&#x27;...........0|
+00000100  5B 8C 36 DD 00 01 27 A0 00 00 22 A6 00 12 FF 30  |[.6...&#x27;...&quot;....0|
+00000110  0E B3 B7 06 00 01 4A 64 00 00 0D 8E 00 12 FF 30  |......Jd.......0|
+00000120  5B 8C 36 DF 00 01 58 38 00 00 07 30 00 12 FF 30  |[.6...X8...0...0|
+00000130  42 C1 72 52 00 01 5F A4 00 00 06 CC 00 12 FF 30  |B.rR.._........0|
+00000140  CD D9 D5 8C 00 01 7B 6A 00 00 04 4C 00 12 FF 30  |......{j...L...0|
+00000150  0E B3 B7 34 00 01 99 88 00 00 05 32 00 12 FF 30  |...4.......2...0|
+00000160  AE 9D 1C BF 00 01 A4 3C 00 00 16 A8 00 12 FF 30  |.......&lt;.......0|
+00000170  42 C2 72 61 00 01 BB 02 00 00 14 DC 00 12 FF 30  |B.ra...........0|
+00000180  42 C2 72 62 00 01 DC 40 00 00 0C 8A 00 12 FF 30  |B.rb...@.......0|
+00000190  0E B4 B7 40 00 01 E9 06 00 00 12 CA 00 12 FF 30  |...@...........0|
+000001A0  42 C2 72 64 00 02 00 E4 00 00 07 4E 00 12 FF 30  |B.rd.......N...0|
+000001B0  6D 06 5E 4B 00 02 08 50 00 00 0A 8C 00 12 FF 30  |m.^K...P.......0|
+000001C0  AE 9D 1C C5 00 02 1C 82 00 00 10 4A 00 12 FF 30  |...........J...0|
+000001D0  6D 06 5E 4D 00 02 2C F4 00 00 21 A2 00 12 FF 30  |m.^M..,...!....0|
+000001E0  6D 06 5E 4E 00 02 65 C0 00 00 17 98 00 12 FF 30  |m.^N..e........0|
+000001F0  42 C2 72 69 00 02 8C 76 00 00 0A 50 00 12 FF 30  |B.ri...v...P...0|
+00000200  5B 8D 37 46 00 02 97 F2 00 00 05 A0 00 12 FF 30  |[.7F...........0|
+00000210  0E B4 B7 6F 00 02 9E 96 00 00 06 40 00 12 FF 30  |...o.......@...0|
+00000220  AE 9D 1C F2 00 02 A4 FE 00 00 12 A2 00 12 FF 30  |...............0|
+00000230  EB EB E0 5A 00 02 B7 BE 00 00 05 78 00 12 FF 30  |...Z.......x...0|
+00000240  AD E9 26 1D 00 02 BD 5E 00 00 0C 62 00 12 FF 30  |..&amp;....^...b...0|
+00000250  81 B7 64 44 00 02 CA 24 00 00 05 96 00 12 FF 30  |..dD...$.......0|
+00000260  42 C3 72 9F 00 02 CF E2 00 00 04 88 00 12 FF 30  |B.r............0|
+00000270  6D 07 5E 86 00 02 D4 B0 00 00 2F DA 00 12 FF 30  |m.^......./....0|
+00000280  5B 8E 37 56 00 03 17 2C 00 00 05 96 00 12 FF 30  |[.7V...,.......0|
+00000290  42 C3 72 A2 00 03 1C E0 00 00 09 A6 00 12 FF 30  |B.r............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/brt_igc02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 160 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 A0 00 00 00 00 00 00 00 09  |1BOT............|
+00000010  6A E5 16 E8 00 00 04 92 00 00 19 46 00 12 FF 30  |j..........F...0|
+00000020  5B 10 27 DA 00 00 1E 1E 00 00 06 A4 00 12 FF 30  |[.&#x27;............0|
+00000030  19 16 A9 57 00 00 25 44 00 00 28 AA 00 12 FF 30  |...W..%D..(....0|
+00000040  42 45 63 27 00 00 4E 16 00 00 16 EE 00 12 FF 30  |BEc&#x27;..N........0|
+00000050  19 16 A9 80 00 00 6A 36 00 00 23 96 00 12 FF 30  |......j6..#....0|
+00000060  70 72 B8 96 00 00 8E DA 00 00 28 00 00 12 FF 30  |pr........(....0|
+00000070  5B 10 28 06 00 00 B7 A2 00 00 16 08 00 12 FF 30  |[.(............0|
+00000080  70 72 B8 98 00 00 CD D2 00 00 10 22 00 12 FF 30  |pr.........&quot;...0|
+00000090  5B 10 28 08 00 00 EE A2 00 00 0F C8 00 12 FF 30  |[.(............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/bsh_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 128 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 80 00 00 00 00 00 00 00 07  |1BOT............|
+00000010  42 C7 73 CF 00 00 27 7E 00 00 1A 72 00 12 FF 30  |B.s...&#x27;~...r...0|
+00000020  51 17 3C 70 00 00 56 2C 00 00 1E 14 00 12 FF 30  |Q.&lt;p..V,.......0|
+00000030  AE A2 1E 30 00 00 74 68 00 00 09 60 00 12 FF 30  |...0..th...`...0|
+00000040  51 18 3C 7A 00 00 7D E6 00 00 26 B6 00 12 FF 30  |Q.&lt;z..}...&amp;....0|
+00000050  AE A3 1E 3A 00 00 A5 00 00 00 0C C6 00 12 FF 30  |...:...........0|
+00000060  51 18 3C 7C 00 00 B1 EE 00 00 1F 22 00 12 FF 30  |Q.&lt;|.......&quot;...0|
+00000070  42 C8 73 DD 00 00 D1 2E 00 00 0B 9A 00 12 FF 30  |B.s............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/bsh_igc05.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 144 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 90 00 00 00 00 00 00 00 08  |1BOT............|
+00000010  AE A4 1E 7D 00 00 05 3C 00 00 10 22 00 12 FF 30  |...}...&lt;...&quot;...0|
+00000020  42 C9 74 1F 00 00 15 A4 00 00 12 84 00 12 FF 30  |B.t............0|
+00000030  4E 69 FF 0A 00 00 5A 32 00 00 51 36 00 12 FF 30  |Ni....Z2..Q6...0|
+00000040  1D A1 59 C2 00 00 D6 06 00 00 0B 54 00 12 FF 30  |..Y........T...0|
+00000050  42 C9 74 22 00 00 E1 82 00 00 0B B8 00 12 FF 30  |B.t&quot;...........0|
+00000060  AE A4 1E A9 00 00 ED 58 00 00 10 AE 00 12 FF 30  |.......X.......0|
+00000070  AE A4 1E AA 00 01 07 2A 00 00 05 8C 00 12 FF 30  |.......*.......0|
+00000080  1D A1 59 ED 00 01 0D 6A 00 00 0E BA 00 12 FF 30  |..Y....j.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/che_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 384 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 80 00 00 00 00 00 00 00 17  |1BOT............|
+00000010  AE 27 0F 6A 00 00 08 7A 00 00 11 30 00 12 FF 30  |.&#x27;.j...z...0...0|
+00000020  5B 17 29 C1 00 00 1A 54 00 00 06 EA 00 12 FF 30  |[.)....T.......0|
+00000030  AE 27 0F 6C 00 00 21 5C 00 00 07 94 00 12 FF 30  |.&#x27;.l..!\.......0|
+00000040  5B 3F 33 64 00 00 29 36 00 00 0C E4 00 12 FF 30  |[?3d..)6.......0|
+00000050  AE 4F 19 0F 00 00 36 9C 00 00 08 98 00 12 FF 30  |.O....6........0|
+00000060  5B 3F 33 66 00 00 3F 5C 00 00 08 98 00 12 FF 30  |[?3f..?\.......0|
+00000070  5B 3F 33 67 00 00 5D D4 00 00 10 2C 00 12 FF 30  |[?3g..]....,...0|
+00000080  AE 4F 19 12 00 00 6E 28 00 00 0F A0 00 12 FF 30  |.O....n(.......0|
+00000090  AE 4F 19 13 00 00 8E 30 00 00 08 C0 00 12 FF 30  |.O.....0.......0|
+000000A0  5B 3F 33 6A 00 00 97 0E 00 00 07 B2 00 12 FF 30  |[?3j...........0|
+000000B0  E6 A4 9A 18 00 00 AF 50 00 00 08 16 00 12 FF 30  |.......P.......0|
+000000C0  5B 3F 33 6B 00 00 D3 2C 00 00 1D 92 00 12 FF 30  |[?3k...,.......0|
+000000D0  AE 4F 19 16 00 00 F0 E6 00 00 0E BA 00 12 FF 30  |.O.............0|
+000000E0  1D 61 8B BD 00 01 00 86 00 00 30 7A 00 12 FF 30  |.a........0z...0|
+000000F0  5B 3F 33 95 00 01 31 28 00 00 0E 10 00 12 FF 30  |[?3...1(.......0|
+00000100  1D 61 8B E6 00 01 3F 56 00 00 0F C8 00 12 FF 30  |.a....?V.......0|
+00000110  5B 3F 33 97 00 01 50 72 00 00 15 9A 00 12 FF 30  |[?3...Pr.......0|
+00000120  1D 61 8B E8 00 01 66 34 00 00 1E 1E 00 12 FF 30  |.a....f4.......0|
+00000130  5B 3F 33 99 00 01 84 70 00 00 03 84 00 12 FF 30  |[?3....p.......0|
+00000140  1D 61 8B EA 00 01 88 12 00 00 0F 00 00 12 FF 30  |.a.............0|
+00000150  AE 50 19 4D 00 01 97 58 00 00 1F CC 00 12 FF 30  |.P.M...X.......0|
+00000160  5B 40 33 A4 00 01 B7 6A 00 00 0A 00 00 12 FF 30  |[@3....j.......0|
+00000170  1D 62 8B F5 00 01 C6 7E 00 00 10 72 00 12 FF 30  |.b.....~...r...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/che_igc02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 128 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 80 00 00 00 00 00 00 00 07  |1BOT............|
+00000010  AE 50 19 50 00 00 07 B2 00 00 12 C0 00 12 FF 30  |.P.P...........0|
+00000020  5B 40 33 A7 00 00 32 96 00 00 05 5A 00 12 FF 30  |[@3...2....Z...0|
+00000030  1D 62 8B F8 00 00 3B F6 00 00 18 C4 00 12 FF 30  |.b....;........0|
+00000040  1D 62 8B F9 00 00 55 3C 00 00 10 0E 00 12 FF 30  |.b....U&lt;.......0|
+00000050  4F 13 FF F4 00 00 65 CC 00 00 05 DC 00 12 FF 30  |O.....e........0|
+00000060  1D 62 8B FB 00 00 6C 70 00 00 15 A4 00 12 FF 30  |.b....lp.......0|
+00000070  5B 40 33 AC 00 00 82 78 00 00 07 94 00 12 FF 30  |[@3....x.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/dod_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 96 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 60 00 00 00 00 00 00 00 05  |1BOT...`........|
+00000010  F9 1F 8D A6 00 00 16 8A 00 00 32 50 00 12 FF 30  |..........2P...0|
+00000020  AE 52 19 D3 00 00 4A 06 00 00 09 24 00 12 FF 30  |.R....J....$...0|
+00000030  F9 1F 8D A8 00 00 53 48 00 00 1C F2 00 12 FF 30  |......SH.......0|
+00000040  5B 42 34 52 00 00 6C 70 00 00 13 6A 00 12 FF 30  |[B4R..lp...j...0|
+00000050  F9 1F 8D D1 00 00 84 08 00 00 21 20 00 12 FF 30  |..........! ...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/dod_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 192 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B  |1BOT............|
+00000010  F9 20 8D DF 00 00 00 0A 00 00 15 18 00 12 FF 30  |. .............0|
+00000020  5B 43 34 62 00 00 16 08 00 00 03 3E 00 12 FF 30  |[C4b.......&gt;...0|
+00000030  F9 20 8D E2 00 00 19 6E 00 00 0C E4 00 12 FF 30  |. .....n.......0|
+00000040  5B 43 34 65 00 00 26 70 00 00 17 16 00 12 FF 30  |[C4e..&amp;p.......0|
+00000050  29 21 40 16 00 00 3D A4 00 00 0B 9A 00 12 FF 30  |)!@...=........0|
+00000060  24 59 C5 0D 00 00 49 70 00 00 05 14 00 12 FF 30  |$Y....Ip.......0|
+00000070  29 21 40 17 00 00 4E 84 00 00 05 14 00 12 FF 30  |)!@...N........0|
+00000080  24 59 C5 0D 00 00 53 98 00 00 05 14 00 12 FF 30  |$Y....S........0|
+00000090  24 59 C5 0E 00 00 5B A4 00 00 06 40 00 12 FF 30  |$Y....[....@...0|
+000000A0  29 21 40 41 00 00 84 6C 00 00 0D AC 00 12 FF 30  |)!@A...l.......0|
+000000B0  24 59 C5 10 00 00 92 7C 00 00 0D AC 00 12 FF 30  |$Y.....|.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/gam_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 288 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 20 00 00 00 00 00 00 00 11  |1BOT... ........|
+00000010  5B 0E 27 8B 00 00 08 16 00 00 10 68 00 12 FF 30  |[.&#x27;........h...0|
+00000020  F8 0B 84 CD 00 00 18 A6 00 00 0A 46 00 12 FF 30  |...........F...0|
+00000030  5B 0F 27 95 00 00 23 14 00 00 05 BE 00 12 FF 30  |[.&#x27;...#........0|
+00000040  F8 0B 84 CF 00 00 28 F0 00 00 0D D4 00 12 FF 30  |......(........0|
+00000050  5B 0F 27 97 00 00 36 E2 00 00 08 16 00 12 FF 30  |[.&#x27;...6........0|
+00000060  F8 0B 84 D1 00 00 40 24 00 00 06 A4 00 12 FF 30  |......@$.......0|
+00000070  5B 0F 27 9A 00 00 4F E2 00 00 0C 8A 00 12 FF 30  |[.&#x27;...O........0|
+00000080  0E 36 A7 C3 00 00 5D 98 00 00 18 38 00 12 FF 30  |.6....]....8...0|
+00000090  0E 36 A7 C4 00 00 75 F8 00 00 36 D8 00 12 FF 30  |.6....u...6....0|
+000000A0  5B 0F 27 9D 00 00 A6 72 00 00 03 E8 00 12 FF 30  |[.&#x27;....r.......0|
+000000B0  5B 0F 27 C5 00 00 AB 04 00 00 12 5C 00 12 FF 30  |[.&#x27;........\...0|
+000000C0  5B 0F 27 C6 00 00 D3 86 00 00 22 4C 00 12 FF 30  |[.&#x27;.......&quot;L...0|
+000000D0  5B 0F 27 C7 00 00 F5 F0 00 00 3D 4A 00 12 FF 30  |[.&#x27;.......=J...0|
+000000E0  5B 0F 27 C8 00 01 48 52 00 00 0A 0A 00 12 FF 30  |[.&#x27;...HR.......0|
+000000F0  42 44 63 14 00 01 52 7A 00 00 19 28 00 12 FF 30  |BDc...Rz...(...0|
+00000100  5B 0F 27 CA 00 01 6B CA 00 00 0C E4 00 12 FF 30  |[.&#x27;...k........0|
+00000110  42 45 63 1E 00 01 78 CC 00 00 1B 1C 00 12 FF 30  |BEc...x........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/gam_igc02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 432 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 B0 00 00 00 00 00 00 00 1A  |1BOT............|
+00000010  0E 3D A9 79 00 00 00 00 00 00 03 E8 00 12 FF 30  |.=.y...........0|
+00000020  5B 16 29 52 00 00 03 E9 00 00 03 E8 00 12 FF 30  |[.)R...........0|
+00000030  AE 26 0E FD 00 00 07 D1 00 00 03 E8 00 12 FF 30  |.&amp;.............0|
+00000040  42 4B 64 9B 00 00 0B B9 00 00 03 E8 00 12 FF 30  |BKd............0|
+00000050  42 4B 64 9F 00 00 12 20 00 00 11 BC 00 12 FF 30  |BKd.... .......0|
+00000060  0E 3D A9 7D 00 00 23 FA 00 00 0E BA 00 12 FF 30  |.=.}..#........0|
+00000070  42 4B 64 A1 00 00 32 D2 00 00 11 12 00 12 FF 30  |BKd...2........0|
+00000080  0E 3D A9 A6 00 00 44 0C 00 00 11 F8 00 12 FF 30  |.=....D........0|
+00000090  5B 16 29 7F 00 00 56 AE 00 00 1B 3A 00 12 FF 30  |[.)...V....:...0|
+000000A0  AE 26 0F 2A 00 00 72 10 00 00 1D 4C 00 12 FF 30  |.&amp;.*..r....L...0|
+000000B0  42 4B 64 CC 00 00 8F 84 00 00 20 08 00 12 FF 30  |BKd....... ....0|
+000000C0  0E 3D A9 AB 00 00 AF B4 00 00 07 D0 00 12 FF 30  |.=.............0|
+000000D0  AE 27 0F 37 00 00 B7 55 00 00 07 D0 00 12 FF 30  |.&#x27;.7...U.......0|
+000000E0  5B 17 29 8C 00 00 BF 25 00 00 07 D0 00 12 FF 30  |[.)....%.......0|
+000000F0  42 4B 64 CD 00 00 C6 F5 00 00 07 D0 00 12 FF 30  |BKd............0|
+00000100  28 F5 35 3C 00 00 D6 24 00 00 12 20 00 12 FF 30  |(.5&lt;...$... ...0|
+00000110  24 2D BA 0B 00 00 E8 62 00 00 0D 52 00 12 FF 30  |$-.....b...R...0|
+00000120  28 F5 35 3E 00 00 F5 D2 00 00 0C 44 00 12 FF 30  |(.5&gt;.......D...0|
+00000130  24 2D BA 0D 00 01 02 34 00 00 0A 50 00 12 FF 30  |$-.....4...P...0|
+00000140  AE 27 0F 3C 00 01 C6 E2 00 00 0B 18 00 12 FF 30  |.&#x27;.&lt;...........0|
+00000150  42 4C 64 DE 00 01 D2 18 00 00 09 A6 00 12 FF 30  |BLd............0|
+00000160  5B 17 29 94 00 01 DB DC 00 00 3C 5A 00 12 FF 30  |[.).......&lt;Z...0|
+00000170  5B 17 29 95 00 02 25 1A 00 00 02 3A 00 12 FF 30  |[.)...%....:...0|
+00000180  AE 27 0F 67 00 02 27 72 00 00 1E 82 00 12 FF 30  |.&#x27;.g..&#x27;r.......0|
+00000190  BD 1C 82 80 00 02 51 F2 00 00 0B 18 00 12 FF 30  |......Q........0|
+000001A0  5B 17 29 BF 00 02 62 82 00 00 07 6C 00 12 FF 30  |[.)...b....l...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/gam_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 256 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 00 00 00 00 00 00 00 00 0F  |1BOT............|
+00000010  AE 27 0F 6A 00 00 00 64 00 00 12 07 00 12 FF 30  |.&#x27;.j...d.......0|
+00000020  5B 17 29 C1 00 00 12 CF 00 00 07 56 00 12 FF 30  |[.)........V...0|
+00000030  AE 27 0F 6C 00 00 1A 8A 00 00 07 C9 00 12 FF 30  |.&#x27;.l...........0|
+00000040  5B 3F 33 64 00 00 22 B7 00 00 0C 9A 00 12 FF 30  |[?3d..&quot;........0|
+00000050  AE 4F 19 0F 00 00 2F B6 00 00 08 F1 00 12 FF 30  |.O..../........0|
+00000060  5B 3F 33 66 00 00 39 0C 00 00 08 22 00 12 FF 30  |[?3f..9....&quot;...0|
+00000070  5B 3F 33 67 00 00 41 92 00 00 0F 5A 00 12 FF 30  |[?3g..A....Z...0|
+00000080  AE 4F 19 12 00 00 51 50 00 00 0F E4 00 12 FF 30  |.O....QP.......0|
+00000090  AE 4F 19 13 00 00 61 98 00 00 08 7F 00 12 FF 30  |.O....a........0|
+000000A0  5B 3F 33 6A 00 00 6A 7C 00 00 08 C8 00 12 FF 30  |[?3j..j|.......0|
+000000B0  E6 A4 9A 15 00 00 73 A8 00 00 03 E8 00 12 FF 30  |......s........0|
+000000C0  E6 A4 9A 16 00 00 77 F4 00 00 00 8F 00 12 FF 30  |......w........0|
+000000D0  E6 A4 9A 18 00 00 78 E8 00 00 03 E8 00 12 FF 30  |......x........0|
+000000E0  39 B4 7F C3 00 00 7D 34 00 00 03 E8 00 12 FF 30  |9.....}4.......0|
+000000F0  3D 59 F8 D0 00 00 81 80 00 00 03 E8 00 12 FF 30  |=Y.............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/gam_igc04.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 448 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 C0 00 00 00 00 00 00 00 1B  |1BOT............|
+00000010  AE 54 1A 52 00 00 00 64 00 00 0A 1D 00 12 FF 30  |.T.R...d.......0|
+00000020  5B 44 34 D0 00 00 0A E5 00 00 0A 54 00 12 FF 30  |[D4........T...0|
+00000030  42 79 70 1C 00 00 15 9E 00 00 07 77 00 12 FF 30  |Byp........w...0|
+00000040  5B 44 34 D2 00 00 1D 79 00 00 14 0C 00 12 FF 30  |[D4....y.......0|
+00000050  29 22 40 81 00 00 31 EA 00 00 19 04 00 12 FF 30  |)&quot;@...1........0|
+00000060  24 5A C5 50 00 00 4B 52 00 00 0E DC 00 12 FF 30  |$Z.P..KR.......0|
+00000070  29 22 40 83 00 00 5A 93 00 00 0B 2D 00 12 FF 30  |)&quot;@...Z....-...0|
+00000080  24 A2 C7 52 00 00 66 24 00 00 16 FD 00 12 FF 30  |$..R..f$.......0|
+00000090  29 6A 42 85 00 00 7D 86 00 00 08 75 00 12 FF 30  |)jB...}....u...0|
+000000A0  0E B3 B7 00 00 00 86 5F 00 00 1B E2 00 12 FF 30  |......._.......0|
+000000B0  5B 8C 36 D9 00 00 A2 A6 00 00 08 28 00 12 FF 30  |[.6........(...0|
+000000C0  AE 9C 1C 84 00 00 AB 32 00 00 0E 0A 00 12 FF 30  |.......2.......0|
+000000D0  5B 8C 36 DB 00 00 B9 A1 00 00 0D 1B 00 12 FF 30  |[.6............0|
+000000E0  42 C1 72 27 00 00 C7 20 00 00 0C 9B 00 12 FF 30  |B.r&#x27;... .......0|
+000000F0  5B 8C 36 DD 00 00 D4 20 00 00 22 53 00 12 FF 30  |[.6.... ..&quot;S...0|
+00000100  0E B3 B7 06 00 00 F6 D7 00 00 0D BF 00 12 FF 30  |...............0|
+00000110  5B 8C 36 DF 00 01 04 FB 00 00 08 54 00 12 FF 30  |[.6........T...0|
+00000120  42 C1 72 52 00 01 0D B3 00 00 06 7D 00 12 FF 30  |B.rR.......}...0|
+00000130  42 C1 72 53 00 01 14 95 00 00 03 4C 00 12 FF 30  |B.rS.......L...0|
+00000140  0E B3 B7 31 00 01 18 45 00 00 05 26 00 12 FF 30  |...1...E...&amp;...0|
+00000150  5B 8C 37 0A 00 01 1D D0 00 00 04 81 00 12 FF 30  |[.7............0|
+00000160  AE 9C 1C B5 00 01 22 B6 00 00 06 99 00 12 FF 30  |......&quot;........0|
+00000170  CD D9 D5 8C 00 01 29 B4 00 00 03 E8 00 12 FF 30  |......)........0|
+00000180  99 CC 1A 6A 00 01 2E 00 00 00 03 E8 00 12 FF 30  |...j...........0|
+00000190  39 B4 7F ED 00 01 32 4C 00 00 03 E8 00 12 FF 30  |9.....2L.......0|
+000001A0  E6 A4 9A 44 00 01 36 98 00 00 03 E8 00 12 FF 30  |...D..6........0|
+000001B0  E6 A4 9A 45 00 01 3A E4 00 00 03 E8 00 12 FF 30  |...E..:........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/gam_igc05.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 336 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 50 00 00 00 00 00 00 00 14  |1BOT...P........|
+00000010  42 C3 72 A3 00 00 05 BE 00 00 14 32 00 12 FF 30  |B.r........2...0|
+00000020  5B 8E 37 59 00 00 26 52 00 00 14 14 00 12 FF 30  |[.7Y..&amp;R.......0|
+00000030  42 C3 72 A5 00 00 3C 5A 00 00 05 BE 00 12 FF 30  |B.r...&lt;Z.......0|
+00000040  EB EC E0 6C 00 00 42 36 00 00 05 78 00 12 FF 30  |...l..B6...x...0|
+00000050  42 C3 72 A7 00 00 4E B6 00 00 0D 0C 00 12 FF 30  |B.r...N........0|
+00000060  AD EA 26 30 00 00 5B E0 00 00 17 C0 00 12 FF 30  |..&amp;0..[........0|
+00000070  EC D1 78 06 00 00 74 22 00 00 0E 56 00 12 FF 30  |..x...t&quot;...V...0|
+00000080  5B 8E 37 86 00 00 82 96 00 00 20 76 00 12 FF 30  |[.7....... v...0|
+00000090  AE 9E 1D 31 00 00 A3 98 00 00 4D 8A 00 12 FF 30  |...1......M....0|
+000000A0  42 C3 72 D5 00 00 F1 40 00 00 28 28 00 12 FF 30  |B.r....@..((...0|
+000000B0  AE 9F 1D 3E 00 01 1D 32 00 00 35 0C 00 12 FF 30  |...&gt;...2..5....0|
+000000C0  5B 8F 37 95 00 01 52 C0 00 00 08 DE 00 12 FF 30  |[.7...R........0|
+000000D0  81 B9 64 90 00 01 5B E4 00 00 29 D6 00 12 FF 30  |..d...[...)....0|
+000000E0  5B 8F 37 98 00 01 85 D8 00 00 16 D0 00 12 FF 30  |[.7............0|
+000000F0  AD EB 26 6C 00 01 9F C8 00 00 23 50 00 12 FF 30  |..&amp;l......#P...0|
+00000100  AD EB 26 6D 00 01 C3 40 00 00 18 9C 00 12 FF 30  |..&amp;m...@.......0|
+00000110  5B 8F 37 9B 00 01 DC 04 00 00 28 C8 00 12 FF 30  |[.7.......(....0|
+00000120  AD EB 26 6F 00 02 05 12 00 00 07 6C 00 12 FF 30  |..&amp;o.......l...0|
+00000130  0E B6 B7 EC 00 02 0F 9E 00 00 16 08 00 12 FF 30  |...............0|
+00000140  AE 9F 1D 6F 00 02 25 E2 00 00 06 FE 00 12 FF 30  |...o..%........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/gam_igc06.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 272 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 10 00 00 00 00 00 00 00 10  |1BOT............|
+00000010  EC D8 79 C2 00 00 13 6A 00 00 03 CA 00 12 FF 30  |..y....j.......0|
+00000020  AD F1 28 15 00 00 17 52 00 00 08 DE 00 12 FF 30  |..(....R.......0|
+00000030  5B 95 39 43 00 00 20 08 00 00 08 5C 00 12 FF 30  |[.9C.. ....\...0|
+00000040  EC 1B EB F6 00 00 28 C8 00 00 0A B4 00 12 FF 30  |......(........0|
+00000050  AE CD 28 90 00 00 33 9A 00 00 15 22 00 12 FF 30  |..(...3....&quot;...0|
+00000060  EC 1B EB F8 00 00 49 02 00 00 1A 0E 00 12 FF 30  |......I........0|
+00000070  EC 1B EB F9 00 00 63 2E 00 00 09 42 00 12 FF 30  |......c....B...0|
+00000080  AE 19 31 BC 00 00 6C 8E 00 00 0D 52 00 12 FF 30  |..1...l....R...0|
+00000090  5B BD 42 EA 00 00 79 FE 00 00 05 DC 00 12 FF 30  |[.B...y........0|
+000000A0  42 F2 7E 36 00 00 80 02 00 00 11 76 00 12 FF 30  |B.~6.......v...0|
+000000B0  EC 1B EB FD 00 00 91 96 00 00 0F 1E 00 12 FF 30  |...............0|
+000000C0  AE 19 31 C0 00 00 A1 04 00 00 0B 90 00 12 FF 30  |..1............0|
+000000D0  0E E4 C3 16 00 00 AC B2 00 00 29 D6 00 12 FF 30  |..........)....0|
+000000E0  42 F2 7E 61 00 01 09 E6 00 00 16 08 00 12 FF 30  |B.~a...........0|
+000000F0  5B BD 43 17 00 01 20 F2 00 00 0C 26 00 12 FF 30  |[.C... ....&amp;...0|
+00000100  EC 1B EC 29 00 01 2D 36 00 00 1D 7E 00 12 FF 30  |...)..-6...~...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/gam_igc07.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 480 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 E0 00 00 00 00 00 00 00 1D  |1BOT............|
+00000010  5B C1 44 15 00 00 0C 6C 00 00 1A 68 00 12 FF 30  |[.D....l...h...0|
+00000020  7A 01 7C 71 00 00 27 E2 00 00 23 FA 00 12 FF 30  |z.|q..&#x27;...#....0|
+00000030  5B C1 44 17 00 00 4C 22 00 00 05 32 00 12 FF 30  |[.D...L&quot;...2...0|
+00000040  7A 02 7C 7B 00 00 53 F2 00 00 0C 44 00 12 FF 30  |z.|{..S....D...0|
+00000050  42 F7 7F 6C 00 00 60 54 00 00 19 AA 00 12 FF 30  |B..l..`T.......0|
+00000060  7A 02 7C 7D 00 00 7A 26 00 00 2C CE 00 12 FF 30  |z.|}..z&amp;..,....0|
+00000070  5B C2 44 23 00 00 A7 1C 00 00 09 1A 00 12 FF 30  |[.D#...........0|
+00000080  AE D2 29 CE 00 00 B0 7C 00 00 0C 9E 00 12 FF 30  |..)....|.......0|
+00000090  7A 02 7C 80 00 00 BD 42 00 00 6B 8A 00 12 FF 30  |z.|....B..k....0|
+000000A0  AE D2 29 D0 00 01 28 EA 00 00 2D 1E 00 12 FF 30  |..)...(...-....0|
+000000B0  7A 02 7C 82 00 01 56 26 00 00 1B 9E 00 12 FF 30  |z.|...V&amp;.......0|
+000000C0  5B C2 44 28 00 01 71 EC 00 00 13 06 00 12 FF 30  |[.D(..q........0|
+000000D0  7A 02 7C 84 00 01 85 10 00 00 0B E0 00 12 FF 30  |z.|............0|
+000000E0  7A 02 7C AC 00 01 91 0E 00 00 34 EE 00 12 FF 30  |z.|.......4....0|
+000000F0  7A 02 7C AD 00 01 D2 5E 00 00 08 34 00 12 FF 30  |z.|....^...4...0|
+00000100  5B C2 44 53 00 01 F0 72 00 00 06 4A 00 12 FF 30  |[.DS...r...J...0|
+00000110  7A 02 7C AF 00 01 F6 DA 00 00 11 DA 00 12 FF 30  |z.|............0|
+00000120  42 F7 7F A0 00 02 08 D2 00 00 16 6C 00 12 FF 30  |B..........l...0|
+00000130  7A 02 7C B1 00 02 1F 66 00 00 2A BC 00 12 FF 30  |z.|....f..*....0|
+00000140  0F 31 C6 7F 00 02 4A 40 00 00 0C 8A 00 12 FF 30  |.1....J@.......0|
+00000150  5C 0A 46 58 00 02 58 A0 00 00 06 A4 00 12 FF 30  |\.FX..X........0|
+00000160  AF 1A 2C 03 00 02 5F 62 00 00 0F 00 00 12 FF 30  |..,..._b.......0|
+00000170  43 3F 81 A5 00 02 6E 80 00 00 05 14 00 12 FF 30  |C?....n........0|
+00000180  7A 4A 7E B6 00 02 73 BC 00 00 1D 6A 00 12 FF 30  |zJ~...s....j...0|
+00000190  27 56 BF 2F 00 02 92 52 00 00 03 AC 00 12 FF 30  |&#x27;V./...R.......0|
+000001A0  AF 1A 2C 06 00 02 96 1C 00 00 16 26 00 12 FF 30  |..,........&amp;...0|
+000001B0  7A 4A 7E B8 00 02 AC 6A 00 00 1C 8E 00 12 FF 30  |zJ~....j.......0|
+000001C0  BE 0F 9F 20 00 02 C9 16 00 00 06 AE 00 12 FF 30  |... ...........0|
+000001D0  BE 0F 9F 21 00 02 E9 8C 00 00 09 C4 00 12 FF 30  |...!...........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/gts_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 96 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 60 00 00 00 00 00 00 00 05  |1BOT...`........|
+00000010  0E BB B9 2A 00 00 00 82 00 00 28 46 00 12 FF 30  |...*......(F...0|
+00000020  AE A4 1E AD 00 00 40 A6 00 00 0F 64 00 12 FF 30  |......@....d...0|
+00000030  0E BB B9 2C 00 00 50 28 00 00 10 4A 00 12 FF 30  |...,..P(...J...0|
+00000040  AE A5 1E B7 00 00 60 90 00 00 10 54 00 12 FF 30  |......`....T...0|
+00000050  0E BC B9 36 00 00 71 02 00 00 0D D4 00 12 FF 30  |...6..q........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/gts_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 144 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 90 00 00 00 00 00 00 00 08  |1BOT............|
+00000010  0E BC B9 3A 00 00 03 E8 00 00 1E 3C 00 12 FF 30  |...:.......&lt;...0|
+00000020  AE A5 1E BD 00 00 22 4C 00 00 02 58 00 12 FF 30  |......&quot;L...X...0|
+00000030  39 9B 8F D7 00 00 24 E0 00 00 05 5A 00 12 FF 30  |9.....$....Z...0|
+00000040  0E BC B9 3D 00 00 2A 80 00 00 12 3E 00 12 FF 30  |...=..*....&gt;...0|
+00000050  AE A5 1E C0 00 00 3C DC 00 00 11 12 00 12 FF 30  |......&lt;........0|
+00000060  A4 7E B1 13 00 00 52 1C 00 00 1E E6 00 12 FF 30  |.~....R........0|
+00000070  0E BC B9 67 00 00 7A 80 00 00 04 56 00 12 FF 30  |...g..z....V...0|
+00000080  AE A5 1E EA 00 00 7E F4 00 00 03 66 00 12 FF 30  |......~....f...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/hug_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 224 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 E0 00 00 00 00 00 00 00 0D  |1BOT............|
+00000010  AE 22 0E 01 00 00 10 04 00 00 10 2C 00 12 FF 30  |.&quot;.........,...0|
+00000020  5B 12 28 58 00 00 20 94 00 00 03 20 00 12 FF 30  |[.(X.. .... ...0|
+00000030  AE 22 0E 03 00 00 23 DC 00 00 17 52 00 12 FF 30  |.&quot;....#....R...0|
+00000040  5B 12 28 5A 00 00 3B 4C 00 00 10 2C 00 12 FF 30  |[.(Z..;L...,...0|
+00000050  AE 22 0E 2C 00 00 4B 96 00 00 05 3C 00 12 FF 30  |.&quot;.,..K....&lt;...0|
+00000060  AE 22 0E 2D 00 00 50 F0 00 00 14 14 00 12 FF 30  |.&quot;.-..P........0|
+00000070  5B 12 28 84 00 00 65 22 00 00 06 A4 00 12 FF 30  |[.(...e&quot;.......0|
+00000080  AE 22 0E 2F 00 00 6C 2A 00 00 0E 7E 00 12 FF 30  |.&quot;./..l*...~...0|
+00000090  5B 12 28 86 00 00 7A C6 00 00 07 D0 00 12 FF 30  |[.(...z........0|
+000000A0  DF 7A F4 95 00 00 82 DC 00 00 1C 2A 00 12 FF 30  |.z.........*...0|
+000000B0  DA F9 D8 BD 00 00 9F 24 00 00 17 34 00 12 FF 30  |.......$...4...0|
+000000C0  DF 7B F4 9F 00 00 B7 84 00 00 0E 56 00 12 FF 30  |.{.........V...0|
+000000D0  DA F9 D8 BF 00 00 C6 5C 00 00 0A 32 00 12 FF 30  |.......\...2...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/hug_igc05.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 144 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 90 00 00 00 00 00 00 00 08  |1BOT............|
+00000010  5B 13 28 C4 00 00 2B 8E 00 00 0B 0E 00 12 FF 30  |[.(...+........0|
+00000020  BB 85 0B C0 00 00 37 28 00 00 13 4C 00 12 FF 30  |......7(...L...0|
+00000030  AE 23 0E 70 00 00 4B DC 00 00 17 34 00 12 FF 30  |.#.p..K....4...0|
+00000040  BB 86 0B CA 00 00 63 2E 00 00 17 52 00 12 FF 30  |......c....R...0|
+00000050  5B 14 28 D0 00 00 7A A8 00 00 04 F6 00 12 FF 30  |[.(...z........0|
+00000060  DF 7C F4 DF 00 00 8E DA 00 00 19 28 00 12 FF 30  |.|.........(...0|
+00000070  DA FA D8 FF 00 00 A8 20 00 00 10 72 00 12 FF 30  |....... ...r...0|
+00000080  DF 7C F4 E1 00 00 B8 F6 00 00 04 F6 00 12 FF 30  |.|.............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/loc_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 144 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 90 00 00 00 00 00 00 00 08  |1BOT............|
+00000010  19 59 2C 63 00 00 04 10 00 00 0E 06 00 12 FF 30  |.Y,c...........0|
+00000020  42 43 62 A3 00 00 84 26 00 00 0A BE 00 12 FF 30  |BCb....&amp;.......0|
+00000030  89 09 64 8E 00 00 8F 66 00 00 0E 56 00 12 FF 30  |..d....f...V...0|
+00000040  42 43 62 A5 00 00 9D E4 00 00 22 56 00 12 FF 30  |BCb.......&quot;V...0|
+00000050  89 09 64 90 00 00 C0 62 00 00 0D 84 00 12 FF 30  |..d....b.......0|
+00000060  42 43 62 A7 00 00 CE 0E 00 00 11 94 00 12 FF 30  |BCb............0|
+00000070  89 09 64 92 00 00 DF CA 00 00 16 D0 00 12 FF 30  |..d............0|
+00000080  42 43 62 A9 00 00 FA 00 00 00 0D C0 00 12 FF 30  |BCb............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/loc_igc02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 64 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 40 00 00 00 00 00 00 00 03  |1BOT...@........|
+00000010  42 43 62 D2 00 00 01 90 00 00 15 5E 00 12 FF 30  |BCb........^...0|
+00000020  42 43 62 D3 00 00 17 DE 00 00 1F 22 00 12 FF 30  |BCb........&quot;...0|
+00000030  42 43 62 D4 00 00 37 46 00 00 07 8A 00 12 FF 30  |BCb...7F.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/making_01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 16 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 10 00 00 00 00 00 00 00 00  |1BOT............|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/making_01_sd.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 16 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 10 00 00 00 00 00 00 00 00  |1BOT............|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/making_02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 16 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 10 00 00 00 00 00 00 00 00  |1BOT............|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/making_02_sd.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 16 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 10 00 00 00 00 00 00 00 00  |1BOT............|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/making_03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 16 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 10 00 00 00 00 00 00 00 00  |1BOT............|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/making_03_sd.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 16 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 10 00 00 00 00 00 00 00 00  |1BOT............|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/mob_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 224 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 E0 00 00 00 00 00 00 00 0D  |1BOT............|
+00000010  0E 3B A8 FC 00 00 02 12 00 00 0D 70 00 12 FF 30  |.;.........p...0|
+00000020  AE 24 0E 7F 00 00 0F A0 00 00 07 F8 00 12 FF 30  |.$.............0|
+00000030  0E 3B A8 FE 00 00 17 B6 00 00 1C 48 00 12 FF 30  |.;.........H...0|
+00000040  71 25 22 0C 00 00 35 52 00 00 0B 0E 00 12 FF 30  |q%&quot;...5R.......0|
+00000050  71 25 22 0D 00 00 4C C2 00 00 06 A4 00 12 FF 30  |q%&quot;...L........0|
+00000060  0E 3B A9 28 00 00 6B 26 00 00 05 14 00 12 FF 30  |.;.(..k&amp;.......0|
+00000070  CF 74 C4 79 00 00 70 58 00 00 21 5C 00 12 FF 30  |.t.y..pX..!\...0|
+00000080  AE 24 0E AC 00 00 91 FA 00 00 09 C4 00 12 FF 30  |.$.............0|
+00000090  0E 3B A9 2B 00 00 9B E6 00 00 02 76 00 12 FF 30  |.;.+.......v...0|
+000000A0  AE 24 0E AE 00 00 9E 7A 00 00 0A 0A 00 12 FF 30  |.$.....z.......0|
+000000B0  0E 3B A9 2D 00 00 A8 AC 00 00 14 32 00 12 FF 30  |.;.-.......2...0|
+000000C0  AE 25 0E B8 00 00 BC FC 00 00 10 4A 00 12 FF 30  |.%.........J...0|
+000000D0  0E 3C A9 37 00 00 CD 8C 00 00 11 1C 00 12 FF 30  |.&lt;.7...........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/moh_briefing01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 32 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 20 00 00 00 00 00 00 00 01  |1BOT... ........|
+00000010  9B F7 7B E5 00 00 00 64 00 00 9B 46 00 12 FF 30  |..{....d...F...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/moh_briefing02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 32 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 20 00 00 00 00 00 00 00 01  |1BOT... ........|
+00000010  9B F7 7B E6 00 00 00 64 00 00 87 FA 00 12 FF 30  |..{....d.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/moh_briefing03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 32 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 20 00 00 00 00 00 00 00 01  |1BOT... ........|
+00000010  9B F7 7C 0E 00 00 00 64 00 00 CD 78 00 12 FF 30  |..|....d...x...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/moh_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 96 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 60 00 00 00 00 00 00 00 05  |1BOT...`........|
+00000010  42 C7 73 A3 00 00 36 38 00 00 0A 6E 00 12 FF 30  |B.s...68...n...0|
+00000020  E2 BD CE 65 00 00 40 EC 00 00 24 E0 00 12 FF 30  |...e..@...$....0|
+00000030  5B 92 38 81 00 00 7C 9C 00 00 0B 36 00 12 FF 30  |[.8...|....6...0|
+00000040  42 C7 73 CD 00 00 8C A0 00 00 17 C0 00 12 FF 30  |B.s............0|
+00000050  0E 69 CB 90 00 00 A4 7E 00 00 09 EC 00 12 FF 30  |.i.....~.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/mtp_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 368 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 70 00 00 00 00 00 00 00 16  |1BOT...p........|
+00000010  4E 95 09 CB 00 00 0B 7C 00 00 12 3E 00 12 FF 30  |N......|...&gt;...0|
+00000020  5B BF 43 97 00 00 2A 1C 00 00 10 4A 00 12 FF 30  |[.C...*....J...0|
+00000030  F5 FD FA EC 00 00 55 82 00 00 06 5E 00 12 FF 30  |......U....^...0|
+00000040  47 B1 BE CB 00 00 5F C8 00 00 06 4A 00 12 FF 30  |G....._....J...0|
+00000050  47 B2 BE D4 00 00 6F 36 00 00 07 62 00 12 FF 30  |G.....o6...b...0|
+00000060  42 F5 7E EE 00 00 7C E2 00 00 0A F0 00 12 FF 30  |B.~...|........0|
+00000070  A7 F7 FD CE 00 00 87 F0 00 00 0F AA 00 12 FF 30  |...............0|
+00000080  5B C0 43 A5 00 00 9A 74 00 00 08 02 00 12 FF 30  |[.C....t.......0|
+00000090  0E E7 C3 CF 00 00 A8 CA 00 00 0F 1E 00 12 FF 30  |...............0|
+000000A0  AE D0 29 52 00 00 B8 2E 00 00 0B B8 00 12 FF 30  |..)R...........0|
+000000B0  0E E7 C3 D1 00 00 C9 7C 00 00 0A 32 00 12 FF 30  |.......|...2...0|
+000000C0  AE D0 29 54 00 00 D3 CC 00 00 25 8A 00 12 FF 30  |..)T......%....0|
+000000D0  42 F5 7E F6 00 00 F9 9C 00 00 0C 62 00 12 FF 30  |B.~........b...0|
+000000E0  AE D0 29 7D 00 01 64 C2 00 00 0D D4 00 12 FF 30  |..)}..d........0|
+000000F0  CD A3 10 50 00 01 72 B4 00 00 0C A8 00 12 FF 30  |...P..r........0|
+00000100  2D D6 4E D3 00 01 AB 26 00 00 0B 54 00 12 FF 30  |-.N....&amp;...T...0|
+00000110  42 F5 7F 21 00 01 B6 98 00 00 0A 6E 00 12 FF 30  |B..!.......n...0|
+00000120  AE D0 29 81 00 01 C1 6A 00 00 10 D6 00 12 FF 30  |..)....j.......0|
+00000130  0E E7 C4 00 00 01 D2 5E 00 00 0C C6 00 12 FF 30  |.......^.......0|
+00000140  2D D7 4E DF 00 01 DF 42 00 00 19 B4 00 12 FF 30  |-.N....B.......0|
+00000150  5B C1 43 E2 00 01 F9 14 00 00 0C 1C 00 12 FF 30  |[.C............0|
+00000160  2D D7 4E E1 00 02 05 58 00 00 0B B8 00 12 FF 30  |-.N....X.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/mtp_igc02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 192 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B  |1BOT............|
+00000010  AE D0 29 7D 00 00 00 64 00 00 0E 6F 00 12 FF 30  |..)}...d...o...0|
+00000020  CD A3 10 50 00 00 0F 37 00 00 0D 2C 00 12 FF 30  |...P...7...,...0|
+00000030  2D D6 4E D3 00 00 1C C7 00 00 0B 10 00 12 FF 30  |-.N............0|
+00000040  42 F5 7F 21 00 00 28 3B 00 00 0A A5 00 12 FF 30  |B..!..(;.......0|
+00000050  AE D0 29 81 00 00 33 45 00 00 12 BE 00 12 FF 30  |..)...3E.......0|
+00000060  0E E7 C4 00 00 00 46 68 00 00 0C 3C 00 12 FF 30  |......Fh...&lt;...0|
+00000070  2D D7 4E DF 00 00 53 08 00 00 19 C5 00 12 FF 30  |-.N...S........0|
+00000080  5B C1 43 E2 00 00 6D 32 00 00 0C 40 00 12 FF 30  |[.C...m2...@...0|
+00000090  2D D7 4E E1 00 00 79 D7 00 00 0C 86 00 12 FF 30  |-.N...y........0|
+000000A0  CD D8 D5 24 00 00 86 C2 00 00 03 E8 00 12 FF 30  |...$...........0|
+000000B0  E6 A3 99 DA 00 00 8B 0E 00 00 03 E8 00 12 FF 30  |...............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/nvq_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 192 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B  |1BOT............|
+00000010  0E B6 B7 EF 00 00 04 6A 00 00 0F F0 00 12 FF 30  |.......j.......0|
+00000020  42 C4 73 13 00 00 14 78 00 00 0F 1E 00 12 FF 30  |B.s....x.......0|
+00000030  0E B6 B7 F1 00 00 32 FA 00 00 13 EC 00 12 FF 30  |......2........0|
+00000040  33 CB 76 45 00 00 52 9E 00 00 04 10 00 12 FF 30  |3.vE..R........0|
+00000050  4F 14 5D C4 00 00 57 12 00 00 06 C2 00 12 FF 30  |O.]...W........0|
+00000060  BD 95 90 96 00 00 61 80 00 00 07 6C 00 12 FF 30  |......a....l...0|
+00000070  61 C5 26 54 00 00 7A 12 00 00 0F 96 00 12 FF 30  |a.&amp;T..z........0|
+00000080  0E B7 B7 FD 00 00 91 32 00 00 0A D2 00 12 FF 30  |.......2.......0|
+00000090  42 C5 73 21 00 00 9C 22 00 00 0E 9C 00 12 FF 30  |B.s!...&quot;.......0|
+000000A0  0E B7 B7 FF 00 00 AA DC 00 00 10 2C 00 12 FF 30  |...........,...0|
+000000B0  42 C5 73 23 00 00 BB 6C 00 00 0A 96 00 12 FF 30  |B.s#...l.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/nvq_igc04.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 80 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 50 00 00 00 00 00 00 00 04  |1BOT...P........|
+00000010  42 C5 73 53 00 00 00 64 00 00 14 FA 00 12 FF 30  |B.sS...d.......0|
+00000020  D6 B0 C3 E4 00 00 17 7A 00 00 06 E0 00 12 FF 30  |.......z.......0|
+00000030  0E B8 B8 3A 00 00 26 D4 00 00 16 B2 00 12 FF 30  |...:..&amp;........0|
+00000040  42 C6 73 5E 00 00 53 66 00 00 09 42 00 12 FF 30  |B.s^..Sf...B...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/rwc_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 208 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 D0 00 00 00 00 00 00 00 0C  |1BOT............|
+00000010  AE CE 28 FF 00 00 03 84 00 00 1E A0 00 12 FF 30  |..(............0|
+00000020  42 F3 7E A1 00 00 22 4C 00 00 11 B2 00 12 FF 30  |B.~...&quot;L.......0|
+00000030  0E E5 C3 7F 00 00 41 50 00 00 0D 02 00 12 FF 30  |......AP.......0|
+00000040  5B BE 43 58 00 00 4E 98 00 00 04 CE 00 12 FF 30  |[.CX..N........0|
+00000050  5A 85 E2 E3 00 00 53 8E 00 00 0B 9A 00 12 FF 30  |Z.....S........0|
+00000060  AE CF 29 0D 00 00 5F 46 00 00 32 B4 00 12 FF 30  |..)..._F..2....0|
+00000070  5A 86 E2 ED 00 00 92 5E 00 00 2E 04 00 12 FF 30  |Z......^.......0|
+00000080  42 F4 7E B0 00 00 C0 A8 00 00 0A 28 00 12 FF 30  |B.~........(...0|
+00000090  5A 86 E2 F2 00 00 CC 7E 00 00 0C 8A 00 12 FF 30  |Z......~.......0|
+000000A0  42 F4 7E B5 00 00 DA 52 00 00 0A 6E 00 12 FF 30  |B.~....R...n...0|
+000000B0  5A 86 E3 1E 00 00 E5 06 00 00 06 A4 00 12 FF 30  |Z..............0|
+000000C0  CD DB D5 DA 00 00 F7 62 00 00 06 A4 00 12 FF 30  |.......b.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/scd_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 64 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 40 00 00 00 00 00 00 00 03  |1BOT...@........|
+00000010  9F 21 94 8C 00 00 1F A4 00 00 30 3E 00 12 FF 30  |.!........0&gt;...0|
+00000020  42 78 6F E1 00 00 51 FE 00 00 1E E6 00 12 FF 30  |Bxo...Q........0|
+00000030  42 79 6F EA 00 00 A4 60 00 00 04 88 00 12 FF 30  |Byo....`.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/scd_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 112 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 70 00 00 00 00 00 00 00 06  |1BOT...p........|
+00000010  42 79 6F ED 00 00 0C 80 00 00 09 CE 00 12 FF 30  |Byo............0|
+00000020  5B 44 34 A3 00 00 16 6C 00 00 0D 48 00 12 FF 30  |[D4....l...H...0|
+00000030  42 79 6F EF 00 00 29 54 00 00 07 8A 00 12 FF 30  |Byo...)T.......0|
+00000040  29 22 40 53 00 00 33 36 00 00 0F 82 00 12 FF 30  |)&quot;@S..36.......0|
+00000050  24 5A C5 22 00 00 42 E0 00 00 18 7E 00 12 FF 30  |$Z.&quot;..B....~...0|
+00000060  29 22 40 55 00 00 5B 7C 00 00 0A 50 00 12 FF 30  |)&quot;@U..[|...P...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/sss_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 160 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 A0 00 00 00 00 00 00 00 09  |1BOT............|
+00000010  5B 40 33 D5 00 00 0B 7C 00 00 0B 36 00 12 FF 30  |[@3....|...6...0|
+00000020  42 75 6F 21 00 00 16 D0 00 00 13 6A 00 12 FF 30  |Buo!.......j...0|
+00000030  ED DF 0B CC 00 00 3A E8 00 00 04 2E 00 12 FF 30  |......:........0|
+00000040  42 75 6F 23 00 00 3F 34 00 00 03 48 00 12 FF 30  |Buo#..?4...H...0|
+00000050  90 F7 46 F0 00 00 49 E8 00 00 2F B2 00 12 FF 30  |..F...I.../....0|
+00000060  6E FE 33 B4 00 00 7A A8 00 00 17 FC 00 12 FF 30  |n.3...z........0|
+00000070  3B 86 50 B6 00 00 93 08 00 00 07 B2 00 12 FF 30  |;.P............0|
+00000080  6E FE 33 B6 00 00 9A D8 00 00 0F E6 00 12 FF 30  |n.3............0|
+00000090  5B 41 33 E5 00 00 C4 90 00 00 0E 2E 00 12 FF 30  |[A3............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/sss_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 208 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 D0 00 00 00 00 00 00 00 0C  |1BOT............|
+00000010  5B 41 34 13 00 00 1E A0 00 00 04 D8 00 12 FF 30  |[A4............0|
+00000020  5B 41 34 14 00 00 23 B4 00 00 04 10 00 12 FF 30  |[A4...#........0|
+00000030  5A E2 1C 77 00 00 28 F0 00 00 14 B4 00 12 FF 30  |Z..w..(........0|
+00000040  5B 41 34 17 00 00 3D CC 00 00 04 CE 00 12 FF 30  |[A4...=........0|
+00000050  5A E2 1C 79 00 00 42 C2 00 00 08 98 00 12 FF 30  |Z..y..B........0|
+00000060  42 77 6F 6C 00 00 4C 5E 00 00 04 74 00 12 FF 30  |Bwol..L^...t...0|
+00000070  5B 42 34 22 00 00 51 0E 00 00 0A 96 00 12 FF 30  |[B4&quot;..Q........0|
+00000080  5A E3 1C 84 00 00 5B C2 00 00 4E 98 00 12 FF 30  |Z.....[...N....0|
+00000090  29 20 3F D3 00 00 C8 14 00 00 0B 18 00 12 FF 30  |) ?............0|
+000000A0  24 58 C4 A2 00 00 CF 3A 00 00 17 34 00 12 FF 30  |$X.....:...4...0|
+000000B0  B8 28 1E D5 00 00 E7 C2 00 00 11 DA 00 12 FF 30  |.(.............0|
+000000C0  24 58 C4 A3 00 00 FF BE 00 00 04 92 00 12 FF 30  |$X.............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L01_LandOfChocolate/loc_global_str/build/PS3/pal_en/assets/movies/tox/loc_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 144 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 90 00 00 00 00 00 00 00 08  |1BOT............|
+00000010  19 59 2C 63 00 00 04 10 00 00 0E 06 00 12 FF 30  |.Y,c...........0|
+00000020  42 43 62 A3 00 00 84 26 00 00 0A BE 00 12 FF 30  |BCb....&amp;.......0|
+00000030  89 09 64 8E 00 00 8F 66 00 00 0E 56 00 12 FF 30  |..d....f...V...0|
+00000040  42 43 62 A5 00 00 9D E4 00 00 22 56 00 12 FF 30  |BCb.......&quot;V...0|
+00000050  89 09 64 90 00 00 C0 62 00 00 0D 84 00 12 FF 30  |..d....b.......0|
+00000060  42 43 62 A7 00 00 CE 0E 00 00 11 94 00 12 FF 30  |BCb............0|
+00000070  89 09 64 92 00 00 DF CA 00 00 16 D0 00 12 FF 30  |..d............0|
+00000080  42 43 62 A9 00 00 FA 00 00 00 0D C0 00 12 FF 30  |BCb............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L01_LandOfChocolate/loc_global_str/build/PS3/pal_en/assets/movies/tox/loc_igc02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 64 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 40 00 00 00 00 00 00 00 03  |1BOT...@........|
+00000010  42 43 62 D2 00 00 01 90 00 00 15 5E 00 12 FF 30  |BCb........^...0|
+00000020  42 43 62 D3 00 00 17 DE 00 00 1F 22 00 12 FF 30  |BCb........&quot;...0|
+00000030  42 43 62 D4 00 00 37 46 00 00 07 8A 00 12 FF 30  |BCb...7F.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L02_BartmanBegins/brt_global_str/build/PS3/pal_en/assets/movies/tox/brt_igc02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 160 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 A0 00 00 00 00 00 00 00 09  |1BOT............|
+00000010  6A E5 16 E8 00 00 04 92 00 00 19 46 00 12 FF 30  |j..........F...0|
+00000020  5B 10 27 DA 00 00 1E 1E 00 00 06 A4 00 12 FF 30  |[.&#x27;............0|
+00000030  19 16 A9 57 00 00 25 44 00 00 28 AA 00 12 FF 30  |...W..%D..(....0|
+00000040  42 45 63 27 00 00 4E 16 00 00 16 EE 00 12 FF 30  |BEc&#x27;..N........0|
+00000050  19 16 A9 80 00 00 6A 36 00 00 23 96 00 12 FF 30  |......j6..#....0|
+00000060  70 72 B8 96 00 00 8E DA 00 00 28 00 00 12 FF 30  |pr........(....0|
+00000070  5B 10 28 06 00 00 B7 A2 00 00 16 08 00 12 FF 30  |[.(............0|
+00000080  70 72 B8 98 00 00 CD D2 00 00 10 22 00 12 FF 30  |pr.........&quot;...0|
+00000090  5B 10 28 08 00 00 EE A2 00 00 0F C8 00 12 FF 30  |[.(............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L02_BartmanBegins/brt_global_str/build/PS3/pal_en/assets/movies/tox/gam_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 288 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 20 00 00 00 00 00 00 00 11  |1BOT... ........|
+00000010  5B 0E 27 8B 00 00 08 16 00 00 10 68 00 12 FF 30  |[.&#x27;........h...0|
+00000020  F8 0B 84 CD 00 00 18 A6 00 00 0A 46 00 12 FF 30  |...........F...0|
+00000030  5B 0F 27 95 00 00 23 14 00 00 05 BE 00 12 FF 30  |[.&#x27;...#........0|
+00000040  F8 0B 84 CF 00 00 28 F0 00 00 0D D4 00 12 FF 30  |......(........0|
+00000050  5B 0F 27 97 00 00 36 E2 00 00 08 16 00 12 FF 30  |[.&#x27;...6........0|
+00000060  F8 0B 84 D1 00 00 40 24 00 00 06 A4 00 12 FF 30  |......@$.......0|
+00000070  5B 0F 27 9A 00 00 4F E2 00 00 0C 8A 00 12 FF 30  |[.&#x27;...O........0|
+00000080  0E 36 A7 C3 00 00 5D 98 00 00 18 38 00 12 FF 30  |.6....]....8...0|
+00000090  0E 36 A7 C4 00 00 75 F8 00 00 36 D8 00 12 FF 30  |.6....u...6....0|
+000000A0  5B 0F 27 9D 00 00 A6 72 00 00 03 E8 00 12 FF 30  |[.&#x27;....r.......0|
+000000B0  5B 0F 27 C5 00 00 AB 04 00 00 12 5C 00 12 FF 30  |[.&#x27;........\...0|
+000000C0  5B 0F 27 C6 00 00 D3 86 00 00 22 4C 00 12 FF 30  |[.&#x27;.......&quot;L...0|
+000000D0  5B 0F 27 C7 00 00 F5 F0 00 00 3D 4A 00 12 FF 30  |[.&#x27;.......=J...0|
+000000E0  5B 0F 27 C8 00 01 48 52 00 00 0A 0A 00 12 FF 30  |[.&#x27;...HR.......0|
+000000F0  42 44 63 14 00 01 52 7A 00 00 19 28 00 12 FF 30  |BDc...Rz...(...0|
+00000100  5B 0F 27 CA 00 01 6B CA 00 00 0C E4 00 12 FF 30  |[.&#x27;...k........0|
+00000110  42 45 63 1E 00 01 78 CC 00 00 1B 1C 00 12 FF 30  |BEc...x........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L03_HungryHungryHomer/eighty_bites_global_str/build/PS3/pal_en/assets/movies/tox/80b_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 192 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B  |1BOT............|
+00000010  3F 02 A9 18 00 00 00 46 00 00 13 88 00 12 FF 30  |?......F.......0|
+00000020  42 46 63 5D 00 00 13 F6 00 00 0C 80 00 12 FF 30  |BFc]...........0|
+00000030  3F 03 A9 22 00 00 20 BC 00 00 11 F8 00 12 FF 30  |?..&quot;.. ........0|
+00000040  42 46 63 5F 00 00 32 D2 00 00 05 5A 00 12 FF 30  |BFc_..2....Z...0|
+00000050  5B 11 28 15 00 00 38 4A 00 00 15 86 00 12 FF 30  |[.(...8J.......0|
+00000060  42 46 63 61 00 00 4E 16 00 00 04 EC 00 12 FF 30  |BFca..N........0|
+00000070  DA 03 20 6C 00 00 55 C8 00 00 11 76 00 12 FF 30  |.. l..U....v...0|
+00000080  06 F1 F8 46 00 00 67 5C 00 00 18 E2 00 12 FF 30  |...F..g\.......0|
+00000090  0C 97 E7 E0 00 00 80 E8 00 00 09 60 00 12 FF 30  |...........`...0|
+000000A0  4C A4 55 AA 00 00 8A 70 00 00 09 C4 00 12 FF 30  |L.U....p.......0|
+000000B0  DA 03 20 70 00 00 94 70 00 00 15 04 00 12 FF 30  |.. p...p.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L03_HungryHungryHomer/eighty_bites_global_str/build/PS3/pal_en/assets/movies/tox/80b_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 192 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B  |1BOT............|
+00000010  3F 03 A9 53 00 00 02 58 00 00 04 B0 00 12 FF 30  |?..S...X.......0|
+00000020  42 46 63 90 00 00 09 88 00 00 02 BC 00 12 FF 30  |BFc............0|
+00000030  3F 03 A9 55 00 00 11 76 00 00 0F 00 00 12 FF 30  |?..U...v.......0|
+00000040  DA 03 20 9C 00 00 23 DC 00 00 15 36 00 12 FF 30  |.. ...#....6...0|
+00000050  DA 03 20 9D 00 00 39 3A 00 00 15 5E 00 12 FF 30  |.. ...9:...^...0|
+00000060  DA 04 20 A6 00 00 61 80 00 00 0D 8E 00 12 FF 30  |.. ...a........0|
+00000070  42 47 63 9D 00 00 6F 2C 00 00 0B 7C 00 12 FF 30  |BGc...o,...|...0|
+00000080  55 A8 FA 65 00 00 7A C6 00 00 0A 8C 00 12 FF 30  |U..e..z........0|
+00000090  DA 04 20 A9 00 00 A5 AA 00 00 10 04 00 12 FF 30  |.. ............0|
+000000A0  06 F2 F8 83 00 00 D0 66 00 00 18 C4 00 12 FF 30  |.......f.......0|
+000000B0  4C A5 55 E6 00 00 E9 52 00 00 0A 46 00 12 FF 30  |L.U....R...F...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L04_TreeHugger/tree_hugger_global_str/build/PS3/pal_en/assets/movies/tox/hug_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 224 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 E0 00 00 00 00 00 00 00 0D  |1BOT............|
+00000010  AE 22 0E 01 00 00 10 04 00 00 10 2C 00 12 FF 30  |.&quot;.........,...0|
+00000020  5B 12 28 58 00 00 20 94 00 00 03 20 00 12 FF 30  |[.(X.. .... ...0|
+00000030  AE 22 0E 03 00 00 23 DC 00 00 17 52 00 12 FF 30  |.&quot;....#....R...0|
+00000040  5B 12 28 5A 00 00 3B 4C 00 00 10 2C 00 12 FF 30  |[.(Z..;L...,...0|
+00000050  AE 22 0E 2C 00 00 4B 96 00 00 05 3C 00 12 FF 30  |.&quot;.,..K....&lt;...0|
+00000060  AE 22 0E 2D 00 00 50 F0 00 00 14 14 00 12 FF 30  |.&quot;.-..P........0|
+00000070  5B 12 28 84 00 00 65 22 00 00 06 A4 00 12 FF 30  |[.(...e&quot;.......0|
+00000080  AE 22 0E 2F 00 00 6C 2A 00 00 0E 7E 00 12 FF 30  |.&quot;./..l*...~...0|
+00000090  5B 12 28 86 00 00 7A C6 00 00 07 D0 00 12 FF 30  |[.(...z........0|
+000000A0  DF 7A F4 95 00 00 82 DC 00 00 1C 2A 00 12 FF 30  |.z.........*...0|
+000000B0  DA F9 D8 BD 00 00 9F 24 00 00 17 34 00 12 FF 30  |.......$...4...0|
+000000C0  DF 7B F4 9F 00 00 B7 84 00 00 0E 56 00 12 FF 30  |.{.........V...0|
+000000D0  DA F9 D8 BF 00 00 C6 5C 00 00 0A 32 00 12 FF 30  |.......\...2...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L04_TreeHugger/tree_hugger_global_str/build/PS3/pal_en/assets/movies/tox/hug_igc05.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 144 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 90 00 00 00 00 00 00 00 08  |1BOT............|
+00000010  5B 13 28 C4 00 00 2B 8E 00 00 0B 0E 00 12 FF 30  |[.(...+........0|
+00000020  BB 85 0B C0 00 00 37 28 00 00 13 4C 00 12 FF 30  |......7(...L...0|
+00000030  AE 23 0E 70 00 00 4B DC 00 00 17 34 00 12 FF 30  |.#.p..K....4...0|
+00000040  BB 86 0B CA 00 00 63 2E 00 00 17 52 00 12 FF 30  |......c....R...0|
+00000050  5B 14 28 D0 00 00 7A A8 00 00 04 F6 00 12 FF 30  |[.(...z........0|
+00000060  DF 7C F4 DF 00 00 8E DA 00 00 19 28 00 12 FF 30  |.|.........(...0|
+00000070  DA FA D8 FF 00 00 A8 20 00 00 10 72 00 12 FF 30  |....... ...r...0|
+00000080  DF 7C F4 E1 00 00 B8 F6 00 00 04 F6 00 12 FF 30  |.|.............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L05_MobRules/mob_rules_global_str/build/PS3/pal_en/assets/movies/tox/gam_igc02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 432 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 B0 00 00 00 00 00 00 00 1A  |1BOT............|
+00000010  0E 3D A9 79 00 00 00 00 00 00 03 E8 00 12 FF 30  |.=.y...........0|
+00000020  5B 16 29 52 00 00 03 E9 00 00 03 E8 00 12 FF 30  |[.)R...........0|
+00000030  AE 26 0E FD 00 00 07 D1 00 00 03 E8 00 12 FF 30  |.&amp;.............0|
+00000040  42 4B 64 9B 00 00 0B B9 00 00 03 E8 00 12 FF 30  |BKd............0|
+00000050  42 4B 64 9F 00 00 12 20 00 00 11 BC 00 12 FF 30  |BKd.... .......0|
+00000060  0E 3D A9 7D 00 00 23 FA 00 00 0E BA 00 12 FF 30  |.=.}..#........0|
+00000070  42 4B 64 A1 00 00 32 D2 00 00 11 12 00 12 FF 30  |BKd...2........0|
+00000080  0E 3D A9 A6 00 00 44 0C 00 00 11 F8 00 12 FF 30  |.=....D........0|
+00000090  5B 16 29 7F 00 00 56 AE 00 00 1B 3A 00 12 FF 30  |[.)...V....:...0|
+000000A0  AE 26 0F 2A 00 00 72 10 00 00 1D 4C 00 12 FF 30  |.&amp;.*..r....L...0|
+000000B0  42 4B 64 CC 00 00 8F 84 00 00 20 08 00 12 FF 30  |BKd....... ....0|
+000000C0  0E 3D A9 AB 00 00 AF B4 00 00 07 D0 00 12 FF 30  |.=.............0|
+000000D0  AE 27 0F 37 00 00 B7 55 00 00 07 D0 00 12 FF 30  |.&#x27;.7...U.......0|
+000000E0  5B 17 29 8C 00 00 BF 25 00 00 07 D0 00 12 FF 30  |[.)....%.......0|
+000000F0  42 4B 64 CD 00 00 C6 F5 00 00 07 D0 00 12 FF 30  |BKd............0|
+00000100  28 F5 35 3C 00 00 D6 24 00 00 12 20 00 12 FF 30  |(.5&lt;...$... ...0|
+00000110  24 2D BA 0B 00 00 E8 62 00 00 0D 52 00 12 FF 30  |$-.....b...R...0|
+00000120  28 F5 35 3E 00 00 F5 D2 00 00 0C 44 00 12 FF 30  |(.5&gt;.......D...0|
+00000130  24 2D BA 0D 00 01 02 34 00 00 0A 50 00 12 FF 30  |$-.....4...P...0|
+00000140  AE 27 0F 3C 00 01 C6 E2 00 00 0B 18 00 12 FF 30  |.&#x27;.&lt;...........0|
+00000150  42 4C 64 DE 00 01 D2 18 00 00 09 A6 00 12 FF 30  |BLd............0|
+00000160  5B 17 29 94 00 01 DB DC 00 00 3C 5A 00 12 FF 30  |[.).......&lt;Z...0|
+00000170  5B 17 29 95 00 02 25 1A 00 00 02 3A 00 12 FF 30  |[.)...%....:...0|
+00000180  AE 27 0F 67 00 02 27 72 00 00 1E 82 00 12 FF 30  |.&#x27;.g..&#x27;r.......0|
+00000190  BD 1C 82 80 00 02 51 F2 00 00 0B 18 00 12 FF 30  |......Q........0|
+000001A0  5B 17 29 BF 00 02 62 82 00 00 07 6C 00 12 FF 30  |[.)...b....l...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L05_MobRules/mob_rules_global_str/build/PS3/pal_en/assets/movies/tox/mob_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 224 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 E0 00 00 00 00 00 00 00 0D  |1BOT............|
+00000010  0E 3B A8 FC 00 00 02 12 00 00 0D 70 00 12 FF 30  |.;.........p...0|
+00000020  AE 24 0E 7F 00 00 0F A0 00 00 07 F8 00 12 FF 30  |.$.............0|
+00000030  0E 3B A8 FE 00 00 17 B6 00 00 1C 48 00 12 FF 30  |.;.........H...0|
+00000040  71 25 22 0C 00 00 35 52 00 00 0B 0E 00 12 FF 30  |q%&quot;...5R.......0|
+00000050  71 25 22 0D 00 00 4C C2 00 00 06 A4 00 12 FF 30  |q%&quot;...L........0|
+00000060  0E 3B A9 28 00 00 6B 26 00 00 05 14 00 12 FF 30  |.;.(..k&amp;.......0|
+00000070  CF 74 C4 79 00 00 70 58 00 00 21 5C 00 12 FF 30  |.t.y..pX..!\...0|
+00000080  AE 24 0E AC 00 00 91 FA 00 00 09 C4 00 12 FF 30  |.$.............0|
+00000090  0E 3B A9 2B 00 00 9B E6 00 00 02 76 00 12 FF 30  |.;.+.......v...0|
+000000A0  AE 24 0E AE 00 00 9E 7A 00 00 0A 0A 00 12 FF 30  |.$.....z.......0|
+000000B0  0E 3B A9 2D 00 00 A8 AC 00 00 14 32 00 12 FF 30  |.;.-.......2...0|
+000000C0  AE 25 0E B8 00 00 BC FC 00 00 10 4A 00 12 FF 30  |.%.........J...0|
+000000D0  0E 3C A9 37 00 00 CD 8C 00 00 11 1C 00 12 FF 30  |.&lt;.7...........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L06_EnterTheCheatrix/cheater_global_str/build/PS3/pal_en/assets/movies/tox/che_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 384 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 80 00 00 00 00 00 00 00 17  |1BOT............|
+00000010  AE 27 0F 6A 00 00 08 7A 00 00 11 30 00 12 FF 30  |.&#x27;.j...z...0...0|
+00000020  5B 17 29 C1 00 00 1A 54 00 00 06 EA 00 12 FF 30  |[.)....T.......0|
+00000030  AE 27 0F 6C 00 00 21 5C 00 00 07 94 00 12 FF 30  |.&#x27;.l..!\.......0|
+00000040  5B 3F 33 64 00 00 29 36 00 00 0C E4 00 12 FF 30  |[?3d..)6.......0|
+00000050  AE 4F 19 0F 00 00 36 9C 00 00 08 98 00 12 FF 30  |.O....6........0|
+00000060  5B 3F 33 66 00 00 3F 5C 00 00 08 98 00 12 FF 30  |[?3f..?\.......0|
+00000070  5B 3F 33 67 00 00 5D D4 00 00 10 2C 00 12 FF 30  |[?3g..]....,...0|
+00000080  AE 4F 19 12 00 00 6E 28 00 00 0F A0 00 12 FF 30  |.O....n(.......0|
+00000090  AE 4F 19 13 00 00 8E 30 00 00 08 C0 00 12 FF 30  |.O.....0.......0|
+000000A0  5B 3F 33 6A 00 00 97 0E 00 00 07 B2 00 12 FF 30  |[?3j...........0|
+000000B0  E6 A4 9A 18 00 00 AF 50 00 00 08 16 00 12 FF 30  |.......P.......0|
+000000C0  5B 3F 33 6B 00 00 D3 2C 00 00 1D 92 00 12 FF 30  |[?3k...,.......0|
+000000D0  AE 4F 19 16 00 00 F0 E6 00 00 0E BA 00 12 FF 30  |.O.............0|
+000000E0  1D 61 8B BD 00 01 00 86 00 00 30 7A 00 12 FF 30  |.a........0z...0|
+000000F0  5B 3F 33 95 00 01 31 28 00 00 0E 10 00 12 FF 30  |[?3...1(.......0|
+00000100  1D 61 8B E6 00 01 3F 56 00 00 0F C8 00 12 FF 30  |.a....?V.......0|
+00000110  5B 3F 33 97 00 01 50 72 00 00 15 9A 00 12 FF 30  |[?3...Pr.......0|
+00000120  1D 61 8B E8 00 01 66 34 00 00 1E 1E 00 12 FF 30  |.a....f4.......0|
+00000130  5B 3F 33 99 00 01 84 70 00 00 03 84 00 12 FF 30  |[?3....p.......0|
+00000140  1D 61 8B EA 00 01 88 12 00 00 0F 00 00 12 FF 30  |.a.............0|
+00000150  AE 50 19 4D 00 01 97 58 00 00 1F CC 00 12 FF 30  |.P.M...X.......0|
+00000160  5B 40 33 A4 00 01 B7 6A 00 00 0A 00 00 12 FF 30  |[@3....j.......0|
+00000170  1D 62 8B F5 00 01 C6 7E 00 00 10 72 00 12 FF 30  |.b.....~...r...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L06_EnterTheCheatrix/cheater_global_str/build/PS3/pal_en/assets/movies/tox/che_igc02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 128 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 80 00 00 00 00 00 00 00 07  |1BOT............|
+00000010  AE 50 19 50 00 00 07 B2 00 00 12 C0 00 12 FF 30  |.P.P...........0|
+00000020  5B 40 33 A7 00 00 32 96 00 00 05 5A 00 12 FF 30  |[@3...2....Z...0|
+00000030  1D 62 8B F8 00 00 3B F6 00 00 18 C4 00 12 FF 30  |.b....;........0|
+00000040  1D 62 8B F9 00 00 55 3C 00 00 10 0E 00 12 FF 30  |.b....U&lt;.......0|
+00000050  4F 13 FF F4 00 00 65 CC 00 00 05 DC 00 12 FF 30  |O.....e........0|
+00000060  1D 62 8B FB 00 00 6C 70 00 00 15 A4 00 12 FF 30  |.b....lp.......0|
+00000070  5B 40 33 AC 00 00 82 78 00 00 07 94 00 12 FF 30  |[@3....x.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L07_DayOfTheDolphin/dayofthedolphins_global_str/build/PS3/pal_en/assets/movies/tox/dod_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 96 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 60 00 00 00 00 00 00 00 05  |1BOT...`........|
+00000010  F9 1F 8D A6 00 00 16 8A 00 00 32 50 00 12 FF 30  |..........2P...0|
+00000020  AE 52 19 D3 00 00 4A 06 00 00 09 24 00 12 FF 30  |.R....J....$...0|
+00000030  F9 1F 8D A8 00 00 53 48 00 00 1C F2 00 12 FF 30  |......SH.......0|
+00000040  5B 42 34 52 00 00 6C 70 00 00 13 6A 00 12 FF 30  |[B4R..lp...j...0|
+00000050  F9 1F 8D D1 00 00 84 08 00 00 21 20 00 12 FF 30  |..........! ...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L07_DayOfTheDolphin/dayofthedolphins_global_str/build/PS3/pal_en/assets/movies/tox/dod_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 192 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B  |1BOT............|
+00000010  F9 20 8D DF 00 00 00 0A 00 00 15 18 00 12 FF 30  |. .............0|
+00000020  5B 43 34 62 00 00 16 08 00 00 03 3E 00 12 FF 30  |[C4b.......&gt;...0|
+00000030  F9 20 8D E2 00 00 19 6E 00 00 0C E4 00 12 FF 30  |. .....n.......0|
+00000040  5B 43 34 65 00 00 26 70 00 00 17 16 00 12 FF 30  |[C4e..&amp;p.......0|
+00000050  29 21 40 16 00 00 3D A4 00 00 0B 9A 00 12 FF 30  |)!@...=........0|
+00000060  24 59 C5 0D 00 00 49 70 00 00 05 14 00 12 FF 30  |$Y....Ip.......0|
+00000070  29 21 40 17 00 00 4E 84 00 00 05 14 00 12 FF 30  |)!@...N........0|
+00000080  24 59 C5 0D 00 00 53 98 00 00 05 14 00 12 FF 30  |$Y....S........0|
+00000090  24 59 C5 0E 00 00 5B A4 00 00 06 40 00 12 FF 30  |$Y....[....@...0|
+000000A0  29 21 40 41 00 00 84 6C 00 00 0D AC 00 12 FF 30  |)!@A...l.......0|
+000000B0  24 59 C5 10 00 00 92 7C 00 00 0D AC 00 12 FF 30  |$Y.....|.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L08_TheColossalDonut/colossaldonut_global_str/build/PS3/pal_en/assets/movies/tox/scd_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 64 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 40 00 00 00 00 00 00 00 03  |1BOT...@........|
+00000010  9F 21 94 8C 00 00 1F A4 00 00 30 3E 00 12 FF 30  |.!........0&gt;...0|
+00000020  42 78 6F E1 00 00 51 FE 00 00 1E E6 00 12 FF 30  |Bxo...Q........0|
+00000030  42 79 6F EA 00 00 A4 60 00 00 04 88 00 12 FF 30  |Byo....`.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L08_TheColossalDonut/colossaldonut_global_str/build/PS3/pal_en/assets/movies/tox/scd_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 112 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 70 00 00 00 00 00 00 00 06  |1BOT...p........|
+00000010  42 79 6F ED 00 00 0C 80 00 00 09 CE 00 12 FF 30  |Byo............0|
+00000020  5B 44 34 A3 00 00 16 6C 00 00 0D 48 00 12 FF 30  |[D4....l...H...0|
+00000030  42 79 6F EF 00 00 29 54 00 00 07 8A 00 12 FF 30  |Byo...)T.......0|
+00000040  29 22 40 53 00 00 33 36 00 00 0F 82 00 12 FF 30  |)&quot;@S..36.......0|
+00000050  24 5A C5 22 00 00 42 E0 00 00 18 7E 00 12 FF 30  |$Z.&quot;..B....~...0|
+00000060  29 22 40 55 00 00 5B 7C 00 00 0A 50 00 12 FF 30  |)&quot;@U..[|...P...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L09_Invasion/dayspringfieldstoodstill_global_str/build/PS3/pal_en/assets/movies/tox/sss_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 160 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 A0 00 00 00 00 00 00 00 09  |1BOT............|
+00000010  5B 40 33 D5 00 00 0B 7C 00 00 0B 36 00 12 FF 30  |[@3....|...6...0|
+00000020  42 75 6F 21 00 00 16 D0 00 00 13 6A 00 12 FF 30  |Buo!.......j...0|
+00000030  ED DF 0B CC 00 00 3A E8 00 00 04 2E 00 12 FF 30  |......:........0|
+00000040  42 75 6F 23 00 00 3F 34 00 00 03 48 00 12 FF 30  |Buo#..?4...H...0|
+00000050  90 F7 46 F0 00 00 49 E8 00 00 2F B2 00 12 FF 30  |..F...I.../....0|
+00000060  6E FE 33 B4 00 00 7A A8 00 00 17 FC 00 12 FF 30  |n.3...z........0|
+00000070  3B 86 50 B6 00 00 93 08 00 00 07 B2 00 12 FF 30  |;.P............0|
+00000080  6E FE 33 B6 00 00 9A D8 00 00 0F E6 00 12 FF 30  |n.3............0|
+00000090  5B 41 33 E5 00 00 C4 90 00 00 0E 2E 00 12 FF 30  |[A3............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L09_Invasion/dayspringfieldstoodstill_global_str/build/PS3/pal_en/assets/movies/tox/sss_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 208 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 D0 00 00 00 00 00 00 00 0C  |1BOT............|
+00000010  5B 41 34 13 00 00 1E A0 00 00 04 D8 00 12 FF 30  |[A4............0|
+00000020  5B 41 34 14 00 00 23 B4 00 00 04 10 00 12 FF 30  |[A4...#........0|
+00000030  5A E2 1C 77 00 00 28 F0 00 00 14 B4 00 12 FF 30  |Z..w..(........0|
+00000040  5B 41 34 17 00 00 3D CC 00 00 04 CE 00 12 FF 30  |[A4...=........0|
+00000050  5A E2 1C 79 00 00 42 C2 00 00 08 98 00 12 FF 30  |Z..y..B........0|
+00000060  42 77 6F 6C 00 00 4C 5E 00 00 04 74 00 12 FF 30  |Bwol..L^...t...0|
+00000070  5B 42 34 22 00 00 51 0E 00 00 0A 96 00 12 FF 30  |[B4&quot;..Q........0|
+00000080  5A E3 1C 84 00 00 5B C2 00 00 4E 98 00 12 FF 30  |Z.....[...N....0|
+00000090  29 20 3F D3 00 00 C8 14 00 00 0B 18 00 12 FF 30  |) ?............0|
+000000A0  24 58 C4 A2 00 00 CF 3A 00 00 17 34 00 12 FF 30  |$X.....:...4...0|
+000000B0  B8 28 1E D5 00 00 E7 C2 00 00 11 DA 00 12 FF 30  |.(.............0|
+000000C0  24 58 C4 A3 00 00 FF BE 00 00 04 92 00 12 FF 30  |$X.............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L10_BargainBin/bargainbin_global_str/build/PS3/pal_en/assets/movies/tox/bin_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 672 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 02 A0 00 00 00 00 00 00 00 29  |1BOT...........)|
+00000010  AE 54 1A 52 00 00 12 E8 00 00 08 52 00 12 FF 30  |.T.R.......R...0|
+00000020  5B 44 34 D0 00 00 1B C6 00 00 0A 0A 00 12 FF 30  |[D4............0|
+00000030  42 79 70 1C 00 00 25 EE 00 00 07 B2 00 12 FF 30  |Byp...%........0|
+00000040  42 C1 72 53 00 00 3C BE 00 00 03 84 00 12 FF 30  |B.rS..&lt;........0|
+00000050  5B 44 34 D2 00 00 51 54 00 00 14 32 00 12 FF 30  |[D4...QT...2...0|
+00000060  29 22 40 81 00 00 65 EA 00 00 19 F0 00 12 FF 30  |)&quot;@...e........0|
+00000070  24 5A C5 50 00 00 80 02 00 00 0E BA 00 12 FF 30  |$Z.P...........0|
+00000080  29 22 40 83 00 00 8E F8 00 00 0A D2 00 12 FF 30  |)&quot;@............0|
+00000090  24 A2 C7 52 00 00 9A 2E 00 00 16 30 00 12 FF 30  |$..R.......0...0|
+000000A0  29 6A 42 85 00 00 B0 7C 00 00 08 16 00 12 FF 30  |)jB....|.......0|
+000000B0  0E B3 B7 00 00 00 D0 48 00 00 19 AA 00 12 FF 30  |.......H.......0|
+000000C0  5B 8C 36 D9 00 00 EA 1A 00 00 07 D0 00 12 FF 30  |[.6............0|
+000000D0  AE 9C 1C 84 00 00 F2 08 00 00 0E D8 00 12 FF 30  |...............0|
+000000E0  5B 8C 36 DB 00 01 00 EA 00 00 0D 2A 00 12 FF 30  |[.6........*...0|
+000000F0  42 C1 72 27 00 01 13 C8 00 00 0C 8A 00 12 FF 30  |B.r&#x27;...........0|
+00000100  5B 8C 36 DD 00 01 27 A0 00 00 22 A6 00 12 FF 30  |[.6...&#x27;...&quot;....0|
+00000110  0E B3 B7 06 00 01 4A 64 00 00 0D 8E 00 12 FF 30  |......Jd.......0|
+00000120  5B 8C 36 DF 00 01 58 38 00 00 07 30 00 12 FF 30  |[.6...X8...0...0|
+00000130  42 C1 72 52 00 01 5F A4 00 00 06 CC 00 12 FF 30  |B.rR.._........0|
+00000140  CD D9 D5 8C 00 01 7B 6A 00 00 04 4C 00 12 FF 30  |......{j...L...0|
+00000150  0E B3 B7 34 00 01 99 88 00 00 05 32 00 12 FF 30  |...4.......2...0|
+00000160  AE 9D 1C BF 00 01 A4 3C 00 00 16 A8 00 12 FF 30  |.......&lt;.......0|
+00000170  42 C2 72 61 00 01 BB 02 00 00 14 DC 00 12 FF 30  |B.ra...........0|
+00000180  42 C2 72 62 00 01 DC 40 00 00 0C 8A 00 12 FF 30  |B.rb...@.......0|
+00000190  0E B4 B7 40 00 01 E9 06 00 00 12 CA 00 12 FF 30  |...@...........0|
+000001A0  42 C2 72 64 00 02 00 E4 00 00 07 4E 00 12 FF 30  |B.rd.......N...0|
+000001B0  6D 06 5E 4B 00 02 08 50 00 00 0A 8C 00 12 FF 30  |m.^K...P.......0|
+000001C0  AE 9D 1C C5 00 02 1C 82 00 00 10 4A 00 12 FF 30  |...........J...0|
+000001D0  6D 06 5E 4D 00 02 2C F4 00 00 21 A2 00 12 FF 30  |m.^M..,...!....0|
+000001E0  6D 06 5E 4E 00 02 65 C0 00 00 17 98 00 12 FF 30  |m.^N..e........0|
+000001F0  42 C2 72 69 00 02 8C 76 00 00 0A 50 00 12 FF 30  |B.ri...v...P...0|
+00000200  5B 8D 37 46 00 02 97 F2 00 00 05 A0 00 12 FF 30  |[.7F...........0|
+00000210  0E B4 B7 6F 00 02 9E 96 00 00 06 40 00 12 FF 30  |...o.......@...0|
+00000220  AE 9D 1C F2 00 02 A4 FE 00 00 12 A2 00 12 FF 30  |...............0|
+00000230  EB EB E0 5A 00 02 B7 BE 00 00 05 78 00 12 FF 30  |...Z.......x...0|
+00000240  AD E9 26 1D 00 02 BD 5E 00 00 0C 62 00 12 FF 30  |..&amp;....^...b...0|
+00000250  81 B7 64 44 00 02 CA 24 00 00 05 96 00 12 FF 30  |..dD...$.......0|
+00000260  42 C3 72 9F 00 02 CF E2 00 00 04 88 00 12 FF 30  |B.r............0|
+00000270  6D 07 5E 86 00 02 D4 B0 00 00 2F DA 00 12 FF 30  |m.^......./....0|
+00000280  5B 8E 37 56 00 03 17 2C 00 00 05 96 00 12 FF 30  |[.7V...,.......0|
+00000290  42 C3 72 A2 00 03 1C E0 00 00 09 A6 00 12 FF 30  |B.r............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L10_BargainBin/bargainbin_global_str/build/PS3/pal_en/assets/movies/tox/gam_igc05.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 336 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 50 00 00 00 00 00 00 00 14  |1BOT...P........|
+00000010  42 C3 72 A3 00 00 05 BE 00 00 14 32 00 12 FF 30  |B.r........2...0|
+00000020  5B 8E 37 59 00 00 26 52 00 00 14 14 00 12 FF 30  |[.7Y..&amp;R.......0|
+00000030  42 C3 72 A5 00 00 3C 5A 00 00 05 BE 00 12 FF 30  |B.r...&lt;Z.......0|
+00000040  EB EC E0 6C 00 00 42 36 00 00 05 78 00 12 FF 30  |...l..B6...x...0|
+00000050  42 C3 72 A7 00 00 4E B6 00 00 0D 0C 00 12 FF 30  |B.r...N........0|
+00000060  AD EA 26 30 00 00 5B E0 00 00 17 C0 00 12 FF 30  |..&amp;0..[........0|
+00000070  EC D1 78 06 00 00 74 22 00 00 0E 56 00 12 FF 30  |..x...t&quot;...V...0|
+00000080  5B 8E 37 86 00 00 82 96 00 00 20 76 00 12 FF 30  |[.7....... v...0|
+00000090  AE 9E 1D 31 00 00 A3 98 00 00 4D 8A 00 12 FF 30  |...1......M....0|
+000000A0  42 C3 72 D5 00 00 F1 40 00 00 28 28 00 12 FF 30  |B.r....@..((...0|
+000000B0  AE 9F 1D 3E 00 01 1D 32 00 00 35 0C 00 12 FF 30  |...&gt;...2..5....0|
+000000C0  5B 8F 37 95 00 01 52 C0 00 00 08 DE 00 12 FF 30  |[.7...R........0|
+000000D0  81 B9 64 90 00 01 5B E4 00 00 29 D6 00 12 FF 30  |..d...[...)....0|
+000000E0  5B 8F 37 98 00 01 85 D8 00 00 16 D0 00 12 FF 30  |[.7............0|
+000000F0  AD EB 26 6C 00 01 9F C8 00 00 23 50 00 12 FF 30  |..&amp;l......#P...0|
+00000100  AD EB 26 6D 00 01 C3 40 00 00 18 9C 00 12 FF 30  |..&amp;m...@.......0|
+00000110  5B 8F 37 9B 00 01 DC 04 00 00 28 C8 00 12 FF 30  |[.7.......(....0|
+00000120  AD EB 26 6F 00 02 05 12 00 00 07 6C 00 12 FF 30  |..&amp;o.......l...0|
+00000130  0E B6 B7 EC 00 02 0F 9E 00 00 16 08 00 12 FF 30  |...............0|
+00000140  AE 9F 1D 6F 00 02 25 E2 00 00 06 FE 00 12 FF 30  |...o..%........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L11_NeverQuest/neverquest_global_str/build/PS3/pal_en/assets/movies/tox/nvq_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 192 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B  |1BOT............|
+00000010  0E B6 B7 EF 00 00 04 6A 00 00 0F F0 00 12 FF 30  |.......j.......0|
+00000020  42 C4 73 13 00 00 14 78 00 00 0F 1E 00 12 FF 30  |B.s....x.......0|
+00000030  0E B6 B7 F1 00 00 32 FA 00 00 13 EC 00 12 FF 30  |......2........0|
+00000040  33 CB 76 45 00 00 52 9E 00 00 04 10 00 12 FF 30  |3.vE..R........0|
+00000050  4F 14 5D C4 00 00 57 12 00 00 06 C2 00 12 FF 30  |O.]...W........0|
+00000060  BD 95 90 96 00 00 61 80 00 00 07 6C 00 12 FF 30  |......a....l...0|
+00000070  61 C5 26 54 00 00 7A 12 00 00 0F 96 00 12 FF 30  |a.&amp;T..z........0|
+00000080  0E B7 B7 FD 00 00 91 32 00 00 0A D2 00 12 FF 30  |.......2.......0|
+00000090  42 C5 73 21 00 00 9C 22 00 00 0E 9C 00 12 FF 30  |B.s!...&quot;.......0|
+000000A0  0E B7 B7 FF 00 00 AA DC 00 00 10 2C 00 12 FF 30  |...........,...0|
+000000B0  42 C5 73 23 00 00 BB 6C 00 00 0A 96 00 12 FF 30  |B.s#...l.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L11_NeverQuest/neverquest_global_str/build/PS3/pal_en/assets/movies/tox/nvq_igc04.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 80 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 50 00 00 00 00 00 00 00 04  |1BOT...P........|
+00000010  42 C5 73 53 00 00 00 64 00 00 14 FA 00 12 FF 30  |B.sS...d.......0|
+00000020  D6 B0 C3 E4 00 00 17 7A 00 00 06 E0 00 12 FF 30  |.......z.......0|
+00000030  0E B8 B8 3A 00 00 26 D4 00 00 16 B2 00 12 FF 30  |...:..&amp;........0|
+00000040  42 C6 73 5E 00 00 53 66 00 00 09 42 00 12 FF 30  |B.s^..Sf...B...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L12_GrandTheftScratchy/grand_theft_scratchy_global_str/build/PS3/pal_en/assets/movies/tox/gts_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 96 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 60 00 00 00 00 00 00 00 05  |1BOT...`........|
+00000010  0E BB B9 2A 00 00 00 82 00 00 28 46 00 12 FF 30  |...*......(F...0|
+00000020  AE A4 1E AD 00 00 40 A6 00 00 0F 64 00 12 FF 30  |......@....d...0|
+00000030  0E BB B9 2C 00 00 50 28 00 00 10 4A 00 12 FF 30  |...,..P(...J...0|
+00000040  AE A5 1E B7 00 00 60 90 00 00 10 54 00 12 FF 30  |......`....T...0|
+00000050  0E BC B9 36 00 00 71 02 00 00 0D D4 00 12 FF 30  |...6..q........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L12_GrandTheftScratchy/grand_theft_scratchy_global_str/build/PS3/pal_en/assets/movies/tox/gts_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 144 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 90 00 00 00 00 00 00 00 08  |1BOT............|
+00000010  0E BC B9 3A 00 00 03 E8 00 00 1E 3C 00 12 FF 30  |...:.......&lt;...0|
+00000020  AE A5 1E BD 00 00 22 4C 00 00 02 58 00 12 FF 30  |......&quot;L...X...0|
+00000030  39 9B 8F D7 00 00 24 E0 00 00 05 5A 00 12 FF 30  |9.....$....Z...0|
+00000040  0E BC B9 3D 00 00 2A 80 00 00 12 3E 00 12 FF 30  |...=..*....&gt;...0|
+00000050  AE A5 1E C0 00 00 3C DC 00 00 11 12 00 12 FF 30  |......&lt;........0|
+00000060  A4 7E B1 13 00 00 52 1C 00 00 1E E6 00 12 FF 30  |.~....R........0|
+00000070  0E BC B9 67 00 00 7A 80 00 00 04 56 00 12 FF 30  |...g..z....V...0|
+00000080  AE A5 1E EA 00 00 7E F4 00 00 03 66 00 12 FF 30  |......~....f...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L13_MedalOfHomer/medal_of_homer_global_str/build/PS3/pal_en/assets/movies/tox/moh_briefing01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 32 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 20 00 00 00 00 00 00 00 01  |1BOT... ........|
+00000010  9B F7 7B E5 00 00 00 64 00 00 9B 46 00 12 FF 30  |..{....d...F...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L13_MedalOfHomer/medal_of_homer_global_str/build/PS3/pal_en/assets/movies/tox/moh_briefing02.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 32 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 20 00 00 00 00 00 00 00 01  |1BOT... ........|
+00000010  9B F7 7B E6 00 00 00 64 00 00 87 FA 00 12 FF 30  |..{....d.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L13_MedalOfHomer/medal_of_homer_global_str/build/PS3/pal_en/assets/movies/tox/moh_briefing03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 32 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 20 00 00 00 00 00 00 00 01  |1BOT... ........|
+00000010  9B F7 7C 0E 00 00 00 64 00 00 CD 78 00 12 FF 30  |..|....d...x...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L13_MedalOfHomer/medal_of_homer_global_str/build/PS3/pal_en/assets/movies/tox/moh_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 96 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 60 00 00 00 00 00 00 00 05  |1BOT...`........|
+00000010  42 C7 73 A3 00 00 36 38 00 00 0A 6E 00 12 FF 30  |B.s...68...n...0|
+00000020  E2 BD CE 65 00 00 40 EC 00 00 24 E0 00 12 FF 30  |...e..@...$....0|
+00000030  5B 92 38 81 00 00 7C 9C 00 00 0B 36 00 12 FF 30  |[.8...|....6...0|
+00000040  42 C7 73 CD 00 00 8C A0 00 00 17 C0 00 12 FF 30  |B.s............0|
+00000050  0E 69 CB 90 00 00 A4 7E 00 00 09 EC 00 12 FF 30  |.i.....~.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L14_BigSuperHappy/bigsuperhappy_global_str/build/PS3/pal_en/assets/movies/tox/bsh_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 128 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 80 00 00 00 00 00 00 00 07  |1BOT............|
+00000010  42 C7 73 CF 00 00 27 7E 00 00 1A 72 00 12 FF 30  |B.s...&#x27;~...r...0|
+00000020  51 17 3C 70 00 00 56 2C 00 00 1E 14 00 12 FF 30  |Q.&lt;p..V,.......0|
+00000030  AE A2 1E 30 00 00 74 68 00 00 09 60 00 12 FF 30  |...0..th...`...0|
+00000040  51 18 3C 7A 00 00 7D E6 00 00 26 B6 00 12 FF 30  |Q.&lt;z..}...&amp;....0|
+00000050  AE A3 1E 3A 00 00 A5 00 00 00 0C C6 00 12 FF 30  |...:...........0|
+00000060  51 18 3C 7C 00 00 B1 EE 00 00 1F 22 00 12 FF 30  |Q.&lt;|.......&quot;...0|
+00000070  42 C8 73 DD 00 00 D1 2E 00 00 0B 9A 00 12 FF 30  |B.s............0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L14_BigSuperHappy/bigsuperhappy_global_str/build/PS3/pal_en/assets/movies/tox/bsh_igc05.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 144 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 90 00 00 00 00 00 00 00 08  |1BOT............|
+00000010  AE A4 1E 7D 00 00 05 3C 00 00 10 22 00 12 FF 30  |...}...&lt;...&quot;...0|
+00000020  42 C9 74 1F 00 00 15 A4 00 00 12 84 00 12 FF 30  |B.t............0|
+00000030  4E 69 FF 0A 00 00 5A 32 00 00 51 36 00 12 FF 30  |Ni....Z2..Q6...0|
+00000040  1D A1 59 C2 00 00 D6 06 00 00 0B 54 00 12 FF 30  |..Y........T...0|
+00000050  42 C9 74 22 00 00 E1 82 00 00 0B B8 00 12 FF 30  |B.t&quot;...........0|
+00000060  AE A4 1E A9 00 00 ED 58 00 00 10 AE 00 12 FF 30  |.......X.......0|
+00000070  AE A4 1E AA 00 01 07 2A 00 00 05 8C 00 12 FF 30  |.......*.......0|
+00000080  1D A1 59 ED 00 01 0D 6A 00 00 0E BA 00 12 FF 30  |..Y....j.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L15_Rhymes/rhymes_global_str/build/PS3/pal_en/assets/movies/tox/gam_igc06.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 272 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 10 00 00 00 00 00 00 00 10  |1BOT............|
+00000010  EC D8 79 C2 00 00 13 6A 00 00 03 CA 00 12 FF 30  |..y....j.......0|
+00000020  AD F1 28 15 00 00 17 52 00 00 08 DE 00 12 FF 30  |..(....R.......0|
+00000030  5B 95 39 43 00 00 20 08 00 00 08 5C 00 12 FF 30  |[.9C.. ....\...0|
+00000040  EC 1B EB F6 00 00 28 C8 00 00 0A B4 00 12 FF 30  |......(........0|
+00000050  AE CD 28 90 00 00 33 9A 00 00 15 22 00 12 FF 30  |..(...3....&quot;...0|
+00000060  EC 1B EB F8 00 00 49 02 00 00 1A 0E 00 12 FF 30  |......I........0|
+00000070  EC 1B EB F9 00 00 63 2E 00 00 09 42 00 12 FF 30  |......c....B...0|
+00000080  AE 19 31 BC 00 00 6C 8E 00 00 0D 52 00 12 FF 30  |..1...l....R...0|
+00000090  5B BD 42 EA 00 00 79 FE 00 00 05 DC 00 12 FF 30  |[.B...y........0|
+000000A0  42 F2 7E 36 00 00 80 02 00 00 11 76 00 12 FF 30  |B.~6.......v...0|
+000000B0  EC 1B EB FD 00 00 91 96 00 00 0F 1E 00 12 FF 30  |...............0|
+000000C0  AE 19 31 C0 00 00 A1 04 00 00 0B 90 00 12 FF 30  |..1............0|
+000000D0  0E E4 C3 16 00 00 AC B2 00 00 29 D6 00 12 FF 30  |..........)....0|
+000000E0  42 F2 7E 61 00 01 09 E6 00 00 16 08 00 12 FF 30  |B.~a...........0|
+000000F0  5B BD 43 17 00 01 20 F2 00 00 0C 26 00 12 FF 30  |[.C... ....&amp;...0|
+00000100  EC 1B EC 29 00 01 2D 36 00 00 1D 7E 00 12 FF 30  |...)..-6...~...0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L15_Rhymes/rhymes_global_str/build/PS3/pal_en/assets/movies/tox/rwc_igc03.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 208 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 00 D0 00 00 00 00 00 00 00 0C  |1BOT............|
+00000010  AE CE 28 FF 00 00 03 84 00 00 1E A0 00 12 FF 30  |..(............0|
+00000020  42 F3 7E A1 00 00 22 4C 00 00 11 B2 00 12 FF 30  |B.~...&quot;L.......0|
+00000030  0E E5 C3 7F 00 00 41 50 00 00 0D 02 00 12 FF 30  |......AP.......0|
+00000040  5B BE 43 58 00 00 4E 98 00 00 04 CE 00 12 FF 30  |[.CX..N........0|
+00000050  5A 85 E2 E3 00 00 53 8E 00 00 0B 9A 00 12 FF 30  |Z.....S........0|
+00000060  AE CF 29 0D 00 00 5F 46 00 00 32 B4 00 12 FF 30  |..)..._F..2....0|
+00000070  5A 86 E2 ED 00 00 92 5E 00 00 2E 04 00 12 FF 30  |Z......^.......0|
+00000080  42 F4 7E B0 00 00 C0 A8 00 00 0A 28 00 12 FF 30  |B.~........(...0|
+00000090  5A 86 E2 F2 00 00 CC 7E 00 00 0C 8A 00 12 FF 30  |Z......~.......0|
+000000A0  42 F4 7E B5 00 00 DA 52 00 00 0A 6E 00 12 FF 30  |B.~....R...n...0|
+000000B0  5A 86 E3 1E 00 00 E5 06 00 00 06 A4 00 12 FF 30  |Z..............0|
+000000C0  CD DB D5 DA 00 00 F7 62 00 00 06 A4 00 12 FF 30  |.......b.......0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L16_MeetThyPlayer/meetthyplayer_global_str/build/PS3/pal_en/assets/movies/tox/gam_igc07.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 480 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 E0 00 00 00 00 00 00 00 1D  |1BOT............|
+00000010  5B C1 44 15 00 00 0C 6C 00 00 1A 68 00 12 FF 30  |[.D....l...h...0|
+00000020  7A 01 7C 71 00 00 27 E2 00 00 23 FA 00 12 FF 30  |z.|q..&#x27;...#....0|
+00000030  5B C1 44 17 00 00 4C 22 00 00 05 32 00 12 FF 30  |[.D...L&quot;...2...0|
+00000040  7A 02 7C 7B 00 00 53 F2 00 00 0C 44 00 12 FF 30  |z.|{..S....D...0|
+00000050  42 F7 7F 6C 00 00 60 54 00 00 19 AA 00 12 FF 30  |B..l..`T.......0|
+00000060  7A 02 7C 7D 00 00 7A 26 00 00 2C CE 00 12 FF 30  |z.|}..z&amp;..,....0|
+00000070  5B C2 44 23 00 00 A7 1C 00 00 09 1A 00 12 FF 30  |[.D#...........0|
+00000080  AE D2 29 CE 00 00 B0 7C 00 00 0C 9E 00 12 FF 30  |..)....|.......0|
+00000090  7A 02 7C 80 00 00 BD 42 00 00 6B 8A 00 12 FF 30  |z.|....B..k....0|
+000000A0  AE D2 29 D0 00 01 28 EA 00 00 2D 1E 00 12 FF 30  |..)...(...-....0|
+000000B0  7A 02 7C 82 00 01 56 26 00 00 1B 9E 00 12 FF 30  |z.|...V&amp;.......0|
+000000C0  5B C2 44 28 00 01 71 EC 00 00 13 06 00 12 FF 30  |[.D(..q........0|
+000000D0  7A 02 7C 84 00 01 85 10 00 00 0B E0 00 12 FF 30  |z.|............0|
+000000E0  7A 02 7C AC 00 01 91 0E 00 00 34 EE 00 12 FF 30  |z.|.......4....0|
+000000F0  7A 02 7C AD 00 01 D2 5E 00 00 08 34 00 12 FF 30  |z.|....^...4...0|
+00000100  5B C2 44 53 00 01 F0 72 00 00 06 4A 00 12 FF 30  |[.DS...r...J...0|
+00000110  7A 02 7C AF 00 01 F6 DA 00 00 11 DA 00 12 FF 30  |z.|............0|
+00000120  42 F7 7F A0 00 02 08 D2 00 00 16 6C 00 12 FF 30  |B..........l...0|
+00000130  7A 02 7C B1 00 02 1F 66 00 00 2A BC 00 12 FF 30  |z.|....f..*....0|
+00000140  0F 31 C6 7F 00 02 4A 40 00 00 0C 8A 00 12 FF 30  |.1....J@.......0|
+00000150  5C 0A 46 58 00 02 58 A0 00 00 06 A4 00 12 FF 30  |\.FX..X........0|
+00000160  AF 1A 2C 03 00 02 5F 62 00 00 0F 00 00 12 FF 30  |..,..._b.......0|
+00000170  43 3F 81 A5 00 02 6E 80 00 00 05 14 00 12 FF 30  |C?....n........0|
+00000180  7A 4A 7E B6 00 02 73 BC 00 00 1D 6A 00 12 FF 30  |zJ~...s....j...0|
+00000190  27 56 BF 2F 00 02 92 52 00 00 03 AC 00 12 FF 30  |&#x27;V./...R.......0|
+000001A0  AF 1A 2C 06 00 02 96 1C 00 00 16 26 00 12 FF 30  |..,........&amp;...0|
+000001B0  7A 4A 7E B8 00 02 AC 6A 00 00 1C 8E 00 12 FF 30  |zJ~....j.......0|
+000001C0  BE 0F 9F 20 00 02 C9 16 00 00 06 AE 00 12 FF 30  |... ...........0|
+000001D0  BE 0F 9F 21 00 02 E9 8C 00 00 09 C4 00 12 FF 30  |...!...........0|</pre>
+            </div>
+            <div class='file-block'>
+                <div class='file-path'><strong>File:</strong>
+                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L16_MeetThyPlayer/meetthyplayer_global_str/build/PS3/pal_en/assets/movies/tox/mtp_igc01.tox.PS3
+                </div>
+                <div class='file-size'><strong>Size:</strong> 368 bytes</div>
+                <pre>00000000  31 42 4F 54 00 00 01 70 00 00 00 00 00 00 00 16  |1BOT...p........|
+00000010  4E 95 09 CB 00 00 0B 7C 00 00 12 3E 00 12 FF 30  |N......|...&gt;...0|
+00000020  5B BF 43 97 00 00 2A 1C 00 00 10 4A 00 12 FF 30  |[.C...*....J...0|
+00000030  F5 FD FA EC 00 00 55 82 00 00 06 5E 00 12 FF 30  |......U....^...0|
+00000040  47 B1 BE CB 00 00 5F C8 00 00 06 4A 00 12 FF 30  |G....._....J...0|
+00000050  47 B2 BE D4 00 00 6F 36 00 00 07 62 00 12 FF 30  |G.....o6...b...0|
+00000060  42 F5 7E EE 00 00 7C E2 00 00 0A F0 00 12 FF 30  |B.~...|........0|
+00000070  A7 F7 FD CE 00 00 87 F0 00 00 0F AA 00 12 FF 30  |...............0|
+00000080  5B C0 43 A5 00 00 9A 74 00 00 08 02 00 12 FF 30  |[.C....t.......0|
+00000090  0E E7 C3 CF 00 00 A8 CA 00 00 0F 1E 00 12 FF 30  |...............0|
+000000A0  AE D0 29 52 00 00 B8 2E 00 00 0B B8 00 12 FF 30  |..)R...........0|
+000000B0  0E E7 C3 D1 00 00 C9 7C 00 00 0A 32 00 12 FF 30  |.......|...2...0|
+000000C0  AE D0 29 54 00 00 D3 CC 00 00 25 8A 00 12 FF 30  |..)T......%....0|
+000000D0  42 F5 7E F6 00 00 F9 9C 00 00 0C 62 00 12 FF 30  |B.~........b...0|
+000000E0  AE D0 29 7D 00 01 64 C2 00 00 0D D4 00 12 FF 30  |..)}..d........0|
+000000F0  CD A3 10 50 00 01 72 B4 00 00 0C A8 00 12 FF 30  |...P..r........0|
+00000100  2D D6 4E D3 00 01 AB 26 00 00 0B 54 00 12 FF 30  |-.N....&amp;...T...0|
+00000110  42 F5 7F 21 00 01 B6 98 00 00 0A 6E 00 12 FF 30  |B..!.......n...0|
+00000120  AE D0 29 81 00 01 C1 6A 00 00 10 D6 00 12 FF 30  |..)....j.......0|
+00000130  0E E7 C4 00 00 01 D2 5E 00 00 0C C6 00 12 FF 30  |.......^.......0|
+00000140  2D D7 4E DF 00 01 DF 42 00 00 19 B4 00 12 FF 30  |-.N....B.......0|
+00000150  5B C1 43 E2 00 01 F9 14 00 00 0C 1C 00 12 FF 30  |[.C............0|
+00000160  2D D7 4E E1 00 02 05 58 00 00 0B B8 00 12 FF 30  |-.N....X.......0|</pre>
+            </div>
+        </section>
+    </div>
+</body>
 
-
-
-every tox file:
-
-\A2_Frontend\frontend_str\assets\movies_tox\80b_igc01_0a4cb8.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\80b_igc03_251261.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\bin_igc01_e20302.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\brt_igc02_f41f75.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\bsh_igc01_34fdd7.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\bsh_igc05_ee98bf.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\che_igc01_94a14b.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\che_igc02_c0f985.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\dod_igc01_239630.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\dod_igc03_ed96c3.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\gam_igc01_e848a1.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\gam_igc02_602726.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\gam_igc03_a1020a.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\gam_igc04_ce07aa.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\gam_igc05_9ed3af.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\gam_igc06_947a79.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\gam_igc07_289b06.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\gts_igc01_59031d.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\gts_igc03_f8ae9f.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\hug_igc01_5e630b.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\hug_igc05_4855b2.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\loc_igc01_334ab2.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\loc_igc02_fda59f.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\making_01_1863ee.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\making_01_sd_8e940e.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\making_02_08ec7d.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\making_02_sd_852063.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\making_03_a5794c.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\making_03_sd_221c0d.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\mob_igc01_dab753.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\moh_briefing01_3e0fd9.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\moh_briefing02_27e058.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\moh_briefing03_372e70.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\moh_igc03_574113.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\mtp_igc01_455031.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\mtp_igc02_805cc4.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\nvq_igc01_db45ca.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\nvq_igc04_6bdcd7.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\rwc_igc03_60f965.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\scd_igc01_1a8ecf.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\scd_igc03_0333d9.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\sss_igc01_215208.tox.PS3
-\A2_Frontend\frontend_str\assets\movies_tox\sss_igc03_4cc15c.tox.PS3
-\L01_LandOfChocolate\loc_global_str\assets\movies_tox\loc_igc01_b835cf.tox.PS3
-\L01_LandOfChocolate\loc_global_str\assets\movies_tox\loc_igc02_ab956d.tox.PS3
-\L02_BartmanBegins\brt_global_str\assets\movies_tox\brt_igc02_aa963d.tox.PS3
-\L02_BartmanBegins\brt_global_str\assets\movies_tox\gam_igc01_2d987a.tox.PS3
-\L03_HungryHungryHomer\eighty_bites_global_str\assets\movies_tox\80b_igc01_65fd62.tox.PS3
-\L03_HungryHungryHomer\eighty_bites_global_str\assets\movies_tox\80b_igc03_25b164.tox.PS3
-\L04_TreeHugger\tree_hugger_global_str\assets\movies_tox\hug_igc01_af7058.tox.PS3
-\L04_TreeHugger\tree_hugger_global_str\assets\movies_tox\hug_igc05_249de3.tox.PS3
-\L05_MobRules\mob_rules_global_str\assets\movies_tox\gam_igc02_72eebf.tox.PS3
-\L05_MobRules\mob_rules_global_str\assets\movies_tox\mob_igc01_f26028.tox.PS3
-\L06_EnterTheCheatrix\cheater_global_str\assets\movies_tox\che_igc01_4016c2.tox.PS3
-\L06_EnterTheCheatrix\cheater_global_str\assets\movies_tox\che_igc02_1b6af0.tox.PS3
-\L07_DayOfTheDolphin\dayofthedolphins_global_str\assets\movies_tox\dod_igc01_f085be.tox.PS3
-\L07_DayOfTheDolphin\dayofthedolphins_global_str\assets\movies_tox\dod_igc03_2782af.tox.PS3
-\L08_TheColossalDonut\colossaldonut_global_str\assets\movies_tox\scd_igc01_484ad0.tox.PS3
-\L08_TheColossalDonut\colossaldonut_global_str\assets\movies_tox\scd_igc03_3aa2e6.tox.PS3
-\L09_Invasion\dayspringfieldstoodstill_global_str\assets\movies_tox\sss_igc01_2871c0.tox.PS3
-\L09_Invasion\dayspringfieldstoodstill_global_str\assets\movies_tox\sss_igc03_6c0f4e.tox.PS3
-\L10_BargainBin\bargainbin_global_str\assets\movies_tox\bin_igc01_adfd53.tox.PS3
-\L10_BargainBin\bargainbin_global_str\assets\movies_tox\gam_igc05_0bb3a0.tox.PS3
-\L11_NeverQuest\neverquest_global_str\assets\movies_tox\nvq_igc01_3847ae.tox.PS3
-\L11_NeverQuest\neverquest_global_str\assets\movies_tox\nvq_igc04_815df2.tox.PS3
-\L12_GrandTheftScratchy\grand_theft_scratchy_global_str\assets\movies_tox\gts_igc01_8de152.tox.PS3
-\L12_GrandTheftScratchy\grand_theft_scratchy_global_str\assets\movies_tox\gts_igc03_c5cfa6.tox.PS3
-\L13_MedalOfHomer\medal_of_homer_global_str\assets\movies_tox\moh_briefing01_6ae627.tox.PS3
-\L13_MedalOfHomer\medal_of_homer_global_str\assets\movies_tox\moh_briefing02_9c8e59.tox.PS3
-\L13_MedalOfHomer\medal_of_homer_global_str\assets\movies_tox\moh_briefing03_63d100.tox.PS3
-\L13_MedalOfHomer\medal_of_homer_global_str\assets\movies_tox\moh_igc03_9a4c9e.tox.PS3
-\L14_BigSuperHappy\bigsuperhappy_global_str\assets\movies_tox\bsh_igc01_33f832.tox.PS3
-\L14_BigSuperHappy\bigsuperhappy_global_str\assets\movies_tox\bsh_igc05_6ee57f.tox.PS3
-\L15_Rhymes\rhymes_global_str\assets\movies_tox\gam_igc06_2a78e4.tox.PS3
-\L15_Rhymes\rhymes_global_str\assets\movies_tox\rwc_igc03_cfb68a.tox.PS3
-\L16_MeetThyPlayer\meetthyplayer_global_str\assets\movies_tox\gam_igc07_2a78d0.tox.PS3
-\L16_MeetThyPlayer\meetthyplayer_global_str\assets\movies_tox\mtp_igc01_84b1fc.tox.PS3
+</html>

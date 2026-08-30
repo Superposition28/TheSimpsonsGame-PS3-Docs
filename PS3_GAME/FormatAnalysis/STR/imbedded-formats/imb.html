@@ -4,245 +4,253 @@
 <head>
     <meta charset="utf-8">
     <title>.imb Format Documentation</title>
-    <link rel="stylesheet" href="../../../style/main.css">
+    <link rel="stylesheet" href="../../../../style/main.css">
+
 </head>
 
 <body style="padding: 1.5rem;padding-top: 2rem;">
-    <h1>.imb</h1>
 
+        <div class="">
+            <h1>.imb</h1>
+            <p>Based on the hex dumps and offset calculations, the <code>.imb</code> (Impact Table) format is a
+                structured binary asset used by the engine to map collision events between physics materials to
+                specific visual and audio effects (particles, decals, sound banks).</p>
+            <p>File sizes range from <strong>816 bytes to 40.4 KB</strong> depending on the volume of materials and
+                interactions mapped within the level.</p>
 
-    <div class="analysis-section" style="margin-top: 3rem;">
-        <h1 style="color: #4ec9b0;">Format Analysis & Structure Breakdown</h1>
-        <p>Based on the hex dumps and offset calculations, the <code>.imb</code> (Impact Table) format is a structured
-            binary asset used by the engine to map collision events between physics materials to specific visual and
-            audio effects (particles, decals, sound banks). </p>
-        <p>The file is composed of a <strong>28-byte Header</strong> followed by <strong>4 distinct Data
-                Blocks</strong>.</p>
+            <h2>Format Analysis &amp; Structure Breakdown</h2>
+            <p>The file is composed of a <strong>28-byte Header</strong> followed by <strong>4 distinct Data
+                    Blocks</strong>.</p>
 
-        <h2 style="color: #dcdcaa; margin-top: 2rem;">1. File Header (0x1C / 28 bytes)</h2>
-        <p>The header is consistent across all files and provides the counts and offset pointers for the 4 data blocks.
-            It is written in Big-Endian format.</p>
+            <h3>1. File Header (0x1C / 28 bytes)</h3>
+            <p>The header is consistent across all files and provides the counts and offset pointers for the 4 data
+                blocks. It is written in Big-Endian format.</p>
 
-        <table
-            style="width: 100%; border-collapse: collapse; margin-top: 1rem; background: #252526; border: 1px solid #3c3c3c;">
-            <thead>
-                <tr style="background: #333; color: #569cd6; text-align: left;">
-                    <th style="padding: 10px; border-bottom: 1px solid #3c3c3c;">Offset</th>
-                    <th style="padding: 10px; border-bottom: 1px solid #3c3c3c;">Type</th>
-                    <th style="padding: 10px; border-bottom: 1px solid #3c3c3c;">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #ce9178;">0x00</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #4ec9b0;">uint32</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c;"><strong>Magic Identifier:</strong>
-                        Always <code>5B A0 8C AA</code>.</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #ce9178;">0x04</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #4ec9b0;">uint16</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c;"><strong>Version / Endianness:</strong>
-                        Always <code>00 02</code>.</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #ce9178;">0x06</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #4ec9b0;">uint16</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c;"><strong>Material Count:</strong> The
-                        number of entries in the Material Hash Map (Block 3). <em>(e.g., 0x00FB / 251 in spr_hub, 0x0002
-                            / 2 in clobbergirl)</em></td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #ce9178;">0x08</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #4ec9b0;">uint16</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c;"><strong>Unknown:</strong> Always
-                        <code>00 33</code>.</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #ce9178;">0x0A</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #4ec9b0;">uint16</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c;"><strong>Effect Count:</strong> The
-                        number of effect clusters in Block 2. <em>(e.g., 0x01A1 / 417 in spr_hub, 0x0005 / 5 in
-                            clobbergirl)</em></td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #ce9178;">0x0C</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #4ec9b0;">uint32</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c;"><strong>Offset 1 (Interaction
-                            Grid):</strong> Pointer to the start of Block 1. Usually <code>0x0000001C</code>.</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #ce9178;">0x10</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #4ec9b0;">uint32</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c;"><strong>Offset 2 (Effect
-                            Hashes):</strong> Pointer to the start of Block 2.</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #ce9178;">0x14</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #4ec9b0;">uint32</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c;"><strong>Offset 3 (Material Hash
-                            Map):</strong> Pointer to the start of Block 3.</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #ce9178;">0x18</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c; color: #4ec9b0;">uint32</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #3c3c3c;"><strong>Offset 4 (Alias Map):</strong>
-                        Pointer to the start of Block 4.</td>
-                </tr>
-            </tbody>
-        </table>
+            <table class="format-counts">
+                <thead>
+                    <tr>
+                        <th>Offset</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x00</td>
+                        <td>uint32</td>
+                        <td><strong>Magic Identifier:</strong> Always <code>5B A0 8C AA</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>0x04</td>
+                        <td>uint16</td>
+                        <td><strong>Version / Endianness:</strong> Always <code>00 02</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>0x06</td>
+                        <td>uint16</td>
+                        <td><strong>Material Count:</strong> The number of entries in the Material Hash Map (Block
+                            3). <em>(e.g., 0x00FB / 251 in spr_hub, 0x0002 / 2 in clobbergirl)</em></td>
+                    </tr>
+                    <tr>
+                        <td>0x08</td>
+                        <td>uint16</td>
+                        <td><strong>Unknown:</strong> Always <code>00 33</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>0x0A</td>
+                        <td>uint16</td>
+                        <td><strong>Effect Count:</strong> The number of effect clusters in Block 2. <em>(e.g.,
+                                0x01A1 / 417 in spr_hub, 0x0005 / 5 in clobbergirl)</em></td>
+                    </tr>
+                    <tr>
+                        <td>0x0C</td>
+                        <td>uint32</td>
+                        <td><strong>Offset 1 (Interaction Grid):</strong> Pointer to the start of Block 1. Usually
+                            <code>0x0000001C</code>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>0x10</td>
+                        <td>uint32</td>
+                        <td><strong>Offset 2 (Effect Hashes):</strong> Pointer to the start of Block 2.</td>
+                    </tr>
+                    <tr>
+                        <td>0x14</td>
+                        <td>uint32</td>
+                        <td><strong>Offset 3 (Material Hash Map):</strong> Pointer to the start of Block 3.</td>
+                    </tr>
+                    <tr>
+                        <td>0x18</td>
+                        <td>uint32</td>
+                        <td><strong>Offset 4 (Alias Map):</strong> Pointer to the start of Block 4.</td>
+                    </tr>
+                </tbody>
+            </table>
 
-        <h2 style="color: #dcdcaa; margin-top: 2rem;">2. Data Blocks</h2>
+            <h2>2. Data Blocks</h2>
 
-        <div style="background: #252526; padding: 1.5rem; border-left: 4px solid #569cd6; margin-top: 1rem;">
-            <h3 style="margin-top: 0; color: #9cdcfe;">Block 1: Material Interaction Grid</h3>
-            <p><strong>Location:</strong> <code>Offset 1</code> to <code>Offset 2</code></p>
-            <p>An array of <code>uint16</code> indices. This acts as a lookup grid. When Material A collides with
-                Material B, the engine likely looks up the intersection in this grid to retrieve a 16-bit integer. This
-                integer is an index pointing to an effect cluster in <strong>Block 2</strong>.</p>
-        </div>
-
-        <div style="background: #252526; padding: 1.5rem; border-left: 4px solid #c586c0; margin-top: 1rem;">
-            <h3 style="margin-top: 0; color: #9cdcfe;">Block 2: Effect Hashes Array</h3>
-            <p><strong>Location:</strong> <code>Offset 2</code> to <code>Offset 3</code></p>
-            <p><strong>Total Size:</strong> <code>Effect Count * 32</code> bytes.</p>
-            <p>This block holds the actual visual and audio asset references. For each "Effect" (dictated by the Effect
-                Count), there are exactly <strong>eight 32-bit hashes</strong> (8 * 4 = 32 bytes per cluster). These
-                32-bit values are EA standard string hashes (often variations of MurmurHash/Jenkins) that resolve to
-                particle systems, sound banks, or decals (e.g., light hit, heavy hit, footstep, scrape).</p>
-            <p><em>Verification: In <code>impact_table_spr_hub.imb</code>, Effect Count is 417. 417 * 32 = 13344 bytes.
-                    <code>0x9840 - 0x6420 = 13344</code>. Perfect match.</em></p>
-        </div>
-
-        <div style="background: #252526; padding: 1.5rem; border-left: 4px solid #4ec9b0; margin-top: 1rem;">
-            <h3 style="margin-top: 0; color: #9cdcfe;">Block 3: Material Hash Map</h3>
-            <p><strong>Location:</strong> <code>Offset 3</code> to <code>Offset 4</code></p>
-            <p><strong>Total Size:</strong> <code>Material Count * 8</code> bytes.</p>
-            <p>A dictionary pairing global Material ID hashes to their local index in the Interaction Grid (Block 1).
-                Each entry is 8 bytes:</p>
+            <h3>Block 1: Material Interaction Grid</h3>
             <ul>
-                <li><code>uint32</code>: Physics Material Hash (e.g., <code>0xA670B486</code> for Homer_Flesh, Concrete,
-                    etc.)</li>
-                <li><code>uint32</code>: Local Matrix/Grid Index (e.g., <code>0x00000001</code>)</li>
+                <li><strong>Location:</strong> <code>Offset 1</code> to <code>Offset 2</code></li>
+                <li>An array of <code>uint16</code> indices. This acts as a lookup grid. When Material A collides
+                    with Material B, the engine likely looks up the intersection in this grid to retrieve a 16-bit
+                    integer. This integer is an index pointing to an effect cluster in <strong>Block 2</strong>.
+                </li>
             </ul>
-            <p><em>Verification: In <code>impact_table_clobbergirl.imb</code>, Material Count is 2. 2 * 8 = 16 bytes.
-                    <code>0x198 - 0x188 = 16</code>. Perfect match.</em></p>
+
+            <h3>Block 2: Effect Hashes Array</h3>
+            <ul>
+                <li><strong>Location:</strong> <code>Offset 2</code> to <code>Offset 3</code></li>
+                <li><strong>Total Size:</strong> <code>Effect Count * 32</code> bytes.</li>
+                <li>This block holds the actual visual and audio asset references. For each "Effect" (dictated by
+                    the Effect Count), there are exactly <strong>eight 32-bit hashes</strong> (8 * 4 = 32 bytes per
+                    cluster). These 32-bit values are EA standard string hashes (often variations of
+                    MurmurHash/Jenkins) that resolve to particle systems, sound banks, or decals (e.g., light hit,
+                    heavy hit, footstep, scrape).</li>
+                <li><em>Verification: In <code>impact_table_spr_hub.imb</code>, Effect Count is 417. 417 * 32 =
+                        13344 bytes. <code>0x9840 - 0x6420 = 13344</code>. Perfect match.</em></li>
+            </ul>
+
+            <h3>Block 3: Material Hash Map</h3>
+            <ul>
+                <li><strong>Location:</strong> <code>Offset 3</code> to <code>Offset 4</code></li>
+                <li><strong>Total Size:</strong> <code>Material Count * 8</code> bytes.</li>
+                <li>A dictionary pairing global Material ID hashes to their local index in the Interaction Grid
+                    (Block 1). Each entry is 8 bytes:
+                    <ul>
+                        <li><code>uint32</code>: Physics Material Hash (e.g., <code>0xA670B486</code> for
+                            Homer_Flesh, Concrete)</li>
+                        <li><code>uint32</code>: Local Matrix/Grid Index (e.g., <code>0x00000001</code>)</li>
+                    </ul>
+                </li>
+                <li><em>Verification: In <code>impact_table_clobbergirl.imb</code>, Material Count is 2. 2 * 8 = 16
+                        bytes. <code>0x198 - 0x188 = 16</code>. Perfect match.</em></li>
+            </ul>
+
+            <h3>Block 4: Fallback / Alias Map</h3>
+            <ul>
+                <li><strong>Location:</strong> <code>Offset 4</code> to End of File (EOF)</li>
+                <li>This block contains sequential pairs of <code>uint32</code> values. It acts as an inheritance or
+                    fallback mapping hierarchy (e.g., <code>Index 00000003</code> inherits from
+                    <code>Index 00000002</code>). This allows developers to assign specific behaviors to complex
+                    materials, but default them back to base materials (like mapping "Wet Dirt" back to standard
+                    "Dirt") without bloating the Interaction Grid.
+                </li>
+            </ul>
         </div>
 
-        <div style="background: #252526; padding: 1.5rem; border-left: 4px solid #ce9178; margin-top: 1rem;">
-            <h3 style="margin-top: 0; color: #9cdcfe;">Block 4: Fallback / Alias Map</h3>
-            <p><strong>Location:</strong> <code>Offset 4</code> to End of File (EOF)</p>
-            <p>This block contains sequential pairs of <code>uint32</code> values. It acts as an inheritance or fallback
-                mapping hierarchy (e.g., <code>Index 00000003</code> inherits from <code>Index 00000002</code>). This
-                allows developers to assign specific behaviors to complex materials, but default them back to base
-                materials (like mapping "Wet Dirt" back to standard "Dirt") without bloating the Interaction Grid.</p>
+        <div class="file-list-container">
+            <h3>Discovered .imb Files (3.52KB - 40.4KB) - 20 Files</h3>
+            <ul class="file-list-scroll">
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_global_str\build\PS3\pal_en\assets_rws\spr_hub\spr_hub\impact_table\impact_table_spr_hub.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_global_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_bsh.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules_global_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_mob_rules.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer_global_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_mtp.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_global_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_moh.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites_global_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_global_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_hug.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_global_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_dod.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_global_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_gts.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut_global_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_scd.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_global_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_cheater.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_global_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_rwc.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_global_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_global_str\build\PS3\pal_en\assets_rws\neverquest\neverquest\impact_table\impact_table_nvq.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill_global_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_dsss.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_global_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_gamehub.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_global_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_bin.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_global_str\build\PS3\pal_en\assets_rws\loc\loc\impact_table\impact_table_loc.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_boots.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_sneakers.imb
+                </li>
+            </ul>
         </div>
-    </div>
 
+        <div class="file-list-container">
+            <h3>Discovered .imb Files (2.33KB) - 5 Files</h3>
+            <ul class="file-list-scroll">
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_street_fighter.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_street_fighter.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_football_player.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_football_player.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_football_player.imb
+                </li>
+            </ul>
+        </div>
 
-    sizes range from 816bytes to 40.4KB
+        <div class="file-list-container">
+            <h3>Discovered .imb Files (1.64KB) - 11 Files</h3>
+            <ul class="file-list-scroll">
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_brt_robo.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_brt_robo.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer\story_mode\zone02_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_brt_robo.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_brt_robo.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut\story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_brt_robo.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_brt_robo.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_brt_robo.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_brt_robo.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_brt_robo.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt_robo.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_bender.imb
+                </li>
+            </ul>
+        </div>
 
-    list of all .imb files in the game, for reference:
+        <div class="file-list-container">
+            <h3>Discovered .imb Files (816 bytes) - 8 Files</h3>
+            <ul class="file-list-scroll">
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_clobbergirl.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_clobbergirl.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_clobbergirl.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_clobbergirl.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_clobbergirl.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\challenge_mode\challenge_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb
+                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_clobbergirl.imb
+                </li>
+            </ul>
+        </div>
 
-    these have sizes ranging from 3.52KB - 40.4KB
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_global_str\build\PS3\pal_en\assets_rws\spr_hub\spr_hub\impact_table\impact_table_spr_hub.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_global_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_bsh.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules_global_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_mob_rules.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer_global_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_mtp.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_global_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_moh.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites_global_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_global_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_hug.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_global_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_dod.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_global_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_gts.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut_global_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_scd.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_global_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_cheater.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_global_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_rwc.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_global_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_global_str\build\PS3\pal_en\assets_rws\neverquest\neverquest\impact_table\impact_table_nvq.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill_global_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_dsss.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_global_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_gamehub.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_global_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_bin.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_global_str\build\PS3\pal_en\assets_rws\loc\loc\impact_table\impact_table_loc.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_boots.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_sneakers.imb
-
-    these ones are all 2.33KB
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_street_fighter.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_street_fighter.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_football_player.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_football_player.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_football_player.imb
-
-    these ones are 1.64KB
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_brt_robo.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_brt_robo.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer\story_mode\zone02_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_brt_robo.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_brt_robo.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut\story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_brt_robo.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_brt_robo.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_brt_robo.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_brt_robo.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_brt_robo.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt_robo.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_bender.imb
-
-    these are 816bytes
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_clobbergirl.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_clobbergirl.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_clobbergirl.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_clobbergirl.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_clobbergirl.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\challenge_mode\challenge_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb
-    A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_clobbergirl.imb
-
-
-    <style>
-        .bodyy {
-            font-family: 'Courier New', monospace;
-            background-color: #1e1e1e;
-            color: #d4d4d4;
-            padding: 2rem;
-        }
-
-        h1 {
-            color: #569cd6;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-        }
-
-        .file-block {
-            background: #252526;
-            border: 1px solid #3c3c3c;
-            padding: 1rem;
-            margin-bottom: 2rem;
-            border-radius: 5px;
-        }
-
-        .file-path {
-            color: #ce9178;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            word-break: break-all;
-        }
-
-        .file-size {
-            color: #4ec9b0;
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
-        }
-
-        .error {
-            color: #f44747;
-        }
-
-        pre {
-            margin: 0;
-            overflow-x: auto;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-    </style>
     <section class="bodyy">
         <h1>.imb Files: Hex Dump Analysis</h1>
         <div class='file-block'>

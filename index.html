@@ -28,7 +28,7 @@
                         <li><span class="coverage-icon coverage-green" aria-hidden="true"></span><strong>Green</strong> Usable output</li>
                         <li><span class="coverage-icon coverage-yellow" aria-hidden="true"></span><strong>Yellow</strong> Partial conversion</li>
                         <li><span class="coverage-icon coverage-blue" aria-hidden="true"></span><strong>Blue</strong> Analysis only</li>
-                        <li><span class="coverage-icon coverage-orange" aria-hidden="true"></span><strong>Orange</strong> Legacy md analysis</li>
+                        <li><span class="coverage-icon coverage-orange" aria-hidden="true"></span><strong>Orange</strong> todo</li>
                         <li><span class="coverage-icon coverage-grey" aria-hidden="true"></span><strong>Grey</strong> No current support</li>
                     </ul>
 
@@ -63,11 +63,7 @@
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-yellow" aria-hidden="true"></span>
-                            <div><strong>.graph</strong><span class="coverage-status">Partial conversion</span><span class="coverage-detail">Imported manually through the independent Godot graph importer.</span></div>
-                        </li>
-                        <li class="format-coverage-item">
-                            <span class="coverage-icon coverage-orange" aria-hidden="true"></span>
-                            <div><strong>.bin, .lua, .hud.bin, .txt, .alb, .aub, .amb, .bsp, .ctb, .hkt.PS3, .hko.PS3, .acs.PS3, .bbn.PS3, .bnk.PS3, .rcb.PS3, .shk.PS3, .tox.PS3, .xml.PS3, .rcm_b, .sbk, .smb, .toc (.occ.toc), .uix, .vfb</strong><span class="coverage-status">Legacy Markdown analysis</span><span class="coverage-detail">Analysis exists only in the old embedded-format Markdown notes; no extraction or conversion operation is registered.</span></div>
+                            <div><strong>.graph</strong><span class="coverage-status">imported into godot via extension</span><span class="coverage-detail">importable into godot or blender, not fully usable yet</span></div>
                         </li>
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
@@ -98,8 +94,20 @@
                             <div><strong>extensionless</strong><span class="coverage-status">full hex dump and shallow ai analysis</span><span class="coverage-detail">two files, LightTOC and StreamSetConfig</span></div>
                         </li>
                         <li class="format-coverage-item">
-                            <span class="coverage-icon coverage-grey" aria-hidden="true"></span>
-                            <div><strong>.mib, .msb</strong><span class="coverage-status">No current support</span><span class="coverage-detail">No usable extraction or conversion route or format analysis is currently available.</span></div>
+                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
+                            <div><strong>.mib</strong><span class="coverage-status">full hex dump and shallow ai analysis</span><span class="coverage-detail">...</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
+                            <div><strong>.msb</strong><span class="coverage-status">full hex dump and shallow ai analysis</span><span class="coverage-detail">...</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-blue" aria-hidden="true"></span>
+                            <div><strong>.smb</strong><span class="coverage-status">Format Analysis</span><span class="coverage-detail">An index and metadata table for EA's streaming audio engine dictating how external .exa sound streams load and play[cite: 1].</span></div>
+                        </li>
+                        <li class="format-coverage-item">
+                            <span class="coverage-icon coverage-orange" aria-hidden="true"></span>
+                            <div><strong>.bin, .lua, .hud.bin, .txt, .alb, .aub, .amb, .bsp, .ctb, .hkt.PS3, .hko.PS3, .acs.PS3, .bbn.PS3, .bnk.PS3, .rcb.PS3, .shk.PS3, .tox.PS3, .xml.PS3, .rcm_b, .sbk, .toc (.occ.toc), .uix, .vfb</strong><span class="coverage-status">incomplete or todo</span><span class="coverage-detail"></span></div>
                         </li>
                     </ul>
                 </section>
@@ -155,57 +163,72 @@
                             <ul class="documentation-tree-branch">
                                 <li>
                                     <span class="documentation-tree-group-link">Indexed formats</span>
-                                    <ul class="documentation-tree-leaves">
+                                    <ul class="documentation-tree-leaves" style="padding-bottom: 0.5rem;">
                                         <li><a href="#FormatAnalysis-bin">.BIN</a></li>
                                         <li><a href="#FormatAnalysis-lua">.lua</a></li>
                                         <li><a href="#FormatAnalysis-mus">.mus</a></li>
                                         <li><a href="#FormatAnalysis-exa-snu">.exa.snu</a></li>
-                                        <li><a href="#FormatAnalysis-str">.STR (EA Stream File)</a></li>
-                                        <li><a href="#FormatAnalysis-txt">.txt</a></li>
-                                        <li><a href="#FormatAnalysis-vp6">.vp6</a></li>
-                                        <li><a href="#FormatAnalysis-alb">.alb</a></li>
-                                        <li><a href="#FormatAnalysis-amb">.amb</a></li>
-                                        <li><a href="#FormatAnalysis-aub">.aub</a></li>
-                                        <li><a href="#FormatAnalysis-bsp">.bsp</a></li>
-                                        <li><a href="#FormatAnalysis-preinstanced">preinstanced</a></li>
-                                        <li><a href="#FormatAnalysis-dff">.dff (Preinstanced)</a></li>
-                                        <li><a href="#FormatAnalysis-rws">.rws (Preinstanced)</a></li>
-                                        <li><a href="#FormatAnalysis-ctb">.ctb</a></li>
-                                        <li><a href="#FormatAnalysis-txd">.txd (Texture Dictionary)</a></li>
-                                        <li><a href="#FormatAnalysis-graph">.graph (Navigation Graph)</a></li>
-                                        <li><a href="#FormatAnalysis-lh2">.lh2 (Localization)</a></li>
-                                        <li><a href="#FormatAnalysis-lh2-base">.LH2</a></li>
-                                        <li><a href="#FormatAnalysis-lh2-en">.en.LH2</a></li>
-                                        <li><a href="#FormatAnalysis-lh2-es">.es.LH2</a></li>
-                                        <li><a href="#FormatAnalysis-lh2-fr">.fr.LH2</a></li>
-                                        <li><a href="#FormatAnalysis-lh2-it">.it.LH2</a></li>
-                                        <li><a href="#FormatAnalysis-lh2-ss">.ss.LH2</a></li>
-                                        <li><a href="#FormatAnalysis-meta">.meta.xml (MetaModel)</a></li>
-                                        <li><a href="#FormatAnalysis-imb">.imb</a></li>
-                                        <li><a href="#FormatAnalysis-mib">.mib</a></li>
-                                        <li><a href="#FormatAnalysis-msb">.msb</a></li>
-                                        <li><a href="#FormatAnalysis-ps3">*.ps3 files</a></li>
-                                        <li><a href="#FormatAnalysis-acs">.acs.PS3</a></li>
-                                        <li><a href="#FormatAnalysis-bbn">.bbn.PS3</a></li>
-                                        <li><a href="#FormatAnalysis-bnk">.bnk.PS3</a></li>
-                                        <li><a href="#FormatAnalysis-hko">.hko.PS3</a></li>
-                                        <li><a href="#FormatAnalysis-hkt">.hkt.PS3</a></li>
-                                        <li><a href="#FormatAnalysis-rcb">.rcb.PS3</a></li>
-                                        <li><a href="#FormatAnalysis-tox">.tox.PS3</a></li>
-                                        <li><a href="#FormatAnalysis-xml">.xml.PS3</a></li>
-                                        <li><a href="#FormatAnalysis-rcm-b">.rcm_b</a></li>
-                                        <li><a href="#FormatAnalysis-sbk">.sbk</a></li>
-                                        <li><a href="#FormatAnalysis-cec">.cec.ps3 (Controller Config)</a></li>
-                                        <li><a href="#FormatAnalysis-simgroup">.dat (SimGroup)</a></li>
-                                        <li><a href="#FormatAnalysis-shk">.shk (Shock Resource)</a></li>
-                                        <li><a href="#FormatAnalysis-smb">.smb</a></li>
-                                        <li><a href="#FormatAnalysis-toc">.toc</a></li>
-                                        <li><a href="#FormatAnalysis-uix">.uix</a></li>
-                                        <li><a href="#FormatAnalysis-vfb">.vfb</a></li>
-                                        <li><a href="#FormatAnalysis-no-extension">No Extension lighttoc (Lighting) and StreamSetConfig</a></li>
-                                        <li><a href="#FormatAnalysis-inf">.inf (Font Map)</a></li>
+
                                     </ul>
-                                </li>
+                                <ul class="documentation-tree-branch">
+                                        <li>
+                                            <a href="#FormatAnalysis-str">.STR (EA Stream File)</a>
+                                            <ul style="list-style: none;" class="documentation-tree-leaves">
+                                                <li><a href="#FormatAnalysis-txt">.txt</a></li>
+                                                <li><a href="#FormatAnalysis-vp6">.vp6</a></li>
+                                                <li><a href="#FormatAnalysis-alb">.alb</a></li>
+                                                <li><a href="#FormatAnalysis-amb">.amb</a></li>
+                                                <li><a href="#FormatAnalysis-aub">.aub</a></li>
+                                                <li><a href="#FormatAnalysis-bsp">.bsp</a></li>
+                                                <li><a href="#FormatAnalysis-preinstanced">preinstanced</a></li>
+                                                <li><a href="#FormatAnalysis-dff">.dff (Preinstanced)</a></li>
+                                                <li><a href="#FormatAnalysis-rws">.rws (Preinstanced)</a></li>
+                                                <li><a href="#FormatAnalysis-ctb">.ctb</a></li>
+                                                <li><a href="#FormatAnalysis-txd">.txd (Texture Dictionary)</a></li>
+                                                <li><a href="#FormatAnalysis-graph">.graph (Navigation Graph)</a></li>
+                                                <li><a href="#FormatAnalysis-lh2">.lh2 (Localization)</a></li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-lh2-base">.LH2</a>
+                                                    <ul style="list-style: none;">
+                                                        <li><a href="#FormatAnalysis-lh2-en">.en.LH2</a></li>
+                                                        <li><a href="#FormatAnalysis-lh2-es">.es.LH2</a></li>
+                                                        <li><a href="#FormatAnalysis-lh2-fr">.fr.LH2</a></li>
+                                                        <li><a href="#FormatAnalysis-lh2-it">.it.LH2</a></li>
+                                                        <li><a href="#FormatAnalysis-lh2-ss">.ss.LH2</a></li>
+                                                    </ul>
+                                                </li>
+                                                <li><a href="#FormatAnalysis-meta">.meta.xml (MetaModel)</a></li>
+                                                <li><a href="#FormatAnalysis-imb">.imb</a></li>
+                                                <li><a href="#FormatAnalysis-mib">.mib</a></li>
+                                                <li><a href="#FormatAnalysis-msb">.msb</a></li>
+                                                <li>
+                                                    <a href="#FormatAnalysis-ps3">*.ps3 files</a>
+                                                    <ul style="list-style: none;">
+                                                        <li><a href="#FormatAnalysis-acs">.acs.PS3</a></li>
+                                                        <li><a href="#FormatAnalysis-bbn">.bbn.PS3</a></li>
+                                                        <li><a href="#FormatAnalysis-bnk">.bnk.PS3</a></li>
+                                                        <li><a href="#FormatAnalysis-hko">.hko.PS3</a></li>
+                                                        <li><a href="#FormatAnalysis-hkt">.hkt.PS3</a></li>
+                                                        <li><a href="#FormatAnalysis-rcb">.rcb.PS3</a></li>
+                                                        <li><a href="#FormatAnalysis-tox">.tox.PS3</a></li>
+                                                        <li><a href="#FormatAnalysis-xml">.xml.PS3</a></li>
+                                                        <li><a href="#FormatAnalysis-cec">.cec.ps3 (Controller Config)</a></li>
+                                                    </ul>
+                                                </li>
+                                                <li><a href="#FormatAnalysis-rcm-b">.rcm_b</a></li>
+                                                <li><a href="#FormatAnalysis-sbk">.sbk</a></li>
+                                                <li><a href="#FormatAnalysis-simgroup">.dat (SimGroup)</a></li>
+                                                <li><a href="#FormatAnalysis-shk">.shk (Shock Resource)</a></li>
+                                                <li><a href="#FormatAnalysis-smb">.smb (Meta Bank)</a></li>
+                                                <li><a href="#FormatAnalysis-toc">.toc</a></li>
+                                                <li><a href="#FormatAnalysis-uix">.uix</a></li>
+                                                <li><a href="#FormatAnalysis-vfb">.vfb</a></li>
+                                                <li><a href="#FormatAnalysis-no-extension">No Extension lighttoc (Lighting) and StreamSetConfig</a></li>
+                                                <li><a href="#FormatAnalysis-inf">.inf (Font Map)</a></li>
+                                            </ul>
+                                        </li>
+                                    </ul></li>
+
                             </ul>
                         </li>
                     </ul>
@@ -267,9 +290,9 @@
                 <iframe id="FormatAnalysis-lh2-it" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/it.LH2.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-lh2-ss" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ss.LH2.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-meta" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/meta.xml.html" frameborder="0" loading="lazy"></iframe>
-                <iframe id="FormatAnalysis-imb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/.imb.html" frameborder="0" loading="lazy"></iframe>
-                <iframe id="FormatAnalysis-mib" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/.mib.html" frameborder="0" loading="lazy"></iframe>
-                <iframe id="FormatAnalysis-msb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/.msb.html" frameborder="0" loading="lazy"></iframe>
+                <iframe id="FormatAnalysis-imb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/imb.html" frameborder="0" loading="lazy"></iframe>
+                <iframe id="FormatAnalysis-mib" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/mib.html" frameborder="0" loading="lazy"></iframe>
+                <iframe id="FormatAnalysis-msb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/msb.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-ps3" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ps3.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-acs" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/acs.PS3.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-bbn" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/bbn.PS3.html" frameborder="0" loading="lazy"></iframe>
@@ -288,7 +311,7 @@
                 <iframe id="FormatAnalysis-toc" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/toc.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-uix" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/uix.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-vfb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/vfb.html" frameborder="0" loading="lazy"></iframe>
-                <iframe id="FormatAnalysis-no-extension" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/.(No Extension).html" frameborder="0" loading="lazy"></iframe>
+                <iframe id="FormatAnalysis-no-extension" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/NoExtension.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-inf" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/inf.html" frameborder="0" loading="lazy"></iframe>
             </section>
 
@@ -342,4 +365,3 @@
 
     </body>
 </html>
-
