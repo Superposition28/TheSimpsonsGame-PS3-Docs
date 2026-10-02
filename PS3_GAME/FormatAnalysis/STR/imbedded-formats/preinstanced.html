@@ -7,8 +7,8 @@
     </head>
     <body style="padding: 1.5rem;padding-top: 2rem;">
         <h1>Preinstanced Asset Format (EARS_MESH) - Complete Implementation Guide</h1>
-        <p><strong>Version:</strong> 2.0</p>
-        <p><strong>Last Updated:</strong> 2025-02-17</p>
+        <p><strong>Version:</strong> 2.1</p>
+        <p><strong>Last Updated:</strong> 2026-10-02</p>
         <p><strong>Author(s):</strong> samarixum (based on reverse-engineering research)</p>
 
         <h2>Overview</h2>
@@ -18,7 +18,7 @@
             <li><strong>Purpose/Domain:</strong> Defines 3D model geometry, multiple UV maps, and texture name associations for assets in <em>The Simpsons Game</em> (PS3).</li>
             <li><strong>Originating Application/System:</strong> A heavily modified version of RenderWare customized by EA for <em>The Simpsons Game</em>.</li>
             <li><strong>Format Type:</strong> Binary, sequential chunk-based (no global header).</li>
-            <li><strong>General Structure:</strong> File is composed of sequential chunks: texture headers + texture names, TLFD delimiters, mesh chunks with geometry, and an EOF marker. No single magic number identifies the format; instead, look for characteristic signatures.</li>
+            <li><strong>General Structure:</strong> The importer scans for RenderWare string chunks, <code>TLFD</code> markers, EA mesh anchors, and an EOF marker. Current Blender parsing associates names occurring before mesh anchors; it detects but does not currently use TLFD markers to build material groups.</li>
             <li><strong>Endianness:</strong> <strong>Mixed-Endian</strong>. Almost all data is Big-Endian, except for <code>FaceDataOff</code> and <code>MeshDataSize</code> in mesh chunk headers (Little-Endian).</li>
         </ul>
 
@@ -26,18 +26,19 @@
 
         <ol>
             <li>Scan file sequentially from byte 0 to EOF</li>
-            <li>Maintain a "pending_texture_list" (empty initially)</li>
-            <li>Maintain a "texture_snapshots" array (empty initially)</li>
-            <li>Maintain a "meshes" array (empty initially)</li>
-            <li>For each detected signature:
+            <li>Scan for validated length-prefixed RenderWare string chunks, TLFD markers, mesh anchors, and the EOF marker.</li>
+            <li>Collect texture-name events and associate names preceding each mesh marker using the current flat-list behavior.</li>
+            <li>For each mesh anchor, parse the counts and submesh pointer records, then follow each pointer to its submesh header and vertex-info block.</li>
+            <li>Validate every buffer range against the enclosing file and the declared vertex stride.</li>
+            <li>For each detected event:
                 <ul>
-                    <li>Texture Header → Extract texture name → Push to pending_texture_list</li>
-                    <li>TLFD Marker → Save pending_texture_list to texture_snapshots → Clear pending_texture_list</li>
-                    <li>Mesh Chunk → Parse mesh data → Link with most recent texture_snapshots → Push to meshes</li>
+                    <li>Texture string → Add its name to the list used for the next mesh.</li>
+                    <li>TLFD marker → Record for analysis; it is not yet used as a material-group boundary.</li>
+                    <li>Mesh anchor → Parse submeshes and associate names found since the preceding mesh.</li>
                     <li>EOF Marker → Stop parsing</li>
                 </ul>
             </li>
-            <li>Return meshes array with texture bindings</li>
+            <li>Return meshes with provisional texture bindings.</li>
         </ol>
 
         <h3>Current Working Assumptions</h3>
@@ -45,25 +46,70 @@
         <ul>
             <li><strong>Submesh table 8-byte prefix:</strong> The repeated 8-byte value before each submesh offset is not a texture index. Latest dumps show it is stable across many files and looks more like a structural marker than a selector.</li>
             <li><strong>Submesh header interpretation:</strong> The 12-byte block at <code>MeshChunkStart + SubmeshRelOffset</code> is not entirely unknown. Bytes 0-3 look like vertex/primitive flags, bytes 4-7 appear to be a bounding volume or frustum radius float, and bytes 8-11 behave like a zero-based material index.</li>
-            <li><strong>Texture ordering:</strong> Texture strings appear to be stored sequentially in pairs per material, so material 0 maps to strings 0 and 1, material 1 maps to strings 2 and 3, and so on.</li>
-            <li><strong>Mapping caveat:</strong> Texture assignment is still incomplete. Many meshes or materials are being assigned the wrong texture, so the pair-based mapping should be treated as the current best fit rather than final truth.</li>
+            <li><strong>Texture/material grouping:</strong> The importer currently stores a flat, ordered list of texture names per mesh and selects a name using <code>material_id * 2</code>, with a palette special case. Real files show variable numbers of names and TLFD markers; this pair rule is not established as a format invariant.</li>
+            <li><strong>Mapping caveat:</strong> Texture assignment is incomplete. Treat current material bindings as provisional until per-material groups have been checked against known-good assets.</li>
+            <li><strong>Vertex attributes:</strong> Positions and UV fields are read at fixed offsets when they fit the declared stride. Other bytes may contain normals, prelit colors, or skinning data, but their meanings have not been confirmed for all DFF/RWS samples.</li>
+            <li><strong>DFF/RWS distinction:</strong> The Blender addon currently handles both extensions through the same preinstanced importer. The separate C++ readers are prototypes; their differences are not sufficient to define the complete on-disk distinction.</li>
         </ul>
 
         <h2>Identification Signatures</h2>
         <p><strong>Research references:</strong> keep this page aligned with <code>reversing/preinstanced_viewer.py</code> and <code>reversing/docs/FormatAnalysis/original.md-docs/preinstanced/test/check12.py</code>. The viewer is the live inspection tool; <code>check12.py</code> holds conservative validation patterns discovered during early reverse engineering and is useful for confirming whether a new sample still fits the current header family.</p>
 
-        <h3>Texture Header (3 Known Variants)</h3>
-        <p>These 16-byte signatures precede a texture name string.</p>
-        <ul>
-            <li><code>02 11 01 00 02 00 00 00 14 00 00 00 2D 00 02 1C</code> (Type A)</li>
-            <li><code>02 11 01 00 02 00 00 00 18 00 00 00 2D 00 02 1C</code> (Type B)</li>
-            <li><code>02 11 01 00 02 00 00 00 10 00 00 00 2D 00 02 1C</code> (Type C)</li>
-        </ul>
-        <p><strong>Interpretation:</strong> The 4-byte field at offsets 8-11 is not limited to the three values above. A sample captured by the viewer shows <code>0C 00 00 00</code> before the texture name <code>play_sound</code>, so this field should be treated as a variable length/size indicator rather than a fixed variant list. Observed values now include <code>0x0C</code>, <code>0x10</code>, <code>0x14</code>, and <code>0x18</code>.</p>
+        <h3>Observed Chunk Signatures</h3>
+        <p>The C++ <code>Chunk</code> helper reads type, size, and version as little-endian UInt32 values and recognizes EA type <code>0x0000EA33</code>. The Blender addon uses byte-pattern anchors rather than a recursive RenderWare chunk reader. These interpretations describe observed reader behavior and byte patterns, not a complete proof of every enclosing hierarchy.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Bytes</th>
+                    <th>Observed interpretation</th>
+                    <th>Confidence and caveat</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Offset <code>0x00</code>: <code>10 00 00 00</code>; version bytes at <code>0x08</code></td>
+                    <td>Consistent with little-endian <code>rwID_CLUMP</code> (<code>0x10</code>) and RenderWare version stamp <code>0x1C02002D</code>.</td>
+                    <td>Matches the addon's fixed SOF anchors; validate against representative binary samples.</td>
+                </tr>
+                <tr>
+                    <td><code>01 00 00 00 04 00 00 00 2D 00 02 1C</code> followed by four bytes</td>
+                    <td>Observed <code>rwID_STRUCT</code> with a four-byte payload and version stamp, before a string chunk.</td>
+                    <td>Validated by the structured name parser across TEST files. The enclosing material/texture parent chunk is not decoded here.</td>
+                </tr>
+                <tr>
+                    <td><code>02 00 00 00 [length LE] 2D 00 02 1C</code></td>
+                    <td>Consistent with little-endian <code>rwID_STRING</code> and a little-endian byte length.</td>
+                    <td>String payload is bounded and validated. Exact semantics of the preceding filter/address bytes remain unresolved.</td>
+                </tr>
+                <tr>
+                    <td><code>33 EA 00 00 [size LE] 2D 00 02 1C</code></td>
+                    <td>Consistent with EA chunk type <code>0x0000EA33</code>, a little-endian size word, and the observed version stamp.</td>
+                    <td>The C++ chunk helper recognizes type <code>59955</code>; the addon uses this as a mesh anchor. The size word's extent is unverified.</td>
+                </tr>
+                <tr>
+                    <td><code>16 EA 00 00 05 00 00 00 2D 00 02 1C 01 00 00 00 00</code></td>
+                    <td>Consistent with EA plugin type <code>0x0000EA16</code>, size 5, version, and a five-byte payload.</td>
+                    <td>The addon recognizes it as the EOF marker; other plugin semantics are not established.</td>
+                </tr>
+                <tr>
+                    <td><code>54 4C 46 44</code></td>
+                    <td>ASCII <code>TLFD</code>; candidate material extension/shader marker.</td>
+                    <td>The addon detects but does not use it for material grouping. Its proposed DFLT meaning is unverified.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Texture Name String Chunks</h3>
+        <p>The current parser recognizes a RenderWare <code>rwID_STRUCT</code> chunk with a four-byte payload, followed by an <code>rwID_STRING</code> chunk. The version stamp observed in both chunk headers is <code>2D 00 02 1C</code>. Four filter/address bytes occur in the struct payload; the string chunk then supplies its own byte length and payload. The parser validates chunk types, sizes, version stamps, bounds, and printable ASCII rather than requiring one exact filter value.</p>
+        <pre><code>
+    rwID_STRUCT: 01 00 00 00 | 04 00 00 00 | 2D 00 02 1C | [4 filter/address bytes]
+    rwID_STRING: 02 00 00 00 | [length UInt32 LE] | 2D 00 02 1C | [length bytes: ASCII, NUL, optional 0xBF fill]
+        </code></pre>
+        <p>Across the current TEST tree (5,533 preinstanced files), the structured scanner found 34,945 valid names, compared with 31,920 matches from the former three exact signatures. Observed filter/address bytes were <code>02 11 01 00</code> (34,784 occurrences) and <code>01 11 01 00</code> (161 occurrences). Validated string payload lengths were <code>0x04</code>, <code>0x08</code>, <code>0x0C</code>, <code>0x10</code>, <code>0x14</code>, <code>0x18</code>, <code>0x1C</code>, and <code>0x20</code>. A four-byte payload can be the valid three-character name <code>apu</code> followed by its NUL terminator. Other lengths up to the parser's defensive <code>0x80</code>-byte cap remain accepted only when chunk structure and bounds are valid.</p>
 
         <h3>Texture List Delimiter (TLFD)</h3>
         <p><code>54 4C 46 44</code> (ASCII "TLFD")</p>
-        <p><strong>Function:</strong> Signals end of a block of texture names. The next mesh chunk found will use the accumulated texture list up to this point.</p>
+        <p><strong>Observed behavior:</strong> The marker is detected between string and mesh events. The current importer logs TLFD events but does not yet use them to partition material groups. Grouping by TLFD is under validation against saved Blender references.</p>
 
         <h3>Mesh Chunk Signature</h3>
         <p><code>33 EA 00 00</code> followed by 4 bytes (wildcard), then <code>2D 00 02 1C</code></p>
@@ -76,25 +122,18 @@
 
         <h2>Texture Name Extraction</h2>
 
-        <p><strong>Location:</strong> Immediately after a Texture Header signature (16 bytes).</p>
+        <p><strong>Location:</strong> Inside the payload of a validated <code>rwID_STRING</code> chunk following the texture-name struct chunk. The string chunk carries a little-endian byte length; payloads may contain a null terminator and <code>0xBF</code> padding.</p>
 
-        <p><strong>Format:</strong> Null-terminated ASCII string.</p>
+        <p><strong>Current parser behavior:</strong> Require the preceding <code>rwID_STRUCT</code> type, its four-byte payload size, and the observed version stamp in both headers. Read only the bounded string payload, stop at NUL, trim trailing <code>0xBF</code> padding, and accept the supported filename characters. Texture-name events are associated with following meshes; TLFD is recorded but not yet used for grouping.</p>
 
-        <p><strong>Algorithm:</strong></p>
-        <ol>
-            <li>Position reader after the 16-byte Texture Header</li>
-            <li>Read bytes until null terminator (0x00) is found</li>
-            <li>Convert bytes to ASCII string</li>
-            <li>Sanitize: Remove non-alphanumeric characters except <code>._-</code></li>
-            <li>If result is empty, use fallback: <code>texture_at_0x&lt;HEX_OFFSET&gt;</code></li>
-            <li>Add string to pending_texture_list</li>
-        </ol>
+        <h3>DFF and RWS Notes</h3>
+        <p>The Blender addon uses the same preinstanced scanner for both extensions. The current C++ source has separate <code>DFFOpen</code> and <code>RwsOpen</code> classes with largely parallel chunk/geometry code. Although <code>DFFOpen</code> declares a <code>HasSkin</code> member, its current chunk walk does not process a SkinPLG; do not treat this as working skin support. Neither implementation alone establishes that all DFFs are single-clump/skinned or all RWS files are multi-clump/two-UV. Confirm extension-specific claims with representative extracted samples before treating them as format rules.</p>
 
         <h2>Mesh Chunk Header Structure</h2>
 
         <p><strong>Location:</strong> Starts at the byte after the mesh chunk signature (<code>33 EA 00 00 ?? ?? ?? ?? 2D 00 02 1C</code>).</p>
 
-        <p>The mesh chunk header uses a mixed-endian approach. While most architectural and count fields are Big-Endian (PS3), some core size and offset fields are Little-Endian.</p>
+        <p>The current readers treat the word at mesh-anchor offset <code>+0x04</code> as a little-endian chunk-size candidate. The version stamp and count/pointer fields described below are read separately; exact RenderWare chunk semantics for the custom mesh record still need sample validation.</p>
 
         <h3>Header Layout</h3>
 
@@ -115,7 +154,7 @@
                     <td>-</td>
                     <td>4</td>
                     <td>UInt32</td>
-                    <td>BE</td>
+                    <td>LE</td>
                     <td>Signature (<code>33 EA 00 00</code>)</td>
                 </tr>
                 <tr>
@@ -123,15 +162,15 @@
                     <td>-</td>
                     <td>4</td>
                     <td>UInt32</td>
-                    <td>BE</td>
-                    <td>Unknown</td>
+                    <td>LE candidate</td>
+                    <td>MeshChunkSize</td>
                 </tr>
                 <tr>
                     <td>0x08</td>
                     <td>-</td>
                     <td>4</td>
                     <td>UInt32</td>
-                    <td>BE</td>
+                    <td>LE</td>
                     <td>Signature Verify (<code>2D 00 02 1C</code>)</td>
                 </tr>
                 <tr>
@@ -140,7 +179,7 @@
                     <td>4</td>
                     <td>UInt32</td>
                     <td>BE</td>
-                    <td>Padding / mVersion</td>
+                    <td>Unknown Header Word</td>
                 </tr>
                 <tr>
                     <td>0x10</td>
@@ -169,9 +208,11 @@
             </tbody>
         </table>
 
+        <p><code>FaceDataOff</code> is used by the importer as a shared base for both vertex and face buffers: <code>MeshChunkStart + FaceDataOff + relative_buffer_offset</code>. <code>MeshDataSize</code> is read but is not used by the importer to bound those buffers. Its exact extent and the proposed identity with the enclosing size word remain unverified.</p>
+
         <h3>Navigation Table and Sub-Meshes</h3>
 
-        <p>Following <code>MeshChunkStart</code> (0x18 abs), there is a 28-byte block of padding before the table counts begin.</p>
+        <p><code>MeshChunkStart</code> is absolute offset <code>0x18</code>, immediately after the 12-byte mesh anchor and the two little-endian fields. The current addon, viewer, and C++ readers skip <code>0x14</code> bytes from this base, then read <code>TableCount</code> at relative <code>+0x14</code> (mesh-anchor offset <code>+0x2C</code>) and <code>SubmeshCount</code> at relative <code>+0x18</code> (mesh-anchor offset <code>+0x30</code>), both big-endian.</p>
 
         <table>
             <thead>
@@ -185,14 +226,14 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>0x1C</td>
+                    <td>0x14</td>
                     <td>4</td>
                     <td>UInt32</td>
                     <td>BE</td>
                     <td>TableCount</td>
                 </tr>
                 <tr>
-                    <td>0x20</td>
+                    <td>0x18</td>
                     <td>4</td>
                     <td>UInt32</td>
                     <td>BE</td>
@@ -203,7 +244,7 @@
 
         <h4>Sub-Mesh Table Entries</h4>
 
-        <p>Located after the Table entries (each 8 bytes, total <code>TableCount * 8</code>). Each Sub-Mesh entry is 12 bytes.</p>
+        <p>Located at <code>MeshChunkStart + 0x1C + TableCount * 8</code>. Each submesh table entry is 12 bytes and contains an 8-byte prefix followed by a big-endian relative pointer to a separate submesh header.</p>
 
         <table>
             <thead>
@@ -218,33 +259,68 @@
             <tbody>
                 <tr>
                     <td>0x00</td>
-                    <td>4</td>
-                    <td>UInt32</td>
-                    <td>Vertex Format Flags</td>
-                    <td>Likely flags or primitive-state bits. Stable across the current samples, but not fully decoded yet.</td>
-                </tr>
-                <tr>
-                    <td>0x04</td>
-                    <td>4</td>
-                    <td>Float32</td>
-                    <td>Bounding Volume / Frustum Radius</td>
-                    <td>Often parses as a plausible negative or positive float when read as big-endian. Likely culling or bounds metadata.</td>
+                    <td>8</td>
+                    <td>Byte[8]</td>
+                    <td>UnknownPrefix</td>
+                    <td>Meaning not decoded.</td>
                 </tr>
                 <tr>
                     <td>0x08</td>
                     <td>4</td>
                     <td>UInt32</td>
-                    <td>Material ID</td>
-                    <td>Zero-based material index used to select the texture pair for this submesh.</td>
+                    <td>SubmeshRelOffset</td>
+                    <td>Big-endian relative offset from <code>MeshChunkStart</code> to a separate submesh header.</td>
                 </tr>
             </tbody>
         </table>
 
-        <p><strong>Provisional note:</strong> The current importer treats the material ID as a material ordinal, then resolves textures by using a stride of two through the texture string list.</p>
+        <h4>Pointed-To Submesh Header</h4>
+        <p>Located at <code>MeshChunkStart + SubmeshRelOffset</code>. The current readers consume this 12-byte header, then read the vertex-info relative pointer at its <code>+0x0C</code> field.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Offset (relative)</th>
+                    <th>Size</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0x00</td>
+                    <td>4</td>
+                    <td>UInt32 BE</td>
+                    <td>Flags</td>
+                    <td>Interpretation not confirmed.</td>
+                </tr>
+                <tr>
+                    <td>0x04</td>
+                    <td>4</td>
+                    <td>Float32 BE</td>
+                    <td>BoundsValue</td>
+                    <td>Candidate bounds/radius value; meaning not confirmed.</td>
+                </tr>
+                <tr>
+                    <td>0x08</td>
+                    <td>4</td>
+                    <td>UInt32 BE</td>
+                    <td>MaterialId</td>
+                    <td>Ordinal read by the importer. Its mapping to material/texture groups is unresolved.</td>
+                </tr>
+                <tr>
+                    <td>0x0C</td>
+                    <td>4</td>
+                    <td>UInt32 BE</td>
+                    <td>VertexInfoRelOffset</td>
+                    <td>Relative offset from <code>MeshChunkStart</code> to the vertex-info block.</td>
+                </tr>
+            </tbody>
+        </table>
 
         <h3>Vertex Information Structure</h3>
 
-        <p>Located at <code>MeshChunkStart + SubmeshRelOffset + 12</code> is a pointer <code>VertInfoRelOffset</code>. Following that pointer (relative to <code>MeshChunkStart</code>):</p>
+        <p>The big-endian <code>VertexInfoRelOffset</code> is stored at <code>SubmeshHeader + 0x0C</code> and is relative to <code>MeshChunkStart</code>. Following that pointer:</p>
 
         <table>
             <thead>
@@ -272,21 +348,21 @@
                     <td>Bytes per vertex (stride).</td>
                 </tr>
                 <tr>
-                    <td>0x0C</td>
+                    <td>0x10</td>
                     <td>UInt32</td>
                     <td>BE</td>
                     <td>VertStartRel</td>
                     <td>Offset to vertex data (relative to <code>FaceDataOff</code>).</td>
                 </tr>
                 <tr>
-                    <td>0x24</td>
+                    <td>0x28</td>
                     <td>UInt32</td>
                     <td>BE</td>
                     <td>FaceByteLen</td>
                     <td>Total size of face index buffer (bytes).</td>
                 </tr>
                 <tr>
-                    <td>0x2C</td>
+                    <td>0x30</td>
                     <td>UInt32</td>
                     <td>BE</td>
                     <td>FaceStartRel</td>
@@ -297,42 +373,44 @@
 
         <h3>Header Traversal Algorithm (Unified)</h3>
 
-        <p><strong>Pseudocode for finding the mesh header end:</strong></p>
+        <p><strong>Observed count/table traversal:</strong></p>
         <pre><code>
-function find_header_end(mesh_chunk_start):
-    // We know the header contains offset/size fields at variable positions
-    // Scan forward from chunk start until we find non-sequential data
+mesh_chunk_start = mesh_anchor + 0x18
+face_data_off = read_u32_le(mesh_anchor + 0x10)
+mesh_data_size = read_u32_le(mesh_anchor + 0x14)  // read, but not used as a verified bound
 
-    version = read_u32_be(mesh_chunk_start + 0x00)
-    data_table_count = read_u32_be(mesh_chunk_start + 0x04)
+table_count = read_u32_be(mesh_chunk_start + 0x14)
+submesh_count = read_u32_be(mesh_chunk_start + 0x18)
+data_table_start = mesh_chunk_start + 0x1C
+submesh_table_start = data_table_start + table_count * 8
 
-    // Skip data table
-    header_pos = mesh_chunk_start + 0x08 + (data_table_count * 8)
+for submesh_index in range(submesh_count):
+    table_entry = submesh_table_start + submesh_index * 12
+    submesh_rel = read_u32_be(table_entry + 8)
+    submesh_header = mesh_chunk_start + submesh_rel
+    material_id = read_u32_be(submesh_header + 8)
+    vertex_info_rel = read_u32_be(submesh_header + 0x0C)
+    vertex_info = mesh_chunk_start + vertex_info_rel
 
-    // Read vertex info
-    vert_info_count = read_u32_be(header_pos)
-    vert_chunk_size = read_u32_be(header_pos + 0x04)
-    vert_chunk_total = read_u32_be(header_pos + 0x08)
-    vert_start = read_u32_be(header_pos + 0x0C)
-    face_start = read_u32_be(header_pos + 0x10)
-    face_data_byte_len = read_u32_be(header_pos + 0x14)
+    vertex_total_size = read_u32_be(vertex_info + 0x00)
+    vertex_stride = read_u32_be(vertex_info + 0x04)
+    vertex_start_rel = read_u32_be(vertex_info + 0x10)
+    face_byte_length = read_u32_be(vertex_info + 0x28)
+    face_start_rel = read_u32_be(vertex_info + 0x30)
 
-    // The actual mesh data starts ~32-48 bytes after vertex info begins
-    // Conservative approach: skip to known offset
-    header_end = header_pos + 0x24  // Typical header size after vertex info
-
-    return header_end
+    vertex_buffer = mesh_chunk_start + face_data_off + vertex_start_rel
+    face_buffer = mesh_chunk_start + face_data_off + face_start_rel
         </code></pre>
 
         <h2>Mesh Data Extraction</h2>
 
         <h3>Vertex Buffer</h3>
 
-        <p><strong>Location:</strong> mesh_chunk_start + FaceDataOff + VertexStart (note: FaceDataOff is Little-Endian)</p>
+        <p><strong>Location:</strong> <code>MeshChunkStart + FaceDataOff + VertexStart</code>.</p>
 
         <p><strong>Vertex Count:</strong> VertChunkTotalSize / VertChunkSize</p>
 
-        <p><strong>Vertex Structure (per vertex, Big-Endian):</strong></p>
+        <p><strong>Observed vertex fields (per vertex, Big-Endian floats):</strong> UV0 is available when <code>VertChunkSize &gt;= 0x1C</code>. UV1 is available when <code>VertChunkSize &gt;= 0x24</code>; the importer now defaults a missing channel rather than reading into the next vertex. The flag byte in the geometry struct includes a prelit bit, but its relationship to these bytes and the proposed edge-culling use have not been validated on sample assets.</p>
 
         <table>
             <thead>
@@ -354,10 +432,17 @@ function find_header_end(mesh_chunk_start):
                 </tr>
                 <tr>
                     <td>0x0C</td>
-                    <td>8</td>
-                    <td>bytes[8]</td>
-                    <td>Unknown</td>
-                    <td>Likely normals or other attributes.</td>
+                    <td>4</td>
+                    <td>bytes[4]</td>
+                    <td>Candidate Packed Normal</td>
+                    <td>Possible packed normal when geometry-normal flags are set; encoding and presence are not confirmed.</td>
+                </tr>
+                <tr>
+                    <td>0x10</td>
+                    <td>4</td>
+                    <td>bytes[4]</td>
+                    <td>Candidate Prelit Color</td>
+                    <td>May be a prelit RGBA color when the corresponding geometry flag is set. Color order and edge-culling interpretation are unverified; the addon does not currently import this field.</td>
                 </tr>
                 <tr>
                     <td>0x14</td>
@@ -389,17 +474,17 @@ function find_header_end(mesh_chunk_start):
                 </tr>
                 <tr>
                     <td>0x24+</td>
-                    <td>VertChunkSize - 36</td>
+                    <td>VertChunkSize - 36 (when stride exceeds 0x24)</td>
                     <td>bytes[N]</td>
                     <td>Additional Attributes</td>
-                    <td>Vertex colors, bone weights, normals, or tangents. Layout varies.</td>
+                    <td>Additional attributes may include more UV channels, skinning data, or other fields; layout is not established. DFF skin/plugin handling must be checked per sample.</td>
                 </tr>
             </tbody>
         </table>
 
         <h3>Face/Index Buffer</h3>
 
-        <p><strong>Location:</strong> mesh_chunk_start + FaceDataOff + FaceStart</p>
+        <p><strong>Location:</strong> <code>MeshChunkStart + FaceDataOff + FaceStart</code>.</p>
 
         <p><strong>Index Count:</strong> FaceDataByteLength / 2</p>
 
@@ -410,34 +495,34 @@ function find_header_end(mesh_chunk_start):
         </ul>
 
         <p><strong>Triangle Strip Conversion Algorithm:</strong></p>
+        <p>Split the index stream at <code>0xFFFF</code> before triangulating. Keep the final strip even when the stream has no trailing sentinel. The current addon skips repeated-index degenerate triangles and toggles winding parity for each candidate triangle.</p>
+        <p>The separate C++ readers do not append the final unterminated strip in their current loops and do not filter repeated-index degenerate triangles. Those prototype limitations do not describe the Blender addon's behavior.</p>
         <pre><code>
-function build_triangle_list(indices):
-    triangles = []
-    current_strip = []
+strips = []
+current_strip = []
+for index in indices:
+    if index == 0xFFFF:
+        if current_strip:
+            strips.append(current_strip)
+        current_strip = []
+    else:
+        current_strip.append(index)
+if current_strip:
+    strips.append(current_strip)
 
-    for each index in indices:
-        if index == 0xFFFF:  // Strip cut
-            if current_strip.length >= 3:
-                // Convert triangle strip to individual triangles
-                for i = 0 to current_strip.length - 3:
-                    if i % 2 == 0:
-                        triangles.append({
-                            v0: current_strip[i],
-                            v1: current_strip[i+1],
-                            v2: current_strip[i+2]
-                        })
-                    else:
-                        // Reverse winding for even-indexed triangles
-                        triangles.append({
-                            v0: current_strip[i],
-                            v1: current_strip[i+2],
-                            v2: current_strip[i+1]
-                        })
-            current_strip = []
+triangles = []
+for strip in strips:
+    flipped = false
+    for i from 0 to len(strip) - 3:
+        v1, v2, v3 = strip[i], strip[i + 1], strip[i + 2]
+        if v1 == v2 or v1 == v3 or v2 == v3:
+            flipped = not flipped
+            continue
+        if flipped:
+            triangles.append((v3, v2, v1))
         else:
-            current_strip.append(index)
-
-    return triangles
+            triangles.append((v2, v3, v1))
+        flipped = not flipped
         </code></pre>
 
         <h2>Complete Parsing Example (Pseudocode)</h2>
@@ -445,102 +530,76 @@ function build_triangle_list(indices):
         <pre><code>
 function parse_preinstanced(file_data):
     meshes = []
-    pending_textures = []
-    current_texture_snapshot = null
+    active_texture_names = []
+    has_seen_texture_since_mesh = false
 
     pos = 0
     while pos < len(file_data):
-        // Check for Texture Header (3 variants)
-        if match_pattern(file_data, pos, "02 11 01 00 02 00 00 00 14 00 00 00 2D 00 02 1C") or
-           match_pattern(file_data, pos, "02 11 01 00 02 00 00 00 18 00 00 00 2D 00 02 1C") or
-           match_pattern(file_data, pos, "02 11 01 00 02 00 00 00 10 00 00 00 2D 00 02 1C"):
-
-            pos += 16  // Skip signature
-
-            // Extract texture name
-            name_start = pos
-            while file_data[pos] != 0x00 and pos < len(file_data):
-                pos += 1
-
-            name = sanitize(file_data[name_start:pos])
-            pending_textures.append(name)
-            pos += 1  // Skip null terminator
-
-        // Check for TLFD marker
-        else if match_pattern(file_data, pos, "54 4C 46 44"):
-            current_texture_snapshot = copy(pending_textures)
-            pending_textures = []
+        if is_rw_string_chunk_at(file_data, pos):
+            name = read_bounded_ascii_rw_string(file_data, pos)
+            if name:
+                if not has_seen_texture_since_mesh:
+                    active_texture_names = []
+                    has_seen_texture_since_mesh = true
+                active_texture_names.append(name)
+            pos = end_of_rw_string_chunk(file_data, pos)
+        elif file_data[pos:pos+4] == "TLFD":
+            record_tlfd_event(pos)
             pos += 4
-
-        // Check for EOF marker
-        else if match_pattern(file_data, pos, "16 EA 00 00 05 00 00 00 2D 00 02 1C 01 00 00 00 00"):
-            break  // End of valid file
-
-        // Check for Mesh Chunk
-        else if match_pattern(file_data, pos, "33 EA 00 00 ?? ?? ?? ?? 2D 00 02 1C"):
+        elif matches_mesh_anchor(file_data, pos):
             mesh_start = pos
-            pos += 16  // Skip signature
+            has_seen_texture_since_mesh = false
+            mesh_textures = copy(active_texture_names)
+            mesh_chunk_start = mesh_start + 0x18
+            face_data_off = read_u32_le(mesh_start + 0x10)
+            mesh_data_size = read_u32_le(mesh_start + 0x14)  // Extent not yet verified
 
-            // Parse header
-            version = read_u32_be(pos)
-            data_table_count = read_u32_be(pos + 0x04)
+            table_count = read_u32_be(mesh_chunk_start + 0x14)
+            submesh_count = read_u32_be(mesh_chunk_start + 0x18)
+            table_start = mesh_chunk_start + 0x1C
+            submesh_table_start = table_start + table_count * 8
 
-            header_offset = pos + 0x08 + (data_table_count * 8)
-            vert_info_count = read_u32_be(header_offset)
-            vert_chunk_size = read_u32_be(header_offset + 0x04)
-            vert_chunk_total = read_u32_be(header_offset + 0x08)
-            vert_start = read_u32_be(header_offset + 0x0C)
-            face_start = read_u32_be(header_offset + 0x10)
-            face_data_byte_len = read_u32_be(header_offset + 0x14)
-            face_data_off_le = read_u32_le(header_offset + 0x18)
-            mesh_data_size_le = read_u32_le(header_offset + 0x1C)
+            for submesh_index in range(submesh_count):
+                entry = submesh_table_start + submesh_index * 12
+                submesh_rel = read_u32_be(entry + 8)
+                submesh_header = mesh_chunk_start + submesh_rel
+                material_id = read_u32_be(submesh_header + 8)
+                vertex_info_rel = read_u32_be(submesh_header + 0x0C)
+                vertex_info = mesh_chunk_start + vertex_info_rel
 
-            // Extract vertex data
-            vertex_count = vert_chunk_total / vert_chunk_size
-            vert_data_offset = mesh_start + face_data_off_le + vert_start
-            vertices = []
+                vertex_total_size = read_u32_be(vertex_info + 0x00)
+                vertex_stride = read_u32_be(vertex_info + 0x04)
+                vertex_start_rel = read_u32_be(vertex_info + 0x10)
+                face_byte_length = read_u32_be(vertex_info + 0x28)
+                face_start_rel = read_u32_be(vertex_info + 0x30)
 
-            for v = 0 to vertex_count - 1:
-                v_offset = vert_data_offset + (v * vert_chunk_size)
+                vertex_buffer = mesh_chunk_start + face_data_off + vertex_start_rel
+                face_buffer = mesh_chunk_start + face_data_off + face_start_rel
+                require_in_bounds(vertex_buffer, vertex_total_size)
+                require_in_bounds(face_buffer, face_byte_length)
 
-                position = read_float3_be(v_offset + 0x00)
-                tex0_u = read_float_be(v_offset + 0x14)
-                tex0_v = 1.0 - read_float_be(v_offset + 0x18)  // Flip V
-                tex1_u = read_float_be(v_offset + 0x1C)
-                tex1_v = 1.0 - read_float_be(v_offset + 0x20)  // Flip V
+                for vertex in range(vertex_total_size // vertex_stride):
+                    stride_start = vertex_buffer + vertex * vertex_stride
+                    position = read_float3_be(stride_start + 0x00)
+                    uv0 = read_float2_be(stride_start + 0x14) if vertex_stride >= 0x1C else DEFAULT_UV
+                    uv1 = read_float2_be(stride_start + 0x1C) if vertex_stride >= 0x24 else DEFAULT_UV
 
-                vertices.append({
-                    position: position,
-                    uv0: {u: tex0_u, v: tex0_v},
-                    uv1: {u: tex1_u, v: tex1_v}
+                indices = read_u16_be_array(face_buffer, face_byte_length // 2)
+                strips = split_on_sentinel(indices, sentinel=0xFFFF)
+                triangles = build_triangle_list(strips)  // Keep cuts; flush final strip
+
+                meshes.append({
+                    name: unique_mesh_name(mesh_start, submesh_index),
+                    material_id: material_id,
+                    textures: mesh_textures,
+                    triangles: triangles
                 })
 
-            // Extract face/index data
-            index_count = face_data_byte_len / 2
-            face_data_offset = mesh_start + face_data_off_le + face_start
-            indices = []
-
-            for i = 0 to index_count - 1:
-                index = read_u16_be(face_data_offset + (i * 2))
-                if index != 0xFFFF:
-                    indices.append(index)
-
-            // Convert triangle strips
-            triangles = build_triangle_list(indices)
-
-            mesh = {
-                vertices: vertices,
-                triangles: triangles,
-                textures: current_texture_snapshot
-            }
-
-            meshes.append(mesh)
-
-            // Skip to next chunk (rough estimate)
-            pos = mesh_start + mesh_data_size_le + 32
-
+            pos = mesh_start + 1  // Continue the anchor scan; MeshDataSize is not used as a bound
+        elif matches_eof(file_data, pos):
+            break
         else:
-            pos += 1  // Advance byte-by-byte until next signature
+            pos += 1
 
     return meshes
         </code></pre>
@@ -549,22 +608,22 @@ function parse_preinstanced(file_data):
 
         <ul>
             <li><strong>Vertex Count:</strong> Must be &gt; 0. If 0, mesh is invalid.</li>
-            <li><strong>Triangle Count:</strong> Must be &gt; 0. If all indices are 0xFFFF, mesh is invalid.</li>
+            <li><strong>Triangle Count:</strong> Validate the result after splitting on <code>0xFFFF</code>, discarding strips shorter than three indices, and filtering repeated-index degenerates.</li>
             <li><strong>Index Bounds:</strong> All non-delimiter indices must be &lt; vertex_count.</li>
-            <li><strong>VertChunkSize:</strong> Should match actual stride in vertex data (typically 36, 48, or 64).</li>
+            <li><strong>VertChunkSize:</strong> Must be positive and fit each attribute read within the current vertex record; UV0 and UV1 are optional based on stride.</li>
             <li><strong>Endianness Check:</strong> If vert_chunk_size appears impossibly large (&gt; 1000), may have endianness error. Verify byte order.</li>
-            <li><strong>Texture Count:</strong> Should match or exceed the number of vertices/triangles that reference textures.</li>
+            <li><strong>Texture Association:</strong> Texture names, TLFD events, submesh material IDs, and material slots need cross-checking against a known-good imported asset; do not infer a two-name-per-material rule from counts alone.</li>
         </ul>
 
         <h2>Known Limitations & Unknowns</h2>
 
         <ul>
             <li><strong>mDataTable:</strong> Latest dumps do not support the old texture/material ID hypothesis. It looks more like an offset/flag table, but the exact semantics are still unclear.</li>
-            <li><strong>Texture assignment:</strong> The pair-based texture mapping is still incomplete. Several meshes continue to bind to the wrong texture, so the current logic should be treated as a best-fit heuristic.</li>
-            <li><strong>FaceDataOff / MeshDataSize:</strong> Exact semantics unclear. Used as offsets but specific meaning not documented in reverse-engineering.</li>
-            <li><strong>Full Vertex Stride:</strong> Only position and two UV pairs are documented. Additional fields (normals, vertex colors, bone info) exist but layout varies.</li>
+            <li><strong>Texture assignment:</strong> The current <code>material_id * 2</code> selection with a palette special case is a heuristic. Real files contain variable name counts and material IDs; TLFD grouping and material ordinal semantics remain under validation.</li>
+            <li><strong>FaceDataOff / MeshDataSize:</strong> Readers use <code>FaceDataOff</code> as a shared base for vertex and face buffers. The importer reads <code>MeshDataSize</code> but does not use it as a validated bound; its full extent and relation to the mesh anchor size are unresolved.</li>
+            <li><strong>Full Vertex Stride:</strong> Position and UV offsets are read when they fit the declared stride. Candidate packed normals, prelit colors, additional UVs, and bone data have not been fully identified. The edge-culling interpretation of vertex colors is unverified.</li>
             <li><strong>Mipmap Handling:</strong> Not addressed in this format. Assume single resolution.</li>
-            <li><strong>Bone/Skinning Data:</strong> May be embedded in the "unknown" vertex stride bytes. Not extracted by current parsers.</li>
+            <li><strong>Bone/Skinning Data:</strong> Skinning data has not been decoded by the Blender addon. The current C++ DFF source declares a skin flag but does not process a SkinPLG in its chunk walk.</li>
             <li><strong>Validation anchors:</strong> <code>check12.py</code> contains long-form header patterns for the SOF main, second, and third headers. These are useful for sanity-checking file families, but they should be treated as validation anchors rather than canonical field definitions.</li>
             <li><strong>Shared section markers:</strong> The repeated family <code>13/15/16/33 EA 00 00 ... 2D 00 02 1C</code> is useful when tracing section boundaries. The viewer highlights these as shared/unknown section headers until the exact semantics are confirmed.</li>
         </ul>
