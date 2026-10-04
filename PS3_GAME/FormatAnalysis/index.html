@@ -1,274 +1,459 @@
 <!DOCTYPE html>
 <html>
 
-    <head>
-        <meta charset="utf-8">
-        <title>Format Analysis</title>
-        <link rel="stylesheet" href="../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem;padding-top: 2rem;">
+<head>
+    <meta charset="utf-8">
+    <title>Format Analysis</title>
+    <link rel="stylesheet" href="../../style/main.css">
+</head>
 
-        <h1>Format Analysis</h1>
-        <p>Entry point for file format notes and reverse-engineering writeups.</p>
+<body style="padding: 1.5rem;padding-top: 2rem;">
 
-        <h1>Root Files</h1>
+    <h1>Format Analysis</h1>
+    <p>Entry point for file format notes and reverse-engineering writeups.</p>
 
-        <table class="format-counts">
-            <caption>Root file counts by extension</caption>
-            <thead>
-                <tr>
-                    <th scope="col">File Type</th>
-                    <th scope="col">Count</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td><a href="./BIN/index.html">.BIN</a></td><td>1</td></tr>
-                <tr><td><a href="./LUA/index.html">.lua</a></td><td>3</td></tr>
-                <tr><td><a href="./MUS/index.html">.mus</a></td><td>17</td></tr>
-                <tr><td><a href="./EXA.SNU/index.html">.exa.snu</a></td><td>29,430</td></tr>
-                <tr><td><a href="./STR/index.html">.str</a></td><td>550</td></tr>
-                <tr><td><a href="./TXT/index.html">.txt</a></td><td>1</td></tr>
-                <tr><td><a href="./VP6/index.html">.vp6</a></td><td>172</td></tr>
-            </tbody>
-        </table>
+    <h1>Root Files</h1>
 
-        <h2>Archives</h2>
-        <ul>
-            <li><a href="./STR/index.html">.STR (EA Stream File)</a></li>
-        </ul>
+    <table class="format-counts">
+        <caption>Root file counts by extension</caption>
+        <thead>
+            <tr>
+                <th scope="col">File Type</th>
+                <th scope="col">Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a href="./BIN/index.html">.BIN</a></td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><a href="./LUA/index.html">.lua</a></td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td><a href="./MUS/index.html">.mus</a></td>
+                <td>17</td>
+            </tr>
+            <tr>
+                <td><a href="./EXA.SNU/index.html">.exa.snu</a></td>
+                <td>29,430</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/index.html">.str</a></td>
+                <td>550</td>
+            </tr>
+            <tr>
+                <td><a href="./TXT/index.html">.txt</a></td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><a href="./VP6/index.html">.vp6</a></td>
+                <td>172</td>
+            </tr>
+        </tbody>
+    </table>
 
-        <h2>Embedded Formats (STR Contents, when extracted with qbms extractor)</h2>
+    <h2>Archives</h2>
+    <ul>
+        <li><a href="./STR/index.html">.STR (EA Stream File)</a></li>
+    </ul>
 
-        <table class="format-counts">
-            <caption>Extracted STR content counts and descriptions by extension</caption>
-            <thead>
-                <tr>
-                    <th scope="col">File Type</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Count</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/alb.html">.alb</a></td>
-                    <td></td>
-                    <td>13</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/amb.html">.amb</a></td>
-                    <td></td>
-                    <td>1</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/aub.html">.aub</a></td>
-                    <td></td>
-                    <td>-</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/bsp.html">.bsp</a></td>
-                    <td></td>
-                    <td>2</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/cec.ps3.html">.cec.ps3</a></td>
-                    <td>Controller Event Config</td>
-                    <td>-</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/ctb.html">.ctb</a></td>
-                    <td></td>
-                    <td>13</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/simgroup.dat.html">.dat</a></td>
-                    <td>SimGroup</td>
-                    <td>11</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/graph.html">.graph</a></td>
-                    <td>Navigation Graph</td>
-                    <td>13</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/.imb.html">.imb</a></td>
-                    <td></td>
-                    <td>2</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/inf.html">.inf</a></td>
-                    <td></td>
-                    <td>-</td>
-                </tr>
+    <h2>Embedded Formats (STR Contents, when extracted with qbms extractor) PS3</h2>
 
-                <!-- LH2 Localization Hierarchy -->
-                <tr style="background-color: #242424;">
-                    <td><strong><a href="./STR/imbedded-formats/lh2.html">*.lh2 localization files</a></strong></td>
-                    <td>Localization Hub</td>
-                    <td>-</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/lh2.html">.LH2</a></td>
-                    <td>Localization Header 2</td>
-                    <td>14</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/en.LH2.html">.en.LH2</a></td>
-                    <td>Localization Header 2, English</td>
-                    <td>1</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/es.LH2.html">.es.LH2</a></td>
-                    <td>Localization Header 2, Spanish</td>
-                    <td>1</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/fr.LH2.html">.fr.LH2</a></td>
-                    <td>Localization Header 2, French</td>
-                    <td>1</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/it.LH2.html">.it.LH2</a></td>
-                    <td>Localization Header 2, Italian</td>
-                    <td>1</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/ss.LH2.html">.ss.LH2</a></td>
-                    <td>Localization Header 2, Spanish Latin America</td>
-                    <td>1</td>
-                </tr>
+    <table class="format-counts">
+        <caption>Extracted STR content counts and descriptions by extension</caption>
+        <thead>
+            <tr>
+                <th scope="col">File Type</th>
+                <th scope="col">Description</th>
+                <th scope="col">Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a href="./STR/imbedded-formats/alb.html">.alb</a></td>
+                <td></td>
+                <td>529</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/amb.html">.amb</a></td>
+                <td></td>
+                <td>58</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/aub.html">.aub</a></td>
+                <td></td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/bsp.html">.bsp</a></td>
+                <td></td>
+                <td>113</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/cec.ps3.html">.cec.ps3</a></td>
+                <td>Controller Event Config</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/ctb.html">.ctb</a></td>
+                <td></td>
+                <td>528</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/simgroup.dat.html">.dat</a></td>
+                <td>SimGroup</td>
+                <td>434</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/graph.html">.graph</a></td>
+                <td>Navigation Graph</td>
+                <td>425</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/.imb.html">.imb</a></td>
+                <td></td>
+                <td>44</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/inf.html">.inf</a></td>
+                <td></td>
+                <td>12</td>
+            </tr>
 
-                <tr>
-                    <td><a href="./STR/imbedded-formats/lighttoc.html">.lighttoc</a></td>
-                    <td>Lighting Table of Contents</td>
-                    <td>-</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/meta.xml.html">.meta.xml</a></td>
-                    <td>MetaModel Binary</td>
-                    <td>65</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/.mib.html">.mib</a></td>
-                    <td></td>
-                    <td>3</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/.msb.html">.msb</a></td>
-                    <td></td>
-                    <td>1</td>
-                </tr>
+            <!-- LH2 Localization Hierarchy -->
+            <tr style="background-color: #242424;">
+                <td><strong><a href="./STR/imbedded-formats/lh2.html">*.lh2 localization files</a></strong></td>
+                <td>Localization Hub</td>
+                <td>654</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/lh2.html">.LH2</a></td>
+                <td>Localization Header 2</td>
+                <td>554</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/en.LH2.html">.en.LH2</a></td>
+                <td>Localization Header 2, English</td>
+                <td>20</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/es.LH2.html">.es.LH2</a></td>
+                <td>Localization Header 2, Spanish</td>
+                <td>20</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/fr.LH2.html">.fr.LH2</a></td>
+                <td>Localization Header 2, French</td>
+                <td>20</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/it.LH2.html">.it.LH2</a></td>
+                <td>Localization Header 2, Italian</td>
+                <td>20</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/ss.LH2.html">.ss.LH2</a></td>
+                <td>Localization Header 2, Spanish Latin America</td>
+                <td>20</td>
+            </tr>
 
-                <!-- Preinstanced Models Hierarchy -->
-                <tr style="background-color: #242424;">
-                    <td><strong><a href="./STR/imbedded-formats/.preinstanced.html">.preinstanced</a></strong></td>
-                    <td>3D Models Hub</td>
-                    <td>-</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/dff.preinstanced.html">.dff.PS3</a></td>
-                    <td>Preinstanced Mesh</td>
-                    <td>42</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/rws.preinstanced.html">.rws.PS3</a></td>
-                    <td>Preinstanced Mesh</td>
-                    <td>91</td>
-                </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/lighttoc.html">.lighttoc</a></td>
+                <td>Lighting Table of Contents</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/meta.xml.html">.meta.xml</a></td>
+                <td>MetaModel Binary</td>
+                <td>2,616</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/.mib.html">.mib</a></td>
+                <td></td>
+                <td>89</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/.msb.html">.msb</a></td>
+                <td></td>
+                <td>19</td>
+            </tr>
 
-                <!-- PS3 Files Hierarchy -->
-                <tr style="background-color: #242424;">
-                    <td><strong><a href="./STR/imbedded-formats/ps3.html">*.ps3 files</a></strong></td>
-                    <td>PS3 Resources Hub</td>
-                    <td>-</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/acs.PS3.html">.acs.PS3</a></td>
-                    <td></td>
-                    <td>6</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/bbn.PS3.html">.bbn.PS3</a></td>
-                    <td></td>
-                    <td>3</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/bnk.PS3.html">.bnk.PS3</a></td>
-                    <td></td>
-                    <td>22</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/hko.PS3.html">.hko.PS3</a></td>
-                    <td></td>
-                    <td>15</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/hkt.PS3.html">.hkt.PS3</a></td>
-                    <td></td>
-                    <td>35</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/rcb.PS3.html">.rcb.PS3</a></td>
-                    <td></td>
-                    <td>19</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/tox.PS3.html">.tox.PS3</a></td>
-                    <td></td>
-                    <td>2</td>
-                </tr>
-                <tr>
-                    <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/xml.PS3.html">.xml.PS3</a></td>
-                    <td></td>
-                    <td>4</td>
-                </tr>
+            <!-- Preinstanced Models Hierarchy -->
+            <tr style="background-color: #242424;">
+                <td><strong><a href="./STR/imbedded-formats/.preinstanced.html">.preinstanced</a></strong></td>
+                <td>3D Models Hub</td>
+                <td>5,533</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a
+                        href="./STR/imbedded-formats/dff.preinstanced.html">.dff.PS3.preinstanced</a></td>
+                <td>Preinstanced Mesh</td>
+                <td>2,034</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a
+                        href="./STR/imbedded-formats/rws.preinstanced.html">.rws.PS3.preinstanced</a></td>
+                <td>Preinstanced Mesh</td>
+                <td>3,499</td>
+            </tr>
 
-                <tr>
-                    <td><a href="./STR/imbedded-formats/rcm_b.html">.rcm_b</a></td>
-                    <td></td>
-                    <td>4</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/sbk.html">.sbk</a></td>
-                    <td></td>
-                    <td>4</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/shk.html">.shk</a></td>
-                    <td>Shock Resource</td>
-                    <td>-</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/smb.html">.smb</a></td>
-                    <td></td>
-                    <td>4</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/toc.html">.toc</a></td>
-                    <td></td>
-                    <td>1</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/txd.html">.txd</a></td>
-                    <td>Texture Dictionary</td>
-                    <td>18</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/uix.html">.uix</a></td>
-                    <td></td>
-                    <td>1</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/vfb.html">.vfb</a></td>
-                    <td></td>
-                    <td>352</td>
-                </tr>
-                <tr>
-                    <td><a href="./STR/imbedded-formats/.(No Extension).html">No Extension</a></td>
-                    <td></td>
-                    <td>1</td>
-                </tr>
-            </tbody>
-        </table>
+            <!-- PS3 Files Hierarchy -->
+            <tr style="background-color: #242424;">
+                <td><strong><a href="./STR/imbedded-formats/ps3.html">*.ps3 files</a></strong></td>
+                <td>PS3 Resources Hub</td>
+                <td>4,962</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/acs.PS3.html">.acs.PS3</a></td>
+                <td></td>
+                <td>267</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/bbn.PS3.html">.bbn.PS3</a></td>
+                <td></td>
+                <td>110</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/bnk.PS3.html">.bnk.PS3</a></td>
+                <td></td>
+                <td>1,213</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/hko.PS3.html">.hko.PS3</a></td>
+                <td></td>
+                <td>1,021</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/hkt.PS3.html">.hkt.PS3</a></td>
+                <td></td>
+                <td>878</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/rcb.PS3.html">.rcb.PS3</a></td>
+                <td></td>
+                <td>1,226</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/tox.PS3.html">.tox.PS3</a></td>
+                <td></td>
+                <td>77</td>
+            </tr>
+            <tr>
+                <td style="padding-left: 2rem;">&#x2514; <a href="./STR/imbedded-formats/xml.PS3.html">.xml.PS3</a></td>
+                <td></td>
+                <td>153</td>
+            </tr>
 
-    </body>
+            <tr>
+                <td><a href="./STR/imbedded-formats/rcm_b.html">.rcm_b</a></td>
+                <td></td>
+                <td>346</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/sbk.html">.sbk</a></td>
+                <td></td>
+                <td>157</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/shk.html">.shk.PS3</a></td>
+                <td>Shock Resource</td>
+                <td>16</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/smb.html">.smb</a></td>
+                <td></td>
+                <td>99</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/toc.html">.toc</a></td>
+                <td></td>
+                <td>20</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/toc.html">.str.occ.toc</a></td>
+                <td></td>
+                <td>5</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/txd.html">.txd</a></td>
+                <td>Texture Dictionary</td>
+                <td>858</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/uix.html">.uix</a></td>
+                <td></td>
+                <td>54</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/vfb.html">.vfb</a></td>
+                <td></td>
+                <td>8,770</td>
+            </tr>
+            <tr>
+                <td><a href="./STR/imbedded-formats/.(No Extension).html">No Extension</a></td>
+                <td></td>
+                <td>46</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <h2>Embedded Formats (STR Contents, when extracted with qbms extractor) XBOX360</h2>
+
+    <table class="format-counts">
+        <caption>Extracted STR content counts and descriptions by extension</caption>
+        <thead>
+            <tr>
+                <th scope="col">File Type</th>
+                <th scope="col">Description</th>
+                <th scope="col">Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>.vfb</td>
+                <td>VFB File</td>
+                <td>8,770</td>
+            </tr>
+            <tr>
+                <td>.snu</td>
+                <td>SNU File</td>
+                <td>7,413</td>
+            </tr>
+            <tr>
+                <td>.preinstanced</td>
+                <td>PREINSTANCED File</td>
+                <td>5,533</td>
+            </tr>
+            <tr>
+                <td>.xen</td>
+                <td>XEN File</td>
+                <td>4,962</td>
+            </tr>
+            <tr>
+                <td>.xml</td>
+                <td>XML File</td>
+                <td>2,617</td>
+            </tr>
+            <tr>
+                <td>.itxd</td>
+                <td>ITXD File</td>
+                <td>863</td>
+            </tr>
+            <tr>
+                <td>.lh2</td>
+                <td>LH2 File</td>
+                <td>594</td>
+            </tr>
+            <tr>
+                <td>.alb</td>
+                <td>ALB File</td>
+                <td>529</td>
+            </tr>
+            <tr>
+                <td>.ctb</td>
+                <td>CTB File</td>
+                <td>528</td>
+            </tr>
+            <tr>
+                <td>.dat</td>
+                <td>DAT File</td>
+                <td>433</td>
+            </tr>
+            <tr>
+                <td>.graph</td>
+                <td>GRAPH File</td>
+                <td>425</td>
+            </tr>
+            <tr>
+                <td>.rcm_b</td>
+                <td>RCM_B File</td>
+                <td>346</td>
+            </tr>
+            <tr>
+                <td>.sbk</td>
+                <td>SBK File</td>
+                <td>156</td>
+            </tr>
+            <tr>
+                <td>.bsp</td>
+                <td>BSP File</td>
+                <td>113</td>
+            </tr>
+            <tr>
+                <td>.smb</td>
+                <td>SMB File</td>
+                <td>99</td>
+            </tr>
+            <tr>
+                <td>.mib</td>
+                <td>MIB File</td>
+                <td>89</td>
+            </tr>
+            <tr>
+                <td>.amb</td>
+                <td>AMB File</td>
+                <td>58</td>
+            </tr>
+            <tr>
+                <td>.uix</td>
+                <td>UIX File</td>
+                <td>54</td>
+            </tr>
+            <tr>
+                <td>No Extension</td>
+                <td>(No Extension)</td>
+                <td>46</td>
+            </tr>
+            <tr>
+                <td>.imb</td>
+                <td>IMB File</td>
+                <td>44</td>
+            </tr>
+            <tr>
+                <td>.vp6</td>
+                <td>VP6 File</td>
+                <td>42</td>
+            </tr>
+            <tr>
+                <td>.toc</td>
+                <td>TOC File</td>
+                <td>25</td>
+            </tr>
+            <tr>
+                <td>.msb</td>
+                <td>MSB File</td>
+                <td>19</td>
+            </tr>
+            <tr>
+                <td>.mus</td>
+                <td>MUS File</td>
+                <td>17</td>
+            </tr>
+            <tr>
+                <td>.inf</td>
+                <td>INF File</td>
+                <td>12</td>
+            </tr>
+            <tr>
+                <td>.bin</td>
+                <td>BIN File</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td>.aub</td>
+                <td>AUB File</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td>.txt</td>
+                <td>Text Source File</td>
+                <td>2</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
 </html>

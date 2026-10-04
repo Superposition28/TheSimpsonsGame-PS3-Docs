@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Instanced Texture Dictionary (.itxd) - Complete Format Analysis</title>
+    <link rel="stylesheet" href="../../../../../style/main.css">
+</head>
+<body style="padding: 1.5rem;padding-top: 2rem;">
+    <h1>Instanced Texture Dictionary (.itxd)</h1>
+
+    <p><strong>Version:</strong> 1.0<br>
+    <strong>Last Updated:</strong> 2026-10-05<br>
+    <strong>Author(s):</strong> samarixum</p>
+
+    <p>The <code>.itxd</code> (Instanced Texture Dictionary) format is the Xbox 360 counterpart to the PS3 <code>.txd</code> format used in The Simpsons Game. Unlike the PS3 version—which wraps textures in classic RenderWare stream chunks (<code>0x16</code>, <code>0x01</code>, <code>0x15</code>, <code>0x03</code>)—the <code>.itxd</code> format uses a pre-serialized (instanced) memory dump container starting with the signature <code>75 7A 00 03</code>. It embeds a raw Xbox 360 Xenos GPU <code>D3DBaseTexture</code> descriptor and stores pixel payloads in Xenos tiled layout.</p>
+
+    <p><strong>Endianness:</strong> Big-Endian (PowerPC native) for integers and descriptors; 16-bit byte-swapped (<code>GPUENDIAN_8IN16</code>) for DXT block payloads.<br>
+    <strong>Character Encoding:</strong> ASCII / UTF-8 (null-padded fixed 64-byte field).</p>
+
+    <h2>Architectural Comparison (.txd vs .itxd)</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>PS3 <code>.txd</code> (Streamed RenderWare)</th>
+                <th>Xbox 360 <code>.itxd</code> (Instanced / Pre-serialized)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Container Header</strong></td>
+                <td>12-byte RenderWare chunk <code>16 00 00 00</code> + size + <code>2D 00 02 1C</code></td>
+                <td>Instanced arena header starting with <code>75 7A 00 03</code></td>
+            </tr>
+            <tr>
+                <td><strong>Endianness</strong></td>
+                <td>Mixed (LE chunk headers/sizes, BE texture dimensions)</td>
+                <td>Big-Endian (PowerPC native)</td>
+            </tr>
+            <tr>
+                <td><strong>EA Plugin Hash (<code>0xEA2F</code>)</strong></td>
+                <td>Stored at EOF inside a trailing <code>0x03</code> Extension chunk</td>
+                <td>Stored in the header at offset <code>0x7E</code> right after the texture name</td>
+            </tr>
+            <tr>
+                <td><strong>GPU Descriptor</strong></td>
+                <td>16-byte RenderWare PS3 metadata block at signature <code>+0x50</code></td>
+                <td>52-byte Xbox 360 <code>D3DBaseTexture</code> (Xenos GPU fetch constants) at <code>0xE4</code></td>
+            </tr>
+            <tr>
+                <td><strong>Pixel Layout</strong></td>
+                <td>Morton (Z-order) swizzled for linear formats; standard DXT</td>
+                <td>Xbox 360 Xenos macro/micro-tiled (padded to 32x32 tile boundaries)</td>
+            </tr>
+            <tr>
+                <td><strong>32-bit Channel Order</strong></td>
+                <td><code>BGRA</code> (e.g., <code>79 2D 20 00</code>)</td>
+                <td><code>RGBA</code> / <code>ARGB</code> byte-reversed RGB (e.g., <code>20 2D 79 00</code>)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Parsing Algorithm Overview</h2>
+
+    <ol>
+        <li>Validate the 4-byte magic signature <code>75 7A 00 03</code> at offset <code>0x00</code> and the EA plugin ID <code>00 00 EA 2F</code> at offset <code>0x08</code>.</li>
+        <li>Read the texture name from the 64-byte null-padded block starting at offset <code>0x38</code>.</li>
+        <li>Read the filter/addressing mode at <code>0x78</code> and the 8-byte EA texture GUID/hash at <code>0x7E</code>.</li>
+        <li>Read the Big-Endian dimension and payload table between <code>0xA0</code> and <code>0xE3</code> (Width at <code>0xAC</code>, Height at <code>0xB0</code>, BPP at <code>0xB4</code>, Mip Count at <code>0xDC</code>, and Payload Size at <code>0xE0</code>).</li>
+        <li>Parse the Xbox 360 <code>D3DBaseTexture</code> GPU descriptor at <code>0xE4</code>–<code>0x117</code> to confirm the <code>GPUTEXTUREFORMAT</code> (at <code>0xED</code>) and bitpacked <code>GPUTEXTURESIZE_2D</code> (at <code>0x104</code>).</li>
+        <li>Seek to the pixel data payload at offset <code>0x4B0</code> (for single-texture dictionaries) and read <code>Payload Size</code> bytes.</li>
+        <li>Untile the Xenos macro/micro-tiled surface (and perform 16-bit byte-swapping for DXT formats or channel reordering for 32-bit formats).</li>
+        <li>Export the linear surface to DDS.</li>
+    </ol>
+
+    <h2>File Header &amp; Container Layout</h2>
+
+    <h3>1. Instanced Arena Header (<code>0x00</code> – <code>0x37</code>)</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Offset</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Endian</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0x00</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>Instanced container magic signature: <code>75 7A 00 03</code> (<code>"uz\x00\x03"</code>).</td>
+            </tr>
+            <tr>
+                <td>0x04</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>Version / count field; observed value <code>00 00 00 01</code>.</td>
+            </tr>
+            <tr>
+                <td>0x08</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>EA Plugin ID: <code>00 00 EA 2F</code> (<code>0x0000EA2F</code>).</td>
+            </tr>
+            <tr>
+                <td>0x0C</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>Arena flags / header size parameters; observed <code>00 58 00 20</code>.</td>
+            </tr>
+            <tr>
+                <td>0x10</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>Section count; observed <code>06 00 00 00</code>.</td>
+            </tr>
+            <tr>
+                <td>0x14</td>
+                <td>12</td>
+                <td>Bytes</td>
+                <td>-</td>
+                <td>Reserved / zero padding.</td>
+            </tr>
+            <tr>
+                <td>0x20</td>
+                <td>24</td>
+                <td>UInt32[6]</td>
+                <td>BE</td>
+                <td>Arena section offsets: <code>0x30</code>, <code>0x30</code>, <code>0x00</code>, <code>0xA0</code>, <code>0x00</code>, <code>0x18</code>, <code>0x18</code>.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>2. Texture Identification &amp; EA Hash Block (<code>0x38</code> – <code>0x9F</code>)</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Offset</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Endian</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0x38</td>
+                <td>64</td>
+                <td>Char[64]</td>
+                <td>-</td>
+                <td>Null-padded ASCII texture name (e.g., <code>sparkle</code> or <code>moh_sky_zone1_sky2</code>).</td>
+            </tr>
+            <tr>
+                <td>0x78</td>
+                <td>2</td>
+                <td>UInt16</td>
+                <td>BE</td>
+                <td>Filter and UV addressing mode (e.g., <code>11 02</code> or <code>11 06</code>). Matches the filter bytes in the PS3 <code>.txd</code> header.</td>
+            </tr>
+            <tr>
+                <td>0x7A</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>Record flag; observed <code>00 00 00 01</code>.</td>
+            </tr>
+            <tr>
+                <td>0x7E</td>
+                <td>8</td>
+                <td>UInt64</td>
+                <td>Raw</td>
+                <td>8-byte EA plugin GUID/hash (e.g., <code>92 69 39 D6 C5 E4 FA 20</code> for <code>sparkle</code>). Identical to the 8-byte payload inside the trailing <code>0xEA2F</code> chunk in the PS3 <code>.txd</code>.</td>
+            </tr>
+            <tr>
+                <td>0x86</td>
+                <td>26</td>
+                <td>Bytes</td>
+                <td>-</td>
+                <td>Zero padding up to offset <code>0xA0</code>.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>3. Dimension &amp; Payload Table (<code>0xA0</code> – <code>0xE3</code>)</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Offset</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Endian</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0xA0</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>SelfOffset</td>
+                <td>Block start offset (<code>0x000000A0</code>).</td>
+            </tr>
+            <tr>
+                <td>0xA4</td>
+                <td>8</td>
+                <td>Bytes</td>
+                <td>-</td>
+                <td>Reserved</td>
+                <td>Zero padding.</td>
+            </tr>
+            <tr>
+                <td>0xAC</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>Width</td>
+                <td>Texture width in pixels (e.g., <code>0x40</code> = 64, <code>0x400</code> = 1024).</td>
+            </tr>
+            <tr>
+                <td>0xB0</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>Height</td>
+                <td>Texture height in pixels (e.g., <code>0x40</code> = 64, <code>0x400</code> = 1024).</td>
+            </tr>
+            <tr>
+                <td>0xB4</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>Depth / BPP</td>
+                <td>Bits per pixel (<code>0x08</code> for DXT3/5, <code>0x04</code> for DXT1, <code>0x20</code> for 32-bit RGBA).</td>
+            </tr>
+            <tr>
+                <td>0xB8</td>
+                <td>8</td>
+                <td>Bytes</td>
+                <td>-</td>
+                <td>Flags</td>
+                <td>Observed <code>00 00 00 00 00 04 00 00</code>.</td>
+            </tr>
+            <tr>
+                <td>0xC0</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>FormatHint</td>
+                <td>Observed <code>0x00000000</code> in DXT, <code>0x85000000</code> in 32-bit uncompressed.</td>
+            </tr>
+            <tr>
+                <td>0xC4</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>Reserved</td>
+                <td>Zero padding.</td>
+            </tr>
+            <tr>
+                <td>0xC8</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>LogicalWidth</td>
+                <td>Repeated texture width in pixels.</td>
+            </tr>
+            <tr>
+                <td>0xCC</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>LogicalHeight</td>
+                <td>Repeated texture height in pixels.</td>
+            </tr>
+            <tr>
+                <td>0xD0</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>Reserved</td>
+                <td>Zero padding.</td>
+            </tr>
+            <tr>
+                <td>0xD4</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>SubHeaderPtr</td>
+                <td>Offset pointer; observed <code>0x000000F4</code>.</td>
+            </tr>
+            <tr>
+                <td>0xD8</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>StreamFlag</td>
+                <td>Observed <code>0x00000000</code> or <code>0x00010000</code>.</td>
+            </tr>
+            <tr>
+                <td>0xDC</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>MipMapCount</td>
+                <td>Number of mip levels present (e.g., <code>1</code> or <code>6</code>).</td>
+            </tr>
+            <tr>
+                <td>0xE0</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>BE</td>
+                <td>PayloadSize</td>
+                <td>Total byte size of the pixel data blob starting at <code>0x4B0</code> (e.g., <code>0x1000</code> for 64x64 DXT, <code>0x556000</code> for 1024x1024 RGBA with 6 mips).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>4. Xbox 360 <code>D3DBaseTexture</code> Descriptor (<code>0xE4</code> – <code>0x117</code>)</h3>
+
+    <p>This 52-byte region is an embedded Xbox 360 Direct3D 9 <code>D3DBaseTexture</code> header containing the hardware texture fetch constant registers (<code>GPUTEXTURE_FETCH_CONSTANT</code>) for the Xenos GPU.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Offset</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Endian</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0xE4</td>
+                <td>8</td>
+                <td>UInt32[2]</td>
+                <td>BE</td>
+                <td><code>D3DResource</code> common header (<code>0x00000010</code>, <code>0x00280001</code> / <code>0x00182801</code>).</td>
+            </tr>
+            <tr>
+                <td>0xEC</td>
+                <td>2</td>
+                <td>UInt16</td>
+                <td>BE</td>
+                <td>Xenos format descriptor. Low byte at <code>0xED</code> is the native format code (<code>0x02</code> = DXT1, <code>0x52</code>/<code>0x02</code> = DXT3/5, <code>0x86</code> = 32-bit <code>8_8_8_8</code>).</td>
+            </tr>
+            <tr>
+                <td>0xF8</td>
+                <td>24</td>
+                <td>UInt32[6]</td>
+                <td>BE</td>
+                <td>Xenos GPU 6-DWORD Texture Fetch Constant:
+                    <ul>
+                        <li><strong>DWORD 0 (<code>0xF8</code>):</strong> Tiling &amp; pitch configuration.</li>
+                        <li><strong>DWORD 1 (<code>0xFC</code>):</strong> Base address &amp; <code>GPUTEXTUREFORMAT</code> (low 6 bits: <code>0x02</code> = <code>DXT1</code>, <code>0x14</code> = <code>DXT4_5</code>, <code>0x06</code> = <code>8_8_8_8</code>; bit 7 = <code>0x80</code> tiled flag).</li>
+                        <li><strong>DWORD 2 (<code>0x100</code>):</strong> <code>GPUTEXTURESIZE_2D</code> bitfield:
+                            <ul>
+                                <li>Bits 0–12: <code>Width - 1</code> (e.g., <code>0x03F</code> = 63 &rarr; 64px; <code>0x3FF</code> = 1023 &rarr; 1024px).</li>
+                                <li>Bits 13–25: <code>Height - 1</code> (e.g., <code>0x03F &lt;&lt; 13</code> = <code>0x7E000</code> &rarr; 64px; <code>0x3FF &lt;&lt; 13</code> = <code>0x7FE000</code> &rarr; 1024px).</li>
+                            </ul>
+                        </li>
+                        <li><strong>DWORD 3 (<code>0x104</code>):</strong> Swizzle/Component mapping (<code>0x0007E03F</code> / <code>0x007FE3FF</code> depending on alignment).</li>
+                        <li><strong>DWORD 4–5 (<code>0x108</code>–<code>0x10F</code>):</strong> Mip address, min/max mip level clamping, and border color.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>0x118</td>
+                <td>920</td>
+                <td>Bytes</td>
+                <td>-</td>
+                <td>Zero padding up to the 4KB-aligned/sector-aligned data start at offset <code>0x4B0</code> (1,200 bytes).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Format Codes &amp; Pixel Layout</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Header Byte (<code>0xED</code>)</th>
+                <th>Fetch Format (<code>0xFF</code>)</th>
+                <th>Format Name</th>
+                <th>BPP (<code>0xB4</code>)</th>
+                <th>Handling</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>0x52</code> / <code>0x02</code></td>
+                <td><code>0x02</code></td>
+                <td>DXT1</td>
+                <td>4</td>
+                <td>Swap every 2 bytes (16-bit endian swap), untile Xenos macro-tiles, export as DXT1.</td>
+            </tr>
+            <tr>
+                <td><code>0x53</code> / <code>0x02</code></td>
+                <td><code>0x02</code> / <code>0x13</code></td>
+                <td>DXT3 / DXT5</td>
+                <td>8</td>
+                <td>Swap every 2 bytes (16-bit endian swap), untile Xenos macro-tiles, export as DXT3/DXT5.</td>
+            </tr>
+            <tr>
+                <td><code>0x86</code></td>
+                <td><code>0x86</code></td>
+                <td>Uncompressed 8_8_8_8</td>
+                <td>32</td>
+                <td>Untile Xenos 32x32 macro-tiles. Swap R and B channels if converting to PS3/DDS BGRA.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Xbox 360 Xenos Untiling &amp; Padding</h2>
+
+    <p><strong>Macro-Tile Padding:</strong> The Xbox 360 Xenos GPU organises textures into <strong>32x32</strong> macro-tiles (composed of 8x8 micro-tiles). For DXT block-compressed textures, each 4x4 texel block is treated as a single element, meaning a 32x32 block macro-tile covers <strong>128x128 pixels</strong> (4,096 bytes for DXT3/5). Consequently:</p>
+
+    <ul>
+        <li>A 64x64 DXT5 texture (such as <code>sparkle</code>, which only requires 2,048 bytes of linear DXT5 data) is padded to a full 4,096-byte (<code>0x1000</code>) Xenos tile allocation, resulting in large runs of <code>0x00</code> padding bytes inside the <code>0x4B0</code>–<code>0x14AF</code> payload.</li>
+        <li>Mipmap chains in files like <code>zone01_split2.itxd</code> include packed tail mips padded out to tile alignment boundaries, explaining why the 1024x1024 6-mip payload is <code>0x556000</code> bytes (5,595,136 bytes) on Xbox 360 compared to <code>0x555400</code> bytes (5,592,064 bytes) on PS3.</li>
+    </ul>
+
+    <p><strong>32-Bit Channel Reversal:</strong> Comparing identical pixels between PS3 <code>.txd</code> and Xbox 360 <code>.itxd</code> in <code>zone01_split2</code> reveals that the RGB channels are reversed while Alpha remains in byte 3:</p>
+    <ul>
+        <li><strong>PS3 <code>.txd</code> (BGRA):</strong> <code>79 2D 20 00</code>, <code>7E 31 22 1C</code>, <code>83 35 24 00</code></li>
+        <li><strong>Xbox 360 <code>.itxd</code> (RGBA):</strong> <code>20 2D 79 00</code>, <code>22 31 7E 1C</code>, <code>24 35 83 00</code></li>
+    </ul>
+
+    <h2>Complete Parsing Example (Pseudocode)</h2>
+
+    <pre><code>
+function parse_itxd(file_data) {
+    // 1. Validate magic and EA plugin ID
+    if (read_u32_be(file_data, 0x00) != 0x757A0003) return null
+    if (read_u32_be(file_data, 0x08) != 0x0000EA2F) return null
+
+    // 2. Read 64-byte texture name at 0x38
+    raw_name = file_data[0x38 : 0x78]
+    name = read_ascii_until_null(raw_name)
+
+    // 3. Read filter mode and 8-byte EA hash
+    filter_mode = read_u16_be(file_data, 0x78)
+    ea_hash = file_data[0x7E : 0x86]
+
+    // 4. Read dimensions and payload info
+    width        = read_u32_be(file_data, 0xAC)
+    height       = read_u32_be(file_data, 0xB0)
+    bpp          = read_u32_be(file_data, 0xB4)
+    mip_count    = read_u32_be(file_data, 0xDC)
+    payload_size = read_u32_be(file_data, 0xE0)
+
+    // 5. Read Xenos D3DBaseTexture format byte
+    xenos_fmt = file_data[0xED]
+
+    // 6. Extract tiled pixel payload starting at 0x4B0
+    pixel_data_start = 0x4B0
+    raw_payload = file_data[pixel_data_start : pixel_data_start + payload_size]
+
+    // 7. Untile and convert endianness
+    if (xenos_fmt == 0x86) {
+        // 32-bit RGBA: Untile Xenos 32-bit surface and swap R/B to BGRA for DDS
+        linear_data = xenos_untile_32bpp(raw_payload, width, height)
+        linear_data = swap_rgba_to_bgra(linear_data)
+    } else {
+        // Block-compressed DXT: 16-bit byte swap (8IN16) then untile 4x4 blocks
+        swapped = byte_swap_16bit(raw_payload)
+        linear_data = xenos_untile_dxt(swapped, width, height, bpp)
+    }
+
+    return {
+        name: name,
+        ea_hash: ea_hash,
+        width: width,
+        height: height,
+        bpp: bpp,
+        mip_count: mip_count,
+        format: xenos_fmt,
+        data: linear_data
+    }
+}
+    </code></pre>
+
+</body>
+</html>
