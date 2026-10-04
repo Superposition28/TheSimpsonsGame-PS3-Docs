@@ -1,1 +1,37 @@
-todo
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Lua Source Files</title>
+	<link rel="stylesheet" href="../../../style/main.css">
+</head>
+<body style="padding: 1.5rem; padding-top: 2rem;">
+	<h1>Lua Source Files</h1>
+	<p>The EU PS3 and Xbox 360 NTSC source trees contain the same three Lua files. Their SHA-256 hashes match pairwise, so no content differences were found in these scripts.</p>
+	<p>Links below open the source files. Hashes are calculated over the original file bytes.</p>
+
+	<h2>simpsons_gameflow.lua</h2>
+	<p>Builds the game's flow configuration: registers costumes, creates the game and episodes, and attaches modes, maps, movies, and metric screens.</p>
+	<ul>
+		<li>PS3 EU: <a href="../../../../../Source/EU/PS3_GAME/USRDIR/simpsons_gameflow.lua">USRDIR/simpsons_gameflow.lua</a></li>
+		<li>Xbox 360 NTSC: <a href="../../../../../Source/x360-NTSC/x360-NTSC/simpsons_gameflow.lua">x360-NTSC/simpsons_gameflow.lua</a></li>
+	</ul>
+	<p>309 lines; 30,050 bytes. SHA-256: <code>11A6872ED4EC510836CDC65A263544107E102A23DE8E66A09E70ED2E9D0098B7</code></p>
+
+	<h2>simpsons_gameflow_helpers.lua</h2>
+	<p>Provides constructors for game, episode, mode, movie, map, and metric-screen packages. The helpers attach created objects to the game-flow hierarchy and transfer ownership to Lua.</p>
+	<ul>
+		<li>PS3 EU: <a href="../../../../../Source/EU/PS3_GAME/USRDIR/simpsons_gameflow_helpers.lua">USRDIR/simpsons_gameflow_helpers.lua</a></li>
+		<li>Xbox 360 NTSC: <a href="../../../../../Source/x360-NTSC/x360-NTSC/simpsons_gameflow_helpers.lua">x360-NTSC/simpsons_gameflow_helpers.lua</a></li>
+	</ul>
+	<p>115 lines; 3,765 bytes. SHA-256: <code>56C8BD124EF87456A8DF7B36B9B9FABC0A4E1120885F4A5C2DEF38D395F74DC3</code></p>
+
+	<h2>simpsons_scores.lua</h2>
+	<p>Defines ScoreKeeper data and setup routines for episode progression, completion and timing, achievements, collectibles, tutorials, costumes, power-ups, and score-event gates.</p>
+	<ul>
+		<li>PS3 EU: <a href="../../../../../Source/EU/PS3_GAME/USRDIR/simpsons_scores.lua">USRDIR/simpsons_scores.lua</a></li>
+		<li>Xbox 360 NTSC: <a href="../../../../../Source/x360-NTSC/x360-NTSC/simpsons_scores.lua">x360-NTSC/simpsons_scores.lua</a></li>
+	</ul>
+	<p>1,415 lines; 54,009 bytes. SHA-256: <code>20B0EA2303F9FA27D5DAB7D1DF5B55265CFC29CE3342C5BBB362C88F0C3C07FA</code></p>
+</body>
+</html>
