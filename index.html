@@ -16,7 +16,8 @@
         <main class="pages">
 
             <!-- PS3 -->
-            <section class="page" id="home">
+            <h1>PS3</h1>
+            <section class="page home-page" id="home">
                 <section class="format-coverage" aria-labelledby="format-coverage-title">
                     <div class="format-coverage-heading">
                         <h1 id="format-coverage-title">Pipeline Format Coverage</h1>
@@ -216,12 +217,130 @@
                         <li class="format-coverage-item">
                             <span class="coverage-icon coverage-orange" aria-hidden="true"></span>
                             <div>
-                                <strong>.bin, .lua, .hud.bin, .txt, .alb, .aub, .amb, .bsp, .ctb, .hkt.PS3, .hko.PS3, .acs.PS3, .bbn.PS3, .bnk.PS3, .rcb.PS3, .shk.PS3, .xml.PS3, .rcm_b, .toc, .str.occ.toc, .vfb</strong>
-                                <span class="coverage-status">incomplete or todo</span>
-                                <span class="coverage-detail"></span>
+                                <strong>PS3 format documentation status</strong>
+                                <span class="coverage-status">Per-format notes below</span>
+                                <span class="coverage-detail">Statuses describe the current documentation, not module/engine support.</span>
                             </div>
                         </li>
                     </ul>
+                    <h2>PS3 Format Documentation Status</h2>
+                    <table class="format-counts">
+                        <caption>Evidence and known gaps in the current PS3 format notes</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Format</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Known limitation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/BIN/index.html">.bin</a></td>
+                                <td>Contains TODO</td>
+                                <td>The page is only the literal placeholder “todo”.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/LUA/index.html">.lua</a></td>
+                                <td>Unknown status</td>
+                                <td>The page inventories the three scripts and compares platforms, but does not assess their behavior or completeness.</td>
+                            </tr>
+                            <tr>
+                                <td>.hud.bin</td>
+                                <td>Unknown status</td>
+                                <td>No active PS3 format page or status note was found.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/TXT/index.html">.txt</a></td>
+                                <td>Contains TODO</td>
+                                <td>The page is only the literal placeholder “todo”.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/alb.html">.alb</a></td>
+                                <td>Markdown-format notes; incomplete</td>
+                                <td>Open questions remain about record fields and offsets; the page calls for comparison across more records.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/aub.html">.aub</a></td>
+                                <td>Markdown-format notes; incomplete</td>
+                                <td>This is an overview of the ALB/CTB/audio relationship, not a byte-level AUB specification.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/amb.html">.amb</a></td>
+                                <td>Markdown-format notes; incomplete</td>
+                                <td>Several ID/offset fields remain unexplained and alignment assumptions are unverified.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/bsp.html">.bsp</a></td>
+                                <td>Markdown-format notes; incomplete</td>
+                                <td>The draft marks the lump layout, header fields, and node purposes as tentative or unknown.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ctb.html">.ctb</a></td>
+                                <td>Markdown-format notes; incomplete</td>
+                                <td>The version/signature and section boundaries are proposed rather than confirmed; the page is version 0.1.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/hkt.PS3.html">.hkt.PS3</a></td>
+                                <td>Markdown-format notes; sample-based</td>
+                                <td>The Havok identification is described as likely and is based on a collision-model sample, not a validated format-wide layout.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/hko.PS3.html">.hko.PS3</a></td>
+                                <td>Markdown-format notes; potentially inaccurate</td>
+                                <td>The page speculates about PS3-specific alignment and SPU optimization without confirming those claims.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/acs.PS3.html">.acs.PS3</a></td>
+                                <td>Markdown-format notes; inferred</td>
+                                <td>Primitive types and runtime use are inferred from a small set of character-collision samples.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/bbn.PS3.html">.bbn.PS3</a></td>
+                                <td>Markdown-format notes; sample-based</td>
+                                <td>The bone-binding interpretation is based on a player-default sample and lacks cross-file validation.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/bnk.PS3.html">.bnk.PS3</a></td>
+                                <td>Markdown-format notes; sample-based</td>
+                                <td>The animation-bank interpretation and record roles are inferred from one character bank.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/rcb.PS3.html">.rcb.PS3</a></td>
+                                <td>Markdown-format notes; incomplete</td>
+                                <td>The notes report no consistent header and only describe size ranges and asset locations.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/shk.html">.shk.PS3</a></td>
+                                <td>Unknown status</td>
+                                <td>A header and fixed-size command entry are documented, but the page does not state whether the layout is complete or validated across files.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/xml.PS3.html">.xml.PS3</a></td>
+                                <td>Markdown-format notes; preliminary</td>
+                                <td>The structure is hypothesized from one cinematic sample; several fields and block relationships remain uncertain.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/rcm_b.html">.rcm_b</a></td>
+                                <td>Markdown-format notes; speculative</td>
+                                <td>The page contains a header snippet and guesses that the files hold character-audio metadata.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/toc.html">.toc</a></td>
+                                <td>Markdown-format notes; incomplete</td>
+                                <td>The page identifies multiple TOC variants and explicitly says further analysis is needed.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/toc.html">.str.occ.toc</a></td>
+                                <td>Markdown-format notes; sample-limited</td>
+                                <td>The documented occlusion layout is based on one Springfield Hub file; the format page calls for further analysis.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/vfb.html">.vfb</a></td>
+                                <td>Documentation present; validation status unknown</td>
+                                <td>The page describes the Visual-FX Bundle header, offset table, and block types, but does not distinguish interpretations validated across files from tentative ones.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </section>
                 <nav class="documentation-tree" aria-labelledby="documentation-tree-title">
                     <div class="documentation-tree-heading">
@@ -575,7 +694,56 @@
             </section>
 
             <!-- Xbox 360 -->
+            <section class="page home-page" id="home-xbox360">
+                <section class="format-coverage" aria-labelledby="xbox360-title">
+                    <div class="format-coverage-heading">
+                        <h1 id="xbox360-title">Xbox 360 NTSC</h1>
+                        <p>Source inventory and linked format notes for the Xbox 360 NTSC files.</p>
+                    </div>
+                    <h2>Root Files</h2>
+                    <ul>
+                        <li><a href="../../Source/x360-NTSC/x360-NTSC/default.xex">default.xex</a></li>
+                        <li><a href="../../Source/x360-NTSC/x360-NTSC/simpsons_gameflow.lua">simpsons_gameflow.lua</a></li>
+                        <li><a href="../../Source/x360-NTSC/x360-NTSC/simpsons_gameflow_helpers.lua">simpsons_gameflow_helpers.lua</a></li>
+                        <li><a href="../../Source/x360-NTSC/x360-NTSC/simpsons_scores.lua">simpsons_scores.lua</a></li>
+                    </ul>
+                    <h2>Source Folders</h2>
+                    <ul>
+                        <li>audiostreams</li>
+                        <li>bargainbin</li>
+                        <li>bigsuperhappy</li>
+                        <li>brt</li>
+                        <li>cheater</li>
+                        <li>colossaldonut</li>
+                        <li>dayofthedolphins</li>
+                        <li>dayspringfieldstoodstill</li>
+                        <li>eighty_bites</li>
+                        <li>frontend</li>
+                        <li>gamehub</li>
+                        <li>grand_theft_scratchy</li>
+                        <li>loc</li>
+                        <li>medal_of_homer</li>
+                        <li>meetthyplayer</li>
+                        <li>mob_rules</li>
+                        <li>movies</li>
+                        <li>neverquest</li>
+                        <li>rhymes</li>
+                        <li>simpsons_chars</li>
+                        <li>spr_hub</li>
+                        <li>text</li>
+                        <li>tree_hugger</li>
+                    </ul>
+                    <h2>Documentation</h2>
+                    <ul>
+                        <li><a href="./PS3_GAME/FormatAnalysis/index.html">Xbox 360 embedded format counts</a></li>
+                        <li><a href="./PS3_GAME/FormatAnalysis/LUA/index.html">Lua source comparison</a></li>
+                        <li><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/xbox/itxd.html">.itxd format analysis</a></li>
+                        <li><a href="./PS3_GAME/USRDIR/index.html">US version file summary</a></li>
+                    </ul>
+                </section>
+            </section>
 
+            <template id="inactive-ps3-copy">
             <section class="page" id="home">
                 <section class="format-coverage" aria-labelledby="format-coverage-title">
                     <div class="format-coverage-heading">
@@ -1133,7 +1301,7 @@
                 <iframe id="FormatAnalysis-no-extension" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/NoExtension.html" frameborder="0" loading="lazy"></iframe>
                 <iframe id="FormatAnalysis-inf" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/inf.html" frameborder="0" loading="lazy"></iframe>
             </section>
-
+            </template>
 
         </main>
         <script>

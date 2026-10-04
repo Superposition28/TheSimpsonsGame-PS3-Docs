@@ -1,469 +1,524 @@
 <!DOCTYPE html>
 <html>
 
-    <head>
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="../../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem;padding-top: 2rem;">
-        <h1>.STR Archive Structure (EA Stream File)</h1>
-        <p><strong>Version:</strong> 1.0<br>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../../../style/main.css">
+</head>
+
+<body style="padding: 1.5rem;padding-top: 2rem;">
+    <h1>.STR Archive Structure (EA Stream File)</h1>
+    <p><strong>Version:</strong> 1.0<br>
         <strong>Last Updated:</strong> 2026-10-02<br>
-        <strong>Author(s):</strong> samarixum</p>
+        <strong>Author(s):</strong> samarixum
+    </p>
 
-        <p>The <code>.str</code> file is EA's streaming container format used by the RenderWare engine on PS3/Xbox 360. It contains a metadata header, a section-descriptor array, and aligned section payloads. In this repository, <code>operations/simpsons_str.bms</code> is the practical extraction reference: it uses QuickBMS <code>comtype dk2</code> for EA RefPack sections and parses embedded records sequentially.</p>
+    <p>The <code>.str</code> file is EA's streaming container format used by the RenderWare engine on PS3/Xbox 360. It
+        contains a metadata header, a section-descriptor array, and aligned section payloads. In this repository,
+        <code>operations/simpsons_str.bms</code> is the practical extraction reference: it uses QuickBMS
+        <code>comtype dk2</code> for EA RefPack sections and parses embedded records sequentially.</p>
 
-        <p><strong>Endianness:</strong> The file header and section descriptors are big-endian. Embedded asset records are mixed-endian: the outer chunk-size word is read as little-endian by the C++ prototype, while header sizes, string lengths, and payload sizes are read as big-endian. The QuickBMS script discards the outer chunk-size word rather than interpreting it.</p>
+    <p><strong>Endianness:</strong> The file header and section descriptors are big-endian. Embedded asset records are
+        mixed-endian: the outer chunk-size word is read as little-endian by the C++ prototype, while header sizes,
+        string lengths, and payload sizes are read as big-endian. The QuickBMS script discards the outer chunk-size word
+        rather than interpreting it.</p>
 
-        <h2>Parsing Algorithm Overview</h2>
+    <h2>Parsing Algorithm Overview</h2>
 
-        <ol>
-            <li>Read and validate file header at offset 0x00</li>
-            <li>Navigate to StreamFile struct at header offset <code>pStreamFile</code></li>
-            <li>Navigate to Section array at header offset <code>pSectionArr</code></li>
-            <li>For each section:
-                <ol>
-                    <li>Read section descriptor (6 × UInt32)</li>
-                    <li>Read the section payload using its compressed and decompressed sizes.</li>
-                    <li>If the payload begins with RefPack signature <code>0x10FB</code>, decompress it with QuickBMS <code>dk2</code>.</li>
-                    <li>Walk embedded records in order using each record's <code>HeaderSize</code> and aligned payload size; a zero <code>HeaderSize</code> is treated as remaining raw section data.</li>
-                </ol>
-            </li>
-        </ol>
+    <ol>
+        <li>Read and validate file header at offset 0x00</li>
+        <li>Navigate to StreamFile struct at header offset <code>pStreamFile</code></li>
+        <li>Navigate to Section array at header offset <code>pSectionArr</code></li>
+        <li>For each section:
+            <ol>
+                <li>Read section descriptor (6 × UInt32)</li>
+                <li>Read the section payload using its compressed and decompressed sizes.</li>
+                <li>If the payload begins with RefPack signature <code>0x10FB</code>, decompress it with QuickBMS
+                    <code>dk2</code>.</li>
+                <li>Walk embedded records in order using each record's <code>HeaderSize</code> and aligned payload size;
+                    a zero <code>HeaderSize</code> is treated as remaining raw section data.</li>
+            </ol>
+        </li>
+    </ol>
 
-        <h2>File Header Structure</h2>
+    <h2>File Header Structure</h2>
 
-        <p>Located at offset <code>0x00</code>. <strong>Size: 20 bytes (<code>0x14</code>).</strong></p>
-        <h2>Section Descriptor Array</h2>
-        <p>Located at file offset = header.pSectionArr. Array of nSections entries, each <strong>24 bytes</strong>.</p>
-        <p><strong>To parse:</strong> For i = 0 to nSections-1, seek to (pSectionArr + i*24) and read 24 bytes.</p>
-        <table>
-                                <td>Memory allocation policy. Informational; typically 0.</td>
-                                <td>Memory allocation policy. Known values in the C++ header are <code>0x00000000</code>, <code>0x5393AC01</code>, and <code>0x9D6870BC</code>.</td>
-                            </tr>
-                <p><strong>To parse:</strong> For i = 0 to nSections-1, seek to <code>pSectionArr + i*24</code> and read 24 bytes. The QuickBMS script computes the first section-data position by aligning the end of the header and descriptor array up to <code>0x800</code>, then advances by each section's stored size.</p>
-                <h2>Section Data Decompression</h2>
-                <p>The QuickBMS script reads the section table at <code>pSectionArr</code> (the big-endian pointer at file offset <code>0x10</code>). It checks the first two bytes of each section payload for <code>10 FB</code>; when present, <code>clog</code> with <code>dk2</code> expands <code>ReadSize</code> bytes to <code>DataSize</code>. Otherwise the section bytes are copied as raw data. This describes the script's behavior and is distinct from interpreting the section's <code>CompressorID</code> alone.</p>
-            <thead>
-                <tr>
-                    <th>Offset</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x00</td>
-                    <td>4</td>
-                    <td>Char[4]</td>
-                    <td>Magic</td>
-                    <td>Must be <code>SToc</code> (0x53546F63 BE). If not, abort parsing.</td>
-                </tr>
-                <tr>
-                    <td>0x04</td>
-                    <td>4</td>
-                    <td>UInt32 BE</td>
-                    <td>Version</td>
-                    <td>Format version. Typically expect a known version (e.g., 0x00000001).</td>
-                </tr>
-                <tr>
-                    <td>0x08</td>
-                    <td>1</td>
-                    <td>UInt8</td>
-                    <td>nSections</td>
-                    <td>Number of Section Descriptor entries to read. Validate: typically 1-4.</td>
-                </tr>
-                <tr>
-                    <td>0x09</td>
-                    <td>1</td>
-                    <td>UInt8</td>
-                    <td>PlatformID</td>
-                    <td>Target platform (e.g., 0x07 = PS3). Informational.</td>
-                </tr>
-                <tr>
-                    <td>0x0A</td>
-                    <td>2</td>
-                    <td>Byte[2]</td>
-                    <td>Padding</td>
-                    <td>Unused, typically 0x00.</td>
-                </tr>
-                <tr>
-                    <td>0x0C</td>
-                    <td>4</td>
-                    <td>Int32 BE</td>
-                    <td>pStreamFile</td>
-                    <td>Absolute offset to StreamFile struct. Validate: must be ≥ 0x14.</td>
-                </tr>
-                <tr>
-                    <td>0x10</td>
-                    <td>4</td>
-                    <td>Int32 BE</td>
-                    <td>pSectionArr</td>
-                    <td>Absolute offset to Section Descriptor array. Validate: must be ≥ pStreamFile + 32.</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <p>The 20-byte core header is followed by eight additional UInt32 values that QuickBMS reads but does not interpret, bringing its fixed preamble to <code>0x34</code> bytes. Their individual meanings are not established here.</p>
-
-        <h2>StreamFile Struct</h2>
-
-        <p>Located at file offset = header.pStreamFile. <strong>Size: ~48+ bytes</strong> (variable due to string).</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Offset (Rel)</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x00</td>
-                    <td>4</td>
-                    <td>UInt32 BE</td>
-                    <td>GUID</td>
-                    <td>Unique ID, often SDBM hash of filename. Used to identify the stream asset.</td>
-                </tr>
-                <tr>
-                    <td>0x04</td>
-                    <td>4</td>
-                    <td>Int32 BE</td>
-                    <td>pFileName</td>
-                    <td>Relative pointer to null-terminated filename string. Add current offset (0x04) to this value, then seek to read until null byte.</td>
-                </tr>
-                <tr>
-                    <td>0x08</td>
-                    <td>1</td>
-                    <td>UInt8</td>
-                    <td>nParents</td>
-                    <td>Number of parent/dependency stream files. Usually 0 or 1.</td>
-                </tr>
-                <tr>
-                    <td>0x09</td>
-                    <td>1</td>
-                    <td>UInt8</td>
-                    <td>nForceLoad</td>
-                    <td>Flags for force-load behavior. Typically 0.</td>
-                </tr>
-                <tr>
-                    <td>0x0A</td>
-                    <td>1</td>
-                    <td>UInt8</td>
-                    <td>nSections</td>
-                    <td>Duplicate of header.nSections. Verify consistency.</td>
-                </tr>
-                <tr>
-                    <td>0x0B</td>
-                    <td>1</td>
-                    <td>UInt8</td>
-                    <td>Flags</td>
-                    <td>Bitfield (flags). Meaning context-dependent.</td>
-                </tr>
-                <tr>
-                    <td>0x0C</td>
-                    <td>4</td>
-                    <td>Int32 BE</td>
-                    <td>Unk</td>
-                    <td>Unknown/reserved field. Typically 0.</td>
-                </tr>
-                <tr>
-                    <td>0x10</td>
-                    <td>4</td>
-                    <td>Int32 BE</td>
-                    <td>pRelatives</td>
-                    <td>Offset to related stream info. Often 0 (none).</td>
-                </tr>
-                <tr>
-                    <td>0x14</td>
-                    <td>4</td>
-                    <td>Int32 BE</td>
-                    <td>pSectionInfo</td>
-                    <td>Offset to additional section metadata. Often 0 (none).</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h2>Section Descriptor Array</h2>
-
-        <p>Located at file offset = header.pSectionArr. Array of nSections entries, each <strong>24 bytes</strong>.</p>
-
-        <p><strong>To parse:</strong> For i = 0 to nSections-1, seek to <code>pSectionArr + i*24</code> and read 24 bytes. The QuickBMS script computes its section-data base from the <code>0x34</code>-byte fixed preamble plus <code>nSections * 24</code>, then rounds that position up to a <code>0x800</code> boundary. It advances from the aligned base by each section's stored size; in the standard layout, section data begins at <code>0x800</code>.</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>Offset (Rel)</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x00</td>
-                    <td>4</td>
-                    <td>UInt32 BE</td>
-                    <td>MemPolicyID</td>
-                    <td>Memory allocation policy. Informational; typically 0.</td>
-                </tr>
-                <tr>
-                    <td>0x04</td>
-                    <td>4</td>
-                    <td>UInt32 BE</td>
-                    <td>CompressorID</td>
-                    <td><strong>Critical:</strong> Determines if section data is compressed.
-                        <ul>
-                            <li>0xB9F0B9EC = Refpack compression</li>
-                            <li>0x0EAC15C8 = Uncompressed (raw data)</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td>0x08</td>
-                    <td>4</td>
-                    <td>Int32 BE</td>
-                    <td>DataSize</td>
-                    <td><strong>Critical:</strong> Size of decompressed data (or raw data if uncompressed). Use this to allocate buffer or validate size.</td>
-                </tr>
-                <tr>
-                    <td>0x0C</td>
-                    <td>4</td>
-                    <td>Int32 BE</td>
-                    <td>AllocSize</td>
-                    <td>Size to reserve in memory. Typically ≥ DataSize. May include padding.</td>
-                </tr>
-                <tr>
-                    <td>0x10</td>
-                    <td>4</td>
-                    <td>Int32 BE</td>
-                    <td>ReadSize</td>
-                    <td><strong>Critical:</strong> Amount of bytes to read from disk. If CompressorID is Refpack, this is compressed size; otherwise equals DataSize.</td>
-                </tr>
-                <tr>
-                    <td>0x14</td>
-                    <td>4</td>
-                    <td>Int32 BE</td>
-                    <td>ReadOffset</td>
-                    <td><strong>Critical:</strong> Absolute file offset where section data begins. Seek here before reading ReadSize bytes.</td>
-                </tr>
-            </tbody>
-        </table>
-
+    <p>Located at offset <code>0x00</code>. <strong>Size: 20 bytes (<code>0x14</code>).</strong></p>
+    <h2>Section Descriptor Array</h2>
+    <p>Located at file offset = header.pSectionArr. Array of nSections entries, each <strong>24 bytes</strong>.</p>
+    <p><strong>To parse:</strong> For i = 0 to nSections-1, seek to (pSectionArr + i*24) and read 24 bytes.</p>
+    <table>
+        <td>Memory allocation policy. Informational; typically 0.</td>
+        <td>Memory allocation policy. Known values in the C++ header are <code>0x00000000</code>,
+            <code>0x5393AC01</code>, and <code>0x9D6870BC</code>.</td>
+        </tr>
+        <p><strong>To parse:</strong> For i = 0 to nSections-1, seek to <code>pSectionArr + i*24</code> and read 24
+            bytes. The QuickBMS script computes the first section-data position by aligning the end of the header and
+            descriptor array up to <code>0x800</code>, then advances by each section's stored size.</p>
         <h2>Section Data Decompression</h2>
+        <p>The QuickBMS script reads the section table at <code>pSectionArr</code> (the big-endian pointer at file
+            offset <code>0x10</code>). It checks the first two bytes of each section payload for <code>10 FB</code>;
+            when present, <code>clog</code> with <code>dk2</code> expands <code>ReadSize</code> bytes to
+            <code>DataSize</code>. Otherwise the section bytes are copied as raw data. This describes the script's
+            behavior and is distinct from interpreting the section's <code>CompressorID</code> alone.</p>
+        <thead>
+            <tr>
+                <th>Offset</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0x00</td>
+                <td>4</td>
+                <td>Char[4]</td>
+                <td>Magic</td>
+                <td>Must be <code>SToc</code> (0x53546F63 BE). If not, abort parsing.</td>
+            </tr>
+            <tr>
+                <td>0x04</td>
+                <td>4</td>
+                <td>UInt32 BE</td>
+                <td>Version</td>
+                <td>Format version. Typically expect a known version (e.g., 0x00000001).</td>
+            </tr>
+            <tr>
+                <td>0x08</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>nSections</td>
+                <td>Number of Section Descriptor entries to read. Validate: typically 1-4.</td>
+            </tr>
+            <tr>
+                <td>0x09</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>PlatformID</td>
+                <td>Target platform (e.g., 0x07 = PS3). Informational.</td>
+            </tr>
+            <tr>
+                <td>0x0A</td>
+                <td>2</td>
+                <td>Byte[2]</td>
+                <td>Padding</td>
+                <td>Unused, typically 0x00.</td>
+            </tr>
+            <tr>
+                <td>0x0C</td>
+                <td>4</td>
+                <td>Int32 BE</td>
+                <td>pStreamFile</td>
+                <td>Absolute offset to StreamFile struct. Validate: must be ≥ 0x14.</td>
+            </tr>
+            <tr>
+                <td>0x10</td>
+                <td>4</td>
+                <td>Int32 BE</td>
+                <td>pSectionArr</td>
+                <td>Absolute offset to Section Descriptor array. Validate: must be ≥ pStreamFile + 32.</td>
+            </tr>
+        </tbody>
+    </table>
 
-        <p><strong>Algorithm:</strong></p>
-        <ol>
-            <li>Seek to file offset = ReadOffset</li>
-            <li>Read ReadSize bytes into a buffer</li>
-            <li>If CompressorID == 0xB9F0B9EC:
-                <ul>
-                    <li>Decompress using Refpack algorithm. Output buffer size should be DataSize.</li>
-                    <li>Validate: decompressed output must be exactly DataSize bytes.</li>
-                </ul>
-            </li>
-            <li>If CompressorID == 0x0EAC15C8:
-                <ul>
-                    <li>Data is uncompressed; use buffer directly (which has ReadSize == DataSize).</li>
-                </ul>
-            </li>
-            <li>If CompressorID is any other value:
-                <ul>
-                    <li>Can attempt to treat as uncompressed, or abort with error.</li>
-                </ul>
-            </li>
-        </ol>
+    <p>The 20-byte core header is followed by eight additional UInt32 values that QuickBMS reads but does not interpret,
+        bringing its fixed preamble to <code>0x34</code> bytes. Their individual meanings are not established here.</p>
 
-        <h2>Chunk Scanning and Parsing</h2>
+    <h2>StreamFile Struct</h2>
 
-        <p>After section decompression/acquisition, the QuickBMS script walks records sequentially. The first four bytes contain a two-byte type identifier and two-byte padding; the following fields include the record version and <code>HeaderSize</code>. The common <code>0x1607</code> embedded-asset record has the layout below. Do not treat the C++ prototype's 0x1607-only loop as a complete section scanner.</p>
+    <p>Located at file offset = header.pStreamFile. <strong>Size: ~48+ bytes</strong> (variable due to string).</p>
 
-        <p><strong>Record-walking algorithm:</strong></p>
-        <ol>
-            <li>Start at offset zero in the decompressed section.</li>
-            <li>Read the 16-byte outer record header, including the big-endian <code>HeaderSize</code> at offset <code>0x0C</code>.</li>
-            <li>If <code>HeaderSize</code> is zero, treat the remaining section bytes after the outer header as raw headerless data.</li>
-            <li>Otherwise read the variable metadata subheader, then locate the payload at <code>record_start + 0x10 + HeaderSize</code>.</li>
-            <li>Use the subheader's <code>PayloadSize</code> for the exact data length; advance to the next record after rounding that length up to a four-byte boundary.</li>
-        </ol>
+    <table>
+        <thead>
+            <tr>
+                <th>Offset (Rel)</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0x00</td>
+                <td>4</td>
+                <td>UInt32 BE</td>
+                <td>GUID</td>
+                <td>Unique ID, often SDBM hash of filename. Used to identify the stream asset.</td>
+            </tr>
+            <tr>
+                <td>0x04</td>
+                <td>4</td>
+                <td>Int32 BE</td>
+                <td>pFileName</td>
+                <td>Relative pointer to null-terminated filename string. Add current offset (0x04) to this value, then
+                    seek to read until null byte.</td>
+            </tr>
+            <tr>
+                <td>0x08</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>nParents</td>
+                <td>Number of parent/dependency stream files. Usually 0 or 1.</td>
+            </tr>
+            <tr>
+                <td>0x09</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>nForceLoad</td>
+                <td>Flags for force-load behavior. Typically 0.</td>
+            </tr>
+            <tr>
+                <td>0x0A</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>nSections</td>
+                <td>Duplicate of header.nSections. Verify consistency.</td>
+            </tr>
+            <tr>
+                <td>0x0B</td>
+                <td>1</td>
+                <td>UInt8</td>
+                <td>Flags</td>
+                <td>Bitfield (flags). Meaning context-dependent.</td>
+            </tr>
+            <tr>
+                <td>0x0C</td>
+                <td>4</td>
+                <td>Int32 BE</td>
+                <td>Unk</td>
+                <td>Unknown/reserved field. Typically 0.</td>
+            </tr>
+            <tr>
+                <td>0x10</td>
+                <td>4</td>
+                <td>Int32 BE</td>
+                <td>pRelatives</td>
+                <td>Offset to related stream info. Often 0 (none).</td>
+            </tr>
+            <tr>
+                <td>0x14</td>
+                <td>4</td>
+                <td>Int32 BE</td>
+                <td>pSectionInfo</td>
+                <td>Offset to additional section metadata. Often 0 (none).</td>
+            </tr>
+        </tbody>
+    </table>
 
-        <h2>Known Chunk Types</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Type ID</th>
-                    <th>Hex</th>
-                    <th>Name</th>
-                    <th>Size Field</th>
-                    <th>Handling Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x10FB</td>
-                    <td>0x10, 0xFB</td>
-                    <td>Refpack Compressed Data</td>
-                    <td>RefPack stream header</td>
-                    <td>Section data may begin with the big-endian signature <code>0x10FB</code>; QuickBMS invokes <code>dk2</code> to decompress the section. The stream header and command formats are described below.</td>
-                </tr>
-                <tr>
-                    <td>0x1607</td>
-                    <td>0x16, 0x07</td>
-                    <td>Embedded Asset</td>
-                    <td>16-byte outer record header, then a variable subheader</td>
-                    <td><strong>Common embedded asset record.</strong> The subheader contains an internal object name, 16 bytes of metadata, a resource type, a file path, extra data, and the exact payload size. See the detailed layout below.</td>
-                </tr>
-                <tr>
-                    <td>0x2207</td>
-                    <td>0x22, 0x07</td>
-                    <td>SimGroup</td>
-                    <td>Record-specific</td>
-                    <td>SimGroup data. The QuickBMS script processes record envelopes sequentially; the C++ prototype's extraction loop stops when it encounters a record other than <code>0x1607</code>.</td>
-                </tr>
-                <tr>
-                    <td>0x2307</td>
-                    <td>0x23, 0x07</td>
-                    <td>Embedded Asset (Compact)</td>
-                    <td>Record-specific</td>
-                    <td>Another embedded record type. Its complete payload layout is not specified here.</td>
-                </tr>
-            </tbody>
-        </table>
+    <h2>Section Descriptor Array</h2>
 
-        <h2>Embedded Asset Chunk (0x1607)</h2>
+    <p>Located at file offset = header.pSectionArr. Array of nSections entries, each <strong>24 bytes</strong>.</p>
 
-        <p><strong>Location:</strong> Within decompressed section data. The QuickBMS script reads a 16-byte record header, then either handles a headerless record or parses a variable-length metadata subheader.</p>
+    <p><strong>To parse:</strong> For i = 0 to nSections-1, seek to <code>pSectionArr + i*24</code> and read 24 bytes.
+        The QuickBMS script computes its section-data base from the <code>0x34</code>-byte fixed preamble plus
+        <code>nSections * 24</code>, then rounds that position up to a <code>0x800</code> boundary. It advances from the
+        aligned base by each section's stored size; in the standard layout, section data begins at <code>0x800</code>.
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Offset (Rel)</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0x00</td>
+                <td>4</td>
+                <td>UInt32 BE</td>
+                <td>MemPolicyID</td>
+                <td>Memory allocation policy. Informational; typically 0.</td>
+            </tr>
+            <tr>
+                <td>0x04</td>
+                <td>4</td>
+                <td>UInt32 BE</td>
+                <td>CompressorID</td>
+                <td><strong>Critical:</strong> Determines if section data is compressed.
+                    <ul>
+                        <li>0xB9F0B9EC = Refpack compression</li>
+                        <li>0x0EAC15C8 = Uncompressed (raw data)</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>0x08</td>
+                <td>4</td>
+                <td>Int32 BE</td>
+                <td>DataSize</td>
+                <td><strong>Critical:</strong> Size of decompressed data (or raw data if uncompressed). Use this to
+                    allocate buffer or validate size.</td>
+            </tr>
+            <tr>
+                <td>0x0C</td>
+                <td>4</td>
+                <td>Int32 BE</td>
+                <td>AllocSize</td>
+                <td>Size to reserve in memory. Typically ≥ DataSize. May include padding.</td>
+            </tr>
+            <tr>
+                <td>0x10</td>
+                <td>4</td>
+                <td>Int32 BE</td>
+                <td>ReadSize</td>
+                <td><strong>Critical:</strong> Amount of bytes to read from disk. If CompressorID is Refpack, this is
+                    compressed size; otherwise equals DataSize.</td>
+            </tr>
+            <tr>
+                <td>0x14</td>
+                <td>4</td>
+                <td>Int32 BE</td>
+                <td>ReadOffset</td>
+                <td><strong>Critical:</strong> Absolute file offset where section data begins. Seek here before reading
+                    ReadSize bytes.</td>
+            </tr>
+        </tbody>
+    </table>
 
-        <h3>Outer Record Header (16 bytes)</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Offset (relative)</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x00</td>
-                    <td>2</td>
-                    <td>UInt16 BE</td>
-                    <td>ChunkType</td>
-                    <td><code>0x1607</code> for an embedded asset record (bytes <code>16 07</code>).</td>
-                </tr>
-                <tr>
-                    <td>0x02</td>
-                    <td>2</td>
-                    <td>UInt16 BE</td>
-                    <td>Padding</td>
-                    <td>Observed as <code>0x0000</code>.</td>
-                </tr>
-                <tr>
-                    <td>0x04</td>
-                    <td>4</td>
-                    <td>UInt32 LE*</td>
-                    <td>ChunkSize</td>
-                    <td>The C++ prototype reads this as little-endian and computes the record end from <code>chunk_start + 0x0C + ChunkSize</code>. QuickBMS reads but discards this word; its byte order and exact scope are therefore a prototype-derived interpretation.</td>
-                </tr>
-                <tr>
-                    <td>0x08</td>
-                    <td>4</td>
-                    <td>UInt32</td>
-                    <td>ChunkVersion</td>
-                    <td>Stream/version stamp or reserved value; QuickBMS discards it and the prototype skips it.</td>
-                </tr>
-                <tr>
-                    <td>0x0C</td>
-                    <td>4</td>
-                    <td>UInt32 BE</td>
-                    <td>HeaderSize</td>
-                    <td>Byte length of the metadata subheader beginning at <code>0x10</code>. When zero, QuickBMS treats the remaining section bytes after this outer header as a headerless payload.</td>
-                </tr>
-            </tbody>
-        </table>
+    <h2>Section Data Decompression</h2>
 
-        <p><strong>*ChunkSize interpretation:</strong> In the prototype's model, <code>ChunkSize = 4 + HeaderSize + align4(PayloadSize)</code>, where the first four bytes are the <code>HeaderSize</code> field and <code>align4(n) = (n + 3) &amp; ~3</code>. QuickBMS does not use this field; verify this relationship against additional samples before treating it as a normative invariant.</p>
+    <p><strong>Algorithm:</strong></p>
+    <ol>
+        <li>Seek to file offset = ReadOffset</li>
+        <li>Read ReadSize bytes into a buffer</li>
+        <li>If CompressorID == 0xB9F0B9EC:
+            <ul>
+                <li>Decompress using Refpack algorithm. Output buffer size should be DataSize.</li>
+                <li>Validate: decompressed output must be exactly DataSize bytes.</li>
+            </ul>
+        </li>
+        <li>If CompressorID == 0x0EAC15C8:
+            <ul>
+                <li>Data is uncompressed; use buffer directly (which has ReadSize == DataSize).</li>
+            </ul>
+        </li>
+        <li>If CompressorID is any other value:
+            <ul>
+                <li>Can attempt to treat as uncompressed, or abort with error.</li>
+            </ul>
+        </li>
+    </ol>
 
-        <h3>Metadata Sub-Header (HeaderSize bytes)</h3>
-        <p>The following fields occur sequentially in the subheader. Each string is preceded by a big-endian UInt32 byte length. In observed data, string contents include their null terminator and any <code>0xBF</code> fill bytes used to reach a four-byte boundary. For example, an empty four-byte string field has length <code>4</code> followed by <code>00 BF BF BF</code>; those four content bytes are not the length value.</p>
+    <h2>Chunk Scanning and Parsing</h2>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Sequence</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>4 + variable</td>
-                    <td>UInt32 BE + Byte[]</td>
-                    <td>ObjectNameLen, ObjectName</td>
-                    <td>Length-prefixed internal object/symbol name. Often an empty placeholder for texture dictionaries.</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>16</td>
-                    <td>Byte[16]</td>
-                    <td>AssetMeta</td>
-                    <td>Fixed metadata block between the first and second strings.</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>4 + variable</td>
-                    <td>UInt32 BE + Byte[]</td>
-                    <td>TypeNameLen, TypeName</td>
-                    <td>Length-prefixed resource type, for example <code>rwID_TEXDICTIONARY</code> or <code>GRAPH</code>, followed by null/padding bytes.</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>4 + variable</td>
-                    <td>UInt32 BE + Byte[]</td>
-                    <td>FilePathLen, FilePath</td>
-                    <td>Length-prefixed output path/name. This third string is the actual resource path used by QuickBMS, not the first internal object name.</td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td>4 + ExtraLen</td>
-                    <td>UInt32 BE + Byte[]</td>
-                    <td>ExtraLen, ExtraData</td>
-                    <td>Length-prefixed type-specific parameters.</td>
-                </tr>
-                <tr>
-                    <td>6</td>
-                    <td>4</td>
-                    <td>UInt32 BE</td>
-                    <td>ReservedZero</td>
-                    <td>Observed as zero.</td>
-                </tr>
-                <tr>
-                    <td>7</td>
-                    <td>4</td>
-                    <td>UInt32 BE</td>
-                    <td>PayloadSize</td>
-                    <td>Exact unpadded length of the binary asset payload.</td>
-                </tr>
-            </tbody>
-        </table>
+    <p>After section decompression/acquisition, the QuickBMS script walks records sequentially. The first four bytes
+        contain a two-byte type identifier and two-byte padding; the following fields include the record version and
+        <code>HeaderSize</code>. The common <code>0x1607</code> embedded-asset record has the layout below. Do not treat
+        the C++ prototype's 0x1607-only loop as a complete section scanner.</p>
 
-        <h3>Asset Payload and Record Boundary</h3>
-        <p>The asset payload begins at <code>chunk_start + 0x10 + HeaderSize</code> and contains exactly <code>PayloadSize</code> bytes. The next record begins after the payload rounded up to a four-byte boundary: <code>payload_start + ((PayloadSize + 3) &amp; ~3)</code>. The QuickBMS script applies this four-byte alignment when advancing to the next record.</p>
+    <p><strong>Record-walking algorithm:</strong></p>
+    <ol>
+        <li>Start at offset zero in the decompressed section.</li>
+        <li>Read the 16-byte outer record header, including the big-endian <code>HeaderSize</code> at offset
+            <code>0x0C</code>.</li>
+        <li>If <code>HeaderSize</code> is zero, treat the remaining section bytes after the outer header as raw
+            headerless data.</li>
+        <li>Otherwise read the variable metadata subheader, then locate the payload at
+            <code>record_start + 0x10 + HeaderSize</code>.</li>
+        <li>Use the subheader's <code>PayloadSize</code> for the exact data length; advance to the next record after
+            rounding that length up to a four-byte boundary.</li>
+    </ol>
 
-        <p>If <code>HeaderSize == 0</code>, QuickBMS instead treats bytes from <code>chunk_start + 0x10</code> through the end of that decompressed section as raw headerless data and uses an empty output name.</p>
+    <h2>Known Chunk Types</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Type ID</th>
+                <th>Hex</th>
+                <th>Name</th>
+                <th>Size Field</th>
+                <th>Handling Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0x10FB</td>
+                <td>0x10, 0xFB</td>
+                <td>Refpack Compressed Data</td>
+                <td>RefPack stream header</td>
+                <td>Section data may begin with the big-endian signature <code>0x10FB</code>; QuickBMS invokes
+                    <code>dk2</code> to decompress the section. The stream header and command formats are described
+                    below.</td>
+            </tr>
+            <tr>
+                <td>0x1607</td>
+                <td>0x16, 0x07</td>
+                <td>Embedded Asset</td>
+                <td>16-byte outer record header, then a variable subheader</td>
+                <td><strong>Common embedded asset record.</strong> The subheader contains an internal object name, 16
+                    bytes of metadata, a resource type, a file path, extra data, and the exact payload size. See the
+                    detailed layout below.</td>
+            </tr>
+            <tr>
+                <td>0x2207</td>
+                <td>0x22, 0x07</td>
+                <td>SimGroup</td>
+                <td>Record-specific</td>
+                <td>SimGroup data. The QuickBMS script processes record envelopes sequentially; the C++ prototype's
+                    extraction loop stops when it encounters a record other than <code>0x1607</code>.</td>
+            </tr>
+            <tr>
+                <td>0x2307</td>
+                <td>0x23, 0x07</td>
+                <td>Embedded Asset (Compact)</td>
+                <td>Record-specific</td>
+                <td>Another embedded record type. Its complete payload layout is not specified here.</td>
+            </tr>
+        </tbody>
+    </table>
 
-        <p><strong>Parsing pseudocode:</strong></p>
-        <pre><code>
+    <h2>Embedded Asset Chunk (0x1607)</h2>
+
+    <p><strong>Location:</strong> Within decompressed section data. The QuickBMS script reads a 16-byte record header,
+        then either handles a headerless record or parses a variable-length metadata subheader.</p>
+
+    <h3>Outer Record Header (16 bytes)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Offset (relative)</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0x00</td>
+                <td>2</td>
+                <td>UInt16 BE</td>
+                <td>ChunkType</td>
+                <td><code>0x1607</code> for an embedded asset record (bytes <code>16 07</code>).</td>
+            </tr>
+            <tr>
+                <td>0x02</td>
+                <td>2</td>
+                <td>UInt16 BE</td>
+                <td>Padding</td>
+                <td>Observed as <code>0x0000</code>.</td>
+            </tr>
+            <tr>
+                <td>0x04</td>
+                <td>4</td>
+                <td>UInt32 LE*</td>
+                <td>ChunkSize</td>
+                <td>The C++ prototype reads this as little-endian and computes the record end from
+                    <code>chunk_start + 0x0C + ChunkSize</code>. QuickBMS reads but discards this word; its byte order
+                    and exact scope are therefore a prototype-derived interpretation.</td>
+            </tr>
+            <tr>
+                <td>0x08</td>
+                <td>4</td>
+                <td>UInt32</td>
+                <td>ChunkVersion</td>
+                <td>Stream/version stamp or reserved value; QuickBMS discards it and the prototype skips it.</td>
+            </tr>
+            <tr>
+                <td>0x0C</td>
+                <td>4</td>
+                <td>UInt32 BE</td>
+                <td>HeaderSize</td>
+                <td>Byte length of the metadata subheader beginning at <code>0x10</code>. When zero, QuickBMS treats the
+                    remaining section bytes after this outer header as a headerless payload.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>*ChunkSize interpretation:</strong> In the prototype's model,
+        <code>ChunkSize = 4 + HeaderSize + align4(PayloadSize)</code>, where the first four bytes are the
+        <code>HeaderSize</code> field and <code>align4(n) = (n + 3) &amp; ~3</code>. QuickBMS does not use this field;
+        verify this relationship against additional samples before treating it as a normative invariant.</p>
+
+    <h3>Metadata Sub-Header (HeaderSize bytes)</h3>
+    <p>The following fields occur sequentially in the subheader. Each string is preceded by a big-endian UInt32 byte
+        length. In observed data, string contents include their null terminator and any <code>0xBF</code> fill bytes
+        used to reach a four-byte boundary. For example, an empty four-byte string field has length <code>4</code>
+        followed by <code>00 BF BF BF</code>; those four content bytes are not the length value.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Sequence</th>
+                <th>Size</th>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>4 + variable</td>
+                <td>UInt32 BE + Byte[]</td>
+                <td>ObjectNameLen, ObjectName</td>
+                <td>Length-prefixed internal object/symbol name. Often an empty placeholder for texture dictionaries.
+                </td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>16</td>
+                <td>Byte[16]</td>
+                <td>AssetMeta</td>
+                <td>Fixed metadata block between the first and second strings.</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>4 + variable</td>
+                <td>UInt32 BE + Byte[]</td>
+                <td>TypeNameLen, TypeName</td>
+                <td>Length-prefixed resource type, for example <code>rwID_TEXDICTIONARY</code> or <code>GRAPH</code>,
+                    followed by null/padding bytes.</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>4 + variable</td>
+                <td>UInt32 BE + Byte[]</td>
+                <td>FilePathLen, FilePath</td>
+                <td>Length-prefixed output path/name. This third string is the actual resource path used by QuickBMS,
+                    not the first internal object name.</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>4 + ExtraLen</td>
+                <td>UInt32 BE + Byte[]</td>
+                <td>ExtraLen, ExtraData</td>
+                <td>Length-prefixed type-specific parameters.</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>4</td>
+                <td>UInt32 BE</td>
+                <td>ReservedZero</td>
+                <td>Observed as zero.</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>4</td>
+                <td>UInt32 BE</td>
+                <td>PayloadSize</td>
+                <td>Exact unpadded length of the binary asset payload.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Asset Payload and Record Boundary</h3>
+    <p>The asset payload begins at <code>chunk_start + 0x10 + HeaderSize</code> and contains exactly
+        <code>PayloadSize</code> bytes. The next record begins after the payload rounded up to a four-byte boundary:
+        <code>payload_start + ((PayloadSize + 3) &amp; ~3)</code>. The QuickBMS script applies this four-byte alignment
+        when advancing to the next record.</p>
+
+    <p>If <code>HeaderSize == 0</code>, QuickBMS instead treats bytes from <code>chunk_start + 0x10</code> through the
+        end of that decompressed section as raw headerless data and uses an empty output name.</p>
+
+    <p><strong>Parsing pseudocode:</strong></p>
+    <pre><code>
 record_start = current_section_offset
 while record_start &lt; section_size:
     chunk_type = read_u16_be(record_start)
@@ -492,107 +547,129 @@ while record_start &lt; section_size:
     record_start = payload_start + ((payload_size + 3) &amp; ~3)
         </code></pre>
 
-        <h2>RefPack Stream (QuickBMS <code>dk2</code>)</h2>
-        <p>The section extraction script selects RefPack decompression when the section begins with signature <code>0x10FB</code>, then passes the compressed byte count and expected decompressed size to QuickBMS <code>clog</code>. The command details below are transcribed from <code>Str_Load_Full::UnCompressSection</code>; QuickBMS <code>dk2</code> remains the working decoder.</p>
+    <h2>RefPack Stream (QuickBMS <code>dk2</code>)</h2>
+    <p>The section extraction script selects RefPack decompression when the section begins with signature
+        <code>0x10FB</code>, then passes the compressed byte count and expected decompressed size to QuickBMS
+        <code>clog</code>. The command details below are transcribed from <code>Str_Load_Full::UnCompressSection</code>;
+        QuickBMS <code>dk2</code> remains the working decoder.</p>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Stream element</th>
-                    <th>Encoding</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Signature</td>
-                    <td>UInt16 BE</td>
-                    <td><code>0x10FB</code>. The C++ prototype checks bit <code>0x0100</code>; when set (for example <code>0x11FB</code>), it reads an additional UInt24 BE compressed-size field. QuickBMS checks specifically for <code>0x10FB</code>.</td>
-                </tr>
-                <tr>
-                    <td>Optional compressed size</td>
-                    <td>UInt24 BE</td>
-                    <td>Present in the prototype when signature bit <code>0x0100</code> is set. The prototype reads but does not otherwise use this value.</td>
-                </tr>
-                <tr>
-                    <td>Decompressed size</td>
-                    <td>UInt24 BE</td>
-                    <td>Expected output size for the RefPack stream.</td>
-                </tr>
-            </tbody>
-        </table>
+    <table>
+        <thead>
+            <tr>
+                <th>Stream element</th>
+                <th>Encoding</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Signature</td>
+                <td>UInt16 BE</td>
+                <td><code>0x10FB</code>. The C++ prototype checks bit <code>0x0100</code>; when set (for example
+                    <code>0x11FB</code>), it reads an additional UInt24 BE compressed-size field. QuickBMS checks
+                    specifically for <code>0x10FB</code>.</td>
+            </tr>
+            <tr>
+                <td>Optional compressed size</td>
+                <td>UInt24 BE</td>
+                <td>Present in the prototype when signature bit <code>0x0100</code> is set. The prototype reads but does
+                    not otherwise use this value.</td>
+            </tr>
+            <tr>
+                <td>Decompressed size</td>
+                <td>UInt24 BE</td>
+                <td>Expected output size for the RefPack stream.</td>
+            </tr>
+        </tbody>
+    </table>
 
-        <p>Each command starts with <code>byte0</code>. The first matching condition below determines the command form:</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>Condition</th>
-                    <th>Command bytes</th>
-                    <th>Literal bytes before back-reference</th>
-                    <th>Back-reference length</th>
-                    <th>Backward distance</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>(byte0 &amp; 0x80) == 0</code></td>
-                    <td>2</td>
-                    <td><code>byte0 &amp; 0x03</code></td>
-                    <td><code>((byte0 &gt;&gt; 2) &amp; 0x07) + 3</code></td>
-                    <td><code>((byte0 &amp; 0x60) &lt;&lt; 3) + byte1 + 1</code></td>
-                </tr>
-                <tr>
-                    <td><code>(byte0 &amp; 0xC0) == 0x80</code></td>
-                    <td>3</td>
-                    <td><code>byte1 &gt;&gt; 6</code></td>
-                    <td><code>(byte0 &amp; 0x3F) + 4</code></td>
-                    <td><code>((byte1 &amp; 0x3F) &lt;&lt; 8) + byte2 + 1</code></td>
-                </tr>
-                <tr>
-                    <td><code>(byte0 &amp; 0xE0) == 0xC0</code></td>
-                    <td>4</td>
-                    <td><code>byte0 &amp; 0x03</code></td>
-                    <td><code>((byte0 &amp; 0x0C) &lt;&lt; 6) + byte3 + 5</code></td>
-                    <td><code>((byte0 &amp; 0x10) &lt;&lt; 12) + (byte1 &lt;&lt; 8) + byte2 + 1</code></td>
-                </tr>
-            </tbody>
-        </table>
+    <p>Each command starts with <code>byte0</code>. The first matching condition below determines the command form:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Condition</th>
+                <th>Command bytes</th>
+                <th>Literal bytes before back-reference</th>
+                <th>Back-reference length</th>
+                <th>Backward distance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>(byte0 &amp; 0x80) == 0</code></td>
+                <td>2</td>
+                <td><code>byte0 &amp; 0x03</code></td>
+                <td><code>((byte0 &gt;&gt; 2) &amp; 0x07) + 3</code></td>
+                <td><code>((byte0 &amp; 0x60) &lt;&lt; 3) + byte1 + 1</code></td>
+            </tr>
+            <tr>
+                <td><code>(byte0 &amp; 0xC0) == 0x80</code></td>
+                <td>3</td>
+                <td><code>byte1 &gt;&gt; 6</code></td>
+                <td><code>(byte0 &amp; 0x3F) + 4</code></td>
+                <td><code>((byte1 &amp; 0x3F) &lt;&lt; 8) + byte2 + 1</code></td>
+            </tr>
+            <tr>
+                <td><code>(byte0 &amp; 0xE0) == 0xC0</code></td>
+                <td>4</td>
+                <td><code>byte0 &amp; 0x03</code></td>
+                <td><code>((byte0 &amp; 0x0C) &lt;&lt; 6) + byte3 + 5</code></td>
+                <td><code>((byte0 &amp; 0x10) &lt;&lt; 12) + (byte1 &lt;&lt; 8) + byte2 + 1</code></td>
+            </tr>
+        </tbody>
+    </table>
 
-        <p>When <code>(byte0 &amp; 0xE0) == 0xE0</code>, the command is a literal block or terminator. Compute <code>literal_count = (byte0 &amp; 0x1F) * 4 + 4</code>. If the result is at most <code>0x70</code>, copy that many literal bytes. Otherwise, copy <code>byte0 &amp; 0x03</code> trailing literal bytes and end decompression.</p>
+    <p>When <code>(byte0 &amp; 0xE0) == 0xE0</code>, the command is a literal block or terminator. Compute
+        <code>literal_count = (byte0 &amp; 0x1F) * 4 + 4</code>. If the result is at most <code>0x70</code>, copy that
+        many literal bytes. Otherwise, copy <code>byte0 &amp; 0x03</code> trailing literal bytes and end decompression.
+    </p>
 
-        <h2>Extraction Reference and C++ Prototype Caveats</h2>
-        <p>Use <code>operations/simpsons_str.bms</code> with QuickBMS as the extraction reference. The C++ files under <code>reversing/TheSimpsonsGameFileExtractor-main/project/Source</code> are an unfinished prototype, not an equivalent parser:</p>
-        <ul>
-            <li><code>Str_Load::CheckHeaderForCompression</code> hardcodes section descriptors at offset <code>0x14</code>; <code>Str_Load_Full</code> reads the pointer at <code>0x10</code> but still hardcodes the data start at <code>0x800</code>.</li>
-            <li>Both <code>IsStrFile</code> implementations compare <code>std::string::compare</code> to <code>1</code>, rather than accepting <code>0</code> for equal strings.</li>
-            <li>The C++ asset parser reads only two of the three length-prefixed strings and does not use the third string containing the actual file path. Its <code>StringIndexes</code> helper returns an empty string if the internal name has no dot and can retain null/<code>0xBF</code> padding.</li>
-            <li><code>ExtractSection</code> stops at the first record whose type is not <code>0x1607</code>, potentially discarding later section data.</li>
-            <li>The prototype writes intermediate section files and later traverses a directory iterator, whose order is unspecified; this can lose the original section order.</li>
-        </ul>
+    <h2>Extraction Reference and C++ Prototype Caveats</h2>
+    <p>Use <code>operations/simpsons_str.bms</code> with QuickBMS as the extraction reference. The C++ files under
+        <code>reversing/TheSimpsonsGameFileExtractor-main/project/Source</code> are an unfinished prototype, not an
+        equivalent parser:</p>
+    <ul>
+        <li><code>Str_Load::CheckHeaderForCompression</code> hardcodes section descriptors at offset <code>0x14</code>;
+            <code>Str_Load_Full</code> reads the pointer at <code>0x10</code> but still hardcodes the data start at
+            <code>0x800</code>.</li>
+        <li>Both <code>IsStrFile</code> implementations compare <code>std::string::compare</code> to <code>1</code>,
+            rather than accepting <code>0</code> for equal strings.</li>
+        <li>The C++ asset parser reads only two of the three length-prefixed strings and does not use the third string
+            containing the actual file path. Its <code>StringIndexes</code> helper returns an empty string if the
+            internal name has no dot and can retain null/<code>0xBF</code> padding.</li>
+        <li><code>ExtractSection</code> stops at the first record whose type is not <code>0x1607</code>, potentially
+            discarding later section data.</li>
+        <li>The prototype writes intermediate section files and later traverses a directory iterator, whose order is
+            unspecified; this can lose the original section order.</li>
+    </ul>
 
-        <h2>Summary: Parsing Workflow</h2>
+    <h2>Summary: Parsing Workflow</h2>
 
-        <ol>
-            <li><strong>Validate magic</strong>: Read header, verify "SToc"</li>
-            <li><strong>Read header fields</strong>: nSections, pStreamFile, pSectionArr</li>
-            <li><strong>Iterate sections</strong>:
-                <ol>
-                    <li>Seek to section descriptor at (pSectionArr + i*24)</li>
-                    <li>Read descriptor (MemPolicyID, CompressorID, DataSize, AllocSize, ReadSize, ReadOffset)</li>
-                    <li>Seek to ReadOffset, read ReadSize bytes</li>
-                    <li>If Refpack: decompress to DataSize bytes</li>
-                    <li>If uncompressed: use buffer as-is</li>
-                </ol>
-            </li>
-            <li><strong>Walk decompressed section records</strong>:
-                <ol>
-                    <li>Test the section start for the RefPack signature and decompress with QuickBMS <code>dk2</code> when present.</li>
-                    <li>Read each record header in sequence; parse nonzero-<code>HeaderSize</code> records and emit the declared payload path/size.</li>
-                    <li>For <code>HeaderSize == 0</code>, emit the remaining section bytes as a headerless payload.</li>
-                </ol>
-            </li>
-            <li><strong>Validate and store results</strong>: Build list of extracted resources (filenames, types, binary data)</li>
-        </ol>
+    <ol>
+        <li><strong>Validate magic</strong>: Read header, verify "SToc"</li>
+        <li><strong>Read header fields</strong>: nSections, pStreamFile, pSectionArr</li>
+        <li><strong>Iterate sections</strong>:
+            <ol>
+                <li>Seek to section descriptor at (pSectionArr + i*24)</li>
+                <li>Read descriptor (MemPolicyID, CompressorID, DataSize, AllocSize, ReadSize, ReadOffset)</li>
+                <li>Seek to ReadOffset, read ReadSize bytes</li>
+                <li>If Refpack: decompress to DataSize bytes</li>
+                <li>If uncompressed: use buffer as-is</li>
+            </ol>
+        </li>
+        <li><strong>Walk decompressed section records</strong>:
+            <ol>
+                <li>Test the section start for the RefPack signature and decompress with QuickBMS <code>dk2</code> when
+                    present.</li>
+                <li>Read each record header in sequence; parse nonzero-<code>HeaderSize</code> records and emit the
+                    declared payload path/size.</li>
+                <li>For <code>HeaderSize == 0</code>, emit the remaining section bytes as a headerless payload.</li>
+            </ol>
+        </li>
+        <li><strong>Validate and store results</strong>: Build list of extracted resources (filenames, types, binary
+            data)</li>
+    </ol>
 
-    </body>
+</body>
+
 </html>

@@ -114,12 +114,12 @@ a {
 }
 
 /* default page when there's no hash */
-#home {
+.home-page {
     display: block;
 }
 
 /* if ANY page is targeted, hide the default */
-.pages:has(.page:target) #home {
+.pages:has(.page:target) .home-page:not(:target) {
     display: none;
 }
 
@@ -539,7 +539,7 @@ pre {
         max-width: none;
     }
 
-    #home {
+    .home-page {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 24px;
