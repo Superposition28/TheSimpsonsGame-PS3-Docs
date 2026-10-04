@@ -1,35 +1,54 @@
-A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Map_3-00_SprHub\spr_hub\zone06_str\build\PS3\pal_en\assets\props\eps_mob_rules\mob_scaffolding\geo\export\mob_scaffolding_mr_unbuilt\collisionmodel.hkt.PS3
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>HKT.PS3 Format Documentation</title>
+        <link rel="stylesheet" href="../../../../style/main.css">
+    </head>
+    <body style="padding: 1.5rem; padding-top: 2rem;">
+        <h1>HKT.PS3 Format Documentation</h1>
+<p>A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Map_3-00_SprHub\spr_hub\zone06_str\build\PS3\pal_en\assets\props\eps_mob_rules\mob_scaffolding\geo\export\mob_scaffolding_mr_unbuilt\collisionmodel.hkt.PS3</p>
+<p><code>collisionmodel1.hkt.PS3</code> likly a <strong>Havok HKX packfile</strong> (big-endian PS3 build) that contains the <strong>physics/collision data</strong> for the prop <em>spr_margesalonchair</em>. The game&#39;s Havok runtime loads this alongside the RenderWare-rendered mesh to provide <strong>static collision</strong>, <strong>raycasts</strong>, and <strong>physics queries</strong> in the Game Hub interior.</p>
+<hr>
+<ul>
+<li><p><strong>Magic &amp; header:</strong> starts with <code>48 6B 78</code> ╬ô├Ñ├å <strong>&quot;Hkx&quot;</strong>, followed by <code>Havok-4.1.0-r1</code>. That&#39;s Havok Content Tools 4.1 packfile metadata.</p>
+</li>
+<li><p><strong>Packfile sections:</strong> literal section labels:</p>
+<ul>
+<li><code>__classnames__</code>, <code>__data__</code>, <code>__types__</code> -- classic Havok <strong>tagfile/packfile</strong> layout.</li>
+</ul>
+</li>
+<li><p><strong>Havok class table:</strong> many baked type names:</p>
+<ul>
+<li><code>hkClass</code>, <code>hkClassMember</code>, <code>hkClassEnum</code>, ...</li>
+<li>Physics/shape types: <code>hkRigidBody</code>, <code>hkBvTreeShape</code>, <code>hkMoppBvTreeShape</code>, <code>hkSimpleMeshShape</code>, <code>hkStorageMeshShape</code>, <code>hkShapeContainer</code>, <code>hkMotion</code>, etc.</li>
+</ul>
+</li>
+<li><p><strong>Asset name string:</strong>
+<code>spr_margesalonchair|MetaModel|Asset|CollisionModel1|...|v3</code> -- clearly labels this file as the <strong>collision model</strong> for that prop.</p>
+</li>
+<li><p><strong>Geometry + tree:</strong> you can see BE floats and index lists (vertex data / triangle indices) and a <strong>MOPP BVTree</strong> block -- Havok&#39;s static-mesh acceleration structure for collisions.</p>
+</li>
+</ul>
+<hr>
+<h2>What it&#39;s for</h2>
+<ul>
+<li><p>Acts as the <strong>physics representation</strong> of the chair prop:</p>
+<ul>
+<li>A <strong>static rigid body</strong> (fixed motion) built from a <strong>mesh shape</strong> wrapped in a <strong>BVTree/MOPP</strong> for fast queries.</li>
+<li>Used for <strong>character/controller collision</strong>, <strong>line-of-sight/raycasts</strong>, <strong>projectile hits</strong>, and <strong>placement/blocking</strong>.</li>
+</ul>
+</li>
+<li><p>Loaded by the game&#39;s Havok integration while the <strong>RenderWare</strong> side draws the visual mesh. The two are associated via the shared asset naming/path.</p>
+</li>
+</ul>
+<hr>
+<p>related extensions:</p>
+<ul>
+<li><code>.hkt.PS3</code> all regular collision files have this extension</li>
+<li><code>.hko.PS3</code> all animated collision files have this extension, and all character collision spheres use this extension</li>
+<li><code>.acs.PS3</code> always contained within collision folders (or subfolders of it) often alongside <code>.hko.PS3</code> files</li>
+</ul>
 
-
-`collisionmodel1.hkt.PS3` likly a **Havok HKX packfile** (big-endian PS3 build) that contains the **physics/collision data** for the prop *spr_margesalonchair*. The game's Havok runtime loads this alongside the RenderWare-rendered mesh to provide **static collision**, **raycasts**, and **physics queries** in the Game Hub interior.
-
----
-
-* **Magic & header:** starts with `48 6B 78` → **"Hkx"**, followed by `Havok-4.1.0-r1`. That's Havok Content Tools 4.1 packfile metadata.
-* **Packfile sections:** literal section labels:
-
-  * `__classnames__`, `__data__`, `__types__` -- classic Havok **tagfile/packfile** layout.
-* **Havok class table:** many baked type names:
-
-  * `hkClass`, `hkClassMember`, `hkClassEnum`, ...
-  * Physics/shape types: `hkRigidBody`, `hkBvTreeShape`, `hkMoppBvTreeShape`, `hkSimpleMeshShape`, `hkStorageMeshShape`, `hkShapeContainer`, `hkMotion`, etc.
-* **Asset name string:**
-  `spr_margesalonchair|MetaModel|Asset|CollisionModel1|...|v3` -- clearly labels this file as the **collision model** for that prop.
-* **Geometry + tree:** you can see BE floats and index lists (vertex data / triangle indices) and a **MOPP BVTree** block -- Havok's static-mesh acceleration structure for collisions.
-
----
-
-## What it's for
-
-* Acts as the **physics representation** of the chair prop:
-
-  * A **static rigid body** (fixed motion) built from a **mesh shape** wrapped in a **BVTree/MOPP** for fast queries.
-  * Used for **character/controller collision**, **line-of-sight/raycasts**, **projectile hits**, and **placement/blocking**.
-* Loaded by the game's Havok integration while the **RenderWare** side draws the visual mesh. The two are associated via the shared asset naming/path.
-
-
----
-related extensions:
-* `.hkt.PS3` all regular collision files have this extension
-* `.hko.PS3` all animated collision files have this extension, and all character collision spheres use this extension
-* `.acs.PS3` always contained within collision folders (or subfolders of it) often alongside `.hko.PS3` files
+    </body>
+</html>

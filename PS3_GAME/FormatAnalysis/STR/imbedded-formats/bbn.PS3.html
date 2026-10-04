@@ -1,25 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>BBN.PS3 Format Documentation</title>
+        <link rel="stylesheet" href="../../../../style/main.css">
+    </head>
+    <body style="padding: 1.5rem; padding-top: 2rem;">
+        <h1>BBN.PS3 Format Documentation</h1>
+<h3>Format: <strong>BBN</strong> ╬ô├ç├╢ Bone Bindings (PS3 build)</h3>
+<p>Your <code>player_default.bbn.PS3</code> is a <strong>bone-binding table</strong> compiled for PS3. It defines the canonical skeleton joints, their IDs, names, and lookup tables used by animation, IK, and gameplay systems.</p>
+<h3>Why this fits</h3>
+<ul>
+<li><p>The filename path: <code>.../assets/shared/bonebindings/player_default.bbn.PS3</code> ╬ô├Ñ├å shared skeleton bindings.</p>
+</li>
+<li><p>Clear joint names &amp; aliases in the string block:</p>
+<ul>
+<li>Short rig names: <code>m_pelvis</code>, <code>m_lumbar</code>, <code>m_thoracic</code>, <code>l_hip</code>, <code>r_knee</code>, <code>l_wrist</code>, <code>r_clav</code>, <code>m_neck2</code>, <code>m_jaw</code>, <code>r_weapon</code>, etc.</li>
+<li>Friendly labels: <code>right elbow</code>, <code>pelvis</code>, <code>left clavicle</code>, <code>right eyelid top/bottom</code>, etc.</li>
+</ul>
+</li>
+<li><p>Small header with counts/offsets, then a sequence of <strong>offset tables</strong> followed by the <strong>name table</strong>.</p>
+</li>
+<li><p>Presence of special tags like <code>AITrajectory</code> and <code>r_eye/l_eye</code> shows extra bindings for look/aim vectors and AI helpers.</p>
+</li>
+</ul>
+<h3>What the game uses it for</h3>
+<ul>
+<li><strong>Consistent bone ID ╬ô├Ñ├╢ name mapping</strong> across characters and tools.</li>
+<li><strong>Attachment points</strong> for props/weapons (<code>r_weapon</code>, hands, head).</li>
+<li><strong>Animation retarget/IK</strong> constraints (knees, hips, wrists, spine chain).</li>
+<li><strong>Facial/eye controls</strong> (<code>r_eye</code>, eyelids, <code>m_jaw</code>) for look-at and lip/eye cues.</li>
+<li><strong>AI &amp; camera helpers</strong> (<code>AITrajectory</code>).</li>
+<li>Acts as the <strong>shared ╬ô├ç┬úplayer╬ô├ç┬Ñ skeleton contract</strong> that animation banks (e.g., your <code>.bnk</code>) and controllers (<code>.cec</code>) reference at runtime.</li>
+</ul>
 
-
-### Format: **BBN** — Bone Bindings (PS3 build)
-
-Your `player_default.bbn.PS3` is a **bone-binding table** compiled for PS3. It defines the canonical skeleton joints, their IDs, names, and lookup tables used by animation, IK, and gameplay systems.
-
-### Why this fits
-
-* The filename path: `.../assets/shared/bonebindings/player_default.bbn.PS3` → shared skeleton bindings.
-* Clear joint names & aliases in the string block:
-
-  * Short rig names: `m_pelvis`, `m_lumbar`, `m_thoracic`, `l_hip`, `r_knee`, `l_wrist`, `r_clav`, `m_neck2`, `m_jaw`, `r_weapon`, etc.
-  * Friendly labels: `right elbow`, `pelvis`, `left clavicle`, `right eyelid top/bottom`, etc.
-* Small header with counts/offsets, then a sequence of **offset tables** followed by the **name table**.
-* Presence of special tags like `AITrajectory` and `r_eye/l_eye` shows extra bindings for look/aim vectors and AI helpers.
-
-### What the game uses it for
-
-* **Consistent bone ID ↔ name mapping** across characters and tools.
-* **Attachment points** for props/weapons (`r_weapon`, hands, head).
-* **Animation retarget/IK** constraints (knees, hips, wrists, spine chain).
-* **Facial/eye controls** (`r_eye`, eyelids, `m_jaw`) for look-at and lip/eye cues.
-* **AI & camera helpers** (`AITrajectory`).
-* Acts as the **shared “player” skeleton contract** that animation banks (e.g., your `.bnk`) and controllers (`.cec`) reference at runtime.
-
+    </body>
+</html>

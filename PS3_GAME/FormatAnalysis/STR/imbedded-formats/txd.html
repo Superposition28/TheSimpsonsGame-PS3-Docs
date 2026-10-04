@@ -329,12 +329,12 @@ function morton_encode_2d(x, y, width, height) {
     output_bit = 0
     max_dimension = max(width, height)
 
-    for bit from 0 while (1 << bit) < max_dimension:
-        if (1 << bit) < width:
-            morton |= ((x >> bit) & 1) << output_bit
+        for bit from 0 while (1 &lt;&lt; bit) &lt; max_dimension:
+            if (1 &lt;&lt; bit) &lt; width:
+                morton |= ((x >> bit) &amp; 1) &lt;&lt; output_bit
             output_bit += 1
-        if (1 << bit) < height:
-            morton |= ((y >> bit) & 1) << output_bit
+            if (1 &lt;&lt; bit) &lt; height:
+                morton |= ((y >> bit) &amp; 1) &lt;&lt; output_bit
             output_bit += 1
 
     return morton
@@ -446,7 +446,7 @@ function parse_txd(file_data) {
             if (fmt == 0x86) {    // Swizzled BGRA
                 pixel_data = unswizzle_morton(pixel_data, width, height, 4)
             } else if (fmt == 0x02) {  // Swizzled A8 or two-channel data
-                bytes_per_pixel = 1 if base_mip_size < width * height * 2 else 2
+                    bytes_per_pixel = 1 if base_mip_size &lt; width * height * 2 else 2
                 pixel_data = unswizzle_morton(pixel_data, width, height, bytes_per_pixel)
             }
             // For DXT formats (0x52/0x53/0x54), use as-is

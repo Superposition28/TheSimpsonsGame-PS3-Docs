@@ -1,150 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>No Extension Format Documentation</title>
+        <title>Files Without Extension Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
     </head>
-    <body style="padding: 1.5rem;padding-top: 2rem;">
-        <h1>No Extension</h1>
-        <p>No legacy Markdown README is available.</p>
+    <body style="padding: 1.5rem; padding-top: 2rem;">
+<pre><code>    &lt;h1&gt;No Extension&lt;/h1&gt;
+    &lt;p&gt;No legacy Markdown README is available.&lt;/p&gt;
+</code></pre>
+<p>there are two files without an extension
+the LightTOC and the StreamSetConfig</p>
+<p>All LightTOC files are 128 bytes in size</p>
+<p>the StreamSetConfig files range from 46 to 1008 bytes in size, no two are the same size</p>
+<p>Based on the hex dumps you provided, we can successfully reverse-engineer the core structures of both the <code>LightTOC</code> and <code>StreamSetConfig</code> file formats used in <em>The Simpsons Game</em>.</p>
+<p>Here is a breakdown of what the binary data reveals about these engine files:</p>
+<h3><strong>1. StreamSetConfig (Variable/Event Mappings)</strong></h3>
+<p>This file format is highly structured and acts as a registry for level-specific scripting variables, triggers, or tracking states (e.g., <code>bart_mexico_death_variable</code>, <code>cliche_double_jump</code>).</p>
+<ul>
+<li><p><strong>Header (0x00 - 0x03):</strong> Always <code>00 00 00 03</code>. This is likely a format version number or a magic identifier.</p>
+</li>
+<li><p><strong>Item Count (0x04 - 0x07):</strong> A 32-bit big-endian integer dictating how many variables/strings are in the file.</p>
+</li>
+<li><p><em>Example (L01_LandOfChocolate):</em> <code>00 00 00 01</code> (1 string: <code>cliche_double_jump</code>)</p>
+</li>
+<li><p><em>Example (L02_BartmanBegins):</em> <code>00 00 00 04</code> (4 strings: <code>door</code>, <code>target_var</code>, <code>trex_anim_var</code>, <code>trex_var</code>)</p>
+</li>
+<li><p><strong>Data Array:</strong> Follows the count. Each entry appears to be 16 bytes long, containing what looks like a 32-bit hash of the variable name (for quick engine lookup) followed by configuration flags (often <code>00 00 00 01</code> or <code>00 00 00 00</code>).</p>
+</li>
+<li><p><strong>String Pool (End of file):</strong> The file concludes with a block of null-terminated strings corresponding exactly to the item count. These are the human-readable names of the variables the game engine tracks for that specific zone or challenge.</p>
+</li>
+</ul>
+<h3><strong>2. LightTOC (Level Transformation &amp; Bounding Data)</strong></h3>
+<p>Every <code>LightTOC</code> file is exactly 128 bytes, which indicates a rigid <code>struct</code> rather than a dynamic list. &quot;TOC&quot; usually stands for Table of Contents, but the data here looks purely spatial and mathematical.</p>
+<ul>
+<li><p><strong>Magic Header (0x00 - 0x03):</strong> Always <code>40 F2 00 01</code>.</p>
+</li>
+<li><p><strong>Padding/Reserved (0x04 - 0x0F):</strong> Mostly zeroes, occasionally ending in <code>01 00 00</code>.</p>
+</li>
+<li><p><strong>32-bit Floats (0x10 - 0x7F):</strong> The bulk of the file is standard IEEE 754 32-bit floating-point numbers. We can see common geometry/scale defaults:</p>
+</li>
+<li><p><code>3F 80 00 00</code> repeatedly shows up. In 32-bit float, this is exactly <strong>1.0</strong> (likely XYZ scale multipliers or identity matrix values).</p>
+</li>
+<li><p><code>41 20 00 00</code> at 0x70 translates exactly to <strong>10.0</strong>.</p>
+</li>
+<li><p><code>3F 49 0F DB</code> at 0x78 translates to <strong>~0.785</strong>, which is $\pi/4$ (45 degrees), indicating rotational data or field-of-view limits.</p>
+</li>
+<li><p>Blocks at <code>0x40</code> and <code>0x50</code> often contain negative floats (starting with <code>B...</code>, like <code>BF 29 D5 3D</code> which is <strong>-0.663</strong>).</p>
+</li>
+<li><p><strong>Conclusion:</strong> The <code>LightTOC</code> is essentially a 128-byte header storing the global lighting parameters, bounding box coordinates (min/max XYZ), or root transformation matrices for the streaming zone.</p>
+</li>
+</ul>
+<p>list of all files with no extension found in the game files:</p>
+<ul>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Characters\simpsons_chars_global_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc\Story_Mode\Story_Mode_Design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt\story_mode\story_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\challenge_mode\challenge_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\story_mode\story_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater\challenge_mode\challenge_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater\story_mode\story_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater\zone02_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut\story_mode\Story_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Story_mode\Story_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest\challenge_mode\challenge_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy\challenge_mode\challenge_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy\story_mode\story_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer\story_mode\zone02_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy\challenge_mode\challenge_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy\story_mode\story_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes\challenge_mode\challenge_mode_design_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\StreamSetConfig </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_str\LightTOC </code></p>
+</li>
+<li><p><code>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_str\StreamSetConfig </code></p>
+</li>
+</ul>
 
-there are two files without an extension
-the LightTOC and the StreamSetConfig
-
-All LightTOC files are 128 bytes in size
-
-the StreamSetConfig files range from 46 to 1008 bytes in size, no two are the same size
-
-Based on the hex dumps you provided, we can successfully reverse-engineer the core structures of both the `LightTOC` and `StreamSetConfig` file formats used in *The Simpsons Game*.
-
-Here is a breakdown of what the binary data reveals about these engine files:
-
-### **1. StreamSetConfig (Variable/Event Mappings)**
-
-This file format is highly structured and acts as a registry for level-specific scripting variables, triggers, or tracking states (e.g., `bart_mexico_death_variable`, `cliche_double_jump`).
-
-* **Header (0x00 - 0x03):** Always `00 00 00 03`. This is likely a format version number or a magic identifier.
-* **Item Count (0x04 - 0x07):** A 32-bit big-endian integer dictating how many variables/strings are in the file.
-* *Example (L01_LandOfChocolate):* `00 00 00 01` (1 string: `cliche_double_jump`)
-* *Example (L02_BartmanBegins):* `00 00 00 04` (4 strings: `door`, `target_var`, `trex_anim_var`, `trex_var`)
-
-
-* **Data Array:** Follows the count. Each entry appears to be 16 bytes long, containing what looks like a 32-bit hash of the variable name (for quick engine lookup) followed by configuration flags (often `00 00 00 01` or `00 00 00 00`).
-* **String Pool (End of file):** The file concludes with a block of null-terminated strings corresponding exactly to the item count. These are the human-readable names of the variables the game engine tracks for that specific zone or challenge.
-
-### **2. LightTOC (Level Transformation & Bounding Data)**
-
-Every `LightTOC` file is exactly 128 bytes, which indicates a rigid `struct` rather than a dynamic list. "TOC" usually stands for Table of Contents, but the data here looks purely spatial and mathematical.
-
-* **Magic Header (0x00 - 0x03):** Always `40 F2 00 01`.
-* **Padding/Reserved (0x04 - 0x0F):** Mostly zeroes, occasionally ending in `01 00 00`.
-* **32-bit Floats (0x10 - 0x7F):** The bulk of the file is standard IEEE 754 32-bit floating-point numbers. We can see common geometry/scale defaults:
-* `3F 80 00 00` repeatedly shows up. In 32-bit float, this is exactly **1.0** (likely XYZ scale multipliers or identity matrix values).
-* `41 20 00 00` at 0x70 translates exactly to **10.0**.
-* `3F 49 0F DB` at 0x78 translates to **~0.785**, which is $\pi/4$ (45 degrees), indicating rotational data or field-of-view limits.
-* Blocks at `0x40` and `0x50` often contain negative floats (starting with `B...`, like `BF 29 D5 3D` which is **-0.663**).
-
-
-* **Conclusion:** The `LightTOC` is essentially a 128-byte header storing the global lighting parameters, bounding box coordinates (min/max XYZ), or root transformation matrices for the streaming zone.
-
-
-list of all files with no extension found in the game files:
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Characters\simpsons_chars_global_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc\Story_Mode\Story_Mode_Design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt\story_mode\story_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\challenge_mode\challenge_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\story_mode\story_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater\challenge_mode\challenge_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater\story_mode\story_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater\zone02_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut\story_mode\Story_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Story_mode\Story_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest\challenge_mode\challenge_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy\challenge_mode\challenge_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy\story_mode\story_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer\story_mode\zone02_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy\challenge_mode\challenge_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy\story_mode\story_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes\challenge_mode\challenge_mode_design_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\StreamSetConfig
-
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_str\LightTOC
-A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_str\StreamSetConfig
-
-
-    </body>
-</html>
-
-
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset='utf-8'>
-<title>LightTOC & StreamSetConfig Hex Dumps</title>
-<style>
-  body { font-family: 'Courier New', monospace; background-color: #1e1e1e; color: #d4d4d4; padding: 2rem; }
-  h1 { color: #569cd6; border-bottom: 1px solid #333; padding-bottom: 10px; }
-  .file-block { background: #252526; border: 1px solid #3c3c3c; padding: 1rem; margin-bottom: 2rem; border-radius: 5px; }
-  .file-path { color: #ce9178; font-size: 0.9rem; margin-bottom: 1rem; word-break: break-all; }
-  .file-size { color: #4ec9b0; font-size: 0.85rem; margin-bottom: 1rem; }
-  .error { color: #f44747; }
-  pre { margin: 0; overflow-x: auto; font-size: 14px; line-height: 1.4; }
-</style>
-</head>
-<body>
 <h1>No Extension Files: Hex Dump Analysis</h1>
 <div class='file-block'>
 <div class='file-path'><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Characters\simpsons_chars_global_str\LightTOC</div>
@@ -934,171 +936,157 @@ A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audi
 00000400  61 6C 5F 6C 6F 61 64 5F 76 61 72 69 61 62 6C 65  |al_load_variable|
 00000410  00                                               |.|</pre>
 </div>
-</body></html>
+<pre><code>    &lt;h1&gt;LightTOC (Lighting Table of Contents)&lt;/h1&gt;
 
-<!DOCTYPE html>
-<html>
+    &lt;p&gt;A table of contents for lighting data, defining light instances and box lights.&lt;/p&gt;
 
-    <head>
-        <meta charset="utf-8">
-        <title>LightTOC Format Documentation</title>
-        <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
+    &lt;h2&gt;Header&lt;/h2&gt;
 
-    <body style="padding: 1.5rem;padding-top: 2rem;">
+    &lt;table&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;Offset&lt;/th&gt;
+                &lt;th&gt;Type&lt;/th&gt;
+                &lt;th&gt;Name&lt;/th&gt;
+                &lt;th&gt;Description&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            &lt;tr&gt;
+                &lt;td&gt;0x00&lt;/td&gt;
+                &lt;td&gt;UInt16 (LE)&lt;/td&gt;
+                &lt;td&gt;Magic&lt;/td&gt;
+                &lt;td&gt;File magic.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;0x02&lt;/td&gt;
+                &lt;td&gt;UInt16 (LE)&lt;/td&gt;
+                &lt;td&gt;Version&lt;/td&gt;
+                &lt;td&gt;Version.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;0x04&lt;/td&gt;
+                &lt;td&gt;UInt32&lt;/td&gt;
+                &lt;td&gt;LightArrayOffset&lt;/td&gt;
+                &lt;td&gt;Absolute offset to Light array.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;0x08&lt;/td&gt;
+                &lt;td&gt;UInt32&lt;/td&gt;
+                &lt;td&gt;BoxArrayOffset&lt;/td&gt;
+                &lt;td&gt;Absolute offset to Box Light array.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;0x0C&lt;/td&gt;
+                &lt;td&gt;UInt16&lt;/td&gt;
+                &lt;td&gt;LightCount&lt;/td&gt;
+                &lt;td&gt;Number of lights.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;0x0E&lt;/td&gt;
+                &lt;td&gt;UInt16&lt;/td&gt;
+                &lt;td&gt;BoxCount&lt;/td&gt;
+                &lt;td&gt;Number of box lights.&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
 
-        <h1>LightTOC (Lighting Table of Contents)</h1>
+    &lt;h2&gt;Light Entry&lt;/h2&gt;
 
-        <p>A table of contents for lighting data, defining light instances and box lights.</p>
+    &lt;p&gt;Located at &lt;code&gt;LightArrayOffset&lt;/code&gt;.&lt;/p&gt;
 
-        <h2>Header</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Offset</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x00</td>
-                    <td>UInt16 (LE)</td>
-                    <td>Magic</td>
-                    <td>File magic.</td>
-                </tr>
-                <tr>
-                    <td>0x02</td>
-                    <td>UInt16 (LE)</td>
-                    <td>Version</td>
-                    <td>Version.</td>
-                </tr>
-                <tr>
-                    <td>0x04</td>
-                    <td>UInt32</td>
-                    <td>LightArrayOffset</td>
-                    <td>Absolute offset to Light array.</td>
-                </tr>
-                <tr>
-                    <td>0x08</td>
-                    <td>UInt32</td>
-                    <td>BoxArrayOffset</td>
-                    <td>Absolute offset to Box Light array.</td>
-                </tr>
-                <tr>
-                    <td>0x0C</td>
-                    <td>UInt16</td>
-                    <td>LightCount</td>
-                    <td>Number of lights.</td>
-                </tr>
-                <tr>
-                    <td>0x0E</td>
-                    <td>UInt16</td>
-                    <td>BoxCount</td>
-                    <td>Number of box lights.</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h2>Light Entry</h2>
-
-        <p>Located at <code>LightArrayOffset</code>.</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Byte[16]</td>
-                    <td>GUID</td>
-                    <td>Light GUID.</td>
-                </tr>
-                <tr>
-                    <td>Float[16]</td>
-                    <td>Matrix</td>
-                    <td>4x4 Transform Matrix (Pos X=Index 12, Y=13, Z=14).</td>
-                </tr>
-                <tr>
-                    <td>UInt8</td>
-                    <td>Type</td>
-                    <td>RW Light Type.</td>
-                </tr>
-                <tr>
-                    <td>UInt8</td>
-                    <td>Flags</td>
-                    <td>RW Light Flags.</td>
-                </tr>
-                <tr>
-                    <td>UInt8</td>
-                    <td>InsideOut</td>
-                    <td>Inside/Outside flag.</td>
-                </tr>
-                <tr>
-                    <td>UInt8</td>
-                    <td>Padding</td>
-                    <td>Unused.</td>
-                </tr>
-                <tr>
-                    <td>Float</td>
-                    <td>DiffAmbient</td>
-                    <td>Diffuse Ambient factor.</td>
-                </tr>
-                <tr>
-                    <td>UInt8</td>
-                    <td>R</td>
-                    <td>Red.</td>
-                </tr>
-                <tr>
-                    <td>UInt8</td>
-                    <td>G</td>
-                    <td>Green.</td>
-                </tr>
-                <tr>
-                    <td>UInt8</td>
-                    <td>B</td>
-                    <td>Blue.</td>
-                </tr>
-                <tr>
-                    <td>UInt8</td>
-                    <td>A</td>
-                    <td>Alpha.</td>
-                </tr>
-                <tr>
-                    <td>Float</td>
-                    <td>Intensity</td>
-                    <td>Light intensity.</td>
-                </tr>
-                <tr>
-                    <td>Float</td>
-                    <td>Radius</td>
-                    <td>Light radius.</td>
-                </tr>
-                <tr>
-                    <td>Float</td>
-                    <td>FBRadius</td>
-                    <td>Full Bright Radius.</td>
-                </tr>
-                <tr>
-                    <td>Float</td>
-                    <td>ConeAngle</td>
-                    <td>Cone Angle.</td>
-                </tr>
-                <tr>
-                    <td>Float</td>
-                    <td>FBAngle</td>
-                    <td>Full Bright Angle.</td>
-                </tr>
-            </tbody>
-        </table>
+    &lt;table&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;Type&lt;/th&gt;
+                &lt;th&gt;Name&lt;/th&gt;
+                &lt;th&gt;Description&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Byte[16]&lt;/td&gt;
+                &lt;td&gt;GUID&lt;/td&gt;
+                &lt;td&gt;Light GUID.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Float[16]&lt;/td&gt;
+                &lt;td&gt;Matrix&lt;/td&gt;
+                &lt;td&gt;4x4 Transform Matrix (Pos X=Index 12, Y=13, Z=14).&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;UInt8&lt;/td&gt;
+                &lt;td&gt;Type&lt;/td&gt;
+                &lt;td&gt;RW Light Type.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;UInt8&lt;/td&gt;
+                &lt;td&gt;Flags&lt;/td&gt;
+                &lt;td&gt;RW Light Flags.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;UInt8&lt;/td&gt;
+                &lt;td&gt;InsideOut&lt;/td&gt;
+                &lt;td&gt;Inside/Outside flag.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;UInt8&lt;/td&gt;
+                &lt;td&gt;Padding&lt;/td&gt;
+                &lt;td&gt;Unused.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Float&lt;/td&gt;
+                &lt;td&gt;DiffAmbient&lt;/td&gt;
+                &lt;td&gt;Diffuse Ambient factor.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;UInt8&lt;/td&gt;
+                &lt;td&gt;R&lt;/td&gt;
+                &lt;td&gt;Red.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;UInt8&lt;/td&gt;
+                &lt;td&gt;G&lt;/td&gt;
+                &lt;td&gt;Green.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;UInt8&lt;/td&gt;
+                &lt;td&gt;B&lt;/td&gt;
+                &lt;td&gt;Blue.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;UInt8&lt;/td&gt;
+                &lt;td&gt;A&lt;/td&gt;
+                &lt;td&gt;Alpha.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Float&lt;/td&gt;
+                &lt;td&gt;Intensity&lt;/td&gt;
+                &lt;td&gt;Light intensity.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Float&lt;/td&gt;
+                &lt;td&gt;Radius&lt;/td&gt;
+                &lt;td&gt;Light radius.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Float&lt;/td&gt;
+                &lt;td&gt;FBRadius&lt;/td&gt;
+                &lt;td&gt;Full Bright Radius.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Float&lt;/td&gt;
+                &lt;td&gt;ConeAngle&lt;/td&gt;
+                &lt;td&gt;Cone Angle.&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Float&lt;/td&gt;
+                &lt;td&gt;FBAngle&lt;/td&gt;
+                &lt;td&gt;Full Bright Angle.&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+</code></pre>
 
     </body>
-
 </html>
-

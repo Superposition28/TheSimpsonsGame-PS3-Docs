@@ -1,16 +1,16 @@
-
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>INF Format Documentation</title>
+        <link rel="stylesheet" href="../../../../style/main.css">
+    </head>
+    <body style="padding: 1.5rem; padding-top: 2rem;">
+        <h1>INF Format Documentation</h1>
 <p><strong>Version:</strong> 1.0<br>
 <strong>Last Updated:</strong> 2026-07-19<br>
-<strong>Author(s):</strong> yggdrasil-au</p>
-
-<p>The <code>.inf</code> format is a custom Electronic Arts / RenderWare binary file used in The Simpsons Game to map characters to a corresponding font texture atlas (usually a <code>.png</code> file). It contains precise coordinate bounding boxes, advancing metrics, and kerning pairs required to render text strings in the game's UI[cite: 8]. These files are typically found embedded within <code>.STR</code> archives alongside their companion textures[cite: 8, 9].</p>
-
-<p><strong>Endianness:</strong> Big-Endian throughout.<br>
-<strong>Character Encoding:</strong> ASCII / Custom PUA (Private Use Area) for button icons.</p>
-
-<h2>Parsing Algorithm Overview</h2>
-
-<ol>
+<strong>Author(s):</strong> yggdrasil-au</p><p>The <code>.inf</code> format is a custom Electronic Arts / RenderWare binary file used in The Simpsons Game to map characters to a corresponding font texture atlas (usually a <code>.png</code> file). It contains precise coordinate bounding boxes, advancing metrics, and kerning pairs required to render text strings in the game's UI[cite: 8]. These files are typically found embedded within <code>.STR</code> archives alongside their companion textures[cite: 8, 9].</p><p><strong>Endianness:</strong> Big-Endian throughout.<br>
+<strong>Character Encoding:</strong> ASCII / Custom PUA (Private Use Area) for button icons.</p><h2>Parsing Algorithm Overview</h2><ol>
     <li>Verify file starts with the magic signature: <code>46 4F 4E 54</code> ("FONT")[cite: 5].</li>
     <li>Read the 16-byte header to extract the total file size, format version, total glyph count, and total kerning pair count[cite: 5].</li>
     <li>Skip the header padding to reach the start of the Glyph Table (fixed at offset <code>0x78</code> or 120 decimal).</li>
@@ -18,13 +18,7 @@
     <li>Starting immediately after the last glyph struct, calculate the remaining file bytes and truncate any trailing garbage padding (dividing by 4).</li>
     <li>Parse the 4-byte Kerning structs to extract the spacing modifiers between specific character pairs[cite: 5].</li>
     <li>Export the mapped data to an AngelCode <code>.fnt</code> descriptor to bind it to the associated <code>.png</code> texture[cite: 5].</li>
-</ol>
-
-<h2>1. File Header</h2>
-
-<p>Located at offset <code>0x00</code>. <strong>Size: 16 bytes.</strong></p>
-
-<table>
+</ol><h2>1. File Header</h2><p>Located at offset <code>0x00</code>. <strong>Size: 16 bytes.</strong></p><table>
     <thead>
         <tr>
             <th>Offset</th>
@@ -77,15 +71,9 @@
             <td>Total number of 4-byte kerning pair structs contained in the file.</td>
         </tr>
     </tbody>
-</table>
-
-<h2>2. Glyph Table</h2>
-
-<p><strong>Location:</strong> Begins at a fixed offset of <code>0x78</code> (120 decimal), following the header and a block of padding.<br>
+</table><h2>2. Glyph Table</h2><p><strong>Location:</strong> Begins at a fixed offset of <code>0x78</code> (120 decimal), following the header and a block of padding.<br>
 <strong>Length:</strong> <code>Glyph Count * 20</code> bytes.</p>
-<p>Every character mapped in the font is defined by a 20-byte structure. Note: For generic UI buttons (e.g., <code>buttons_74860e.inf</code>), the character ID may map to non-standard indices.</p>
-
-<table>
+<p>Every character mapped in the font is defined by a 20-byte structure. Note: For generic UI buttons (e.g., <code>buttons_74860e.inf</code>), the character ID may map to non-standard indices.</p><table>
     <thead>
         <tr>
             <th>Offset (Rel)</th>
@@ -178,15 +166,9 @@
             <td>A signed value dictating the vertical drawing offset from the baseline.</td>
         </tr>
     </tbody>
-</table>
-
-<h2>3. Kerning Table</h2>
-
-<p><strong>Location:</strong> Starts immediately after the last byte of the Glyph Table (<code>0x78 + (Glyph Count * 20)</code>).<br>
+</table><h2>3. Kerning Table</h2><p><strong>Location:</strong> Starts immediately after the last byte of the Glyph Table (<code>0x78 + (Glyph Count * 20)</code>).<br>
 <strong>Length:</strong> <code>Kerning Count * 4</code> bytes.</p>
-<p>The kerning table adjusts the spacing between two specific characters when they appear sequentially (e.g., tucking a lowercase 'o' closer under an uppercase 'T').</p>
-
-<table>
+<p>The kerning table adjusts the spacing between two specific characters when they appear sequentially (e.g., tucking a lowercase 'o' closer under an uppercase 'T').</p><table>
     <thead>
         <tr>
             <th>Offset (Rel)</th>
@@ -231,25 +213,14 @@
             <td>A signed 8-bit integer representing the spacing shift in pixels (e.g., <code>0xFA</code> = -6 pixels, <code>0x03</code> = +3 pixels).</td>
         </tr>
     </tbody>
-</table>
-
-<h3>Validation Rules & Padding</h3>
+</table><h3>Validation Rules & Padding</h3>
 <ul>
     <li>Files often contain a few bytes of generic trailing padding at the end of the Kerning Table. Safely disregard any remaining bytes that are not perfectly divisible by 4.</li>
     <li>Button icon atlases (like UI prompts) will map character codes identically, but standard ASCII parsers may read them as unprintable characters unless specifically mapped back to a custom unicode range.</li>
-</ul>
-
-<h2>Complete Parsing Example (Python Pseudocode)</h2>
-
-<pre><code>
-
-```
-
-def parse_inf(file_data) {
+</ul><h2>Complete Parsing Example (Python Pseudocode)</h2><pre><code>def parse_inf(file_data) {
 // 1. Validate header
-if (file_data[0:4] != b'FONT') return error;
+if (file_data[0:4] != b&#39;FONT&#39;) return error;
 
-```
 glyph_count = read_u16_be(file_data, 10);
 
 // 2. Parse Glyph Table
@@ -280,7 +251,7 @@ for (i = 0 to kerning_count) {
     char2 = file_data[offset + 1];
     amount = read_s8(file_data, offset + 3);
     
-    if (char1 != 0 && char2 != 0) {
+    if (char1 != 0 &amp;&amp; char2 != 0) {
         kernings.append({char1, char2, amount});
     }
     offset += 4;
@@ -289,4 +260,6 @@ for (i = 0 to kerning_count) {
 // 4. Output to AngelCode .fnt mapping format
 export_to_fnt(glyphs, kernings);
 }
-```
+        </code></pre>
+    </body>
+</html>

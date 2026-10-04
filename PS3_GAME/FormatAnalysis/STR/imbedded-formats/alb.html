@@ -1,131 +1,246 @@
-# File Format Documentation: ALB
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>ALB Format Documentation</title>
+        <link rel="stylesheet" href="../../../../style/main.css">
+    </head>
+    <body style="padding: 1.5rem; padding-top: 2rem;">
+<h1>File Format Documentation: ALB</h1>
+<p><strong>Version:</strong> 1.0
+<strong>Last Updated:</strong> 2025-05-05
+<strong>Author(s):</strong> [Reverse Engineering Team/Contributor Name]</p>
+<hr>
+<h2>1. Overview</h2>
+<ul>
+<li><strong>Format Name:</strong> Audio Library Bank / Alias Bank</li>
+<li><strong>Common File Extension(s):</strong> <code>.alb</code></li>
+<li><strong>Purpose/Domain:</strong> Metadata layer for managing dialogue streams and other categorized sound events. Defines sound event identifiers (IDs/Hashes) used by the game engine to locate and manage audio playback. Does not contain raw audio data.</li>
+<li><strong>Originating Application/System:</strong> <em>The Simpsons Game</em> (PAL version observed)</li>
+<li><strong>Format Type:</strong> Binary</li>
+<li><strong>General Structure:</strong> Fixed-size Header followed by a variable number of fixed-size Entry Records.</li>
+</ul>
+<hr>
+<h2>2. Identification</h2>
+<ul>
+<li><strong>Magic Number(s) / Signature:</strong> No traditional magic number, but the first two bytes seem fixed.<ul>
+<li><strong>Value:</strong> <code>0x0006</code></li>
+<li><strong>Offset:</strong> 0</li>
+</ul>
+</li>
+<li><strong>Version Information:</strong> Potentially indicated by the first two bytes.<ul>
+<li><strong>Location:</strong> Offset 0</li>
+<li><strong>Data Type:</strong> <code>uint16</code> (Big-Endian)</li>
+<li><strong>Observed Value:</strong> <code>0x0006</code></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>3. Global Properties (If Applicable)</h2>
+<ul>
+<li><strong>Endianness:</strong> Big-Endian</li>
+<li><strong>Character Encoding:</strong> Not Applicable (Binary format, no significant text strings observed)</li>
+<li><strong>Default Alignment:</strong> Structures appear tightly packed, no explicit padding mentioned beyond potential internal field alignment within the 28-byte record.</li>
+<li><strong>Compression:</strong> None observed.</li>
+<li><strong>Encryption:</strong> None observed.</li>
+</ul>
+<hr>
+<h2>4. Detailed Structure</h2>
+<p><strong>Section: Header</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">Offset (Hex)</th>
+<th align="left">Offset (Dec)</th>
+<th align="left">Size (Bytes)</th>
+<th align="left">Data Type</th>
+<th align="left">Endianness</th>
+<th align="left">Field Name</th>
+<th align="left">Description</th>
+<th align="left">Notes / Example Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>0x00</code></td>
+<td align="left">0</td>
+<td align="left">2</td>
+<td align="left"><code>uint16</code></td>
+<td align="left">Big</td>
+<td align="left">Format Type/Version</td>
+<td align="left">Consistently <code>0x0006</code>.</td>
+<td align="left"><code>00 06</code></td>
+</tr>
+<tr>
+<td align="left"><code>0x02</code></td>
+<td align="left">2</td>
+<td align="left">2</td>
+<td align="left"><code>uint16</code></td>
+<td align="left">Big</td>
+<td align="left">Entry Record Count</td>
+<td align="left">Number of Entry Records following the header.</td>
+<td align="left"><code>00 0D</code> (13), <code>00 24</code> (36)</td>
+</tr>
+<tr>
+<td align="left"><code>0x04</code></td>
+<td align="left">4</td>
+<td align="left">4</td>
+<td align="left"><code>uint32</code></td>
+<td align="left">Big</td>
+<td align="left">Data Offset</td>
+<td align="left">Offset to the first Entry Record. Always <code>8</code>.</td>
+<td align="left"><code>00 00 00 08</code></td>
+</tr>
+</tbody></table>
+<p><strong>Section: Entry Records</strong></p>
+<ul>
+<li><strong>Structure Name:</strong> <code>AlbEntry</code></li>
+<li><strong>Count:</strong> Determined by <code>Header.EntryRecordCount</code></li>
+<li><strong>Location:</strong> Starts at offset <code>Header.DataOffset</code> (always 8)</li>
+<li><strong>Total Size per Record:</strong> 28 bytes</li>
+</ul>
+<p><em>Structure based on common pattern (e.g., <code>global_marg.alb</code>), see notes for variations:</em></p>
+<table>
+<thead>
+<tr>
+<th align="left">Offset (Relative)</th>
+<th align="left">Size (Bytes)</th>
+<th align="left">Data Type</th>
+<th align="left">Endianness</th>
+<th align="left">Field Name</th>
+<th align="left">Description</th>
+<th align="left">Notes / Example Value (<code>global_marg.alb</code>)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>0x00</code></td>
+<td align="left">4</td>
+<td align="left"><code>uint32</code></td>
+<td align="left">Big</td>
+<td align="left">Primary ID / Metadata 1</td>
+<td align="left">Often seems sequential or related between entries.</td>
+<td align="left"><code>11 8B D8 FD</code>, <code>12 94 15 3E</code></td>
+</tr>
+<tr>
+<td align="left"><code>0x04</code></td>
+<td align="left">4</td>
+<td align="left"><code>uint32</code></td>
+<td align="left">Big</td>
+<td align="left">Constant Flag / Type ID?</td>
+<td align="left">Appears fixed within a file/category. <strong>Position might vary (see Variations below)</strong>.</td>
+<td align="left"><code>A1 B3 C0 62</code></td>
+</tr>
+<tr>
+<td align="left"><code>0x08</code></td>
+<td align="left">4</td>
+<td align="left"><code>uint32</code></td>
+<td align="left">Big</td>
+<td align="left">Sound Hash / Secondary ID 1</td>
+<td align="left">Main identifier for the sound cue. Repeated 3 times.</td>
+<td align="left"><code>3E 02 F8 57</code></td>
+</tr>
+<tr>
+<td align="left"><code>0x0C</code></td>
+<td align="left">4</td>
+<td align="left"><code>uint32</code></td>
+<td align="left">Big</td>
+<td align="left">Sound Hash / Secondary ID 2</td>
+<td align="left">Identical to bytes at offset <code>0x08</code>.</td>
+<td align="left"><code>3E 02 F8 57</code></td>
+</tr>
+<tr>
+<td align="left"><code>0x10</code></td>
+<td align="left">4</td>
+<td align="left"><code>uint32</code></td>
+<td align="left">Big</td>
+<td align="left">Sound Hash / Secondary ID 3</td>
+<td align="left">Identical to bytes at offset <code>0x08</code>.</td>
+<td align="left"><code>3E 02 F8 57</code></td>
+</tr>
+<tr>
+<td align="left"><code>0x14</code></td>
+<td align="left">4</td>
+<td align="left"><code>uint32</code></td>
+<td align="left">Big</td>
+<td align="left">Metadata Field 2</td>
+<td align="left">Varies per entry. Purpose unclear (flags, length, priority?).</td>
+<td align="left"><code>B7 14 EE 51</code>, <code>B7 14 EE 52</code></td>
+</tr>
+<tr>
+<td align="left"><code>0x18</code></td>
+<td align="left">4</td>
+<td align="left"><code>uint32</code></td>
+<td align="left">Big</td>
+<td align="left">Metadata Field 3 / Next ID?</td>
+<td align="left">Often related to the Primary ID of the current or next entry. <strong>May contain Constant Flag in variations.</strong></td>
+<td align="left"><code>11 8B D8 FE</code>, <code>12 94 15 3F</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>5. Data Types Reference</h2>
+<ul>
+<li><strong><code>uint16</code>:</strong> Unsigned 16-bit integer, Big-Endian.</li>
+<li><strong><code>uint32</code>:</strong> Unsigned 32-bit integer, Big-Endian.</li>
+</ul>
+<hr>
+<h2>6. Checksums / Integrity Checks</h2>
+<ul>
+<li>None observed or identified.</li>
+</ul>
+<hr>
+<h2>7. Known Variations / Versions</h2>
+<ul>
+<li>The primary variation observed is the position of the 4-byte &quot;Constant Flag / Type ID&quot;.<ul>
+<li><strong>Common Position:</strong> Offset <code>0x04</code> within the 28-byte record (e.g., <code>global_marg.alb</code>).</li>
+<li><strong>Alternate Position:</strong> Offset <code>0x18</code> within the 28-byte record (e.g., <code>eps_gam_homr.alb</code>, Example: <code>2C 04 E1 25</code>). In this case, the field at offset <code>0x04</code> takes on a different, variable role.</li>
+</ul>
+</li>
+<li>The core structure (28-byte record size, 3x repeated Sound Hash) appears consistent across observed variations.</li>
+<li><strong>How to Differentiate:</strong> Requires inspecting the value at offset <code>0x04</code> across multiple records. If it&#39;s constant, it&#39;s likely the flag. If it varies, the flag might be at offset <code>0x18</code>.</li>
+</ul>
+<hr>
+<h2>8. Analysis Tools &amp; Methods</h2>
+<ul>
+<li><strong>Tools Used:</strong> Hex Editor (e.g., HxD, 010 Editor).</li>
+<li><strong>Methodology:</strong> Manual comparison and analysis of various <code>.alb</code> files using a hex editor. Identifying fixed patterns (header, record size) and variable fields. Correlating repeated values (Sound Hash). Observing differences between files associated with different game contexts (global vs. level-specific).</li>
+</ul>
+<hr>
+<h2>9. Open Questions / Uncertainties</h2>
+<ul>
+<li>Precise meaning and usage of <code>Primary ID / Metadata 1</code> (Offset <code>0x00</code>).</li>
+<li>Precise meaning and usage of <code>Metadata Field 2</code> (Offset <code>0x14</code>).</li>
+<li>Precise meaning and usage of <code>Metadata Field 3 / Next ID?</code> (Offset <code>0x18</code>), especially when it doesn&#39;t contain the Constant Flag.</li>
+<li>Exact relationship between <code>Primary ID</code> and the repeated <code>Sound Hash / Secondary ID</code>. Is one derived from the other, or are they independent lookups?</li>
+<li>Full extent of variations across all <code>.alb</code> files in the game.</li>
+</ul>
+<hr>
+<h2>10. References</h2>
+<ul>
+<li>Corresponding <code>.ctb</code> (Control Table) files, which reference the IDs defined in <code>.alb</code> files to trigger sounds based on game events.</li>
+<li>Specific file examples used for analysis: <code>global_marg.alb</code>, <code>eps_gam_homr.alb</code>.</li>
+</ul>
+<hr>
+<h2>11. Revision History (of this document)</h2>
+<table>
+<thead>
+<tr>
+<th align="left">Version</th>
+<th align="left">Date</th>
+<th align="left">Author(s)</th>
+<th align="left">Changes Made</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">1.0</td>
+<td align="left">2025-05-05</td>
+<td align="left">[Reverse Engineering Team/Contributor Name]</td>
+<td align="left">Initial structured documentation based on template</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>12. Other:</h2>
+<ul>
+<li>These files work in direct conjunction with corresponding <code>.ctb</code> (Control Table) files. The <code>.ctb</code> file links the low-level IDs from the <code>.alb</code> file to high-level game events and defines playback logic.</li>
+</ul>
 
-**Version:** 1.0
-**Last Updated:** 2025-05-05
-**Author(s):** [Reverse Engineering Team/Contributor Name]
-
----
-
-## 1. Overview
-
-*   **Format Name:** Audio Library Bank / Alias Bank
-*   **Common File Extension(s):** `.alb`
-*   **Purpose/Domain:** Metadata layer for managing dialogue streams and other categorized sound events. Defines sound event identifiers (IDs/Hashes) used by the game engine to locate and manage audio playback. Does not contain raw audio data.
-*   **Originating Application/System:** *The Simpsons Game* (PAL version observed)
-*   **Format Type:** Binary
-*   **General Structure:** Fixed-size Header followed by a variable number of fixed-size Entry Records.
-
----
-
-## 2. Identification
-
-*   **Magic Number(s) / Signature:** No traditional magic number, but the first two bytes seem fixed.
-    *   **Value:** `0x0006`
-    *   **Offset:** 0
-*   **Version Information:** Potentially indicated by the first two bytes.
-    *   **Location:** Offset 0
-    *   **Data Type:** `uint16` (Big-Endian)
-    *   **Observed Value:** `0x0006`
-
----
-
-## 3. Global Properties (If Applicable)
-
-*   **Endianness:** Big-Endian
-*   **Character Encoding:** Not Applicable (Binary format, no significant text strings observed)
-*   **Default Alignment:** Structures appear tightly packed, no explicit padding mentioned beyond potential internal field alignment within the 28-byte record.
-*   **Compression:** None observed.
-*   **Encryption:** None observed.
-
----
-
-## 4. Detailed Structure
-
-**Section: Header**
-
-| Offset (Hex) | Offset (Dec) | Size (Bytes) | Data Type | Endianness | Field Name          | Description                                   | Notes / Example Value      |
-| :----------- | :----------- | :----------- | :-------- | :--------- | :------------------ | :-------------------------------------------- | :------------------------- |
-| `0x00`       | 0            | 2            | `uint16`  | Big        | Format Type/Version | Consistently `0x0006`.                        | `00 06`                    |
-| `0x02`       | 2            | 2            | `uint16`  | Big        | Entry Record Count  | Number of Entry Records following the header. | `00 0D` (13), `00 24` (36) |
-| `0x04`       | 4            | 4            | `uint32`  | Big        | Data Offset         | Offset to the first Entry Record. Always `8`. | `00 00 00 08`              |
-
-**Section: Entry Records**
-
-*   **Structure Name:** `AlbEntry`
-*   **Count:** Determined by `Header.EntryRecordCount`
-*   **Location:** Starts at offset `Header.DataOffset` (always 8)
-*   **Total Size per Record:** 28 bytes
-
-*Structure based on common pattern (e.g., `global_marg.alb`), see notes for variations:*
-
-| Offset (Relative) | Size (Bytes) | Data Type | Endianness | Field Name                 | Description                                                                                                | Notes / Example Value (`global_marg.alb`) |
-| :---------------- | :----------- | :-------- | :--------- | :------------------------- | :--------------------------------------------------------------------------------------------------------- | :---------------------------------------- |
-| `0x00`            | 4            | `uint32`  | Big        | Primary ID / Metadata 1    | Often seems sequential or related between entries.                                                         | `11 8B D8 FD`, `12 94 15 3E`              |
-| `0x04`            | 4            | `uint32`  | Big        | Constant Flag / Type ID?   | Appears fixed within a file/category. **Position might vary (see Variations below)**.                      | `A1 B3 C0 62`                             |
-| `0x08`            | 4            | `uint32`  | Big        | Sound Hash / Secondary ID 1 | Main identifier for the sound cue. Repeated 3 times.                                                       | `3E 02 F8 57`                             |
-| `0x0C`            | 4            | `uint32`  | Big        | Sound Hash / Secondary ID 2 | Identical to bytes at offset `0x08`.                                                                       | `3E 02 F8 57`                             |
-| `0x10`            | 4            | `uint32`  | Big        | Sound Hash / Secondary ID 3 | Identical to bytes at offset `0x08`.                                                                       | `3E 02 F8 57`                             |
-| `0x14`            | 4            | `uint32`  | Big        | Metadata Field 2           | Varies per entry. Purpose unclear (flags, length, priority?).                                            | `B7 14 EE 51`, `B7 14 EE 52`              |
-| `0x18`            | 4            | `uint32`  | Big        | Metadata Field 3 / Next ID? | Often related to the Primary ID of the current or next entry. **May contain Constant Flag in variations.** | `11 8B D8 FE`, `12 94 15 3F`              |
-
----
-
-## 5. Data Types Reference
-
-*   **`uint16`:** Unsigned 16-bit integer, Big-Endian.
-*   **`uint32`:** Unsigned 32-bit integer, Big-Endian.
-
----
-
-## 6. Checksums / Integrity Checks
-
-*   None observed or identified.
-
----
-
-## 7. Known Variations / Versions
-
-*   The primary variation observed is the position of the 4-byte "Constant Flag / Type ID".
-    *   **Common Position:** Offset `0x04` within the 28-byte record (e.g., `global_marg.alb`).
-    *   **Alternate Position:** Offset `0x18` within the 28-byte record (e.g., `eps_gam_homr.alb`, Example: `2C 04 E1 25`). In this case, the field at offset `0x04` takes on a different, variable role.
-*   The core structure (28-byte record size, 3x repeated Sound Hash) appears consistent across observed variations.
-*   **How to Differentiate:** Requires inspecting the value at offset `0x04` across multiple records. If it's constant, it's likely the flag. If it varies, the flag might be at offset `0x18`.
-
----
-
-## 8. Analysis Tools & Methods
-
-*   **Tools Used:** Hex Editor (e.g., HxD, 010 Editor).
-*   **Methodology:** Manual comparison and analysis of various `.alb` files using a hex editor. Identifying fixed patterns (header, record size) and variable fields. Correlating repeated values (Sound Hash). Observing differences between files associated with different game contexts (global vs. level-specific).
-
----
-
-## 9. Open Questions / Uncertainties
-
-*   Precise meaning and usage of `Primary ID / Metadata 1` (Offset `0x00`).
-*   Precise meaning and usage of `Metadata Field 2` (Offset `0x14`).
-*   Precise meaning and usage of `Metadata Field 3 / Next ID?` (Offset `0x18`), especially when it doesn't contain the Constant Flag.
-*   Exact relationship between `Primary ID` and the repeated `Sound Hash / Secondary ID`. Is one derived from the other, or are they independent lookups?
-*   Full extent of variations across all `.alb` files in the game.
-
----
-
-## 10. References
-
-*   Corresponding `.ctb` (Control Table) files, which reference the IDs defined in `.alb` files to trigger sounds based on game events.
-*   Specific file examples used for analysis: `global_marg.alb`, `eps_gam_homr.alb`.
-
----
-
-## 11. Revision History (of this document)
-
-| Version | Date       | Author(s)                               | Changes Made                                      |
-| :------ | :--------- | :-------------------------------------- | :------------------------------------------------ |
-| 1.0     | 2025-05-05 | [Reverse Engineering Team/Contributor Name] | Initial structured documentation based on template |
-
----
-
-## 12. Other:
-
-*   These files work in direct conjunction with corresponding `.ctb` (Control Table) files. The `.ctb` file links the low-level IDs from the `.alb` file to high-level game events and defines playback logic.
-
+    </body>
+</html>

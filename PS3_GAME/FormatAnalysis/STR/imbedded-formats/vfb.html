@@ -1,89 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>VFB Format Documentation</title>
+        <link rel="stylesheet" href="../../../../style/main.css">
+    </head>
+    <body style="padding: 1.5rem; padding-top: 2rem;">
+<h1>VFB (Visual-FX Bundle)</h1>
+<p>  <strong>Purpose</strong>
+Container for VFX parameters for a single move/ability (e.g., Lisa╬ô├ç├ûs ╬ô├ç┬úspin╬ô├ç┬Ñ). Holds emitter/curve blocks and
+timing/scale values, referenced by an offset table.
+    <strong>Format Overview: .vfb (Visual-FX Bundle)</strong></p>
+<p>The <code>.vfb</code> format is a proprietary, Big-Endian binary container used on the PlayStation 3 to store timing, offsets, and parameters for visual and audio effects. The file consists of a fixed-size global header, an array of offset table entries, a standard padding block, and a payload of sequentially stored effect blocks (particles, sounds, scripts).</p>
+<h2>Global Header (32 Bytes)</h2>
+<p>The file always begins with a 32-byte (0x20) global header containing the effect&#39;s internal name and entry counts.</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>0x00</strong></td>
+<td>String (16 bytes)</td>
+<td>Null-terminated internal effect name (e.g., <code>_plyr_scorch</code>, <code>80b_taco_updraft</code>). Longer names may be truncated.</td>
+</tr>
+<tr>
+<td><strong>0x10</strong></td>
+<td>Uint32</td>
+<td>Version identifier. Universally <code>00 00 00 06</code> in these dumps.</td>
+</tr>
+<tr>
+<td><strong>0x14</strong></td>
+<td>Uint32</td>
+<td>File flags or total duration modifier.</td>
+</tr>
+<tr>
+<td><strong>0x18</strong></td>
+<td>Float</td>
+<td>Global effect duration/scale (e.g., <code>40 40 00 00</code> = 3.0).</td>
+</tr>
+<tr>
+<td><strong>0x1C</strong></td>
+<td>Uint16</td>
+<td><strong>Entry Count (<code>N</code>)</strong>. Determines the number of items in the Offset Table.</td>
+</tr>
+<tr>
+<td><strong>0x1E</strong></td>
+<td>Uint16</td>
+<td>Padding or minor flags (typically <code>00 00</code>, <code>00 01</code>, or <code>01 00</code>).</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Offset Table (28 Bytes per Entry)</h2>
+<p>Immediately following the header at <code>0x20</code> is an array of <code>N</code> offset table entries. Each entry is exactly 28 bytes (0x1C) and acts as a timeline node, dictating when an effect triggers, how it scales, and exactly where its data resides in the file.</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>0x00</strong></td>
+<td>Float</td>
+<td>Start time for the block to trigger.</td>
+</tr>
+<tr>
+<td><strong>0x04</strong></td>
+<td>Float</td>
+<td>End time or duration of the block.</td>
+</tr>
+<tr>
+<td><strong>0x08</strong></td>
+<td>Float</td>
+<td>Local scale/intensity multiplier (usually <code>3F 80 00 00</code> = 1.0).</td>
+</tr>
+<tr>
+<td><strong>0x0C</strong></td>
+<td>Uint32</td>
+<td>Hash ID or magic flag (e.g., <code>6C B2 50 65</code> or <code>00 00 00 00</code>).</td>
+</tr>
+<tr>
+<td><strong>0x10</strong></td>
+<td>Uint32</td>
+<td><strong>Absolute Offset</strong> from the start of the file to the block&#39;s data.</td>
+</tr>
+<tr>
+<td><strong>0x14</strong></td>
+<td>Float</td>
+<td>Fade, delay time, or secondary timing float.</td>
+</tr>
+<tr>
+<td><strong>0x18</strong></td>
+<td>Uint32</td>
+<td>Block type flag or initialization state (e.g., <code>00 00 02 00</code>).</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Global Padding Block (16 Bytes)</h2>
+<p>After the offset table concludes, but before the first data block begins, there is a fixed 16-byte padding sequence. In almost all populated files, this resolves to:</p>
+<ul>
+<li><code>00 00 00 00</code></li>
+<li><code>00 00 00 00</code></li>
+<li><code>7F 80 00 00</code> (IEEE-754 Positive Infinity)</li>
+<li><code>3D 4C CC CD</code> (Float 0.05)</li>
+</ul>
+<hr>
+<h2>Data Blocks</h2>
+<p>Data blocks start at the precise addresses designated by the Offset Table (<code>0x10</code> of each entry). Blocks utilize 4-character ASCII identifiers, often prefixed or padded with ASCII <code>#</code> characters (<code>23 23 23 23</code>) for memory alignment.</p>
+<p><strong>Common Block Types:</strong></p>
+<ul>
+<li><strong>.prt</strong> (<code>2E 70 72 74</code>): <strong>Particle Emitter.</strong> Usually followed by size/count integers and a 16-byte asset name string linking to a specific texture or particle definition (e.g., <code>wispy06</code>, <code>smoke2</code>, <code>arcs</code>).</li>
+<li><strong>.snd</strong> (<code>2E 73 6E 64</code>): <strong>Sound Event.</strong> Contains 4-byte FMOD/audio event hashes (e.g., <code>C1 19 2F 10</code>, <code>38 3F 35 B2</code>) that trigger on impact or start.</li>
+<li><strong>.bem</strong> (<code>2E 62 65 6D</code>): <strong>Beam Effect.</strong> Contains strings for beam textures (e.g., <code>fire64bw</code>) and sequential 3D vector coordinates.</li>
+<li><strong>.scr</strong> (<code>2E 73 63 72</code>): <strong>Script/Screen.</strong> Often references programmatic material alterations (e.g., <code>plyr_glow</code>, <code>plyr_blk</code>).</li>
+<li><strong>.fnc</strong> (<code>2E 66 6E 63</code>): <strong>Function/Logic.</strong> Tied to game-logic callbacks for fading or transitioning states (<code>scorch_fade</code>).</li>
+<li><strong>.flc / .flr</strong>: <strong>Flash / Flare.</strong> Handles sudden lighting spikes, containing peak intensity floats and curve falloffs.</li>
+</ul>
+<p><strong>Block Payload Architecture</strong>
+Immediately following the 4-character ID, blocks share a uniform header structure of 4 to 5 <code>Uint32</code> integers (representing parameter counts, payload sizes, or internal block flags) before spilling into their raw data. The payload data consists overwhelmingly of Big-Endian IEEE-754 floats detailing 3D vectors (<code>X, Y, Z</code>), RGBA colors, and keyframe timings.</p>
 
-<head>
-    <meta charset="utf-8">
-    <title>.vfb Files: Hex Dump Analysis</title>
-    <link rel="stylesheet" href="../../../../style/main.css">
-
-</head>
-
-<body>
-    <div class="pages">
-        <div class="doc-overview" id="overview">
-
-            # VFB (Visual-FX Bundle)
-
-            **Purpose**
-            Container for VFX parameters for a single move/ability (e.g., Lisa’s “spin”). Holds emitter/curve blocks and
-            timing/scale values, referenced by an offset table.
-
-
-            **Format Overview: .vfb (Visual-FX Bundle)**
-
-The `.vfb` format is a proprietary, Big-Endian binary container used on the PlayStation 3 to store timing, offsets, and parameters for visual and audio effects. The file consists of a fixed-size global header, an array of offset table entries, a standard padding block, and a payload of sequentially stored effect blocks (particles, sounds, scripts).
-
-## Global Header (32 Bytes)
-
-The file always begins with a 32-byte (0x20) global header containing the effect's internal name and entry counts.
-
-| Offset | Type | Description |
-| --- | --- | --- |
-| **0x00** | String (16 bytes) | Null-terminated internal effect name (e.g., `_plyr_scorch`, `80b_taco_updraft`). Longer names may be truncated. |
-| **0x10** | Uint32 | Version identifier. Universally `00 00 00 06` in these dumps. |
-| **0x14** | Uint32 | File flags or total duration modifier. |
-| **0x18** | Float | Global effect duration/scale (e.g., `40 40 00 00` = 3.0). |
-| **0x1C** | Uint16 | **Entry Count (`N`)**. Determines the number of items in the Offset Table. |
-| **0x1E** | Uint16 | Padding or minor flags (typically `00 00`, `00 01`, or `01 00`). |
-
----
-
-## Offset Table (28 Bytes per Entry)
-
-Immediately following the header at `0x20` is an array of `N` offset table entries. Each entry is exactly 28 bytes (0x1C) and acts as a timeline node, dictating when an effect triggers, how it scales, and exactly where its data resides in the file.
-
-| Offset | Type | Description |
-| --- | --- | --- |
-| **0x00** | Float | Start time for the block to trigger. |
-| **0x04** | Float | End time or duration of the block. |
-| **0x08** | Float | Local scale/intensity multiplier (usually `3F 80 00 00` = 1.0). |
-| **0x0C** | Uint32 | Hash ID or magic flag (e.g., `6C B2 50 65` or `00 00 00 00`). |
-| **0x10** | Uint32 | **Absolute Offset** from the start of the file to the block's data. |
-| **0x14** | Float | Fade, delay time, or secondary timing float. |
-| **0x18** | Uint32 | Block type flag or initialization state (e.g., `00 00 02 00`). |
-
----
-
-## Global Padding Block (16 Bytes)
-
-After the offset table concludes, but before the first data block begins, there is a fixed 16-byte padding sequence. In almost all populated files, this resolves to:
-
-* `00 00 00 00`
-* `00 00 00 00`
-* `7F 80 00 00` (IEEE-754 Positive Infinity)
-* `3D 4C CC CD` (Float 0.05)
-
----
-
-## Data Blocks
-
-Data blocks start at the precise addresses designated by the Offset Table (`0x10` of each entry). Blocks utilize 4-character ASCII identifiers, often prefixed or padded with ASCII `#` characters (`23 23 23 23`) for memory alignment.
-
-**Common Block Types:**
-
-* **.prt** (`2E 70 72 74`): **Particle Emitter.** Usually followed by size/count integers and a 16-byte asset name string linking to a specific texture or particle definition (e.g., `wispy06`, `smoke2`, `arcs`).
-* **.snd** (`2E 73 6E 64`): **Sound Event.** Contains 4-byte FMOD/audio event hashes (e.g., `C1 19 2F 10`, `38 3F 35 B2`) that trigger on impact or start.
-* **.bem** (`2E 62 65 6D`): **Beam Effect.** Contains strings for beam textures (e.g., `fire64bw`) and sequential 3D vector coordinates.
-* **.scr** (`2E 73 63 72`): **Script/Screen.** Often references programmatic material alterations (e.g., `plyr_glow`, `plyr_blk`).
-* **.fnc** (`2E 66 6E 63`): **Function/Logic.** Tied to game-logic callbacks for fading or transitioning states (`scorch_fade`).
-* **.flc / .flr**: **Flash / Flare.** Handles sudden lighting spikes, containing peak intensity floats and curve falloffs.
-
-**Block Payload Architecture**
-Immediately following the 4-character ID, blocks share a uniform header structure of 4 to 5 `Uint32` integers (representing parameter counts, payload sizes, or internal block flags) before spilling into their raw data. The payload data consists overwhelmingly of Big-Endian IEEE-754 floats detailing 3D vectors (`X, Y, Z`), RGBA colors, and keyframe timings.
-
-        </div>
-
-    </div>
-</body>
-
+    </body>
 </html>

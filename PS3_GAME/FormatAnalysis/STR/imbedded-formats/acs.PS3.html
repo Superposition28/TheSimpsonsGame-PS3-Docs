@@ -1,39 +1,46 @@
-A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\marge.acs.PS3
-A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\char_collision_spheres.hko.PS3
-
-### Format: **ACS** — per-character **A**rticulated **C**ollision **S**hapes (PS3)
-
-`marge.acs.PS3` is a small, binary list of simple hit-shape primitives (mostly spheres/capsules) attached to a character’s bones. The game uses this to do lightweight gameplay collision (melee hits, pickups, proximity checks, cursor targeting, etc.) without touching the full Havok meshes.
-
-#### Why this is ACS / hit-spheres
-
-* The path: `assets\shared\collision\marge.acs.PS3` → per-character collision set.
-* You see lots of IEEE-754 floats like:
-
-  * `3F 80 00 00` = **1.0** (identity scale/weights),
-  * `3E 99 99 9A` ≈ **0.30**, `3E 80 00 00` = **0.25**, `3F C0 00 00` = **1.5**, `3D CC CC CD` = **0.1** — typical **radii** for gameplay spheres.
-* Repeating fixed-size records with very similar layouts (centers/flags/identity), suggesting “one primitive per bone”.
-
-#### What the game uses it for
-
-* **Hit detection / hurtboxes** for punches, kicks, and small overlaps.
-* **Targeting helpers** for abilities and cursor hover.
-* **Cheap per-bone checks** while Havok handles full body collision separately (your `.hkt` file).
-
-#### Rough layout you’re seeing (per entry)
-
-Not exact names, but the pattern maps like this for each shape:
-
-* A small header/IDs (includes a bone or binding hash; EA often stores CRCs of bone names).
-* A primitive **type** code (you’ll spot `0x73 00 00` → `'s'` = **sphere**; some titles also use `'c'` for capsule).
-* Center/orientation-ish block (many `1.0` values → identity) and/or flags.
-* A **radius** (those 0.25 / 0.30 / 0.10 / 1.50 values).
-* Repeats for each bone hotspot (head, hands, forearms, torso, legs, etc.).
-
-In short: **`.acs.PS3` = fast hit-shape set**—a handful of bone-attached spheres (and possibly capsules) used by the EA/RenderWare runtime for quick overlap tests and gameplay interactions on PS3.
-
-
-only 267 .acs.PS3 files found in the game data, here is
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>ACS.PS3 Format Documentation</title>
+        <link rel="stylesheet" href="../../../../style/main.css">
+    </head>
+    <body style="padding: 1.5rem; padding-top: 2rem;">
+        <h1>ACS.PS3 Format Documentation</h1>
+<p>A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\marge.acs.PS3
+A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\char_collision_spheres.hko.PS3</p>
+<h3>Format: <strong>ACS</strong> ╬ô├ç├╢ per-character <strong>A</strong>rticulated <strong>C</strong>ollision <strong>S</strong>hapes (PS3)</h3>
+<p><code>marge.acs.PS3</code> is a small, binary list of simple hit-shape primitives (mostly spheres/capsules) attached to a character╬ô├ç├ûs bones. The game uses this to do lightweight gameplay collision (melee hits, pickups, proximity checks, cursor targeting, etc.) without touching the full Havok meshes.</p>
+<h4>Why this is ACS / hit-spheres</h4>
+<ul>
+<li><p>The path: <code>assets\shared\collision\marge.acs.PS3</code> ╬ô├Ñ├å per-character collision set.</p>
+</li>
+<li><p>You see lots of IEEE-754 floats like:</p>
+<ul>
+<li><code>3F 80 00 00</code> = <strong>1.0</strong> (identity scale/weights),</li>
+<li><code>3E 99 99 9A</code> ╬ô├½├¬ <strong>0.30</strong>, <code>3E 80 00 00</code> = <strong>0.25</strong>, <code>3F C0 00 00</code> = <strong>1.5</strong>, <code>3D CC CC CD</code> = <strong>0.1</strong> ╬ô├ç├╢ typical <strong>radii</strong> for gameplay spheres.</li>
+</ul>
+</li>
+<li><p>Repeating fixed-size records with very similar layouts (centers/flags/identity), suggesting ╬ô├ç┬úone primitive per bone╬ô├ç┬Ñ.</p>
+</li>
+</ul>
+<h4>What the game uses it for</h4>
+<ul>
+<li><strong>Hit detection / hurtboxes</strong> for punches, kicks, and small overlaps.</li>
+<li><strong>Targeting helpers</strong> for abilities and cursor hover.</li>
+<li><strong>Cheap per-bone checks</strong> while Havok handles full body collision separately (your <code>.hkt</code> file).</li>
+</ul>
+<h4>Rough layout you╬ô├ç├ûre seeing (per entry)</h4>
+<p>Not exact names, but the pattern maps like this for each shape:</p>
+<ul>
+<li>A small header/IDs (includes a bone or binding hash; EA often stores CRCs of bone names).</li>
+<li>A primitive <strong>type</strong> code (you╬ô├ç├ûll spot <code>0x73 00 00</code> ╬ô├Ñ├å <code>&#39;s&#39;</code> = <strong>sphere</strong>; some titles also use <code>&#39;c&#39;</code> for capsule).</li>
+<li>Center/orientation-ish block (many <code>1.0</code> values ╬ô├Ñ├å identity) and/or flags.</li>
+<li>A <strong>radius</strong> (those 0.25 / 0.30 / 0.10 / 1.50 values).</li>
+<li>Repeats for each bone hotspot (head, hands, forearms, torso, legs, etc.).</li>
+</ul>
+<p>In short: <strong><code>.acs.PS3</code> = fast hit-shape set</strong>╬ô├ç├╢a handful of bone-attached spheres (and possibly capsules) used by the EA/RenderWare runtime for quick overlap tests and gameplay interactions on PS3.</p>
+<p>only 267 .acs.PS3 files found in the game data, here is
 every possible file name found with this extension at some paths:
 GameFiles/STROUT/Assets_2_Characters_Simpsons/GlobalFolder/chars/bart_bc0_grp0_ss1_h0_str/build/PS3/pal_en/assets/shared/collision/bart.acs.PS3
 GameFiles/STROUT/Assets_2_Characters_Simpsons/GlobalFolder/chars/homer_fh0_gh0_hh0_h0_str/build/PS3/pal_en/assets/shared/collision/homer.acs.PS3
@@ -61,16 +68,16 @@ GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream/stream_b_str/
 GameFiles/STROUT/Map_3-02_BartmanBegins/brt/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_purse.acs.PS3
 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/zone14_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_saw.acs.PS3
 GameFiles/STROUT/Map_3-11_NeverQuest/neverquest/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_shovel.acs.PS3
-GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream/stream_b_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_torch.acs.PS3
+GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream/stream_b_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_torch.acs.PS3</p>
+<hr>
+<p>clearly some relation to collision, characters and weapons</p>
+<hr>
+<p>related extensions:</p>
+<ul>
+<li><code>.hkt.PS3</code> all regular collision files have this extension</li>
+<li><code>.hko.PS3</code> all animated collision files have this extension, and all character collision spheres use this extension</li>
+<li><code>.acs.PS3</code> always contained within collision folders (or subfolders of it) often alongside <code>.hko.PS3</code> files</li>
+</ul>
 
----
-
-clearly some relation to collision, characters and weapons
-
-
-
----
-related extensions:
-* `.hkt.PS3` all regular collision files have this extension
-* `.hko.PS3` all animated collision files have this extension, and all character collision spheres use this extension
-* `.acs.PS3` always contained within collision folders (or subfolders of it) often alongside `.hko.PS3` files
+    </body>
+</html>
