@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>VP6 Format Documentation</title>
-        <link rel="stylesheet" href="../../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem; padding-top: 2rem;">
-<h1>File Format Documentation: Simpsons Game .vp6 Video</h1>
-<p>This format is understood and easily converted to ogv using vgmstream</p>
-<p>Version: 0.1
-Last Updated: 2025-05-04
-Author(s): [Analysis derived from provided text]</p>
-<h2>1. Overview</h2>
-<pre><code>Format Name: Simpsons Game .vp6 Video Format
+
+<head>
+    <meta charset="utf-8">
+    <title>VP6 Format Documentation</title>
+    <link rel="stylesheet" href="../../../style/main.css">
+</head>
+
+<body style="padding: 1.5rem; padding-top: 2rem;">
+    <h1>File Format Documentation: Simpsons Game .vp6 Video</h1>
+    <p>This format is understood and easily converted to ogv using vgmstream</p>
+    <p>Version: 0.2
+        Last Updated: 2026-10-06
+        Author(s): [Analysis derived from provided text]</p>
+    <h2>1. Overview</h2>
+    <pre><code>Format Name: Simpsons Game .vp6 Video Format
 Common File Extension(s): `.vp6`
 Purpose/Domain: Contains interleaved video and audio data for pre-rendered cutscenes, attract loops, and other in-game movies.
-Originating Application/System: The Simpsons Game (Electronic Arts - PAL PS3 Version analyzed, likely similar across platforms).
+Originating Application/System: The Simpsons Game (Electronic Arts - Confirmed identical across PS3 and Xbox 360 versions).
 Format Type: Binary, Chunk-based.
 General Structure: Utilizes a chunk-based structure common in EA formats. Files contain specific header chunks (`SCHl` or `SHxx` for audio, `MVhd` for video) followed by interleaved data chunks for audio and video streams.
 </code></pre>
-<h2>2. Identification</h2>
-<pre><code>Magic Number(s) / Signature: While not a single universal signature, files often start with an audio header chunk.
+    <h2>2. Identification</h2>
+    <pre><code>Magic Number(s) / Signature: While not a single universal signature, files often start with an audio header chunk.
     `SCHl` (`53 43 48 6C`) - Observed at the beginning of analyzed files.
     `SHxx` (e.g., `SHEN` = `53 48 45 4E`) - Language-specific audio header, can appear instead of or after `SCHl`.
     `MVhd` (`4D 56 68 64`) - Video header, might appear early if not preceded by an audio header.
@@ -31,53 +33,54 @@ Version Information: No specific overall file format version field identified.
 Location: Video codec marker (`vp60`) is within the `MVhd` chunk data.
 Data Type: `char[4]` for chunk IDs and the video codec marker.
 </code></pre>
-<h2>3. Global Properties (If Applicable)</h2>
-<pre><code>Endianness: [Assumed Big-Endian for chunk headers/sizes based on typical EA formats, but needs confirmation. Data within chunks may vary.]
+    <h2>3. Global Properties (If Applicable)</h2>
+    <pre><code>Endianness: [Assumed Big-Endian for chunk headers/sizes based on typical EA formats, but needs confirmation. Data within chunks may vary.]
 Character Encoding: ASCII for chunk IDs and language codes (e.g., `EN`, `FR`).
 Default Alignment: [Unknown, though chunk structures often imply some alignment.]
 Compression:
     Video Stream: On2 TrueMotion VP6.
-    Audio Stream(s): Electronic Arts EA-XA 4-bit ADPCM v2.
+    Audio Stream(s): Electronic Arts EA-XA 4-bit ADPCM v2 (also reported by FFmpeg as `adpcm_ea_r3`).
 Encryption: None mentioned or identified.
 </code></pre>
-<h2>4. Detailed Structure</h2>
-<p>This format uses a sequence of chunks. Key identified header chunks are:</p>
-<p>Chunk: <code>SCHl</code> (Sound Chunk Header - Standard)</p>
-<pre><code>ID: `SCHl` (`53 43 48 6C`)
+    <h2>4. Detailed Structure</h2>
+    <p>This format uses a sequence of chunks. Key identified header chunks are:</p>
+    <p>Chunk: <code>SCHl</code> (Sound Chunk Header - Standard)</p>
+    <pre><code>ID: `SCHl` (`53 43 48 6C`)
 Purpose: Header for the primary/standard audio stream. Contains metadata about the audio codec, sample rate, channels, etc.
 Location: Often found at the beginning of the file (Offset `0x00` in analyzed examples). vgmstream can also search for this chunk if the file starts differently.
 Structure: [Internal fields not detailed in provided text.]
 </code></pre>
-<p>Chunk: <code>SHxx</code> (Sound Header - Localized)</p>
-<pre><code>ID: Base ID `0x53480000` combined with a 2-character language code (e.g., `EN=0x454E`, `FR=0x4652`). Example: `SHEN` = `53 48 45 4E`.
+    <p>Chunk: <code>SHxx</code> (Sound Header - Localized)</p>
+    <pre><code>ID: Base ID `0x53480000` combined with a 2-character language code (e.g., `EN=0x454E`, `FR=0x4652`). Example: `SHEN` = `53 48 45 4E`.
 Purpose: Header for language-specific audio streams. Contains similar metadata to `SCHl`.
 Location: Can appear instead of `SCHl`, or multiple `SHxx` chunks may appear sequentially after an initial `SCHl` or another `SHxx`. vgmstream can handle these multiple streams.
 Structure: [Internal fields not detailed in provided text, assumed similar to `SCHl`.]
 </code></pre>
-<p>Chunk: <code>MVhd</code> (Movie Header)</p>
-<pre><code>ID: `MVhd` (`4D 56 68 64`)
+    <p>Chunk: <code>MVhd</code> (Movie Header)</p>
+    <pre><code>ID: `MVhd` (`4D 56 68 64`)
 Purpose: Contains metadata about the video stream, including the codec identifier (`vp60`).
 Location: Observed shortly after the initial audio header chunk (e.g., offset `0x2C` in examples).
 Structure: Contains `vp60` marker identifying the On2 TrueMotion VP6 codec. [Other internal fields not detailed in provided text.]
 </code></pre>
-<p>Data Chunks:</p>
-<pre><code>Following the header chunks, the file contains interleaved data chunks for audio and video.
+    <p>Data Chunks:</p>
+    <pre><code>Following the header chunks, the file contains interleaved data chunks for audio and video.
 Known audio data chunk IDs include `SCDl`, `SCCl`.
 Known video data chunk IDs include `MV0K`.
 The exact interleaving pattern and structure of these data chunks are not detailed in the provided text.
 </code></pre>
-<h2>5. Data Types Reference</h2>
-<pre><code>- `char[4]`: Fixed-size 4-byte array, used for Chunk IDs (e.g., `SCHl`, `MVhd`) and the Video Codec Identifier (`vp60`). Interpreted as ASCII characters.
-- EA-XA 4-bit ADPCM v2: Specific audio codec used for the sound streams within the EA `SCHl` container structure.
+    <h2>5. Data Types Reference</h2>
+    <pre><code>- `char[4]`: Fixed-size 4-byte array, used for Chunk IDs (e.g., `SCHl`, `MVhd`) and the Video Codec Identifier (`vp60`). Interpreted as ASCII characters.
+- EA-XA 4-bit ADPCM v2 / `adpcm_ea_r3`: Specific audio codec used for the sound streams within the EA `SCHl` container structure.
 - On2 TrueMotion VP6: Specific video codec used for the video stream, identified by the `vp60` marker.
 </code></pre>
-<h2>6. Checksums / Integrity Checks</h2>
-<pre><code>- Type: None mentioned or identified.
+    <h2>6. Checksums / Integrity Checks</h2>
+    <pre><code>- Type: None mentioned or identified.
 - Location: N/A
 - Scope: N/A
 - Algorithm Details: N/A
 </code></pre>
-<h2>7. Known Variations / Versions</h2>
+    <h2>7. Known Variations / Versions</h2>
+    <pre><code>- Cross-Platform Parity (PS3 &amp; Xbox 360): The Xbox 360 and PS3 versions use
 <pre><code>- Audio Localization: Files may contain a single standard audio stream (`SCHl`) or multiple language-specific streams (`SHxx`).
 - Starting Chunk: While analyzed examples started with `SCHl`, the vgmstream tool suggests related files might start with `MVhd`, `MADk`, or `MPCh`, indicating potential variations in the initial file structure, possibly placing video header/data first in some cases.
 </code></pre>

@@ -1,265 +1,320 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>EXA.SNU Format Documentation</title>
-        <link rel="stylesheet" href="../../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem; padding-top: 2rem;">
-<h1>File Format Documentation: .exa.snu (SNU container)</h1>
-<p>This format is understood and easily converted to wav using vgmstream</p>
-<p><strong>Version:</strong> 2.0
-<strong>Last Updated:</strong> 2025-05-05
-<strong>Author(s):</strong> Analysis based on user-provided data</p>
-<hr>
-<h2>1. Overview</h2>
-<ul>
-<li><strong>Format Name:</strong> Electronic Arts SNU Audio Stream Container</li>
-<li><strong>Observed Full File Suffix:</strong> <code>.exa.snu</code> (SNU is the container format family name.)</li>
-<li><strong>Purpose/Domain:</strong> Container or wrapper for Electronic Arts compressed game audio streams (dialogue, ambience, music). It typically encapsulates audio data structured according to either the older EA SNR/SNS format or the newer EA SPS format, both part of the EAAC (Electronic Arts Audio Compression) family.</li>
-<li><strong>Originating Application/System:</strong> Electronic Arts games, particularly associated with titles from EA Redwood Shores/Visceral Games (e.g., Dead Space, Dante&#39;s Inferno, The Godfather 2) and other EA games like The Simpsons Game (PS3 version observed).</li>
-<li><strong>Format Type:</strong> Binary.</li>
-<li><strong>General Structure:</strong> Consists of a small Header providing basic information and an offset to the main audio data block. This main block follows either the EA SPS structure or the older EA SNR/SNS structure.</li>
-</ul>
-<hr>
-<h2>2. Identification</h2>
-<ul>
-<li><strong>Magic Number(s) / Signature:</strong> No definitive universal magic number identified for the SNU wrapper itself. The first bytes often vary. vgmstream identifies the format based on header heuristics and potentially the structure of the contained data. (The previously observed <code>01 0C 00 00</code> might be specific to certain files/variants).<ul>
-<li><strong>Offset:</strong> 0</li>
-</ul>
-</li>
-<li><strong>Version Information:</strong> The method for identifying specific SNU wrapper format versions is unclear. Identification relies more on parsing the header fields and the structure of the contained data (SPS vs SNR/SNS).<ul>
-<li><strong>Location:</strong> N/A</li>
-<li><strong>Data Type:</strong> N/A</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2>3. Global Properties (If Applicable)</h2>
-<ul>
-<li><strong>Endianness:</strong> Varies (Big-Endian or Little-Endian). Crucially, the 4-byte integer fields within the header (offsets 0x04, 0x08, 0x0C) can be either BE or LE, typically depending on the original game platform (e.g., PS3/Xbox 360 often use BE, PC often uses LE). Tools like vgmstream often deduce the correct endianness by examining the validity of the Start Offset value at 0x08.</li>
-<li><strong>Character Encoding:</strong> ASCII (Observed for the embedded filename string within some SNU headers, Null-terminated).</li>
-<li><strong>Default Alignment:</strong> Not definitively determined, but likely standard structure alignment is used.</li>
-<li><strong>Compression:</strong> The Audio Data encapsulated within the SNU file is compressed. The specific codec (e.g., Electronic Arts EA-XAS 4-bit ADPCM v1) is determined by the contained SNR/SNS or SPS data structure. The SNU header itself is not compressed.</li>
-<li><strong>Encryption:</strong> None observed.</li>
-</ul>
-<hr>
-<h2>4. Detailed Structure</h2>
-<p>The .snu file consists of a Header followed by the main Audio Data block (structured as either SPS or SNR/SNS).</p>
-<p><strong>Section: SNU Header (First 16 Bytes)</strong></p>
-<p>The initial bytes provide offsets and basic hints about the contained stream.</p>
-<table>
-<thead>
-<tr>
-<th align="left">Offset (Hex)</th>
-<th align="left">Offset (Dec)</th>
-<th align="left">Size (Bytes)</th>
-<th align="left">Data Type</th>
-<th align="left">Endianness</th>
-<th align="left">Field Name</th>
-<th align="left">Description</th>
-<th align="left">Notes / Example Value</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left"><code>0x00</code></td>
-<td align="left">0</td>
-<td align="left">1</td>
-<td align="left"><code>uint8</code></td>
-<td align="left">N/A</td>
-<td align="left">Unknown Byte 0</td>
-<td align="left">Purpose unclear. Potentially related to sample rate (e.g., observed 0x03 might correlate with 48000 Hz).</td>
-<td align="left"><code>0x01</code>, <code>0x03</code> observed</td>
-</tr>
-<tr>
-<td align="left"><code>0x01</code></td>
-<td align="left">1</td>
-<td align="left">1</td>
-<td align="left"><code>uint8</code></td>
-<td align="left">N/A</td>
-<td align="left">Unknown Byte 1</td>
-<td align="left">Purpose unclear. Possibly flags or a count. May influence use of field at 0x0C or indicate extra data before main audio block.</td>
-<td align="left"><code>0x0C</code>, <code>0x00</code> observed</td>
-</tr>
-<tr>
-<td align="left"><code>0x02</code></td>
-<td align="left">2</td>
-<td align="left">1</td>
-<td align="left"><code>uint8</code></td>
-<td align="left">N/A</td>
-<td align="left">Unknown Byte 2</td>
-<td align="left">Purpose unclear. Often observed as 0x00.</td>
-<td align="left"><code>0x00</code> observed</td>
-</tr>
-<tr>
-<td align="left"><code>0x03</code></td>
-<td align="left">3</td>
-<td align="left">1</td>
-<td align="left"><code>uint8</code></td>
-<td align="left">N/A</td>
-<td align="left">Channel Count (?)</td>
-<td align="left">Usually indicates the number of audio channels (e.g., 1 for mono, 2 for stereo, 4 for quad). May sometimes be 0 (requiring check of internal header).</td>
-<td align="left"><code>0x01</code>, <code>0x02</code>, <code>0x04</code> observed</td>
-</tr>
-<tr>
-<td align="left"><code>0x04</code></td>
-<td align="left">4</td>
-<td align="left">4</td>
-<td align="left"><code>uint32</code></td>
-<td align="left">BE or LE</td>
-<td align="left">Size Value</td>
-<td align="left">Exact meaning unclear. May relate to the number of audio frames (size &gt;&gt; 2 ~= number of frames noted by vgmstream).</td>
-<td align="left">e.g., <code>0x00000477</code></td>
-</tr>
-<tr>
-<td align="left"><code>0x08</code></td>
-<td align="left">8</td>
-<td align="left">4</td>
-<td align="left"><code>uint32</code></td>
-<td align="left">BE or LE</td>
-<td align="left">Start Offset</td>
-<td align="left">Crucial Field: Byte offset within the SNU file where the main audio data block (SNS body or SPS header) begins. Used for endianness detection.</td>
-<td align="left">e.g., <code>0x00000B00</code>, <code>0x00000080</code></td>
-</tr>
-<tr>
-<td align="left"><code>0x0C</code></td>
-<td align="left">12</td>
-<td align="left">4</td>
-<td align="left"><code>uint32</code></td>
-<td align="left">BE or LE</td>
-<td align="left">Sub-offset (?)</td>
-<td align="left">Optional? Used in some cases (maybe indicated by byte at 0x01). Purpose uncertain, might point to secondary data.</td>
-<td align="left">e.g., <code>0x00000000</code>, <code>0x00000020</code></td>
-</tr>
-</tbody></table>
-<p><em>Note: Some SNU files observed in The Simpsons Game contain more extensive headers beyond these first 16 bytes, including metadata like the embedded filename, loop points, total samples, etc., before the main audio data block defined by the Start Offset.</em></p>
-<p><strong>Section: Internal Structure Variants</strong></p>
-<p>The SNU header primarily points to the location of the main audio stream. The format of that stream determines how the rest of the file is parsed. This is typically identified by the first byte found at the Start Offset (from SNU header 0x08):</p>
-<ul>
-<li><p><strong>Contained SPS Structure:</strong></p>
-<ul>
-<li><strong>Identifier:</strong> The byte at Start Offset is <code>0x48</code> (ASCII &#39;H&#39;). This signifies the start of an EA SPS header (EAAC_BLOCKID1_HEADER).</li>
-<li><strong>Parsing:</strong> The data from Start Offset onwards is parsed as an EA SPS stream.</li>
-<li><strong>Examples:</strong> Dead Space 3 (PC).</li>
-</ul>
-</li>
-<li><p><strong>Contained SNR/SNS Structure:</strong></p>
-<ul>
-<li><strong>Identifier:</strong> The byte at Start Offset is NOT <code>0x48</code>.</li>
-<li><strong>Parsing:</strong> This indicates the older SNR/SNS structure. vgmstream typically assumes:<ul>
-<li>An SNR header (containing metadata like sample rate, channels, codec info) is located at a fixed offset (e.g., 0x10 within the SNU file).</li>
-<li>The SNS audio body (containing the compressed audio data) begins at the Start Offset read from the SNU header (0x08).</li>
-<li>The file is parsed according to EA SNR/SNS format rules.</li>
-</ul>
-</li>
-<li><strong>Examples:</strong> The Simpsons Game (PS3 examples confirm this variant).</li>
-</ul>
-</li>
-</ul>
-<p><strong>Section: Audio Data</strong></p>
-<ul>
-<li><strong>Location:</strong> Starts at the Start Offset (if SNS) or follows the SPS header (if SPS).</li>
-<li><strong>Content:</strong> Contains the actual audio samples, compressed using the codec specified by the internal SNR or SPS header (e.g., EA-XAS 4-bit ADPCM v1).</li>
-<li><strong>Layout:</strong> The layout is defined by the internal format. For SNR/SNS, this is often &quot;blocked (EA SNS)&quot;. For SPS, it might be different (potentially interleaved or other structures). Segmented layouts are also possible.</li>
-</ul>
-<hr>
-<h2>5. Data Types Reference</h2>
-<ul>
-<li><strong><code>uint8</code>:</strong> Unsigned 8-bit integer.</li>
-<li><strong><code>uint16_be</code> / <code>uint16_le</code>:</strong> Unsigned 16-bit integer, Big-Endian / Little-Endian.</li>
-<li><strong><code>uint32_be</code> / <code>uint32_le</code>:</strong> Unsigned 32-bit integer, Big-Endian / Little-Endian.</li>
-<li><strong><code>char[N]</code>:</strong> Fixed-size array of N bytes, typically interpreted as a null-terminated ASCII string (for embedded filename).</li>
-<li><strong><code>EA-XAS ADPCM</code>:</strong> Electronic Arts Extended Audio Scheme ADPCM. A lossy audio compression codec.</li>
-<li><strong><code>SNR</code> / <code>SNS</code>:</strong> Older Electronic Arts audio format components; SNR is typically the header/metadata, SNS is the audio sample data body (often in blocks).</li>
-<li><strong><code>SPS</code>:</strong> Newer Electronic Arts audio format, often header-based and potentially containing various EAAC codecs.</li>
-</ul>
-<hr>
-<h2>6. Checksums / Integrity Checks</h2>
-<ul>
-<li>None observed or known for the SNU wrapper format itself. The contained SPS/SNR formats might have internal checks.</li>
-</ul>
-<hr>
-<h2>7. Known Variations / Versions</h2>
-<ul>
-<li><strong>Endianness:</strong> Header fields (0x04, 0x08, 0x0C) can be Big or Little Endian.</li>
-<li><strong>Internal Structure:</strong> Major variation between containing SPS vs SNR/SNS data.</li>
-<li><strong>Header Content:</strong> Observed variations in header size and included metadata beyond the first 16 bytes (e.g., presence of filename, loop points).</li>
-<li><strong>Audio Parameters:</strong> Variations in Sample Rate, Channel Count, and potentially the specific EAAC codec used internally.</li>
-</ul>
-<hr>
-<h2>8. Analysis Tools &amp; Methods</h2>
-<ul>
-<li><strong>Tools Used:</strong> Hex Editor (e.g., HxD, 010 Editor), vgmstream / vgmstream-cli (Essential for decoding audio and extracting confirmed metadata).</li>
-<li><strong>Methodology:</strong> Analysis of hex dumps, comparison between files, interpretation of output from vgmstream, cross-referencing documentation/source code related to EA formats (like vgmstream&#39;s implementation).</li>
-</ul>
-<hr>
-<h2>9. Open Questions / Uncertainties</h2>
-<ul>
-<li>Confirmation of a universal SNU magic number/signature.</li>
-<li>Precise purpose and interpretation of header bytes 0x00, 0x01, 0x02.</li>
-<li>Exact meaning and calculation related to the Size Value at offset 0x04.</li>
-<li>Conditions under which the Sub-offset at 0x0C is used and what it points to.</li>
-<li>Are internal structures other than SPS and SNR/SNS possible within an SNU wrapper?</li>
-<li>The exact significance, if any, of intermediate file extensions like <code>.exa</code>.</li>
-</ul>
-<hr>
-<h2>10. References</h2>
-<ul>
-<li><strong>Files Analyzed:</strong><ul>
-<li><code>d_as01_xxx_0003bb5.exa.snu</code></li>
-<li><code>amb_80b_crowd_qd_01.exa.snu</code></li>
-<li><code>d_as01_xxx_000580c.exa.snu</code></li>
-</ul>
-</li>
-<li><strong>Tools:</strong><ul>
-<li>vgmstream (Source code provides implementation details).</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2>11. Revision History (of this document)</h2>
-<table>
-<thead>
-<tr>
-<th align="left">Version</th>
-<th align="left">Date</th>
-<th align="left">Author(s)</th>
-<th align="left">Changes Made</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">1.0</td>
-<td align="left">2025-05-05</td>
-<td align="left">Analysis based on user-provided data</td>
-<td align="left">Initial draft based on hex dump and vgmstream examples</td>
-</tr>
-<tr>
-<td align="left">2.0</td>
-<td align="left">2025-05-05</td>
-<td align="left">Analysis based on user-provided data</td>
-<td align="left">Integrated detailed header info, endianness variations, SPS/SNR variants</td>
-</tr>
-</tbody></table>
-<hr>
-<h2>12. Other</h2>
-<p><strong>Conversion Example using vgmstream-cli:</strong>
-To convert an SNU file to a standard WAV file:</p>
-<pre><code class="language-powershell"># Example using PowerShell syntax
+
+<head>
+    <meta charset="utf-8">
+    <title>EXA.SNU Format Documentation</title>
+    <link rel="stylesheet" href="../../../style/main.css">
+</head>
+
+<body style="padding: 1.5rem; padding-top: 2rem;">
+    <h1>File Format Documentation: .exa.snu (SNU container)</h1>
+    <p>This format is understood and easily converted to wav using vgmstream</p>
+    <p><strong>Version:</strong> 2.1
+        <strong>Last Updated:</strong> 2026-10-06
+        <strong>Author(s):</strong> Analysis based on user-provided data
+    </p>
+    <hr>
+    <h2>1. Overview</h2>
+    <ul>
+        <li><strong>Format Name:</strong> Electronic Arts SNU Audio Stream Container</li>
+        <li><strong>Observed Full File Suffix:</strong> <code>.exa.snu</code> (SNU is the container format family name.)
+        </li>
+        <li><strong>Purpose/Domain:</strong> Container or wrapper for Electronic Arts compressed game audio streams
+            (dialogue, ambience, music). It typically encapsulates audio data structured according to either the older
+            EA SNR/SNS format or the newer EA SPS format, both part of the EAAC (Electronic Arts Audio Compression)
+            family.</li>
+        <li><strong>Originating Application/System:</strong> Electronic Arts games, particularly associated with titles
+            from EA Redwood Shores/Visceral Games (e.g., Dead Space, Dante&#39;s Inferno, The Godfather 2) and other EA
+            games like The Simpsons Game (PS3 and Xbox 360 versions observed).</li>
+        <li><strong>Format Type:</strong> Binary.</li>
+        <li><strong>General Structure:</strong> Consists of a small Header providing basic information and an offset to
+            the main audio data block. This main block follows either the EA SPS structure or the older EA SNR/SNS
+            structure.</li>
+    </ul>
+    <hr>
+    <h2>2. Identification</h2>
+    <ul>
+        <li><strong>Magic Number(s) / Signature:</strong> No definitive universal magic number identified for the SNU
+            wrapper itself. The first bytes often vary. vgmstream identifies the format based on header heuristics and
+            potentially the structure of the contained data. (The previously observed <code>01 0C 00 00</code> might be
+            specific to certain files/variants).<ul>
+                <li><strong>Offset:</strong> 0</li>
+            </ul>
+        </li>
+        <li><strong>Version Information:</strong> The method for identifying specific SNU wrapper format versions is
+            unclear. Identification relies more on parsing the header fields and the structure of the contained data
+            (SPS vs SNR/SNS).<ul>
+                <li><strong>Location:</strong> N/A</li>
+                <li><strong>Data Type:</strong> N/A</li>
+            </ul>
+        </li>
+    </ul>
+    <hr>
+    <h2>3. Global Properties (If Applicable)</h2>
+    <ul>
+        <li><strong>Endianness:</strong> Varies (Big-Endian or Little-Endian). Crucially, the 4-byte integer fields
+            within the header (offsets 0x04, 0x08, 0x0C) can be either BE or LE, typically depending on the original
+            game platform (e.g., PS3/Xbox 360 often use BE, PC often uses LE). Tools like vgmstream often deduce the
+            correct endianness by examining the validity of the Start Offset value at 0x08.</li>
+        <li><strong>Character Encoding:</strong> ASCII (Observed for the embedded filename string within some SNU
+            headers, Null-terminated).</li>
+        <li><strong>Default Alignment:</strong> Not definitively determined, but likely standard structure alignment is
+            used.</li>
+        <li><strong>Compression:</strong> The Audio Data encapsulated within the SNU file is compressed. The specific
+            codec is determined by the target platform and the contained SNR/SNS or SPS data structure (e.g., Electronic Arts EA-XAS 4-bit ADPCM v1 on PS3, and Xbox Media Audio 2 on Xbox 360). The SNU header itself is not compressed.</li>
+        <li><strong>Encryption:</strong> None observed.</li>
+    </ul>
+    <hr>
+    <h2>4. Detailed Structure</h2>
+    <p>The .snu file consists of a Header followed by the main Audio Data block (structured as either SPS or SNR/SNS).
+    </p>
+    <p><strong>Section: SNU Header (First 16 Bytes)</strong></p>
+    <p>The initial bytes provide offsets and basic hints about the contained stream.</p>
+    <table>
+        <thead>
+            <tr>
+                <th align="left">Offset (Hex)</th>
+                <th align="left">Offset (Dec)</th>
+                <th align="left">Size (Bytes)</th>
+                <th align="left">Data Type</th>
+                <th align="left">Endianness</th>
+                <th align="left">Field Name</th>
+                <th align="left">Description</th>
+                <th align="left">Notes / Example Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td align="left"><code>0x00</code></td>
+                <td align="left">0</td>
+                <td align="left">1</td>
+                <td align="left"><code>uint8</code></td>
+                <td align="left">N/A</td>
+                <td align="left">Unknown Byte 0</td>
+                <td align="left">Purpose unclear. Potentially related to sample rate (e.g., observed 0x03 might
+                    correlate with 48000 Hz).</td>
+                <td align="left"><code>0x01</code>, <code>0x03</code> observed</td>
+            </tr>
+            <tr>
+                <td align="left"><code>0x01</code></td>
+                <td align="left">1</td>
+                <td align="left">1</td>
+                <td align="left"><code>uint8</code></td>
+                <td align="left">N/A</td>
+                <td align="left">Unknown Byte 1</td>
+                <td align="left">Purpose unclear. Possibly flags or a count. May influence use of field at 0x0C or
+                    indicate extra data before main audio block.</td>
+                <td align="left"><code>0x0C</code>, <code>0x00</code> observed</td>
+            </tr>
+            <tr>
+                <td align="left"><code>0x02</code></td>
+                <td align="left">2</td>
+                <td align="left">1</td>
+                <td align="left"><code>uint8</code></td>
+                <td align="left">N/A</td>
+                <td align="left">Unknown Byte 2</td>
+                <td align="left">Purpose unclear. Often observed as 0x00.</td>
+                <td align="left"><code>0x00</code> observed</td>
+            </tr>
+            <tr>
+                <td align="left"><code>0x03</code></td>
+                <td align="left">3</td>
+                <td align="left">1</td>
+                <td align="left"><code>uint8</code></td>
+                <td align="left">N/A</td>
+                <td align="left">Channel Count (?)</td>
+                <td align="left">Usually indicates the number of audio channels (e.g., 1 for mono, 2 for stereo, 4 for
+                    quad). May sometimes be 0 (requiring check of internal header).</td>
+                <td align="left"><code>0x01</code>, <code>0x02</code>, <code>0x04</code> observed</td>
+            </tr>
+            <tr>
+                <td align="left"><code>0x04</code></td>
+                <td align="left">4</td>
+                <td align="left">4</td>
+                <td align="left"><code>uint32</code></td>
+                <td align="left">BE or LE</td>
+                <td align="left">Size Value</td>
+                <td align="left">Exact meaning unclear. May relate to the number of audio frames (size &gt;&gt; 2 ~=
+                    number of frames noted by vgmstream).</td>
+                <td align="left">e.g., <code>0x00000477</code></td>
+            </tr>
+            <tr>
+                <td align="left"><code>0x08</code></td>
+                <td align="left">8</td>
+                <td align="left">4</td>
+                <td align="left"><code>uint32</code></td>
+                <td align="left">BE or LE</td>
+                <td align="left">Start Offset</td>
+                <td align="left">Crucial Field: Byte offset within the SNU file where the main audio data block (SNS
+                    body or SPS header) begins. Used for endianness detection.</td>
+                <td align="left">e.g., <code>0x00000B00</code>, <code>0x00000080</code></td>
+            </tr>
+            <tr>
+                <td align="left"><code>0x0C</code></td>
+                <td align="left">12</td>
+                <td align="left">4</td>
+                <td align="left"><code>uint32</code></td>
+                <td align="left">BE or LE</td>
+                <td align="left">Sub-offset (?)</td>
+                <td align="left">Optional? Used in some cases (maybe indicated by byte at 0x01). Purpose uncertain,
+                    might point to secondary data.</td>
+                <td align="left">e.g., <code>0x00000000</code>, <code>0x00000020</code></td>
+            </tr>
+        </tbody>
+    </table>
+    <p><em>Note: Some SNU files observed in The Simpsons Game contain more extensive headers beyond these first 16
+            bytes, including metadata like the embedded filename, loop points, total samples, etc., before the main
+            audio data block defined by the Start Offset.</em></p>
+    <p><strong>Section: Internal Structure Variants</strong></p>
+    <p>The SNU header primarily points to the location of the main audio stream. The format of that stream determines
+        how the rest of the file is parsed. This is typically identified by the first byte found at the Start Offset
+        (from SNU header 0x08):</p>
+    <ul>
+        <li>
+            <p><strong>Contained SPS Structure:</strong></p>
+            <ul>
+                <li><strong>Identifier:</strong> The byte at Start Offset is <code>0x48</code> (ASCII &#39;H&#39;). This
+                    signifies the start of an EA SPS header (EAAC_BLOCKID1_HEADER).</li>
+                <li><strong>Parsing:</strong> The data from Start Offset onwards is parsed as an EA SPS stream.</li>
+                <li><strong>Examples:</strong> Dead Space 3 (PC).</li>
+            </ul>
+        </li>
+        <li>
+            <p><strong>Contained SNR/SNS Structure:</strong></p>
+            <ul>
+                <li><strong>Identifier:</strong> The byte at Start Offset is NOT <code>0x48</code>.</li>
+                <li><strong>Parsing:</strong> This indicates the older SNR/SNS structure. vgmstream typically assumes:
+                    <ul>
+                        <li>An SNR header (containing metadata like sample rate, channels, codec info) is located at a
+                            fixed offset (e.g., 0x10 within the SNU file).</li>
+                        <li>The SNS audio body (containing the compressed audio data) begins at the Start Offset read
+                            from the SNU header (0x08).</li>
+                        <li>The file is parsed according to EA SNR/SNS format rules.</li>
+                    </ul>
+                </li>
+                <li><strong>Examples:</strong> The Simpsons Game (PS3 and Xbox 360 examples confirm this variant).</li>
+            </ul>
+        </li>
+    </ul>
+    <p><strong>Section: Audio Data</strong></p>
+    <ul>
+        <li><strong>Location:</strong> Starts at the Start Offset (if SNS) or follows the SPS header (if SPS).</li>
+        <li><strong>Content:</strong> Contains the actual audio samples, compressed using the platform-specific codec specified by the
+            internal SNR or SPS header (e.g., EA-XAS 4-bit ADPCM v1 on PS3, or Xbox Media Audio 2 on Xbox 360).</li>
+        <li><strong>Layout:</strong> The layout is defined by the internal format and codec. On PS3 (EA-XAS), this is typically
+            <code>blocked (EA SNS)</code> or <code>segmented</code>. On Xbox 360 (XMA2), vgmstream reports the layout as
+            <code>layered (1 layers)</code>.</li>
+    </ul>
+    <hr>
+    <h2>5. Data Types Reference</h2>
+    <ul>
+        <li><strong><code>uint8</code>:</strong> Unsigned 8-bit integer.</li>
+        <li><strong><code>uint16_be</code> / <code>uint16_le</code>:</strong> Unsigned 16-bit integer, Big-Endian /
+            Little-Endian.</li>
+        <li><strong><code>uint32_be</code> / <code>uint32_le</code>:</strong> Unsigned 32-bit integer, Big-Endian /
+            Little-Endian.</li>
+        <li><strong><code>char[N]</code>:</strong> Fixed-size array of N bytes, typically interpreted as a
+            null-terminated ASCII string (for embedded filename).</li>
+        <li><strong><code>EA-XAS ADPCM</code>:</strong> Electronic Arts Extended Audio Scheme ADPCM. A lossy audio
+            compression codec used in the PS3 version.</li>
+        <li><strong><code>Xbox Media Audio 2 (XMA2)</code>:</strong> Microsoft's proprietary WMA Pro-derived hardware audio compression codec used in the Xbox 360 version (decoded as <code>float</code> sample type by vgmstream).</li>
+        <li><strong><code>SNR</code> / <code>SNS</code>:</strong> Older Electronic Arts audio format components; SNR is
+            typically the header/metadata, SNS is the audio sample data body (often in blocks).</li>
+        <li><strong><code>SPS</code>:</strong> Newer Electronic Arts audio format, often header-based and potentially
+            containing various EAAC codecs.</li>
+    </ul>
+    <hr>
+    <h2>6. Checksums / Integrity Checks</h2>
+    <ul>
+        <li>None observed or known for the SNU wrapper format itself. The contained SPS/SNR formats might have internal
+            checks.</li>
+    </ul>
+    <hr>
+    <h2>7. Known Variations / Versions</h2>
+    <ul>
+        <li><strong>Platform-Specific Encoding (PS3 vs. Xbox 360):</strong> Unlike <code>.vp6</code> movies, <code>.exa.snu</code> files are not binary-identical across platforms. While corresponding files share the same SNU container, sample rate, channel count, and exact sample length, the internal stream encoding differs:
+            <ul>
+                <li><strong>PS3 Version:</strong> Uses <code>Electronic Arts EA-XAS 4-bit ADPCM v1</code> with a <code>blocked (EA SNS)</code> (or <code>segmented</code>) layout (e.g., 229 kbps for 48000 Hz mono in <code>d_as01_xxx_0003bb5.exa.snu</code>).</li>
+                <li><strong>Xbox 360 Version:</strong> Uses <code>Xbox Media Audio 2</code> (XMA2) with a <code>layered (1 layers)</code> layout and <code>float</code> sample type, resulting in roughly half the bitrate/size for the same stream (e.g., 115 kbps for 48000 Hz mono in <code>d_as01_xxx_0003bb5.exa.snu</code>).</li>
+            </ul>
+        </li>
+        <li><strong>Endianness:</strong> Header fields (0x04, 0x08, 0x0C) can be Big or Little Endian.</li>
+        <li><strong>Internal Structure:</strong> Major variation between containing SPS vs SNR/SNS data.</li>
+        <li><strong>Header Content:</strong> Observed variations in header size and included metadata beyond the first
+            16 bytes (e.g., presence of filename, loop points).</li>
+        <li><strong>Audio Parameters:</strong> Variations in Sample Rate, Channel Count, and potentially the specific
+            EAAC codec used internally.</li>
+    </ul>
+    <hr>
+    <h2>8. Analysis Tools &amp; Methods</h2>
+    <ul>
+        <li><strong>Tools Used:</strong> Hex Editor (e.g., HxD, 010 Editor), vgmstream / vgmstream-cli (Essential for
+            decoding audio and extracting confirmed metadata on both PS3 and Xbox 360; note that <code>ffprobe</code>/FFmpeg does not natively recognize the <code>.exa.snu</code> wrapper and fails with <code>Invalid data found when processing input</code>).</li>
+        <li><strong>Methodology:</strong> Analysis of hex dumps, cross-platform comparison between PS3 and Xbox 360 files, interpretation of output from
+            vgmstream, cross-referencing documentation/source code related to EA formats (like vgmstream&#39;s
+            implementation).</li>
+    </ul>
+    <hr>
+    <h2>9. Open Questions / Uncertainties</h2>
+    <ul>
+        <li>Confirmation of a universal SNU magic number/signature.</li>
+        <li>Precise purpose and interpretation of header bytes 0x00, 0x01, 0x02.</li>
+        <li>Exact meaning and calculation related to the Size Value at offset 0x04.</li>
+        <li>Conditions under which the Sub-offset at 0x0C is used and what it points to.</li>
+        <li>Are internal structures other than SPS and SNR/SNS possible within an SNU wrapper?</li>
+        <li>The exact significance, if any, of intermediate file extensions like <code>.exa</code>.</li>
+    </ul>
+    <hr>
+    <h2>10. References</h2>
+    <ul>
+        <li><strong>Files Analyzed:</strong>
+            <ul>
+                <li><code>d_as01_xxx_0003bb5.exa.snu</code> (PS3 EU &amp; Xbox 360 EU)</li>
+                <li><code>amb_80b_crowd_qd_01.exa.snu</code> (PS3 EU)</li>
+                <li><code>d_as01_xxx_000580c.exa.snu</code> (PS3 EU)</li>
+            </ul>
+        </li>
+        <li><strong>Tools:</strong>
+            <ul>
+                <li>vgmstream (Source code provides implementation details).</li>
+            </ul>
+        </li>
+    </ul>
+    <hr>
+    <h2>11. Other</h2>
+    <p><strong>Conversion Example using vgmstream-cli:</strong>
+        To convert an SNU file (from either PS3 or Xbox 360) to a standard WAV file:</p>
+    <pre><code class="language-powershell"># Example using PowerShell syntax
 .\vgmstream-cli.exe -o &quot;output_audio.wav&quot; &quot;input_audio.exa.snu&quot;
 </code></pre>
-<p><strong>vgmstream Metadata Examples (The Simpsons Game - SNR/SNS Variant):</strong></p>
-<pre><code># Example 1: Mono Dialogue
-&gt; vgmstream-cli.exe -m .\d_as01_xxx_0003bb5.exa.snu
-metadata for .\d_as01_xxx_0003bb5.exa.snu
+    <p><strong>vgmstream Metadata Examples (The Simpsons Game - PS3 vs. Xbox 360):</strong></p>
+    <pre><code># Example 1A: Mono Dialogue (PS3 - EA-XAS Variant)
+&gt; vgmstream-cli.exe .\d_as01_xxx_0003bb5.exa.snu
+decoding .\d_as01_xxx_0003bb5.exa.snu
 sample rate: 48000 Hz
 channels: 1
-stream total samples: 54901 (...)
+stream total samples: 54901 (0:01.144 seconds)
 encoding: Electronic Arts EA-XAS 4-bit ADPCM v1
 layout: blocked (EA SNS)
 metadata from: Electronic Arts SNU header
-...
+bitrate: 229 kbps
+play duration: 54901 samples (0:01.144 seconds)
 
-# Example 2: Mono Dialogue
+# Example 1B: Mono Dialogue (Xbox 360 - XMA2 Variant)
+&gt; vgmstream-cli.exe .\d_as01_xxx_0003bb5.exa.snu
+decoding .\d_as01_xxx_0003bb5.exa.snu
+sample rate: 48000 Hz
+channels: 1
+stream total samples: 54901 (0:01.144 seconds)
+encoding: Xbox Media Audio 2
+layout: layered (1 layers)
+metadata from: Electronic Arts SNU header
+bitrate: 115 kbps
+sample type: float
+play duration: 54901 samples (0:01.144 seconds)
+
+# Example 2: Mono Dialogue (PS3)
 &gt; vgmstream-cli.exe -m .\d_as01_xxx_000580c.exa.snu
 metadata for .\d_as01_xxx_000580c.exa.snu
 sample rate: 48000 Hz
@@ -270,7 +325,7 @@ layout: blocked (EA SNS)
 metadata from: Electronic Arts SNU header
 ...
 
-# Example 3: Quad Ambience
+# Example 3: Quad Ambience (PS3)
 &gt; vgmstream-cli -m .\amb_80b_crowd_qd_01.exa.snu
 metadata for .\amb_80b_crowd_qd_01.exa.snu
 sample rate: 32000 Hz
@@ -286,5 +341,6 @@ play duration: 1649623 samples (0:51.551 seconds)
 ...
 </code></pre>
 
-    </body>
+</body>
+
 </html>
