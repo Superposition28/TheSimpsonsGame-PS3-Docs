@@ -1,0 +1,14 @@
+APP_VER = "01.00"
+BOOTABLE = 1
+CATEGORY = "DG"
+LICENSE = "Library programs ©Sony Computer Entertainment Inc. Licensed for play on the PLAYSTATION®3 Computer Entertainment System or authorized PLAYSTATION®3 format systems. For full terms and conditions see the user's manual. This product is authorized and produced under license from Sony Computer Entertainment Inc. Use is subject to the copyright laws and the terms and conditions of the user's license."
+PARENTAL_LEVEL = 5
+PS3_SYSTEM_VER = "01.9300"
+RESOLUTION = 38
+SOUND_FORMAT = 5
+TITLE = "The Simpsons™ Game"
+TITLE_02 = "Les Simpson™ Le Jeu"
+TITLE_03 = "Los Simpson™ El Videojuego"
+TITLE_05 = "I Simpson™ Il Videogioco"
+TITLE_ID = "BLES00142"
+VERSION = "01.00"
