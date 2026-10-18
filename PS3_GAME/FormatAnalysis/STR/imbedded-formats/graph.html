@@ -14,213 +14,86 @@
 
         <h1>Navigation Graph (.graph)</h1>
 <section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
-<p>Stores nodes and connections used for navigation analysis.</p>
-<dl><dt>Identification</dt><dd>Header fields and node/edge structures are recorded below.</dd><dt>Byte order / text</dt><dd>Use field-level types below; do not infer byte order from the suffix alone.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#file-header">File Header</a></li><li><a href="#node-structure">Node Structure</a></li><li><a href="#connection-structure">Connection Structure</a></li></ul></nav>
+<p class="eyebrow">Partial Godot import · inspected PS3 importer · 2026-10-18</p>
+<p>Stores graph data that the Godot editor add-on imports as a TSGNavGraph resource containing a GUID, node dictionaries and edge dictionaries.</p>
+<dl><dt>Identification</dt><dd>The registered Godot editor importer recognizes the .graph extension; no magic signature is validated by that importer.</dd><dt>Byte order / text</dt><dd>The current PS3 importer explicitly reads numeric fields as big-endian; coordinates and costs use float32.</dd><dt>Documentation scope</dt><dd>The Godot add-on and visualizer were inspected on 2026-10-18. Parsed-resource support is distinct from complete format validation and runtime pathfinding.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation and editor-import support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#file-header">File header and array locations</a></li><li><a href="#node-structure">Node structure</a></li><li><a href="#connection-structure">Edge structure and detection</a></li><li><a href="#godot-use">Godot resource use and source references</a></li></ul></nav>
 
 <section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="bsp.html">Spatial partition resource (.bsp)</a></td><td>Level context</td><td>Spatial partitioning and navigation describe the same level space but have different node/edge models. No shared node numbering or coordinate transform is established.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Ancillary viewer/importer work is distinct from the registered operation pipeline. No GRAPH conversion or finished runtime navigation reconstruction is declared in operations.toml.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation and editor-import support</h2>
+<p>The Godot project enables <code>addons/tsg_graph_importer/plugin.cfg</code>. Its editor plugin registers <code>import_graph.gd</code> as <code>tsg.graph.importer</code>, visible as <strong>TSG NavGraph</strong>, for the <code>graph</code> extension. The importer saves <code>TSGNavGraph</code> as a binary <code>.res</code> resource at the editor-supplied import-cache path.</p>
+<p>The resource exposes <code>guid: String</code>, <code>nodes: Array[Dictionary]</code> and <code>edges: Array[Dictionary]</code>. <code>NavGraphVisualizer</code> can consume it to draw nodes as crosses and edges as straight lines, with visibility/color controls. Importing does not construct an <code>AStar3D</code>, a navigation mesh or an original-game AI controller.</p>
+<p>No GRAPH converter is registered in <code>operations.toml</code>; that does not mean import support is absent. Operation 1 extracts the source payload and operation 6 can normalize its path. The Godot editor import is a separate code path. See the <a href="../../pipeline.html">operation pipeline</a> for the registered operations.</p>
+</section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2>
+<p>Partial import is implemented in the supplied Godot source. Edge-table boundaries are selected heuristically, unknown fields are discarded, and parsing can stop early on invalid data. Saving a resource is not proof that every node/edge or original navigation behavior was recovered. These changes were checked against source code; the editor import was not rerun in this documentation pass.</p>
+<p>The tables below describe what the current importer reads and retains, rather than assigning unverified runtime meanings. They supersede the older ConnStartIndex/NeighborCount node interpretation and the fixed ConnectionCount/Blocked edge interpretation previously shown here.</p>
+</section>
 
 
 
-        <p>The <code>.graph</code> format stores navigation nodes and connections (edges) for AI pathfinding.</p>
-
-        <h2 id="file-header">File Header</h2>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Offset</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x00</td>
-                    <td>Byte[12]</td>
-                    <td>Unknown</td>
-                    <td>Skipped padding or header data.</td>
-                </tr>
-                <tr>
-                    <td>0x0C</td>
-                    <td>UInt16</td>
-                    <td>NodeCount</td>
-                    <td>Number of navigation nodes.</td>
-                </tr>
-                <tr>
-                    <td>0x0E</td>
-                    <td>UInt16</td>
-                    <td>ConnectionCount</td>
-                    <td>Number of connections between nodes.</td>
-                </tr>
-                <tr>
-                    <td>0x10</td>
-                    <td>Byte[16]</td>
-                    <td>GUID</td>
-                    <td>Unique identifier for the graph.</td>
-                </tr>
-                <tr>
-                    <td>0x20</td>
-                    <td>UInt32</td>
-                    <td>NodeArrayOffset</td>
-                    <td>Absolute offset to the start of the node array.</td>
-                </tr>
-                <tr>
-                    <td>0x24</td>
-                    <td>UInt32</td>
-                    <td>ConnectionArrayOffset</td>
-                    <td>Absolute offset to the start of the connection array.</td>
-                </tr>
-            </tbody>
-        </table></div>
-
-        <h2 id="node-structure">Node Structure</h2>
-
-        <p>Each node entry is <strong>32 bytes</strong> long.</p>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Offset</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x00</td>
-                    <td>Float</td>
-                    <td>X</td>
-                    <td>Position X coordinate.</td>
-                </tr>
-                <tr>
-                    <td>0x04</td>
-                    <td>Float</td>
-                    <td>Y</td>
-                    <td>Position Y coordinate.</td>
-                </tr>
-                <tr>
-                    <td>0x08</td>
-                    <td>Float</td>
-                    <td>Z</td>
-                    <td>Position Z coordinate.</td>
-                </tr>
-                <tr>
-                    <td>0x0C</td>
-                    <td>Float</td>
-                    <td>Radius</td>
-                    <td>Node radius.</td>
-                </tr>
-                <tr>
-                    <td>0x10</td>
-                    <td>Int16</td>
-                    <td>ConnStartIndex</td>
-                    <td>Index into Connection Array for the first connection.</td>
-                </tr>
-                <tr>
-                    <td>0x12</td>
-                    <td>Int16</td>
-                    <td>PropInstance</td>
-                    <td>Index of associated property instance.</td>
-                </tr>
-                <tr>
-                    <td>0x14</td>
-                    <td>UInt8</td>
-                    <td>ConnCount</td>
-                    <td>Number of connections starting from this node.</td>
-                </tr>
-                <tr>
-                    <td>0x15</td>
-                    <td>UInt8</td>
-                    <td>NeighborCount</td>
-                    <td>Number of neighbors.</td>
-                </tr>
-                <tr>
-                    <td>0x16</td>
-                    <td>Int16</td>
-                    <td>NeighborStartIndex</td>
-                    <td>Index for neighbors (usage context dependent).</td>
-                </tr>
-                <tr>
-                    <td>0x18</td>
-                    <td>UInt16</td>
-                    <td>Flags</td>
-                    <td>Node flags (bitfield).</td>
-                </tr>
-                <tr>
-                    <td>0x1A</td>
-                    <td>Byte[6]</td>
-                    <td>Padding</td>
-                    <td>Unused.</td>
-                </tr>
-            </tbody>
-        </table></div>
-
-        <h2 id="connection-structure">Connection Structure</h2>
-
-        <p>Each connection entry is <strong>16 bytes</strong> long.</p>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Offset</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x00</td>
-                    <td>Float</td>
-                    <td>Length</td>
-                    <td>Distance/Cost of the edge.</td>
-                </tr>
-                <tr>
-                    <td>0x04</td>
-                    <td>Int16</td>
-                    <td>DestNodeIndex</td>
-                    <td>Index of the target node.</td>
-                </tr>
-                <tr>
-                    <td>0x06</td>
-                    <td>Int16</td>
-                    <td>SrcNodeIndex</td>
-                    <td>Index of the source node.</td>
-                </tr>
-                <tr>
-                    <td>0x08</td>
-                    <td>Int16</td>
-                    <td>PropInstance</td>
-                    <td>Associated property instance.</td>
-                </tr>
-                <tr>
-                    <td>0x0A</td>
-                    <td>UInt16</td>
-                    <td>Flags</td>
-                    <td>Edge flags.</td>
-                </tr>
-                <tr>
-                    <td>0x0C</td>
-                    <td>UInt8</td>
-                    <td>Blocked</td>
-                    <td>1 if blocked, 0 otherwise.</td>
-                </tr>
-                <tr>
-                    <td>0x0D</td>
-                    <td>Byte[3]</td>
-                    <td>Padding</td>
-                    <td>Unused.</td>
-                </tr>
-            </tbody>
-        </table></div>
+<p>The implementation treats these resources as navigation-graph data. The fields below document its current parsing model; unknown semantics remain unknown.</p>
+<h2 id="file-header">File header and array locations</h2>
+<p>The importer requires a file of at least <code>0x80</code> bytes and explicitly sets big-endian reads. Header offsets are absolute file offsets; range ends below are exclusive.</p>
+<div class="table-scroll" role="region" aria-label="Header locations used by the Godot importer" tabindex="0">
+<table>
+<caption>Header locations used by the Godot importer</caption>
+<thead><tr><th scope="col">Offset</th><th scope="col">Read type</th><th scope="col">Use in the implementation</th></tr></thead>
+<tbody>
+<tr><td>0x00–0x0B</td><td>12 bytes</td><td>Not decoded; the importer does not check a format magic.</td></tr>
+<tr><td>0x0C</td><td>uint32 BE</td><td>High 16 bits become node_count. The low 16 bits at 0x0E are not used to determine edge count.</td></tr>
+<tr><td>0x10</td><td>byte[16]</td><td>GUID bytes, formatted as an uppercase braced 8-4-4-4-12 hexadecimal string.</td></tr>
+<tr><td>0x20</td><td>uint32 BE</td><td>node_offset; zero/out-of-file values disable the node-read loop.</td></tr>
+<tr><td>0x24</td><td>uint32 BE</td><td>First candidate node-array end, accepted only when in range and 32-byte aligned relative to node_offset.</td></tr>
+<tr><td>0x40, 0x44, 0x48</td><td>uint32 BE each</td><td>Candidate later block offsets used to limit edge scanning.</td></tr>
+<tr><td>0x60 / 0x64</td><td>uint32 BE each</td><td>Block-offset candidate at 0x60 is considered for edge scanning only when the count-like value at 0x64 is positive.</td></tr>
+<tr><td>0x68</td><td>uint32 BE</td><td>Alternative candidate node-array end; also considered as a later block boundary.</td></tr>
+<tr><td>0x70</td><td>uint32 BE</td><td>Additional candidate later block boundary.</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="node-structure">Node structure</h2>
+<div class="table-scroll" role="region" aria-label="32-byte node record; multi-byte values are big-endian" tabindex="0">
+<table>
+<caption>32-byte node record; multi-byte values are big-endian</caption>
+<thead><tr><th scope="col">Relative offset</th><th scope="col">Type</th><th scope="col">Resource field / behavior</th></tr></thead>
+<tbody>
+<tr><td>0x00, 0x04, 0x08</td><td>float32 each</td><td>X, Y, Z retained as pos: Vector3, without axis remapping or scaling.</td></tr>
+<tr><td>0x0C</td><td>float32</td><td>radius</td></tr>
+<tr><td>0x10</td><td>uint16</td><td>node_id</td></tr>
+<tr><td>0x12</td><td>int16</td><td>area; converted from the unsigned read to signed 16-bit.</td></tr>
+<tr><td>0x14</td><td>uint32</td><td>flags; retained as a raw integer.</td></tr>
+<tr><td>0x18–0x1F</td><td>byte[8]</td><td>Skipped; not retained in the resource.</td></tr>
+</tbody>
+</table>
+</div>
+<p>The node loop attempts the header's node_count, stopping if the next 32-byte record exceeds EOF. It does not use the chosen node_end as a hard boundary for this loop, so a malformed header may still produce incomplete or misclassified data. The node_id value is stored separately from the array indices used by the edges.</p>
+<h2 id="connection-structure">Edge structure and detection</h2>
+<div class="table-scroll" role="region" aria-label="16-byte edge candidate; multi-byte values are big-endian" tabindex="0">
+<table>
+<caption>16-byte edge candidate; multi-byte values are big-endian</caption>
+<thead><tr><th scope="col">Relative offset</th><th scope="col">Type</th><th scope="col">Resource field / behavior</th></tr></thead>
+<tbody>
+<tr><td>0x00</td><td>float32</td><td>cost</td></tr>
+<tr><td>0x04</td><td>uint16</td><td>a: node-array index</td></tr>
+<tr><td>0x06</td><td>uint16</td><td>b: node-array index</td></tr>
+<tr><td>0x08</td><td>int16</td><td>tag_c</td></tr>
+<tr><td>0x0A</td><td>uint16</td><td>tag_d</td></tr>
+<tr><td>0x0C</td><td>uint32</td><td>Read into a variable named zero, but neither validated nor retained.</td></tr>
+</tbody>
+</table>
+</div>
+<p>The initial node_end is <code>node_offset + node_count × 0x20</code>. A plausible aligned value at <code>0x24</code> takes precedence; <code>0x68</code> is a fallback. The selected end is clamped to the file range. Edge candidates are scanned from that position up to the earliest accepted later block offset, or EOF if none is found.</p>
+<p>Scanning stops at the first candidate whose a/b index is outside the declared node count, whose indices are equal, or whose cost is NaN or has absolute value above 1,000,000. The importer does not prove edge directionality, tag meanings, a universal edge count or the meaning of the discarded final word. It does not interpret that word as a validated Blocked boolean.</p>
+<h2 id="godot-use">Godot resource use and source references</h2>
+<p>With the supplied editor plugin enabled, a .graph file inside the Godot project is handled by TSG NavGraph and saved as a resource with the exported GUID/nodes/edges fields. Assigning that resource to a NavGraphVisualizer's nav_data property provides the implemented node/edge display. This visualizer uses the stored positions directly; it does not establish a verified transform to BSP or other level data.</p>
+<ul>
+<li><code>plugin.gd</code> registers/unregisters the editor import plugin; <code>plugin.cfg</code> supplies its metadata.</li>
+<li><code>import_graph.gd</code> implements the big-endian parser, candidate-boundary checks and resource save.</li>
+<li><code>tsg_nav_graph.gd</code> defines the serializable TSGNavGraph resource.</li>
+<li><code>Scripts/nav_graph_visualizer.gd</code> consumes that resource to draw crosses and lines.</li>
+</ul>
+<p>Module source: <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/tree/main/Godot/GodotGame/PreBuilt/addons/tsg_graph_importer">TSG Graph Importer add-on</a> and <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/Godot/GodotGame/PreBuilt/Scripts/nav_graph_visualizer.gd">graph visualizer</a>. These source links are separate from the standalone documentation repository.</p>
 
     </body>
-
 </html>

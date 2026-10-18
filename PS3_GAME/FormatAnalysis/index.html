@@ -12,7 +12,7 @@
 <ul class="overview-links"><li><a href="relationships.html">Format relationships</a></li><li><a href="pipeline.html">Operations and conversion coverage</a></li><li><a href="../USRDIR/index.html">Source and normalized directory layout</a></li></ul>
 <h2>How the files fit together</h2><ul><li><strong>Media and localization:</strong> VP6/OGV supplies playback, TOX supplies cue times, LH2 supplies text, and INF plus TXD supplies bitmap-font data for a renderer.</li><li><strong>Audio and music:</strong> SNU and SBK carry decodable sounds; ALB/CTB/SMB/MIB describe partly understood metadata. MSB names MUS containers whose SNR/SNS segments are decoded separately.</li><li><strong>World and characters:</strong> preinstanced geometry uses texture dictionaries. Animation, collision, navigation, object properties and VFX live in separate resources with different levels of research coverage.</li></ul>
 <p><code>.PS3</code> and <code>.XEN</code> are platform suffixes. A shared word such as bank, table, graph or XML does not establish a common binary layout. Unknown descriptions below are explicitly marked; use each format's evidence section before implementing a parser.</p></section>
-<p>Entry point for file format notes and reverse-engineering writeups.</p>
+<p>Entry point for file format notes and reverse-engineering writeups. <a href="../PARAM.SFO.html">PARAM.SFO platform metadata</a> is documented at its PS3_GAME root location, separately from the USRDIR and extracted-resource counts below.</p>
 <h2>Source files</h2>
 <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table class="format-counts">
 <caption>Root file counts by extension</caption>

@@ -10,6 +10,7 @@
     <body class="doc-page">
 
         <h1>PS3_GAME disc layout</h1><p>The disc root contains platform metadata and presentation images alongside USRDIR, the main game-data directory. The observed EU and US lists below describe source-disc files, not the normalized remake output.</p>
+<p><a href="PARAM.SFO.html">PARAM.SFO metadata</a> documents the EU, US and demo identities, binary header/index format and TOML reference values. Metadata is read during initialization, independently of STR asset extraction.</p>
 <h2>Data flow through the module</h2><p>STR archives in USRDIR supply most resource payloads. Source movies and audiostreams are copied separately, then folders and filenames are reorganized into A1_Audio, A1_Video, character/frontend, level and hub groups. A flattened path is therefore a pipeline artifact, not necessarily the path shipped on disc.</p>
 <p><a href="USRDIR/index.html">USRDIR layout</a> explains the folder groups. The <a href="FormatAnalysis/relationships.html">relationship guide</a> connects media, localization, fonts, geometry and metadata; the <a href="FormatAnalysis/pipeline.html">operation reference</a> records how each output is produced.</p>
 
@@ -17,7 +18,7 @@
         <ul>
             <li><a href="../index.html#USRDIR" target="_top">USRDIR</a></li>
             <li>ICON0.PNG</li>
-            <li>PARAM.SFO</li>
+            <li><a href="PARAM.SFO.html">PARAM.SFO</a></li>
             <li>PIC0.PNG</li>
             <li>PIC0_01.PNG</li>
             <li>PIC0_02.PNG</li>
@@ -38,12 +39,13 @@
         <ul>
             <li><a href="../index.html#USRDIR" target="_top">USRDIR</a></li>
             <li>ICON0.PNG</li>
-            <li>PARAM.SFO</li>
+            <li><a href="PARAM.SFO.html">PARAM.SFO</a></li>
             <li>PIC0.PNG</li>
             <li>PIC1.PNG</li>
             <li>PIC2.PNG</li>
             <li>PS3LOGO.DAT</li>
         </ul>
 
+<h2>Demo package metadata</h2><p>The inspected demo places <a href="PARAM.SFO.html">PARAM.SFO</a> at the <code>NPEB90029/</code> package root beside <code>USRDIR/</code>, rather than inside a directory named PS3_GAME. Its title ID is NPEB90029 and its category value is HG. The shared metadata page compares it with the full EU and US files.</p>
     </body>
 </html>

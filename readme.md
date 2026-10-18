@@ -13,6 +13,7 @@ This repository contains documentation for the reverse engineering efforts of *T
 - **[Format Analysis](PS3_GAME/FormatAnalysis/index.html)**: Format inventory and links to binary layouts, examples, operation support and evidence limits.
 - **[Format Relationships](PS3_GAME/FormatAnalysis/relationships.html)**: Connections between movie timing, localization, fonts, textures, audio, music, geometry and other resource families.
 - **[Operation Pipeline](PS3_GAME/FormatAnalysis/pipeline.html)**: All 18 registered operations, their declared dependencies, inputs, outputs and implementation limits.
+- **[PARAM.SFO](PS3_GAME/PARAM.SFO.html)**: PS3 EU, US and demo metadata, binary layout and linked TOML snapshots.
 - **[PS3_GAME](PS3_GAME/index.html)**: Documentation of the root files found on the game disc.
 - **[USRDIR](PS3_GAME/USRDIR/index.html)**: Detailed documentation of the game's data directory, including level-specific archives and assets.
 - **Level Docs**: Individual documentation for each game level (L01 through L16, and Hubs), folder structure based on flattened output from the [remake module](https://github.com/Superposition28/TheSimpsonsGame-PS3)

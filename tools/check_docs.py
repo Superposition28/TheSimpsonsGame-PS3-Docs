@@ -12,8 +12,7 @@ import sys
 import tomllib
 from urllib.parse import unquote, urlsplit
 
-VOID_TAGS = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-             'link', 'meta', 'param', 'source', 'track', 'wbr'}
+VOID_TAGS = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'}
 
 
 class Document(HTMLParser):
@@ -85,6 +84,11 @@ def check(root: Path) -> int:
     relationships: dict[Path, set[Path]] = {}
     format_root = root / 'PS3_GAME/FormatAnalysis'
     overviews = {format_root / name for name in ('index.html', 'pipeline.html', 'relationships.html')}
+    format_pages = {
+        path for path, document in pages.items()
+        if 'format-summary' in document.classes
+        or (path.is_relative_to(format_root) and path not in overviews)
+    }
     for path, document in pages.items():
         label = path.relative_to(root).as_posix()
         duplicates = [value for value, count in Counter(document.ids).items() if count > 1]
@@ -99,7 +103,7 @@ def check(root: Path) -> int:
             errors.append(f'{label}: per-page style block; use the shared stylesheet')
         if not any(url.endswith('style/main.css') for _, url, _ in document.links):
             errors.append(f'{label}: missing shared stylesheet')
-        if path.is_relative_to(format_root) and path not in overviews:
+        if path in format_pages:
             required = {'related-formats', 'operation-support', 'evidence-limits'}
             if 'format-summary' not in document.classes or not required.issubset(document.section_ids):
                 errors.append(f'{label}: missing format coverage sections')
@@ -117,7 +121,7 @@ def check(root: Path) -> int:
                 errors.append(f'{label}: target capitalization differs from disk: {value}')
             elif url.fragment and target in pages and unquote(url.fragment) not in pages[target].ids:
                 errors.append(f'{label}: missing anchor {value}')
-            if section == 'related-formats' and target in pages and target.is_relative_to(format_root) and target not in overviews:
+            if section == 'related-formats' and target in format_pages:
                 relationships.setdefault(path, set()).add(target)
         text = path.read_text(encoding='utf-8-sig')
         for tag in ('pre', 'code', 'div', 'table', 'section', 'details'):
