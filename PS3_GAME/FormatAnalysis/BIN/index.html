@@ -3,24 +3,67 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PS3 executable (.BIN)</title>
+    <title>PS3 executable (EBOOT.BIN)</title>
     <link rel="stylesheet" href="../../../style/main.css">
 </head>
 <body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>PS3 executable (.BIN)</nav>
-
-<h1>PS3 executable (.BIN)</h1>
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>PS3 executable (EBOOT.BIN)</nav>
+<h1>PS3 executable (EBOOT.BIN)</h1>
 <section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Inventory only · PS3 unless explicitly marked Xbox 360</p>
-<p>Documents the executable location rather than an extracted game-resource layout.</p>
-<dl><dt>Identification</dt><dd>EBOOT.BIN filename; no executable-container schema documented here.</dd><dt>Byte order / text</dt><dd>Not established by this page.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#identification-and-scope">Identification and scope</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><p>No verified cross-file pointer or ID join is established for this page. Preserve source/archive context when comparing it with other resources; a common suffix or directory is not a demonstrated dependency.</p><p>See the <a href="../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>No executable decryption, disassembly or reconstruction operation is registered. Resource extraction support must not be presented as executable support.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-<h2 id="identification-and-scope">Identification and scope</h2><p>The disc executable is named <code>USRDIR/EBOOT.BIN</code>. This page is an inventory entry; executable-container fields and runtime behavior have not been documented here.</p>
+<p class="eyebrow">Basic identification only · no registered executable conversion · 2026-10-18</p>
+<p>This page records the supplied EU executable's identity and basic container facts. Investigation is intentionally limited to file identity, opening header bytes and adjacent disc metadata.</p>
+<dl><dt>Identification</dt><dd><code>USRDIR/EBOOT.BIN</code>, beginning with <code>SCE</code> and a NUL byte.</dd><dt>Byte order / text</dt><dd>The SCE prefix uses big-endian numeric fields; executable payload structure is outside this inspection.</dd><dt>Scope</dt><dd>No execution, decryption, disassembly, decompilation or function analysis.</dd></dl>
+</section>
+<nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#identification-and-scope">Basic known facts</a></li><li><a href="#build-context">Build context</a></li><li><a href="#related-formats">Related files and formats</a></li><li><a href="#operation-support">Operation support</a></li><li><a href="#evidence-limits">Evidence and limitations</a></li></ul></nav>
+<section id="identification-and-scope">
+<h2>Basic known facts</h2>
+<div class="table-scroll" role="region" aria-label="Inspected executable identity" tabindex="0">
+<table>
+<caption>Inspected executable identity</caption>
+<thead><tr><th scope="col">Property</th><th scope="col">Observed value</th></tr></thead>
+<tbody>
+<tr><td>Source path</td><td><code>Source/PS3/EU/1/PS3_GAME/USRDIR/EBOOT.BIN</code></td></tr>
+<tr><td>Role</td><td>PS3 game executable at <code>USRDIR/EBOOT.BIN</code>.</td></tr>
+<tr><td>Size</td><td>14,073,144 bytes (approximately 13.42 MiB).</td></tr>
+<tr><td>Opening signature</td><td><code>53 43 45 00</code>: literal <code>SCE</code> followed by NUL.</td></tr>
+<tr><td>Container</td><td>SCE/SELF executable wrapper; the .BIN suffix alone is not a generic format specification.</td></tr>
+<tr><td>Header version</td><td>Bytes <code>0x04–0x07</code> are <code>00 00 00 02</code>: version 2 in the big-endian SCE layout.</td></tr>
+<tr><td>SHA-256</td><td><code>73019ff7264b1b0fbcaeac3572994e66e4a1163bd6ceeee333cd9af6d495c5a6</code></td></tr>
+</tbody>
+</table>
+</div><p>The SCE magic and version layout are identified using RPCS3's <a href="https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Crypto/unself.h">SceHeader definition</a> and <a href="https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Crypto/unself.cpp">SceHeader::Load implementation</a>. This identifies the wrapper; it does not validate signatures or decode the executable payload.</p>
+<pre><code>00000000  53 43 45 00 00 00 00 02 00 01 00 01 00 00 04 10
+00000010  00 00 00 00 00 00 09 80 00 00 00 00 00 D6 B3 B8</code></pre>
+</section>
+<section id="build-context">
+<h2>Build context</h2>
+<div class="table-scroll" role="region" aria-label="Adjacent PS3_GAME/PARAM.SFO fields; not recovered from EBOOT" tabindex="0">
+<table>
+<caption>Adjacent PS3_GAME/PARAM.SFO fields; not recovered from EBOOT</caption>
+<thead><tr><th scope="col">Key</th><th scope="col">Observed value</th></tr></thead>
+<tbody>
+<tr><td>TITLE</td><td>The Simpsons™ Game</td></tr>
+<tr><td>TITLE_ID</td><td><code>BLES00142</code></td></tr>
+<tr><td>APP_VER</td><td><code>01.00</code></td></tr>
+<tr><td>VERSION</td><td><code>01.00</code></td></tr>
+<tr><td>PS3_SYSTEM_VER</td><td><code>01.9300</code></td></tr>
+<tr><td>CATEGORY</td><td><code>DG</code></td></tr>
+</tbody>
+</table>
+</div><p>The title ID also appears in <code>USRDIR/text/localetable.txt</code>. Matching source-disc metadata identifies this copy; it does not establish that the executable is unchanged from every retail release.</p>
+</section>
+<section id="related-formats">
+<h2>Related files and formats</h2>
+<p>The executable shares a source-disc tree with STR archives, movies, audio and localization resources. That context is not evidence of a decoded executable-to-resource reference. The <a href="../relationships.html">format relationship guide</a> describes asset workflows independently of EBOOT internals.</p>
+</section>
+<section id="operation-support">
+<h2>Operation support</h2>
+<p>No executable decoder, converter or reconstruction is registered in <code>operations.toml</code>. STR extraction, media conversion and normalization do not convert this executable. Operation 14 writes a separate launch manifest for the prebuilt Godot project; it does not translate EBOOT.BIN. See the <a href="../pipeline.html">operation pipeline</a>.</p>
+</section>
+<section id="evidence-limits">
+<h2>Evidence and limitations</h2>
+<p>Size and SHA-256 were computed from the supplied file, the opening 32 bytes were inspected, and the listed PARAM.SFO fields were read on 2026-10-18. No trusted retail digest was compared and no cryptographic authenticity check was performed.</p>
+<p>Executable internals, functions, dependencies, embedded assets, protection details and runtime behavior remain uninvestigated. This is intentionally a basic reference entry, not a reverse-engineered executable specification.</p>
+</section>
 </body>
 </html>
