@@ -582,7 +582,8 @@ pre {
         max-width: none;
     }
 
-    .home-page {
+    .home-page,
+    .home-layout:target {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 24px;
@@ -713,6 +714,7 @@ tbody tr:hover { background: #20252b; }
 .relationship-flow { padding: 1rem; background: #141414; border: 1px solid #343434; }
 .overview-links { display: flex; flex-wrap: wrap; gap: 0.7rem 1.5rem; padding: 0; list-style: none; }
 .home-intro { grid-column: 1 / -1; }
+.home-source-inventory { grid-column: 1 / -1; max-width: none; }
 .doc-page .section { margin: 2rem 0; }
 .topbar { min-height: var(--nav-height); }
 body:has(> .topbar) { padding: 0; }

@@ -18,7 +18,7 @@
             <li>Pages are static HTML and require no build tooling or server.</li>
         </ul>
         <h2>Hierarchy and Up Navigation</h2>
-        <p>The document tree follows the normalized game layout. Section containers use <code>data-id</code>, while leaf documents use iframe IDs.</p>
+        <p>The document tree follows the normalized PS3 game layout. Section containers use <code>data-id</code>, while leaf documents use iframe IDs.</p>
         <ul>
             <li><code>PS3_GAME</code> contains <code>USRDIR</code>.</li>
             <li><code>USRDIR</code> contains the audio, video, character, frontend, level, and hub pages.</li>
@@ -42,6 +42,14 @@
             <li>Most embedded formats originate from extracted <code>.STR</code> archives, so their pages live under <code>FormatAnalysis/STR/imbedded-formats</code>.</li>
             <li>This keeps container-level <code>.STR</code> notes together with the formats extracted from those containers.</li>
         </ul>
+        <h3>Xbox 360 documentation alongside PS3</h3>
+        <p>These docs are built around the PS3 version, including the literal documentation file tree, which mirrors the normalized PS3 layout. Xbox 360 documentation may exist alongside PS3 documentation, but the documentation tree always follows the PS3 layout, never the Xbox 360 source-directory layout.</p>
+        <ul>
+            <li>Place separate Xbox 360 documents in a subfolder named <code>xbox</code> at the closest appropriate location within the PS3 documentation tree.</li>
+            <li>For formats extracted from STR archives that exist only in the Xbox 360 version, use <code>reversing/docs/PS3_GAME/FormatAnalysis/STR/imbedded-formats/xbox/</code>. Keep those pages inside that subfolder rather than directly in <code>reversing/docs/PS3_GAME/FormatAnalysis/STR/imbedded-formats/</code>. For example, <a href="PS3_GAME/FormatAnalysis/STR/imbedded-formats/xbox/itxd.html">Xbox 360 .itxd</a> lives there.</li>
+            <li>When differences between the PS3 and Xbox 360 variants are small enough to explain clearly together, document them in the existing PS3 page and label the Xbox 360 differences. A separate Xbox page is unnecessary in that case; the <a href="PS3_GAME/FormatAnalysis/TXT/index.html">root locale configuration</a> is one shared reference.</li>
+        </ul>
+        <p>The <a href="index.html#home-xbox360" target="_top">Xbox 360 home page</a> uses the same coverage and documentation-map layout as the PS3 home page, with Xbox-specific support labels. Many format variants are not cross-compatible and are not yet supported by the conversion stages. Initialization can set up Xbox 360 source files, but downstream extraction and conversion currently target PS3. A shared format name, a PS3 reference link, or an Xbox research page does not establish Xbox conversion support.</p>
         <h2>Format-page conventions</h2>
         <p>Use the shared stylesheet and viewport metadata. Every format page should state purpose, identification, byte order/text encoding, relationships, registered operation support and evidence limits, then preserve the detailed field layout, examples and unresolved questions. Use scrollable table wrappers and collapsible sample-dump appendices.</p>
         <p>Cross-links must explain the join: shared numeric ID, embedded filename, cleaned movie stem, same binary family, or contextual association. Distinguish implemented/observed links from tentative ones. Do not infer hash algorithms, direct dependencies or runtime behavior solely from a directory name. Binary parsing examples must be marked as illustrative when no converter is registered.</p>
@@ -51,9 +59,9 @@
         <p>Keep proprietary source-file paths as text rather than links outside the hosted site. Source links to module operation code may point to the separate module repository. Historical notes in <code>oldMDonly/</code> are retained research, not automatically the latest specification.</p>
         <h2>Adding a Page</h2>
         <ol>
-            <li>Create the content-only HTML page in the appropriate directory.</li>
+            <li>Create the content-only HTML page in the appropriate directory of the PS3-based tree. Use an <code>xbox</code> subfolder for separate Xbox 360 documentation, or update the shared PS3 page when the variant differences are minimal.</li>
             <li>Add an iframe with a unique ID and matching source path to <code>index.html</code>.</li>
-            <li>Add a matching hash link to the documentation map on the home page.</li>
+            <li>Add a matching hash link to the appropriate PS3 or Xbox 360 home-page documentation map, with a platform-specific support label.</li>
             <li>When the new page belongs under a new branch, wrap the related iframes in a section with a <code>data-id</code> so Up navigation has a parent route.</li>
         </ol>
     </body>
