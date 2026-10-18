@@ -6,12 +6,940 @@
     <title>.tox.PS3 Format Documentation</title>
     <link rel="stylesheet" href="../../../../style/main.css">
 
+<style>
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1rem 0 2rem;
+                background: #181818;
+                border: 1px solid #343434;
+            }
+            th, td {
+                padding: 0.6rem 0.9rem;
+                border: 1px solid #2a2a2a;
+                text-align: left;
+                vertical-align: top;
+            }
+            thead th {
+                color: #f0f4f8;
+                background: #242424;
+            }
+            tbody tr:hover {
+                background: #20252b;
+            }
+            code {
+                background: #242424;
+                color: #ce9178;
+                padding: 2px 5px;
+                border-radius: 4px;
+                font-family: monospace;
+            }
+            pre code {
+                display: block;
+                background: #141414;
+                border: 1px solid #2f2f2f;
+                padding: 14px;
+                overflow-x: auto;
+                color: #d7e1eb;
+                font-size: 0.88rem;
+                line-height: 1.45;
+            }
+            .callout {
+                background: #18202c;
+                border-left: 4px solid #58a6ff;
+                padding: 12px 16px;
+                margin: 1rem 0 1.5rem;
+                border-radius: 4px;
+            }
+            .callout-warn {
+                background: #281d15;
+                border-left: 4px solid #db6d28;
+                padding: 12px 16px;
+                margin: 1rem 0 1.5rem;
+                border-radius: 4px;
+            }
+            .table-scroll { max-width: 100%; overflow-x: auto; margin: 1rem 0 2rem; }
+            .table-scroll table { margin: 0; }
+            caption { text-align: left; padding: 0.7rem; font-weight: bold; color: #f0f4f8; }
+            #movie-inventory { min-width: 1300px; }
+            #decoded-example { min-width: 2400px; }
+            #decoded-example td:nth-child(n+9) { min-width: 240px; white-space: pre-wrap; }
+            .doc-overview { min-width: 0; }
+        </style>
 </head>
 
 <body>
     <div class="pages">
         <div class="doc-overview" id="overview">
-These .tox.PS3 files are proprietary EA timing tables used to synchronize In-Game Cinematic (IGC) subtitles or Voice-Over (VO) audio.Because these are ripped from the PS3 version of the game, the data is entirely Big-Endian.File Structure OverviewThe file consists of a fixed 16-byte header, followed immediately by an array of 16-byte records.Header (16 Bytes)OffsetTypeDescriptionExample0x00char[4]Magic identifier (1BOT). Reads as TOB1 if parsed as a Little-Endian integer.31 42 4F 540x04uint32Total file size in bytes (including the header).00 00 00 C0 (192 bytes)0x08uint32Reserved / Padding. Always zero.00 00 00 000x0Cuint32Total record count.00 00 00 0B (11 records)Record Array (16 Bytes per Record)The exact number of records is defined by the integer at 0x0C.OffsetTypeDescriptionExample0x00uint32String Hash / Audio ID: Likely an EA string hash (e.g., EA FNV-1 variant) mapping to the localized text key or specific VO file.3F 02 A9 180x04uint32Start Time (ms): The execution timestamp in milliseconds.00 00 00 46 (70 ms)0x08uint32Duration (ms): The length of the subtitle display or audio clip in milliseconds.00 00 13 88 (5000 ms)0x0Cuint32Flags / Constant: Fixed value across all dumps. Likely a bitmask for rendering flags, language overrides, or unused compiler padding.00 12 FF 30Data ValidationLooking at the first few records of 80b_igc01.tox.PS3, the chronological progression of the timing variables confirms their purpose:Record 1: Starts at 70 ms, runs for 5000 ms (Ends at 5070 ms)Record 2: Starts at 5110 ms, runs for 3200 ms (Ends at 8310 ms)Record 3: Starts at 8380 ms, runs for 4600 ms (Ends at 12980 ms)Record 4: Starts at 13010 ms...The starts and durations track perfectly sequentially, leaving standard 30-40ms (1-2 frames at 30fps) buffering gaps between sequential subtitle lines.
+            <h1>EA FMV Subtitle Timing Table (<code>.tox.PS3</code> / <code>1BOT</code>)</h1>
+            <p><strong>Version:</strong> 1.0<br>
+            <strong>Last Updated:</strong> 2026-10-18<br>
+            <strong>Author(s):</strong> samarixum, Gemini / Codex</p>
+
+            <h2 id="purpose">Overview &amp; Purpose</h2>
+            <p><code>.tox.PS3</code> is Electronic Arts' binary subtitle timing table used in <em>The Simpsons Game</em> (PS3) to synchronize localized subtitles during pre-rendered On2 VP6 Full-Motion Video cutscenes and mission briefings. Companion movies are stored under <code>A1_Video/{en,es,fr,it,sf}/*.vp6</code>; extracted / converted video collections also contain <code>.ogv</code> copies. The magic bytes are <code>1BOT</code> (<code>31 42 4F 54</code>), or <code>"TOB1"</code> when interpreted as a Little-Endian 32-bit FourCC. Numeric fields are <strong>Big-Endian</strong>.</p>
+            <p>The table contains timing and string IDs; subtitle text lives in companion <code>.LH2</code> localization files. <code>StringID</code> identifies a dialogue label, not a text offset or an audio filename. <code>operations/tox_to_srt.Subtitles.py</code> resolves all timing tables against <code>simpsons_global.{en,es,fr,it,ss}.LH2</code> and exports standard <strong>SubRip (.srt)</strong>, <strong>WebVTT (.vtt)</strong>, and <strong>multilingual .csv</strong> files, including .srt/.vtt files directly alongside matching localized .ogv/.vp6 streams in <code>A1_Video/{en,es,fr,it}/</code>.</p>
+            <nav aria-label="Specification contents"><ul>
+            <li><a href="#layout">Binary layout</a> and <a href="#hash">exact SDBM hash algorithm</a></li>
+            <li><a href="#cross-reference">Localization / video cross-reference and the cut Bart cue</a></li>
+            <li><a href="#inventory">Complete 43-movie inventory</a></li>
+            <li><a href="#example">Decoded 80b_igc01 example</a></li>
+            <li><a href="#converter">Converter usage</a> and <a href="#reference-parser">reference Python parser / converter</a></li>
+            <li><a href="#hex-dumps">Original hex dumps</a></li>
+            </ul></nav>
+            <div class="callout"><strong>Validation scope:</strong> All 77 files in <code>PS3-EU-FullFlattened-audio_reorg-isRenamed</code> satisfy the exact header / record layout (825 records, 398 distinct StringIDs). Every timing ID has an identified SDBM label; 824 / 825 records (397 / 398 unique IDs) resolve directly to global localization entries. The single missing localized cue is documented below. All 34 active movies match localized video stems in four languages.</div>
+
+            <h2 id="layout">1. Binary Structure (Big-Endian)</h2>
+            <p>The file consists of a 16-byte header followed immediately by <code>RecordCount</code> contiguous 16-byte timing records. There are no string payloads, record pointers, or trailing bytes. Offset ranges below use an exclusive upper bound.</p>
+            <h3>16-Byte Header (<code>0x00..0x10</code>)</h3>
+            <section class="table-scroll" aria-label="16-byte header: [0x00, 0x10)" tabindex="0">
+            <table>
+                <caption>16-byte header: [0x00, 0x10)</caption>
+                <thead><tr>
+                    <th scope="col">Offset</th>
+                    <th scope="col">Type / Size</th>
+                    <th scope="col">Field</th>
+                    <th scope="col">Meaning / Validated Value</th>
+                </tr></thead>
+                <tbody>
+                    <tr>
+                        <td><code>0x00</code></td>
+                        <td><code>char[4]</code> / 4</td>
+                        <td><code>Magic</code></td>
+                        <td><code>1BOT</code> (<code>31 42 4F 54</code>); Little-Endian 32-bit FourCC <code>TOB1</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x04</code></td>
+                        <td><code>uint32 BE</code> / 4</td>
+                        <td><code>FileSize</code></td>
+                        <td>Exact total file size in bytes; <code>FileSize == 16 + RecordCount * 16</code> in all 77 files (100%).</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x08</code></td>
+                        <td><code>uint32 BE</code> / 4</td>
+                        <td><code>Reserved</code></td>
+                        <td>Always <code>0x00000000</code> in all 77 files.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0C</code></td>
+                        <td><code>uint32 BE</code> / 4</td>
+                        <td><code>RecordCount</code></td>
+                        <td>Number of 16-byte timing records; observed range 0–41.</td>
+                    </tr>
+                </tbody>
+            </table>
+            </section>
+            <h3>16-Byte Timing Record Array (<code>0x10..EOF</code>)</h3>
+            <p>Array size: <code>RecordCount * 16</code> bytes. Zero-based record <code>i</code> starts at <code>0x10 + i * 0x10</code>.</p>
+            <section class="table-scroll" aria-label="16-byte timing record: array begins at 0x10" tabindex="0">
+            <table>
+                <caption>16-byte timing record: array begins at 0x10</caption>
+                <thead><tr>
+                    <th scope="col">Relative Offset</th>
+                    <th scope="col">Type / Size</th>
+                    <th scope="col">Field</th>
+                    <th scope="col">Meaning / Validated Value</th>
+                </tr></thead>
+                <tbody>
+                    <tr>
+                        <td><code>+0x00</code></td>
+                        <td><code>uint32 BE</code> / 4</td>
+                        <td><code>StringID</code></td>
+                        <td>32-bit lowercase SDBM hash (multiplier 65599, seed 0) of an internal IGC dialogue label; e.g. <code>moes_igc_000302f</code> → <code>0x3F02A918</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x04</code></td>
+                        <td><code>uint32 BE</code> / 4</td>
+                        <td><code>StartTimeMs</code></td>
+                        <td>Display start in milliseconds from the beginning of the companion .vp6 video stream.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x08</code></td>
+                        <td><code>uint32 BE</code> / 4</td>
+                        <td><code>DurationMs</code></td>
+                        <td>Display duration in milliseconds; <code>EndTimeMs = StartTimeMs + DurationMs</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x0C</code></td>
+                        <td><code>uint32 BE</code> / 4</td>
+                        <td><code>FlagsOrConstant</code></td>
+                        <td>Always <code>0x0012FF30</code> (1,244,976) across all 825 records in all 77 files.</td>
+                    </tr>
+                </tbody>
+            </table>
+            </section>
+            <div class="callout-warn"><strong>Constant interpretation:</strong> The bytes <code>00 12 FF 30</code> are fully verified; their provenance is an inference. <code>0x0012FF30</code> resembles an uninitialized 32-bit stack-pointer value copied by EA's offline Windows x86 exporter, or a fixed runtime placeholder. No changing flag bits or rendering semantics have been demonstrated. Preserve the value when reproducing this corpus.</div>
+            <p>Timing units are milliseconds, not frames. Preserve each start and duration independently; use <code>start + duration</code> for its end. Do not derive one cue's end from the next cue's start or force a uniform inter-cue gap. Header-only files are valid empty tables, not truncated data.</p>
+
+            <h2 id="hash">2. Exact Hash Algorithm: Lowercase SDBM (Multiplier 65599)</h2>
+            <div class="callout-warn"><strong>Correction to the preliminary notes:</strong> <code>StringID</code> is <strong>not FNV-1</strong>. Comparing all 3,352 global labels in <code>simpsons_global.ss.LH2</code> and all 554 multi-table .LH2 files (14,439 entries) establishes a 100% match to case-insensitive, lowercased SDBM with multiplier <code>65599</code>, initial seed <code>0</code>, and 32-bit wraparound.</div>
+            <p><code>.ss.LH2</code> stores raw internal labels instead of Spanish text; Spanish is <code>.es.LH2</code>. Lowercase the label, encode it as Windows-1252, and accumulate each byte:</p>
+            <pre><code class="language-python">def sdbm_hash_lower(label: str) -&gt; int:
+    h = 0
+    for ch in label.lower().encode(&quot;cp1252&quot;):
+        h = (h * 65599 + ch) &amp; 0xFFFFFFFF
+    return h</code></pre>
+            <p>Every timing record hashes a label of the form <code>&lt;speaker&gt;_igc_&lt;7_char_id&gt;</code>. Speaker prefixes include <code>bart</code>, <code>homr</code>, <code>moes</code>, <code>dman</code>, <code>godx</code>, <code>gron</code>, <code>shak</code>, and <code>grmp</code>. Use the exact label spelling; the Willie label in the worked example is <code>wili_igc_0003036</code>.</p>
+            <section class="table-scroll" aria-label="Verified hash examples" tabindex="0">
+            <table>
+                <caption>Verified hash examples</caption>
+                <thead><tr>
+                    <th scope="col">Internal Label</th>
+                    <th scope="col">Lowercase SDBM StringID</th>
+                </tr></thead>
+                <tbody>
+                    <tr>
+                        <td><code>bart_igc_0003033</code></td>
+                        <td><code>0x5B112815</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>homr_igc_0003030</code></td>
+                        <td><code>0x4246635D</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>moes_igc_000302f</code></td>
+                        <td><code>0x3F02A918</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>dman_igc_0003035</code></td>
+                        <td><code>0xDA03206C</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            </section>
+
+            <h2 id="cross-reference">3. Cross-Reference with .LH2 Localization &amp; .vp6 Movies</h2>
+            <p>Join the Big-Endian <code>StringID</code> to the same ID in <code>simpsons_global.en.LH2</code>, <code>.es.LH2</code>, <code>.fr.LH2</code>, and <code>.it.LH2</code> for English, Spanish, French, and Italian text. Join to <code>simpsons_global.ss.LH2</code> for the original internal label and speaker prefix. Extraction may append a six-hex-digit suffix before the extension, e.g. <code>simpsons_global_3fc164.ss.LH2</code>.</p>
+            <p>Direct global-table coverage is <strong>824 / 825 timing records</strong> and <strong>397 / 398 distinct IDs</strong>. After identifying the one cut cue by its exact SDBM label, all 398 timing IDs are accounted for, but that cue still has no localized text. Video matching uses the cleaned movie stem after removing the extraction suffix, not the subtitle StringID.</p>
+            <h3>The Single Unmatched Localization Record: <code>0xE6A49A45</code></h3>
+            <p>In <code>gam_igc04_db5067.tox.PS3</code>, zero-based <strong>record #26</strong> (the 27th and final entry, at file offset <code>0x1B0</code>) begins at <strong>80,612 ms</strong>, lasts <strong>1,000 ms</strong>, and ends at <strong>81,612 ms</strong>. The preceding zero-based records #22..#25 are the 1,000 ms falling screams into the Game Engine portal:</p>
+            <section class="table-scroll" aria-label="Portal scream sequence in gam_igc04; final label recovered by SDBM" tabindex="0">
+            <table>
+                <caption>Portal scream sequence in gam_igc04; final label recovered by SDBM</caption>
+                <thead><tr>
+                    <th scope="col">Zero-Based Record</th>
+                    <th scope="col">Label</th>
+                    <th scope="col">StringID</th>
+                    <th scope="col">Duration</th>
+                </tr></thead>
+                <tbody>
+                    <tr>
+                        <td>22</td>
+                        <td><code>homr_igc_000602a</code></td>
+                        <td><code>0xCDD9D58C</code></td>
+                        <td>1,000 ms</td>
+                    </tr>
+                    <tr>
+                        <td>23</td>
+                        <td><code>marg_igc_000602b</code></td>
+                        <td><code>0x99CC1A6A</code></td>
+                        <td>1,000 ms</td>
+                    </tr>
+                    <tr>
+                        <td>24</td>
+                        <td><code>lisa_igc_000602c</code></td>
+                        <td><code>0x39B47FED</code></td>
+                        <td>1,000 ms</td>
+                    </tr>
+                    <tr>
+                        <td>25</td>
+                        <td><code>bart_igc_000602d</code></td>
+                        <td><code>0xE6A49A44</code></td>
+                        <td>1,000 ms</td>
+                    </tr>
+                    <tr>
+                        <td>26</td>
+                        <td><code>bart_igc_000602e</code></td>
+                        <td><code>0xE6A49A45</code></td>
+                        <td>1,000 ms</td>
+                    </tr>
+                </tbody>
+            </table>
+            </section>
+            <p><code>sdbm_hash_lower("bart_igc_000602e") == 0xE6A49A45</code>. The global tables jump directly from <code>bart_igc_000602d</code> (<code>0xE6A49A44</code>) to <code>bart_igc_000602f</code> (<code>0xE6A49A46</code>), omitting <code>000602e</code>. This identifies the leftover cue as a cut one-second Bart scream. The converter recovers its label for CSV reporting and skips the missing text in SRT / VTT output.</p>
+
+            <h2 id="inventory">4. Complete Inventory: 77 Files, 43 Distinct Movie Tables</h2>
+            <ul>
+            <li><code>A2_Frontend/frontendStr/assets/moviesTox/</code> contains all <strong>43 distinct named movie tables</strong> for the Frontend Movie Browser (<code>FE_FMV_MovieBrowser</code>) and global playback.</li>
+            <li>The 16 episode archives, <code>L01_LandOfChocolate</code> through <code>L16_MeetThyPlayer</code>, contain <strong>34 byte-identical duplicate files</strong> for their respective intro / outro / briefing movies: <strong>43 + 34 = 77</strong>. “43 distinct” counts movie names, not distinct binary payloads; the six empty tables share identical header bytes.</li>
+            <li><strong>34 active episode movies</strong> exist in both Frontend and an episode archive. Each pairs with one localized video stem in each of <code>en</code>, <code>es</code>, <code>fr</code>, and <code>it</code>: <strong>34 × 4 = 136 localized video streams</strong>. Converted .ogv copies represent the same movies and do not add new localized streams.</li>
+            <li><strong>6 bonus tables</strong>, <code>making_01</code> through <code>making_03</code> and their <code>_sd</code> variants, exist only in Frontend. Each is exactly <strong>16 bytes</strong> with <code>RecordCount = 0</code>. The unsubtitled featurettes <code>making_01</code>, <code>making_01_sd</code>, <code>making_03</code>, and <code>making_03_sd</code> have movies in <code>A1_Video/sf/</code>; <code>making_02</code> and its SD variant were cut from the disc.</li>
+            <li><strong>3 alternate / cut edits</strong>, <code>gam_igc03</code>, <code>gam_igc04</code>, and <code>mtp_igc02</code>, exist only in Frontend and have no standalone video on disc. Their dialogue was merged into <code>che_igc01</code> (opening 15 lines at Frink's house), <code>bin_igc01</code> (opening 27 lines before entering the Game Engine), and <code>mtp_igc01</code> (closing 11 lines at the Stairway to Heaven), respectively. Retained alternate timing files describe their own edits; the recovered Bart scream remains unlocalized.</li>
+            </ul>
+            <p>All paths in the following table are relative to <code>PS3-EU-FullFlattened-audio_reorg-isRenamed/</code>. Movie names omit the extraction-specific six-hex suffix. <strong>Duration Span</strong> means earliest cue start to latest cue end, followed by their difference; it is not the video's full runtime. <code>&lt;hash&gt;</code> denotes the per-file extraction suffix, which may differ by language. The final column gives the title key from <code>simpsons_gameflow.lua</code> and its English localization; absent keys are explicitly marked.</p>
+            <section class="table-scroll" aria-label="All 43 distinct named .tox.PS3 movie tables" tabindex="0">
+            <table id="movie-inventory">
+                <caption>All 43 distinct named .tox.PS3 movie tables</caption>
+                <thead><tr>
+                    <th scope="col">Movie Name</th>
+                    <th scope="col">Episode / Archive Locations</th>
+                    <th scope="col">File Size</th>
+                    <th scope="col">Record Count</th>
+                    <th scope="col">Duration Span</th>
+                    <th scope="col">Companion A1_Video .vp6 / .ogv</th>
+                    <th scope="col">simpsons_gameflow.lua Title (FE_FMV_*)</th>
+                </tr></thead>
+                <tbody>
+                    <tr>
+                        <td><code>80b_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L03_HungryHungryHomer/eightyBitesGlobalStr/assets/moviesTox</code></td>
+                        <td>192 bytes</td>
+                        <td>11</td>
+                        <td>70–43,380 ms<br>(43,310 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/80b_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_06</code><br>The Eating Contest</td>
+                    </tr>
+                    <tr>
+                        <td><code>80b_igc03.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L03_HungryHungryHomer/eightyBitesGlobalStr/assets/moviesTox</code></td>
+                        <td>192 bytes</td>
+                        <td>11</td>
+                        <td>600–62,360 ms<br>(61,760 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/80b_igc03_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_07</code><br>You Blew It Up!</td>
+                    </tr>
+                    <tr>
+                        <td><code>bin_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L10_BargainBin/bargainbinGlobalStr/assets/moviesTox</code></td>
+                        <td>672 bytes</td>
+                        <td>41</td>
+                        <td>4,840–206,470 ms<br>(201,630 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/bin_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_21</code><br>Cheating</td>
+                    </tr>
+                    <tr>
+                        <td><code>brt_igc02.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L02_BartmanBegins/brtGlobalStr/assets/moviesTox</code></td>
+                        <td>160 bytes</td>
+                        <td>9</td>
+                        <td>1,170–65,130 ms<br>(63,960 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/brt_igc02_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_05</code><br>Skinner Confesses</td>
+                    </tr>
+                    <tr>
+                        <td><code>bsh_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L14_BigSuperHappy/bigsuperhappyGlobalStr/assets/moviesTox</code></td>
+                        <td>128 bytes</td>
+                        <td>7</td>
+                        <td>10,110–56,520 ms<br>(46,410 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/bsh_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_27</code><br>The Realm of Mr. Dirt</td>
+                    </tr>
+                    <tr>
+                        <td><code>bsh_igc05.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L14_BigSuperHappy/bigsuperhappyGlobalStr/assets/moviesTox</code></td>
+                        <td>144 bytes</td>
+                        <td>8</td>
+                        <td>1,340–72,740 ms<br>(71,400 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/bsh_igc05_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_28</code><br>Mr. Sparkle Has Risen</td>
+                    </tr>
+                    <tr>
+                        <td><code>che_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L06_EnterTheCheatrix/cheaterGlobalStr/assets/moviesTox</code></td>
+                        <td>384 bytes</td>
+                        <td>23</td>
+                        <td>2,170–120,560 ms<br>(118,390 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/che_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_13</code><br>Professor Frink?</td>
+                    </tr>
+                    <tr>
+                        <td><code>che_igc02.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L06_EnterTheCheatrix/cheaterGlobalStr/assets/moviesTox</code></td>
+                        <td>128 bytes</td>
+                        <td>7</td>
+                        <td>1,970–35,340 ms<br>(33,370 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/che_igc02_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_14</code><br>Frink&#x27;s Bride</td>
+                    </tr>
+                    <tr>
+                        <td><code>dod_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L07_DayOfTheDolphin/dayofthedolphinsGlobalStr/assets/moviesTox</code></td>
+                        <td>96 bytes</td>
+                        <td>5</td>
+                        <td>5,770–42,280 ms<br>(36,510 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/dod_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_17</code><br>Snouts and Blowholes</td>
+                    </tr>
+                    <tr>
+                        <td><code>dod_igc03.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L07_DayOfTheDolphin/dayofthedolphinsGlobalStr/assets/moviesTox</code></td>
+                        <td>192 bytes</td>
+                        <td>11</td>
+                        <td>10–41,000 ms<br>(40,990 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/dod_igc03_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_18</code><br>Eggrolls! Revenge!</td>
+                    </tr>
+                    <tr>
+                        <td><code>gam_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L02_BartmanBegins/brtGlobalStr/assets/moviesTox</code></td>
+                        <td>288 bytes</td>
+                        <td>17</td>
+                        <td>2,070–103,400 ms<br>(101,330 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/gam_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_03</code><br>The Game Manual</td>
+                    </tr>
+                    <tr>
+                        <td><code>gam_igc02.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L05_MobRules/mobRulesGlobalStr/assets/moviesTox</code></td>
+                        <td>432 bytes</td>
+                        <td>26</td>
+                        <td>0–158,190 ms<br>(158,190 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/gam_igc02_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_12</code><br>Alien Invasion</td>
+                    </tr>
+                    <tr>
+                        <td><code>gam_igc03.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br>Frontend only</td>
+                        <td>256 bytes</td>
+                        <td>15</td>
+                        <td>100–34,152 ms<br>(34,052 ms span)</td>
+                        <td>No standalone stream; merged into <code>che_igc01</code></td>
+                        <td>No NewMovie entry / FE_FMV_* key</td>
+                    </tr>
+                    <tr>
+                        <td><code>gam_igc04.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br>Frontend only</td>
+                        <td>448 bytes</td>
+                        <td>27</td>
+                        <td>100–81,612 ms<br>(81,512 ms span)</td>
+                        <td>No standalone stream; merged into <code>bin_igc01</code></td>
+                        <td>No NewMovie entry / FE_FMV_* key</td>
+                    </tr>
+                    <tr>
+                        <td><code>gam_igc05.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L10_BargainBin/bargainbinGlobalStr/assets/moviesTox</code></td>
+                        <td>336 bytes</td>
+                        <td>20</td>
+                        <td>1,470–142,560 ms<br>(141,090 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/gam_igc05_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_22</code><br>Find the Key Cards</td>
+                    </tr>
+                    <tr>
+                        <td><code>gam_igc06.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L15_Rhymes/rhymesGlobalStr/assets/moviesTox</code></td>
+                        <td>272 bytes</td>
+                        <td>16</td>
+                        <td>4,970–84,660 ms<br>(79,690 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/gam_igc06_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_31</code><br>The Mansion Gates</td>
+                    </tr>
+                    <tr>
+                        <td><code>gam_igc07.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L16_MeetThyPlayer/meetthyplayerGlobalStr/assets/moviesTox</code></td>
+                        <td>480 bytes</td>
+                        <td>29</td>
+                        <td>3,180–193,360 ms<br>(190,180 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/gam_igc07_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_35</code><br>Confronting God</td>
+                    </tr>
+                    <tr>
+                        <td><code>gts_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L12_GrandTheftScratchy/grandTheftScratchyGlobalStr/assets/moviesTox</code></td>
+                        <td>96 bytes</td>
+                        <td>5</td>
+                        <td>130–32,470 ms<br>(32,340 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/gts_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_29</code><br>Cats and Mice</td>
+                    </tr>
+                    <tr>
+                        <td><code>gts_igc03.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L12_GrandTheftScratchy/grandTheftScratchyGlobalStr/assets/moviesTox</code></td>
+                        <td>144 bytes</td>
+                        <td>8</td>
+                        <td>1,000–33,370 ms<br>(32,370 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/gts_igc03_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_30</code><br>Video Game Violence</td>
+                    </tr>
+                    <tr>
+                        <td><code>hug_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L04_TreeHugger/treeHuggerGlobalStr/assets/moviesTox</code></td>
+                        <td>224 bytes</td>
+                        <td>13</td>
+                        <td>4,100–53,390 ms<br>(49,290 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/hug_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_08</code><br>I Have Super Powers?</td>
+                    </tr>
+                    <tr>
+                        <td><code>hug_igc05.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L04_TreeHugger/treeHuggerGlobalStr/assets/moviesTox</code></td>
+                        <td>144 bytes</td>
+                        <td>8</td>
+                        <td>11,150–48,620 ms<br>(37,470 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/hug_igc05_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_09</code><br>Out of a Job</td>
+                    </tr>
+                    <tr>
+                        <td><code>loc_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L01_LandOfChocolate/locGlobalStr/assets/moviesTox</code></td>
+                        <td>144 bytes</td>
+                        <td>8</td>
+                        <td>1,040–67,520 ms<br>(66,480 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/loc_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_01</code><br>Chocolate, Half Price</td>
+                    </tr>
+                    <tr>
+                        <td><code>loc_igc02.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L01_LandOfChocolate/locGlobalStr/assets/moviesTox</code></td>
+                        <td>64 bytes</td>
+                        <td>3</td>
+                        <td>400–16,080 ms<br>(15,680 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/loc_igc02_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_02</code><br>Damn You, Reality!</td>
+                    </tr>
+                    <tr>
+                        <td><code>making_01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br>Frontend only</td>
+                        <td>16 bytes</td>
+                        <td>0</td>
+                        <td>— (no cues)</td>
+                        <td><code>A1_Video/sf/making_01_27c0d7.vp6 / .ogv</code></td>
+                        <td>No NewMovie entry / FE_FMV_* key</td>
+                    </tr>
+                    <tr>
+                        <td><code>making_01_sd.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br>Frontend only</td>
+                        <td>16 bytes</td>
+                        <td>0</td>
+                        <td>— (no cues)</td>
+                        <td><code>A1_Video/sf/making_01_sd_9708d6.vp6 / .ogv</code></td>
+                        <td>No NewMovie entry / FE_FMV_* key</td>
+                    </tr>
+                    <tr>
+                        <td><code>making_02.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br>Frontend only</td>
+                        <td>16 bytes</td>
+                        <td>0</td>
+                        <td>— (no cues)</td>
+                        <td>None — featurette cut from disc</td>
+                        <td>No NewMovie entry / FE_FMV_* key</td>
+                    </tr>
+                    <tr>
+                        <td><code>making_02_sd.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br>Frontend only</td>
+                        <td>16 bytes</td>
+                        <td>0</td>
+                        <td>— (no cues)</td>
+                        <td>None — featurette cut from disc</td>
+                        <td>No NewMovie entry / FE_FMV_* key</td>
+                    </tr>
+                    <tr>
+                        <td><code>making_03.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br>Frontend only</td>
+                        <td>16 bytes</td>
+                        <td>0</td>
+                        <td>— (no cues)</td>
+                        <td><code>A1_Video/sf/making_03_ca9591.vp6 / .ogv</code></td>
+                        <td>No NewMovie entry / FE_FMV_* key</td>
+                    </tr>
+                    <tr>
+                        <td><code>making_03_sd.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br>Frontend only</td>
+                        <td>16 bytes</td>
+                        <td>0</td>
+                        <td>— (no cues)</td>
+                        <td><code>A1_Video/sf/making_03_sd_cf81c8.vp6 / .ogv</code></td>
+                        <td>No NewMovie entry / FE_FMV_* key</td>
+                    </tr>
+                    <tr>
+                        <td><code>mob_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L05_MobRules/mobRulesGlobalStr/assets/moviesTox</code></td>
+                        <td>224 bytes</td>
+                        <td>13</td>
+                        <td>530–57,000 ms<br>(56,470 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/mob_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_10</code><br>Gimme Your Ride, Jerk!</td>
+                    </tr>
+                    <tr>
+                        <td><code>moh_briefing01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L13_MedalOfHomer/medalOfHomerGlobalStr/assets/moviesTox</code></td>
+                        <td>32 bytes</td>
+                        <td>1</td>
+                        <td>100–39,850 ms<br>(39,750 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/moh_briefing01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td>Mission 1 Briefing<br>No FE_FMV_* key in NewMovie</td>
+                    </tr>
+                    <tr>
+                        <td><code>moh_briefing02.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L13_MedalOfHomer/medalOfHomerGlobalStr/assets/moviesTox</code></td>
+                        <td>32 bytes</td>
+                        <td>1</td>
+                        <td>100–34,910 ms<br>(34,810 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/moh_briefing02_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td>Mission 2 Briefing<br>No FE_FMV_* key in NewMovie</td>
+                    </tr>
+                    <tr>
+                        <td><code>moh_briefing03.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L13_MedalOfHomer/medalOfHomerGlobalStr/assets/moviesTox</code></td>
+                        <td>32 bytes</td>
+                        <td>1</td>
+                        <td>100–52,700 ms<br>(52,600 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/moh_briefing03_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td>Mission 3 Briefing<br>No FE_FMV_* key in NewMovie</td>
+                    </tr>
+                    <tr>
+                        <td><code>moh_igc03.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L13_MedalOfHomer/medalOfHomerGlobalStr/assets/moviesTox</code></td>
+                        <td>96 bytes</td>
+                        <td>5</td>
+                        <td>13,880–44,650 ms<br>(30,770 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/moh_igc03_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_26</code><br>Victory</td>
+                    </tr>
+                    <tr>
+                        <td><code>mtp_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L16_MeetThyPlayer/meetthyplayerGlobalStr/assets/moviesTox</code></td>
+                        <td>368 bytes</td>
+                        <td>22</td>
+                        <td>2,940–135,440 ms<br>(132,500 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/mtp_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_34</code><br>A Stairway To Heaven</td>
+                    </tr>
+                    <tr>
+                        <td><code>mtp_igc02.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br>Frontend only</td>
+                        <td>192 bytes</td>
+                        <td>11</td>
+                        <td>100–36,598 ms<br>(36,498 ms span)</td>
+                        <td>No standalone stream; merged into <code>mtp_igc01</code></td>
+                        <td>No NewMovie entry / FE_FMV_* key</td>
+                    </tr>
+                    <tr>
+                        <td><code>nvq_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L11_NeverQuest/neverquestGlobalStr/assets/moviesTox</code></td>
+                        <td>192 bytes</td>
+                        <td>11</td>
+                        <td>1,130–50,690 ms<br>(49,560 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/nvq_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_23</code><br>My Ears Are Pointy</td>
+                    </tr>
+                    <tr>
+                        <td><code>nvq_igc04.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L11_NeverQuest/neverquestGlobalStr/assets/moviesTox</code></td>
+                        <td>80 bytes</td>
+                        <td>4</td>
+                        <td>100–23,720 ms<br>(23,620 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/nvq_igc04_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_24</code><br>My Precious!</td>
+                    </tr>
+                    <tr>
+                        <td><code>rwc_igc03.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L15_Rhymes/rhymesGlobalStr/assets/moviesTox</code></td>
+                        <td>208 bytes</td>
+                        <td>12</td>
+                        <td>900–65,030 ms<br>(64,130 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/rwc_igc03_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_33</code><br>So Long, Suckers!</td>
+                    </tr>
+                    <tr>
+                        <td><code>scd_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L08_TheColossalDonut/colossaldonutGlobalStr/assets/moviesTox</code></td>
+                        <td>64 bytes</td>
+                        <td>3</td>
+                        <td>8,100–43,240 ms<br>(35,140 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/scd_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_19</code><br>Lard Lad</td>
+                    </tr>
+                    <tr>
+                        <td><code>scd_igc03.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L08_TheColossalDonut/colossaldonutGlobalStr/assets/moviesTox</code></td>
+                        <td>112 bytes</td>
+                        <td>6</td>
+                        <td>3,200–26,060 ms<br>(22,860 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/scd_igc03_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_20</code><br>Eat Fist, Lard Crotch!</td>
+                    </tr>
+                    <tr>
+                        <td><code>sss_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L09_Invasion/dayspringfieldstoodstillGlobalStr/assets/moviesTox</code></td>
+                        <td>160 bytes</td>
+                        <td>9</td>
+                        <td>2,940–53,950 ms<br>(51,010 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/sss_igc01_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_15</code><br>A Yokel Is Abducted</td>
+                    </tr>
+                    <tr>
+                        <td><code>sss_igc03.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/</code><br><code>L09_Invasion/dayspringfieldstoodstillGlobalStr/assets/moviesTox</code></td>
+                        <td>208 bytes</td>
+                        <td>12</td>
+                        <td>7,840–66,640 ms<br>(58,800 ms span)</td>
+                        <td><code>A1_Video/{en,es,fr,it}/sss_igc03_&lt;hash&gt;.vp6 / .ogv</code></td>
+                        <td><code>FE_FMV_16</code><br>Sideshow Bob?!</td>
+                    </tr>
+                </tbody>
+            </table>
+            </section>
+
+            <h2 id="example">5. Worked Decoded Example: <code>80b_igc01.tox.PS3</code></h2>
+            <p>The Frontend file <code>80b_igc01_8cd0c6.tox.PS3</code> is 192 bytes: <code>16 + 11 * 16</code>. Its header is <code>31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B</code>. All 11 records have <code>FlagsOrConstant = 0x0012FF30</code>. Offsets are absolute file offsets; speaker codes come from the labels. Localized text below is reproduced from the global tables, including the Spanish sentence stored in the English BUMB entry.</p>
+            <section class="table-scroll" aria-label="All 11 decoded timing records in 80b_igc01" tabindex="0">
+            <table id="decoded-example">
+                <caption>All 11 decoded timing records in 80b_igc01</caption>
+                <thead><tr>
+                    <th scope="col">Offset</th>
+                    <th scope="col">StringID</th>
+                    <th scope="col">SDBM Label</th>
+                    <th scope="col">Speaker</th>
+                    <th scope="col">Start ms</th>
+                    <th scope="col">Duration ms</th>
+                    <th scope="col">End ms</th>
+                    <th scope="col">SRT Start → End</th>
+                    <th scope="col">English</th>
+                    <th scope="col">Spanish</th>
+                    <th scope="col">French</th>
+                    <th scope="col">Italian</th>
+                </tr></thead>
+                <tbody>
+                    <tr>
+                        <td><code>0x0010</code></td>
+                        <td><code>0x3F02A918</code></td>
+                        <td><code>moes_igc_000302f</code></td>
+                        <td><code>MOES</code></td>
+                        <td>70</td>
+                        <td>5,000</td>
+                        <td>5,070</td>
+                        <td><code>00:00:00,070</code><br>→ <code>00:00:05,070</code></td>
+                        <td>When you get out there, remember, no chewing. Chewing&#x27;s for chumps. Nothing but swallow!  Nothing but swallow!</td>
+                        <td>Cuando salgas ahí, recuerda, nada de masticar. Eso es para perdedores. ¡Tú solo traga! ¡Solo traga!</td>
+                        <td>Allez Homer, et surtout souviens-toi : il ne faut pas mâcher. Mâcher, c&#x27;est pour les nuls. Faut avaler direct !  Faut avaler !</td>
+                        <td>Quando sarai lì, ricorda, non masticare. Gli stupidi masticano. Ingoia e basta! Ingoia e basta!</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0020</code></td>
+                        <td><code>0x4246635D</code></td>
+                        <td><code>homr_igc_0003030</code></td>
+                        <td><code>HOMR</code></td>
+                        <td>5,110</td>
+                        <td>3,200</td>
+                        <td>8,310</td>
+                        <td><code>00:00:05,110</code><br>→ <code>00:00:08,310</code></td>
+                        <td>I hope I win.  Last year I was the first guy to barf.</td>
+                        <td>Espero ganar. El año pasado fui el primero en potar.</td>
+                        <td>J&#x27;espère gagner.  L&#x27;année dernière, j&#x27;ai été le premier à dégobiller.</td>
+                        <td>Spero di vincere. L&#x27;anno scorso sono stato il primo a vomitare.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0030</code></td>
+                        <td><code>0x3F03A922</code></td>
+                        <td><code>moes_igc_0003031</code></td>
+                        <td><code>MOES</code></td>
+                        <td>8,380</td>
+                        <td>4,600</td>
+                        <td>12,980</td>
+                        <td><code>00:00:08,380</code><br>→ <code>00:00:12,980</code></td>
+                        <td>Barf? Please, in the business, we refer to that as a &quot;Roman incident&quot;.</td>
+                        <td>¿Vómitos? Por favor. En este negocio, a eso lo llamamos un &quot;accidente romano&quot;.</td>
+                        <td>S&#x27;il te plaît, ne parle pas de vomi. Dans le métier, on appelle ça un &quot;incident à la romaine&quot;.</td>
+                        <td>Vomito? Per favore, nel settore lo chiamiamo &quot;incidente romano&quot;.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0040</code></td>
+                        <td><code>0x4246635F</code></td>
+                        <td><code>homr_igc_0003032</code></td>
+                        <td><code>HOMR</code></td>
+                        <td>13,010</td>
+                        <td>1,370</td>
+                        <td>14,380</td>
+                        <td><code>00:00:13,010</code><br>→ <code>00:00:14,380</code></td>
+                        <td>That does sound a lot classier.</td>
+                        <td>Parece algo con mucha clase.</td>
+                        <td>Ca fait tout de suite plus classe.</td>
+                        <td>Così sembra molto più raffinato.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0050</code></td>
+                        <td><code>0x5B112815</code></td>
+                        <td><code>bart_igc_0003033</code></td>
+                        <td><code>BART</code></td>
+                        <td>14,410</td>
+                        <td>5,510</td>
+                        <td>19,920</td>
+                        <td><code>00:00:14,410</code><br>→ <code>00:00:19,920</code></td>
+                        <td>What are you worried about?  You have video game powers on your side.  It&#x27;s like cheating, but... cheating.</td>
+                        <td>¿Qué te preocupa? Tienes de tu parte los poderes del videojuego. Es como hacer trampa... sin el como.</td>
+                        <td>Pourquoi tu t&#x27;inquiètes ?  T&#x27;as des pouvoirs de jeu vidéo pour t&#x27;aider.  C&#x27;est presque de la triche mais... c&#x27;est de la triche.</td>
+                        <td>Di cosa hai paura? Hai poteri da videogioco dalla tua parte. È come imbrogliare ma... imbrogliando.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0060</code></td>
+                        <td><code>0x42466361</code></td>
+                        <td><code>homr_igc_0003034</code></td>
+                        <td><code>HOMR</code></td>
+                        <td>19,990</td>
+                        <td>1,260</td>
+                        <td>21,250</td>
+                        <td><code>00:00:19,990</code><br>→ <code>00:00:21,250</code></td>
+                        <td>Woo hoo!  Cheating!</td>
+                        <td>¡Yuju! ¡Trampa!</td>
+                        <td>Woo hoo !  De la triche !</td>
+                        <td>Mitico! Si imbroglia!</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0070</code></td>
+                        <td><code>0xDA03206C</code></td>
+                        <td><code>dman_igc_0003035</code></td>
+                        <td><code>DMAN</code></td>
+                        <td>21,960</td>
+                        <td>4,470</td>
+                        <td>26,430</td>
+                        <td><code>00:00:21,960</code><br>→ <code>00:00:26,430</code></td>
+                        <td>Duffman welcomes you to the Duff Ultimate Eating Challenge!</td>
+                        <td>¡Duffman os da la bienvenida al Concurso de Tragones Definitivo!</td>
+                        <td>Duffman vous souhaite la bienvenue au Concours de bouffe suprême Duff !</td>
+                        <td>L&#x27;uomo Duff vi dà il benvenuto alla gara di mangiate estreme della Duff!</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0080</code></td>
+                        <td><code>0x06F1F846</code></td>
+                        <td><code>wili_igc_0003036</code></td>
+                        <td><code>WILI</code></td>
+                        <td>26,460</td>
+                        <td>6,370</td>
+                        <td>32,830</td>
+                        <td><code>00:00:26,460</code><br>→ <code>00:00:32,830</code></td>
+                        <td>I dedicate this gorging to my dearly departed mother.  She choked during a haggis eating contest!</td>
+                        <td>Dedico este atracón a mi querida madre que en paz descanse. ¡Se asfixió comiendo estofado en una competición!</td>
+                        <td>Je dédie mon futur triomphe à feu ma mère bien aimée.  Elle a fait une attaque pendant un concours de bouffe de haggis !</td>
+                        <td>Dedico questa abbuffata alla mia compianta madre. È morta soffocata durante una gara di mangiata di salsicce!</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0090</code></td>
+                        <td><code>0x0C97E7E0</code></td>
+                        <td><code>bumb_igc_0003037</code></td>
+                        <td><code>BUMB</code></td>
+                        <td>33,000</td>
+                        <td>2,400</td>
+                        <td>35,400</td>
+                        <td><code>00:00:33,000</code><br>→ <code>00:00:35,400</code></td>
+                        <td>Hoy recuperare mi dignidad!</td>
+                        <td>Hoy recuperaré mi dignidad.</td>
+                        <td>Aujourd&#x27;hui, je vais recouvrer ma dignité.</td>
+                        <td>Oggi riconquisterò la mia dignità.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x00A0</code></td>
+                        <td><code>0x4CA455AA</code></td>
+                        <td><code>cbgy_igc_0003038</code></td>
+                        <td><code>CBGY</code></td>
+                        <td>35,440</td>
+                        <td>2,500</td>
+                        <td>37,940</td>
+                        <td><code>00:00:35,440</code><br>→ <code>00:00:37,940</code></td>
+                        <td>With great hunger comes great responsibility.</td>
+                        <td>Una gran hambre conlleva una gran responsabilidad.</td>
+                        <td>Grande faim, grandes responsabilités.</td>
+                        <td>Una grande fame comporta grandi responsabilità.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x00B0</code></td>
+                        <td><code>0xDA032070</code></td>
+                        <td><code>dman_igc_0003039</code></td>
+                        <td><code>DMAN</code></td>
+                        <td>38,000</td>
+                        <td>5,380</td>
+                        <td>43,380</td>
+                        <td><code>00:00:38,000</code><br>→ <code>00:00:43,380</code></td>
+                        <td>Gentlemen, start your digestive tracts! On your mark, get set...</td>
+                        <td>¡Caballeros, calienten sus tractos digestivos! Preparados, ¡A TRAGAR!</td>
+                        <td>Messieurs, préparez votre appareil digestif ! A vos marques, prêts... BAFREZ !  Oh, yeah !</td>
+                        <td>Signori, mettete in moto i vostri tubi digerenti! Pronti, partenza...</td>
+                    </tr>
+                </tbody>
+            </table>
+            </section>
+            <p>The first record decodes to <code>StringID = 0x3F02A918</code>, <code>StartTimeMs = 70</code>, and <code>DurationMs = 5000</code>. Its English subtitle interval is <code>00:00:00,070 --&gt; 00:00:05,070</code>; WebVTT uses <code>00:00:00.070 --&gt; 00:00:05.070</code>. The next line begins at 5,110 ms, leaving a 40 ms gap.</p>
+
+            <h2 id="converter">6. Implemented Converter &amp; Output Behavior</h2>
+            <p>Run <code>operations/tox_to_srt.Subtitles.py</code> from the game module root. The default input is <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed</code>. The CLI supports <code>--input-dir</code> / <code>-i</code>, <code>--output-dir</code> / <code>-o</code>, <code>--no-video-pairing</code>, and <code>--include-speaker</code>.</p>
+            <pre><code>python operations/tox_to_srt.Subtitles.py
+python operations/tox_to_srt.Subtitles.py --input-dir "GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed"
+python operations/tox_to_srt.Subtitles.py --output-dir "subtitle_exports" --include-speaker</code></pre>
+            <ul>
+            <li><strong>Default placement:</strong> Alongside each timing file, write <code>&lt;movie&gt;_&lt;hash&gt;.tox.PS3.csv</code> and, for nonempty timing tables, <code>&lt;movie&gt;_&lt;hash&gt;.{en,es,fr,it}.srt</code> and <code>.vtt</code>. The CSV retains every timing record with ID, label, speaker, start / duration / end milliseconds, SRT start / end, constant, and all four translations.</li>
+            <li><strong>Video companions:</strong> With default placement and pairing enabled, also write <code>&lt;video-stem&gt;.srt</code> and <code>&lt;video-stem&gt;.vtt</code> beside matching <code>A1_Video/{en,es,fr,it}/</code> streams. Pair by cleaned stem and language, preserving each video's own suffix. Multiple archive copies are deduplicated for companion writes.</li>
+            <li><strong>Output override:</strong> <code>--output-dir</code> collects outputs into the selected directory and suppresses video-side writes. <code>--no-video-pairing</code> disables companion placement without changing timing-side output.</li>
+            <li><strong>Empty and missing text:</strong> Header-only making-of tables produce a CSV header and no SRT / VTT. Records without localized text remain in CSV and are skipped in that language's subtitle output. SRT cue numbering stays consecutive.</li>
+            <li><strong>Encoding / speakers:</strong> Decode LH2 strings as Windows-1252 and write UTF-8 exports. <code>--include-speaker</code> adds speaker codes to subtitles; labels and speaker columns are always retained in CSV. SRT uses comma milliseconds; WebVTT uses dot milliseconds and a <code>WEBVTT</code> header.</li>
+            </ul>
+
+            <h2 id="reference-parser">7. Reference Python Parser / Converter</h2>
+            <p>This self-contained example combines the SDBM function above with strict corpus validation and single-table global LH2 lookups. It writes SRT, WebVTT, and multilingual CSV next to one timing file. Use the repository converter for recursive discovery, extraction-suffix matching, speaker options, and automatic video placement. The constant / reserved checks below enforce observed PS3 corpus invariants rather than claiming rules for unexamined platforms.</p>
+            <pre><code class="language-python">from pathlib import Path
+import csv
+import struct
+
+def read_tox(path: Path) -&gt; list[tuple[int, int, int, int]]:
+    data = path.read_bytes()
+    if len(data) &lt; 16 or data[:4] != b&quot;1BOT&quot;:
+        raise ValueError(&quot;Invalid or truncated 1BOT header&quot;)
+    size, reserved, count = struct.unpack_from(&quot;&gt;III&quot;, data, 4)
+    if size != len(data) or size != 16 + count * 16:
+        raise ValueError(&quot;FileSize / RecordCount mismatch&quot;)
+    if reserved != 0:
+        raise ValueError(&quot;Unexpected reserved field for this PS3 corpus&quot;)
+    rows = list(struct.iter_unpack(&quot;&gt;IIII&quot;, data[16:]))
+    if any(flags != 0x0012FF30 for _, _, _, flags in rows):
+        raise ValueError(&quot;Unexpected record constant for this PS3 corpus&quot;)
+    return rows
+
+def read_global_lh2(path: Path) -&gt; dict[int, str]:
+    # Single-table simpsons_global.{en,es,fr,it,ss}.LH2 only.
+    data = path.read_bytes()
+    if len(data) &lt; 0x20 or data[:4] != b&quot;2HCL&quot;:
+        raise ValueError(&quot;Invalid LH2 header&quot;)
+    count, tables = struct.unpack_from(&quot;&gt;II&quot;, data, 0x10)
+    if tables != 1 or 0x20 + count * 8 &gt; len(data):
+        raise ValueError(&quot;Expected a complete single-table global LH2&quot;)
+    result = {}
+    for i in range(count):
+        sid = struct.unpack_from(&quot;&gt;I&quot;, data, 0x20 + i * 4)[0]
+        ptr = struct.unpack_from(&quot;&gt;I&quot;, data, 0x20 + count * 4 + i * 4)[0]
+        end = data.find(b&quot;\0&quot;, ptr)
+        if ptr &gt;= len(data) or end &lt; 0:
+            raise ValueError(&quot;Invalid LH2 string pointer / terminator&quot;)
+        result[sid] = data[ptr:end].decode(&quot;cp1252&quot;)
+    return result
+
+def timestamp(ms: int, separator: str = &quot;,&quot;) -&gt; str:
+    seconds, millis = divmod(ms, 1000)
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return f&quot;{hours:02}:{minutes:02}:{seconds:02}{separator}{millis:03}&quot;
+
+def export(tox: Path, globals_by_lang: dict[str, Path], labels_path: Path) -&gt; None:
+    rows = read_tox(tox)
+    labels = read_global_lh2(labels_path)
+    labels.setdefault(sdbm_hash_lower(&quot;bart_igc_000602e&quot;), &quot;bart_igc_000602e&quot;)
+    tables = {lang: read_global_lh2(p) for lang, p in globals_by_lang.items()}
+    stem = tox.name[:-8]  # Remove .tox.PS3; preserve extraction hash suffix.
+    for lang, texts in tables.items():
+        srt, vtt = [], [&quot;WEBVTT\n\n&quot;]
+        for sid, start, duration, flags in rows:
+            text = texts.get(sid, &quot;&quot;).strip()
+            if not text:
+                continue  # Unlocalized cue remains in CSV.
+            end = start + duration
+            srt.append(f&quot;{len(srt)+1}\n{timestamp(start)} --&gt; {timestamp(end)}\n{text}\n\n&quot;)
+            vtt.append(f&quot;{labels.get(sid, f&#x27;{sid:08X}&#x27;)}\n&quot;
+                       f&quot;{timestamp(start, &#x27;.&#x27;)} --&gt; {timestamp(end, &#x27;.&#x27;)}\n{text}\n\n&quot;)
+        if rows:
+            tox.with_name(f&quot;{stem}.{lang}.srt&quot;).write_text(&quot;&quot;.join(srt), encoding=&quot;utf-8&quot;)
+            tox.with_name(f&quot;{stem}.{lang}.vtt&quot;).write_text(&quot;&quot;.join(vtt), encoding=&quot;utf-8&quot;)
+    with tox.with_name(tox.name + &quot;.csv&quot;).open(&quot;w&quot;, encoding=&quot;utf-8&quot;, newline=&quot;&quot;) as out:
+        writer = csv.writer(out)
+        writer.writerow([&quot;StringID&quot;, &quot;Label&quot;, &quot;StartMs&quot;, &quot;DurationMs&quot;, &quot;EndMs&quot;, &quot;Flags&quot;, *tables])
+        for sid, start, duration, flags in rows:
+            writer.writerow([f&quot;{sid:08X}&quot;, labels.get(sid, &quot;&quot;), start, duration,
+                             start + duration, f&quot;0x{flags:08X}&quot;,
+                             *[texts.get(sid, &quot;&quot;) for texts in tables.values()]])
+
+# export(Path(&quot;80b_igc01.tox.PS3&quot;),
+#        {lang: Path(f&quot;simpsons_global.{lang}.LH2&quot;) for lang in (&quot;en&quot;, &quot;es&quot;, &quot;fr&quot;, &quot;it&quot;)},
+#        Path(&quot;simpsons_global.ss.LH2&quot;))</code></pre>
+
+            <h2 id="hex-dumps">8. Preserved Original Hex Dumps</h2>
+            <p>The original dump section follows unchanged, including its historical extraction paths. The specification above supersedes the preliminary hash and flag interpretations.</p>
         </div>
 
         <section class='bodyy'>
