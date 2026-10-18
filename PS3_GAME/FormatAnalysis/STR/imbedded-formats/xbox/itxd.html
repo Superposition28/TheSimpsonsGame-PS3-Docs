@@ -1,12 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Instanced Texture Dictionary (.itxd) - Complete Format Analysis</title>
     <link rel="stylesheet" href="../../../../../style/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body style="padding: 1.5rem;padding-top: 2rem;">
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../../index.html">Format index</a><span>/</span>Xbox 360 instanced textures (.itxd)</nav>
+
     <h1>Instanced Texture Dictionary (.itxd)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Stores Xbox 360 native texture data in an instanced dictionary layout.</p>
+<dl><dt>Identification</dt><dd>RenderWare/EA instanced texture framing described below.</dd><dt>Byte order / text</dt><dd>Mixed; Xenos tiling and byte order differ from PS3 native textures.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#architectural-comparison-txd-vs-itxd">Architectural Comparison (.txd vs .itxd)</a></li><li><a href="#parsing-algorithm-overview">Parsing Algorithm Overview</a></li><li><a href="#file-header-container-layout">File Header &amp; Container Layout</a></li><li><a href="#format-codes-pixel-layout">Format Codes &amp; Pixel Layout</a></li><li><a href="#xbox-360-xenos-untiling-padding">Xbox 360 Xenos Untiling &amp; Padding</a></li><li><a href="#complete-parsing-example-pseudocode">Complete Parsing Example (Pseudocode)</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../txd.html">Texture dictionary (.txd)</a></td><td>Platform comparison</td><td>Both represent texture dictionaries; PS3 native textures and Xbox Xenos tiled textures require different decoding paths. A platform suffix substitution cannot convert the data.</td></tr></tbody></table></div><p>See the <a href="../../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Operation 3 is registered for txd extraction, not ITXD. Research pseudocode and cross-platform similarity do not constitute a registered Xbox texture conversion.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
 
     <p><strong>Version:</strong> 1.0<br>
     <strong>Last Updated:</strong> 2026-10-05<br>
@@ -17,14 +32,14 @@
     <p><strong>Endianness:</strong> Big-Endian (PowerPC native) for integers and descriptors; 16-bit byte-swapped (<code>GPUENDIAN_8IN16</code>) for DXT block payloads.<br>
     <strong>Character Encoding:</strong> ASCII / UTF-8 (null-padded fixed 64-byte field).</p>
 
-    <h2>Architectural Comparison (.txd vs .itxd)</h2>
+    <h2 id="architectural-comparison-txd-vs-itxd">Architectural Comparison (.txd vs .itxd)</h2>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Feature</th>
-                <th>PS3 <code>.txd</code> (Streamed RenderWare)</th>
-                <th>Xbox 360 <code>.itxd</code> (Instanced / Pre-serialized)</th>
+                <th scope="col">Feature</th>
+                <th scope="col">PS3 <code>.txd</code> (Streamed RenderWare)</th>
+                <th scope="col">Xbox 360 <code>.itxd</code> (Instanced / Pre-serialized)</th>
             </tr>
         </thead>
         <tbody>
@@ -59,9 +74,9 @@
                 <td><code>RGBA</code> / <code>ARGB</code> byte-reversed RGB (e.g., <code>20 2D 79 00</code>)</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
-    <h2>Parsing Algorithm Overview</h2>
+    <h2 id="parsing-algorithm-overview">Parsing Algorithm Overview</h2>
 
     <ol>
         <li>Validate the 4-byte magic signature <code>75 7A 00 03</code> at offset <code>0x00</code> and the EA plugin ID <code>00 00 EA 2F</code> at offset <code>0x08</code>.</li>
@@ -74,18 +89,18 @@
         <li>Export the linear surface to DDS.</li>
     </ol>
 
-    <h2>File Header &amp; Container Layout</h2>
+    <h2 id="file-header-container-layout">File Header &amp; Container Layout</h2>
 
-    <h3>1. Instanced Arena Header (<code>0x00</code> – <code>0x37</code>)</h3>
+    <h3>Instanced Arena Header (<code>0x00</code> – <code>0x37</code>)</h3>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Offset</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Endian</th>
-                <th>Description</th>
+                <th scope="col">Offset</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Endian</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -139,18 +154,18 @@
                 <td>Arena section offsets: <code>0x30</code>, <code>0x30</code>, <code>0x00</code>, <code>0xA0</code>, <code>0x00</code>, <code>0x18</code>, <code>0x18</code>.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
-    <h3>2. Texture Identification &amp; EA Hash Block (<code>0x38</code> – <code>0x9F</code>)</h3>
+    <h3>Texture Identification &amp; EA Hash Block (<code>0x38</code> – <code>0x9F</code>)</h3>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Offset</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Endian</th>
-                <th>Description</th>
+                <th scope="col">Offset</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Endian</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -190,19 +205,19 @@
                 <td>Zero padding up to offset <code>0xA0</code>.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
-    <h3>3. Dimension &amp; Payload Table (<code>0xA0</code> – <code>0xE3</code>)</h3>
+    <h3>Dimension &amp; Payload Table (<code>0xA0</code> – <code>0xE3</code>)</h3>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Offset</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Endian</th>
-                <th>Name</th>
-                <th>Description</th>
+                <th scope="col">Offset</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Endian</th>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -327,20 +342,20 @@
                 <td>Total byte size of the pixel data blob starting at <code>0x4B0</code> (e.g., <code>0x1000</code> for 64x64 DXT, <code>0x556000</code> for 1024x1024 RGBA with 6 mips).</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
-    <h3>4. Xbox 360 <code>D3DBaseTexture</code> Descriptor (<code>0xE4</code> – <code>0x117</code>)</h3>
+    <h3>Xbox 360 <code>D3DBaseTexture</code> Descriptor (<code>0xE4</code> – <code>0x117</code>)</h3>
 
     <p>This 52-byte region is an embedded Xbox 360 Direct3D 9 <code>D3DBaseTexture</code> header containing the hardware texture fetch constant registers (<code>GPUTEXTURE_FETCH_CONSTANT</code>) for the Xenos GPU.</p>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Offset</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Endian</th>
-                <th>Description</th>
+                <th scope="col">Offset</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Endian</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -386,18 +401,18 @@
                 <td>Zero padding up to the 4KB-aligned/sector-aligned data start at offset <code>0x4B0</code> (1,200 bytes).</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
-    <h2>Format Codes &amp; Pixel Layout</h2>
+    <h2 id="format-codes-pixel-layout">Format Codes &amp; Pixel Layout</h2>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Header Byte (<code>0xED</code>)</th>
-                <th>Fetch Format (<code>0xFF</code>)</th>
-                <th>Format Name</th>
-                <th>BPP (<code>0xB4</code>)</th>
-                <th>Handling</th>
+                <th scope="col">Header Byte (<code>0xED</code>)</th>
+                <th scope="col">Fetch Format (<code>0xFF</code>)</th>
+                <th scope="col">Format Name</th>
+                <th scope="col">BPP (<code>0xB4</code>)</th>
+                <th scope="col">Handling</th>
             </tr>
         </thead>
         <tbody>
@@ -423,9 +438,9 @@
                 <td>Untile Xenos 32x32 macro-tiles. Swap R and B channels if converting to PS3/DDS BGRA.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
-    <h2>Xbox 360 Xenos Untiling &amp; Padding</h2>
+    <h2 id="xbox-360-xenos-untiling-padding">Xbox 360 Xenos Untiling &amp; Padding</h2>
 
     <p><strong>Macro-Tile Padding:</strong> The Xbox 360 Xenos GPU organises textures into <strong>32x32</strong> macro-tiles (composed of 8x8 micro-tiles). For DXT block-compressed textures, each 4x4 texel block is treated as a single element, meaning a 32x32 block macro-tile covers <strong>128x128 pixels</strong> (4,096 bytes for DXT3/5). Consequently:</p>
 
@@ -440,7 +455,7 @@
         <li><strong>Xbox 360 <code>.itxd</code> (RGBA):</strong> <code>20 2D 79 00</code>, <code>22 31 7E 1C</code>, <code>24 35 83 00</code></li>
     </ul>
 
-    <h2>Complete Parsing Example (Pseudocode)</h2>
+    <h2 id="complete-parsing-example-pseudocode">Complete Parsing Example (Pseudocode)</h2>
 
     <pre><code>
 function parse_itxd(file_data) {

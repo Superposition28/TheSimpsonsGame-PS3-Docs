@@ -6,79 +6,35 @@
     <title>.tox.PS3 Format Documentation</title>
     <link rel="stylesheet" href="../../../../style/main.css">
 
-<style>
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1rem 0 2rem;
-                background: #181818;
-                border: 1px solid #343434;
-            }
-            th, td {
-                padding: 0.6rem 0.9rem;
-                border: 1px solid #2a2a2a;
-                text-align: left;
-                vertical-align: top;
-            }
-            thead th {
-                color: #f0f4f8;
-                background: #242424;
-            }
-            tbody tr:hover {
-                background: #20252b;
-            }
-            code {
-                background: #242424;
-                color: #ce9178;
-                padding: 2px 5px;
-                border-radius: 4px;
-                font-family: monospace;
-            }
-            pre code {
-                display: block;
-                background: #141414;
-                border: 1px solid #2f2f2f;
-                padding: 14px;
-                overflow-x: auto;
-                color: #d7e1eb;
-                font-size: 0.88rem;
-                line-height: 1.45;
-            }
-            .callout {
-                background: #18202c;
-                border-left: 4px solid #58a6ff;
-                padding: 12px 16px;
-                margin: 1rem 0 1.5rem;
-                border-radius: 4px;
-            }
-            .callout-warn {
-                background: #281d15;
-                border-left: 4px solid #db6d28;
-                padding: 12px 16px;
-                margin: 1rem 0 1.5rem;
-                border-radius: 4px;
-            }
-            .table-scroll { max-width: 100%; overflow-x: auto; margin: 1rem 0 2rem; }
-            .table-scroll table { margin: 0; }
-            caption { text-align: left; padding: 0.7rem; font-weight: bold; color: #f0f4f8; }
-            #movie-inventory { min-width: 1300px; }
-            #decoded-example { min-width: 2400px; }
-            #decoded-example td:nth-child(n+9) { min-width: 240px; white-space: pre-wrap; }
-            .doc-overview { min-width: 0; }
-        </style>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body>
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>FMV subtitle timing (.tox.PS3)</nav>
+
     <div class="pages">
         <div class="doc-overview" id="overview">
             <h1>EA FMV Subtitle Timing Table (<code>.tox.PS3</code> / <code>1BOT</code>)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
+<p>Connects movie-time intervals to LH2 string IDs; contains timing and flags rather than subtitle text.</p>
+<dl><dt>Identification</dt><dd>1BOT at 0x00; 16-byte header and 16-byte records.</dd><dt>Byte order / text</dt><dd>Big-endian numeric fields; start and duration are milliseconds.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#purpose">Overview &amp; Purpose</a></li><li><a href="#layout">Binary Structure (Big-Endian)</a></li><li><a href="#hash">Exact Hash Algorithm: Lowercase SDBM (Multiplier 65599)</a></li><li><a href="#cross-reference">Cross-Reference with .LH2 Localization &amp; .vp6 Movies</a></li><li><a href="#inventory">Complete Inventory: 77 Files, 43 Distinct Movie Tables</a></li><li><a href="#example">Worked Decoded Example: 80b_igc01.tox.PS3</a></li><li><a href="#converter">Implemented Converter &amp; Output Behavior</a></li><li><a href="#reference-parser">Illustrative Python Parser</a></li><li><a href="#hex-dumps">Preserved Original Hex Dumps</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../index.html">STR archive</a></td><td>Implemented</td><td>Timing tables are extracted from archives rather than embedded in the converted OGV output.</td></tr><tr><td><a href="inf.html">Bitmap font descriptor (.inf)</a></td><td>Rendering context</td><td>A subtitle renderer can display TOX-timed LH2 text using an INF-derived FNT and atlas. TOX contains no font selection or atlas pointer, and operation 16 does not require operation 15.</td></tr><tr><td><a href="lh2.html">Localization table (.LH2)</a></td><td>Implemented</td><td>Operation 16 joins each TOX StringID to first-column global LH2 text by the same 32-bit ID. The .ss.LH2 variant supplies labels; .en/.es/.fr/.it supply the four output languages.</td></tr><tr><td><a href="../../VP6/index.html">Movie container (.vp6)</a></td><td>Implemented</td><td>Operation 16 matches cleaned timing/movie stems plus the parent language folder under A1_Video. It writes SRT/VTT beside matching VP6 or OGV files. StartMs and StartMs + DurationMs are the cue bounds.</td></tr><tr><td><a href="en.LH2.html">English LH2 variant (.en.LH2)</a></td><td>Implemented</td><td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td></tr><tr><td><a href="es.LH2.html">Spanish LH2 variant (.es.LH2)</a></td><td>Implemented</td><td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td></tr><tr><td><a href="fr.LH2.html">French LH2 variant (.fr.LH2)</a></td><td>Implemented</td><td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td></tr><tr><td><a href="it.LH2.html">Italian LH2 variant (.it.LH2)</a></td><td>Implemented</td><td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td></tr><tr><td><a href="ss.LH2.html">Internal string labels LH2 variant (.ss.LH2)</a></td><td>Implemented</td><td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../../pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li></ul><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The layout has been checked against all 77 EU timing files. Flag semantics remain unresolved. The missing Bart cue is handled by a documented converter fallback; that fallback is not text recovered from the original table.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
             <p><strong>Version:</strong> 1.0<br>
             <strong>Last Updated:</strong> 2026-10-18<br>
             <strong>Author(s):</strong> samarixum, Gemini / Codex</p>
 
             <h2 id="purpose">Overview &amp; Purpose</h2>
             <p><code>.tox.PS3</code> is Electronic Arts' binary subtitle timing table used in <em>The Simpsons Game</em> (PS3) to synchronize localized subtitles during pre-rendered On2 VP6 Full-Motion Video cutscenes and mission briefings. Companion movies are stored under <code>A1_Video/{en,es,fr,it,sf}/*.vp6</code>; extracted / converted video collections also contain <code>.ogv</code> copies. The magic bytes are <code>1BOT</code> (<code>31 42 4F 54</code>), or <code>"TOB1"</code> when interpreted as a Little-Endian 32-bit FourCC. Numeric fields are <strong>Big-Endian</strong>.</p>
-            <p>The table contains timing and string IDs; subtitle text lives in companion <code>.LH2</code> localization files. <code>StringID</code> identifies a dialogue label, not a text offset or an audio filename. <code>operations/tox_to_srt.Subtitles.py</code> resolves all timing tables against <code>simpsons_global.{en,es,fr,it,ss}.LH2</code> and exports standard <strong>SubRip (.srt)</strong>, <strong>WebVTT (.vtt)</strong>, and <strong>multilingual .csv</strong> files, including .srt/.vtt files directly alongside matching localized .ogv/.vp6 streams in <code>A1_Video/{en,es,fr,it}/</code>.</p>
+            <p>The table contains timing and string IDs; subtitle text lives in companion <code>.LH2</code> localization files. <code>StringID</code> identifies a dialogue label, not a text offset or an audio filename. <code>operations/tox_to_srt.Subtitles.lua</code> resolves all timing tables against <code>simpsons_global.{en,es,fr,it,ss}.LH2</code> and exports standard <strong>SubRip (.srt)</strong>, <strong>WebVTT (.vtt)</strong>, and <strong>multilingual .csv</strong> files, including .srt/.vtt files directly alongside matching localized .ogv/.vp6 streams in <code>A1_Video/{en,es,fr,it}/</code>.</p>
             <nav aria-label="Specification contents"><ul>
             <li><a href="#layout">Binary layout</a> and <a href="#hash">exact SDBM hash algorithm</a></li>
             <li><a href="#cross-reference">Localization / video cross-reference and the cut Bart cue</a></li>
@@ -89,11 +45,11 @@
             </ul></nav>
             <div class="callout"><strong>Validation scope:</strong> All 77 files in <code>PS3-EU-FullFlattened-audio_reorg-isRenamed</code> satisfy the exact header / record layout (825 records, 398 distinct StringIDs). Every timing ID has an identified SDBM label; 824 / 825 records (397 / 398 unique IDs) resolve directly to global localization entries. The single missing localized cue is documented below. All 34 active movies match localized video stems in four languages.</div>
 
-            <h2 id="layout">1. Binary Structure (Big-Endian)</h2>
+            <h2 id="layout">Binary Structure (Big-Endian)</h2>
             <p>The file consists of a 16-byte header followed immediately by <code>RecordCount</code> contiguous 16-byte timing records. There are no string payloads, record pointers, or trailing bytes. Offset ranges below use an exclusive upper bound.</p>
             <h3>16-Byte Header (<code>0x00..0x10</code>)</h3>
             <section class="table-scroll" aria-label="16-byte header: [0x00, 0x10)" tabindex="0">
-            <table>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
                 <caption>16-byte header: [0x00, 0x10)</caption>
                 <thead><tr>
                     <th scope="col">Offset</th>
@@ -127,12 +83,12 @@
                         <td>Number of 16-byte timing records; observed range 0–41.</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             </section>
             <h3>16-Byte Timing Record Array (<code>0x10..EOF</code>)</h3>
             <p>Array size: <code>RecordCount * 16</code> bytes. Zero-based record <code>i</code> starts at <code>0x10 + i * 0x10</code>.</p>
             <section class="table-scroll" aria-label="16-byte timing record: array begins at 0x10" tabindex="0">
-            <table>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
                 <caption>16-byte timing record: array begins at 0x10</caption>
                 <thead><tr>
                     <th scope="col">Relative Offset</th>
@@ -166,12 +122,12 @@
                         <td>Always <code>0x0012FF30</code> (1,244,976) across all 825 records in all 77 files.</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             </section>
             <div class="callout-warn"><strong>Constant interpretation:</strong> The bytes <code>00 12 FF 30</code> are fully verified; their provenance is an inference. <code>0x0012FF30</code> resembles an uninitialized 32-bit stack-pointer value copied by EA's offline Windows x86 exporter, or a fixed runtime placeholder. No changing flag bits or rendering semantics have been demonstrated. Preserve the value when reproducing this corpus.</div>
             <p>Timing units are milliseconds, not frames. Preserve each start and duration independently; use <code>start + duration</code> for its end. Do not derive one cue's end from the next cue's start or force a uniform inter-cue gap. Header-only files are valid empty tables, not truncated data.</p>
 
-            <h2 id="hash">2. Exact Hash Algorithm: Lowercase SDBM (Multiplier 65599)</h2>
+            <h2 id="hash">Exact Hash Algorithm: Lowercase SDBM (Multiplier 65599)</h2>
             <div class="callout-warn"><strong>Correction to the preliminary notes:</strong> <code>StringID</code> is <strong>not FNV-1</strong>. Comparing all 3,352 global labels in <code>simpsons_global.ss.LH2</code> and all 554 multi-table .LH2 files (14,439 entries) establishes a 100% match to case-insensitive, lowercased SDBM with multiplier <code>65599</code>, initial seed <code>0</code>, and 32-bit wraparound.</div>
             <p><code>.ss.LH2</code> stores raw internal labels instead of Spanish text; Spanish is <code>.es.LH2</code>. Lowercase the label, encode it as Windows-1252, and accumulate each byte:</p>
             <pre><code class="language-python">def sdbm_hash_lower(label: str) -&gt; int:
@@ -181,7 +137,7 @@
     return h</code></pre>
             <p>Every timing record hashes a label of the form <code>&lt;speaker&gt;_igc_&lt;7_char_id&gt;</code>. Speaker prefixes include <code>bart</code>, <code>homr</code>, <code>moes</code>, <code>dman</code>, <code>godx</code>, <code>gron</code>, <code>shak</code>, and <code>grmp</code>. Use the exact label spelling; the Willie label in the worked example is <code>wili_igc_0003036</code>.</p>
             <section class="table-scroll" aria-label="Verified hash examples" tabindex="0">
-            <table>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
                 <caption>Verified hash examples</caption>
                 <thead><tr>
                     <th scope="col">Internal Label</th>
@@ -205,16 +161,16 @@
                         <td><code>0xDA03206C</code></td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             </section>
 
-            <h2 id="cross-reference">3. Cross-Reference with .LH2 Localization &amp; .vp6 Movies</h2>
+            <h2 id="cross-reference">Cross-Reference with .LH2 Localization &amp; .vp6 Movies</h2>
             <p>Join the Big-Endian <code>StringID</code> to the same ID in <code>simpsons_global.en.LH2</code>, <code>.es.LH2</code>, <code>.fr.LH2</code>, and <code>.it.LH2</code> for English, Spanish, French, and Italian text. Join to <code>simpsons_global.ss.LH2</code> for the original internal label and speaker prefix. Extraction may append a six-hex-digit suffix before the extension, e.g. <code>simpsons_global_3fc164.ss.LH2</code>.</p>
             <p>Direct global-table coverage is <strong>824 / 825 timing records</strong> and <strong>397 / 398 distinct IDs</strong>. After identifying the one cut cue by its exact SDBM label, all 398 timing IDs are accounted for, but that cue still has no localized text. Video matching uses the cleaned movie stem after removing the extraction suffix, not the subtitle StringID.</p>
             <h3>The Single Unmatched Localization Record: <code>0xE6A49A45</code></h3>
             <p>In <code>gam_igc04_db5067.tox.PS3</code>, zero-based <strong>record #26</strong> (the 27th and final entry, at file offset <code>0x1B0</code>) begins at <strong>80,612 ms</strong>, lasts <strong>1,000 ms</strong>, and ends at <strong>81,612 ms</strong>. The preceding zero-based records #22..#25 are the 1,000 ms falling screams into the Game Engine portal:</p>
             <section class="table-scroll" aria-label="Portal scream sequence in gam_igc04; final label recovered by SDBM" tabindex="0">
-            <table>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
                 <caption>Portal scream sequence in gam_igc04; final label recovered by SDBM</caption>
                 <thead><tr>
                     <th scope="col">Zero-Based Record</th>
@@ -254,11 +210,11 @@
                         <td>1,000 ms</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             </section>
             <p><code>sdbm_hash_lower("bart_igc_000602e") == 0xE6A49A45</code>. The global tables jump directly from <code>bart_igc_000602d</code> (<code>0xE6A49A44</code>) to <code>bart_igc_000602f</code> (<code>0xE6A49A46</code>), omitting <code>000602e</code>. This identifies the leftover cue as a cut one-second Bart scream. The converter recovers its label for CSV reporting and skips the missing text in SRT / VTT output.</p>
 
-            <h2 id="inventory">4. Complete Inventory: 77 Files, 43 Distinct Movie Tables</h2>
+            <h2 id="inventory">Complete Inventory: 77 Files, 43 Distinct Movie Tables</h2>
             <ul>
             <li><code>A2_Frontend/frontendStr/assets/moviesTox/</code> contains all <strong>43 distinct named movie tables</strong> for the Frontend Movie Browser (<code>FE_FMV_MovieBrowser</code>) and global playback.</li>
             <li>The 16 episode archives, <code>L01_LandOfChocolate</code> through <code>L16_MeetThyPlayer</code>, contain <strong>34 byte-identical duplicate files</strong> for their respective intro / outro / briefing movies: <strong>43 + 34 = 77</strong>. “43 distinct” counts movie names, not distinct binary payloads; the six empty tables share identical header bytes.</li>
@@ -268,7 +224,7 @@
             </ul>
             <p>All paths in the following table are relative to <code>PS3-EU-FullFlattened-audio_reorg-isRenamed/</code>. Movie names omit the extraction-specific six-hex suffix. <strong>Duration Span</strong> means earliest cue start to latest cue end, followed by their difference; it is not the video's full runtime. <code>&lt;hash&gt;</code> denotes the per-file extraction suffix, which may differ by language. The final column gives the title key from <code>simpsons_gameflow.lua</code> and its English localization; absent keys are explicitly marked.</p>
             <section class="table-scroll" aria-label="All 43 distinct named .tox.PS3 movie tables" tabindex="0">
-            <table id="movie-inventory">
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table id="movie-inventory">
                 <caption>All 43 distinct named .tox.PS3 movie tables</caption>
                 <thead><tr>
                     <th scope="col">Movie Name</th>
@@ -668,13 +624,13 @@
                         <td><code>FE_FMV_16</code><br>Sideshow Bob?!</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             </section>
 
-            <h2 id="example">5. Worked Decoded Example: <code>80b_igc01.tox.PS3</code></h2>
+            <h2 id="example">Worked Decoded Example: <code>80b_igc01.tox.PS3</code></h2>
             <p>The Frontend file <code>80b_igc01_8cd0c6.tox.PS3</code> is 192 bytes: <code>16 + 11 * 16</code>. Its header is <code>31 42 4F 54 00 00 00 C0 00 00 00 00 00 00 00 0B</code>. All 11 records have <code>FlagsOrConstant = 0x0012FF30</code>. Offsets are absolute file offsets; speaker codes come from the labels. Localized text below is reproduced from the global tables, including the Spanish sentence stored in the English BUMB entry.</p>
             <section class="table-scroll" aria-label="All 11 decoded timing records in 80b_igc01" tabindex="0">
-            <table id="decoded-example">
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table id="decoded-example">
                 <caption>All 11 decoded timing records in 80b_igc01</caption>
                 <thead><tr>
                     <th scope="col">Offset</th>
@@ -846,15 +802,13 @@
                         <td>Signori, mettete in moto i vostri tubi digerenti! Pronti, partenza...</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             </section>
             <p>The first record decodes to <code>StringID = 0x3F02A918</code>, <code>StartTimeMs = 70</code>, and <code>DurationMs = 5000</code>. Its English subtitle interval is <code>00:00:00,070 --&gt; 00:00:05,070</code>; WebVTT uses <code>00:00:00.070 --&gt; 00:00:05.070</code>. The next line begins at 5,110 ms, leaving a 40 ms gap.</p>
 
-            <h2 id="converter">6. Implemented Converter &amp; Output Behavior</h2>
-            <p>Run <code>operations/tox_to_srt.Subtitles.py</code> from the game module root. The default input is <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed</code>. The CLI supports <code>--input-dir</code> / <code>-i</code>, <code>--output-dir</code> / <code>-o</code>, <code>--no-video-pairing</code>, and <code>--include-speaker</code>.</p>
-            <pre><code>python operations/tox_to_srt.Subtitles.py
-python operations/tox_to_srt.Subtitles.py --input-dir "GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed"
-python operations/tox_to_srt.Subtitles.py --output-dir "subtitle_exports" --include-speaker</code></pre>
+            <h2 id="converter">Implemented Converter &amp; Output Behavior</h2>
+            <p>Run registered operation 16 from the engine root (<code>A:/RemakeEngine/Main</code>). Its Lua entry point is <code>operations/tox_to_srt.Subtitles.lua</code>. The default input is <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed</code>. The CLI supports <code>--input-dir</code> / <code>-i</code>, <code>--output-dir</code> / <code>-o</code>, <code>--no-video-pairing</code>, and <code>--include-speaker</code>.</p>
+            <pre><code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 16</code></pre>
             <ul>
             <li><strong>Default placement:</strong> Alongside each timing file, write <code>&lt;movie&gt;_&lt;hash&gt;.tox.PS3.csv</code> and, for nonempty timing tables, <code>&lt;movie&gt;_&lt;hash&gt;.{en,es,fr,it}.srt</code> and <code>.vtt</code>. The CSV retains every timing record with ID, label, speaker, start / duration / end milliseconds, SRT start / end, constant, and all four translations.</li>
             <li><strong>Video companions:</strong> With default placement and pairing enabled, also write <code>&lt;video-stem&gt;.srt</code> and <code>&lt;video-stem&gt;.vtt</code> beside matching <code>A1_Video/{en,es,fr,it}/</code> streams. Pair by cleaned stem and language, preserving each video's own suffix. Multiple archive copies are deduplicated for companion writes.</li>
@@ -863,7 +817,7 @@ python operations/tox_to_srt.Subtitles.py --output-dir "subtitle_exports" --incl
             <li><strong>Encoding / speakers:</strong> Decode LH2 strings as Windows-1252 and write UTF-8 exports. <code>--include-speaker</code> adds speaker codes to subtitles; labels and speaker columns are always retained in CSV. SRT uses comma milliseconds; WebVTT uses dot milliseconds and a <code>WEBVTT</code> header.</li>
             </ul>
 
-            <h2 id="reference-parser">7. Reference Python Parser / Converter</h2>
+            <h2 id="reference-parser">Illustrative Python Parser</h2>
             <p>This self-contained example combines the SDBM function above with strict corpus validation and single-table global LH2 lookups. It writes SRT, WebVTT, and multilingual CSV next to one timing file. Use the repository converter for recursive discovery, extraction-suffix matching, speaker options, and automatic video placement. The constant / reserved checks below enforce observed PS3 corpus invariants rather than claiming rules for unexamined platforms.</p>
             <pre><code class="language-python">from pathlib import Path
 import csv
@@ -938,11 +892,11 @@ def export(tox: Path, globals_by_lang: dict[str, Path], labels_path: Path) -&gt;
 #        {lang: Path(f&quot;simpsons_global.{lang}.LH2&quot;) for lang in (&quot;en&quot;, &quot;es&quot;, &quot;fr&quot;, &quot;it&quot;)},
 #        Path(&quot;simpsons_global.ss.LH2&quot;))</code></pre>
 
-            <h2 id="hex-dumps">8. Preserved Original Hex Dumps</h2>
+            <h2 id="hex-dumps">Preserved Original Hex Dumps</h2>
             <p>The original dump section follows unchanged, including its historical extraction paths. The specification above supersedes the preliminary hash and flag interpretations.</p>
         </div>
 
-        <section class='bodyy'>
+        <details class="research-appendix"><summary>Preserved sample hex dumps</summary><section class='bodyy'>
             <h1>.tox.PS3 Files: Hex Dump Analysis</h1>
             <div class='file-block'>
                 <div class='file-path'><strong>File:</strong>
@@ -2308,7 +2262,7 @@ def export(tox: Path, globals_by_lang: dict[str, Path], labels_path: Path) -&gt;
 00000150  5B C1 43 E2 00 01 F9 14 00 00 0C 1C 00 12 FF 30  |[.C............0|
 00000160  2D D7 4E E1 00 02 05 58 00 00 0B B8 00 12 FF 30  |-.N....X.......0|</pre>
             </div>
-        </section>
+        </section></details>
     </div>
 </body>
 

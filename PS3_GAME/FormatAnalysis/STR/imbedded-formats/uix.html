@@ -6,17 +6,32 @@
     <title>.uix Format Documentation</title>
     <link rel="stylesheet" href="../../../../style/main.css">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body>
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Compiled APT interface (.uix)</nav>
+
     <div class="pages">
         <div class="doc-overview" id="overview">
             <h1>EA APT UIX Format (.uix)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Contains UI modules, APT payloads and references to UI names/resources.</p>
+<dl><dt>Identification</dt><dd>Observed uixf, titl, alig and apti chunks; Apt Data:74 marker.</dd><dt>Byte order / text</dt><dd>Per-chunk; candidate big-endian payload fields need validation.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#standard-chunk-structure">Standard Chunk Structure</a></li><li><a href="#observed-file-variants">Observed File Variants</a></li><li><a href="#apt-and-actionscript-style-observations">APT and ActionScript-style observations</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="inf.html">Bitmap font descriptor (.inf)</a></td><td>Observed/context</td><td>UIX samples contain font names; INF/TXD resources provide bitmap-font data. A specific UIX name-to-INF mapping must be verified per module rather than assumed from proximity.</td></tr><tr><td><a href="txd.html">Texture dictionary (.txd)</a></td><td>Observed/context</td><td>UIX samples name visual resources and shared dictionaries; TXD supplies decoded texture assets. The complete UI resource resolver is not implemented.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>APT and ActionScript-like strings are observed. They do not prove Scaleform middleware, a complete Flash runtime or an executable UI reconstruction. Font names can suggest associations but need explicit resource matching.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
             <p>These are modular, compiled containers for EA's proprietary
                 APT UI framework. They manage various layers of the UI stack, bridging engine data, physical inputs, and
-                Adobe Flash/Scaleform assets.</p>
+                APT interface resources and ActionScript-style concepts.</p>
 
-            <h2>Standard Chunk Structure</h2>
+            <h2 id="standard-chunk-structure">Standard Chunk Structure</h2>
             <p>Regardless of their function, <code>.uix</code> files share a strict internal hierarchy:</p>
             <ul>
                 <li><strong><code>uixf</code> (Magic Header):</strong> The signature identifying the compiled UI
@@ -30,7 +45,7 @@
                     arrays, and string pools.</li>
             </ul>
 
-            <h2>Observed File Variants</h2>
+            <h2 id="observed-file-variants">Observed File Variants</h2>
             <p>Instead of a monolithic layout format, <code>.uix</code> files instantiate distinct object classes based
                 on their role within the game's UI hierarchy:</p>
             <ul>
@@ -47,9 +62,8 @@
                     loaded globally to prevent memory duplication.</li>
             </ul>
 
-            <h2>Flash / Scaleform Integration</h2>
-            <p>The hex data in <code>base.uix</code> explicitly confirms the APT framework relies on embedded Adobe
-                Flash elements to drive the UI. Embedded strings reveal standard ActionScript paradigms:</p>
+            <h2 id="apt-and-actionscript-style-observations">APT and ActionScript-style observations</h2>
+            <p>The strings in <code>base.uix</code> show APT and ActionScript-style concepts. These observations do not establish Scaleform middleware or a complete Flash runtime. Embedded strings reveal standard ActionScript paradigms:</p>
             <ul>
                 <li><strong>MovieClip Execution:</strong> Engine handlers natively reference Flash objects and commands
                     like <code>movieClipAnimation</code>, <code>startMovieClipPulse</code>, and standard layer targeting
@@ -64,8 +78,8 @@
         </div>
     </div>
 
-    <section class='bodyy'>
-        <h1>.smb Files: Hex Dump Analysis</h1>
+    <details class="research-appendix"><summary>Preserved sample hex dumps</summary><section class='bodyy'>
+        <h1>.uix Files: Hex Dump Analysis</h1>
         <div class='file-block'>
             <div class='file-path'><strong>File:</strong>
                 A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Characters\simpsons_chars_global_str\build\PS3\pal_en\assets\shared\ui\menus\options\stub_team_photo\TeamPhoto.uix
@@ -20407,9 +20421,8 @@
 00012AB0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00012AC0  00 00 00 00 00 02 DE 02 E2 05 22 01 1E 04 00 00  |..........&quot;.....|</pre>
         </div>
-    </section>
+    </section></details>
 
-    </div>
 </body>
 
 </html>

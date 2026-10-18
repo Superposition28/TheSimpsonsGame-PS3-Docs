@@ -4,12 +4,13 @@
 <head>
     <meta charset="utf-8">
     <title>A2_Frontend (frontend) - Asset Overview</title>
-    <link rel="stylesheet" href="../../style/main.css">
+    <link rel="stylesheet" href="../../../style/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body style="padding: 1.5rem; padding-top: 2rem;">
+<body class="doc-page">
     <div class="doc-overview">
-        <h1>A2_Frontend (<code>frontend</code>)</h1>
+        <h1>A2_Frontend (<code>frontend</code>)</h1><p>Frontend resources combine interface modules, shared fonts/textures and menu-related assets. UIX font-name strings are observations; a complete UIX-to-INF resource resolver is not implemented. Operation 15 converts INF with a matching PNG atlas, while LH2 supplies localized strings.</p><p>See <a href="../../FormatAnalysis/relationships.html#media">localized text and fonts</a> and <a href="../../FormatAnalysis/relationships.html#world-ui">interface resource relationships</a>. Converting an atlas or FNT alone does not reproduce the original menu behavior.</p>
         <p>
             Contains front-end menu archives (<code>frontendStr</code>, <code>frontendGlobalStr</code>), APT UIX layouts, texture dictionaries, and shared menu/subtitle typography.
         </p>
@@ -19,7 +20,7 @@
             Six <a href="../../FormatAnalysis/STR/imbedded-formats/inf.html"><code>.inf</code> (<code>FONT</code> v6)</a> binary font descriptors reside in <code>A2_Frontend/frontendStr/assets/shared/fonts/</code> and map to extracted <code>.png</code> texture atlases under <code>A2_Frontend/frontendStr/assetsRws/txd/</code>:
         </p>
 
-        <table class="format-counts" style="max-width: 100%;">
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table class="format-counts">
             <caption>A2_Frontend Font Descriptor (<code>.inf</code>) to Texture Atlas (<code>.png</code>) Mapping</caption>
             <thead>
                 <tr>
@@ -74,7 +75,7 @@
                     <td><code>256&times;128</code></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     </div>
 </body>
 

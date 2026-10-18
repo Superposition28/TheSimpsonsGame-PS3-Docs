@@ -4,14 +4,29 @@
         <meta charset="utf-8">
         <title>CTB Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem; padding-top: 2rem;">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+    <body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Audio control metadata (.ctb)</nav>
+
 <h1>File Format Documentation: CTB (.ctb)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Contains event names, IDs and structured metadata associated with ALB resources.</p>
+<dl><dt>Identification</dt><dd>Observed 00 06 prefix; section boundaries remain partly inferred.</dd><dt>Byte order / text</dt><dd>Big-endian numeric fields; ASCII event names in samples.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#overview">Overview</a></li><li><a href="#identification">Identification</a></li><li><a href="#global-properties">Global properties</a></li><li><a href="#detailed-structure">Detailed Structure</a></li><li><a href="#data-types-reference">Data Types Reference</a></li><li><a href="#checksums-integrity-checks">Checksums / Integrity Checks</a></li><li><a href="#known-variations-versions">Known Variations / Versions</a></li><li><a href="#analysis-tools-methods">Analysis Tools &amp; Methods</a></li><li><a href="#open-questions-uncertainties">Open Questions / Uncertainties</a></li><li><a href="#references">References</a></li><li><a href="#document-history">Document history</a></li><li><a href="#other">Other:</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="alb.html">Audio alias/library metadata (.alb)</a></td><td>Observed</td><td>Matching base names and repeated IDs support paired alias/event metadata. The full conditional event-to-alias schema remains incomplete.</td></tr><tr><td><a href="../../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td><td>Tentative</td><td>Event names and IDs describe control metadata; SNU carries decodable audio. Operation 11 decodes files without interpreting CTB event logic.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Control-flow interpretations are tentative. Shared names/IDs do not establish every field or a complete playback graph. No CTB decoder is registered.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
 <p><strong>Version:</strong> 0.1
 <strong>Last Updated:</strong> 2025-05-05
-<strong>Author(s):</strong> [Your Name/Team] (Based on analysis)</p>
+<strong>Author(s):</strong> Contributor not recorded (Based on analysis)</p>
 <hr>
-<h2>1. Overview</h2>
+<h2 id="overview">Overview</h2>
 <ul>
 <li><strong>Format Name:</strong> Control Table / Chart Table</li>
 <li><strong>Common File Extension(s):</strong> <code>.ctb</code></li>
@@ -21,7 +36,7 @@
 <li><strong>General Structure:</strong> Composed of several distinct sections: Header Area, Structured Data Section, ID List Section, and String Table Section.</li>
 </ul>
 <hr>
-<h2>2. Identification</h2>
+<h2 id="identification">Identification</h2>
 <ul>
 <li><strong>Magic Number(s) / Signature:</strong> Potentially <code>0x00 0x06</code> (similar to <code>.alb</code>, possibly indicating Type/Version 6 for this family of formats).<ul>
 <li><strong>Offset:</strong> 0</li>
@@ -34,7 +49,7 @@
 </li>
 </ul>
 <hr>
-<h2>3. Global Properties (If Applicable)</h2>
+<h2 id="global-properties">Global properties</h2>
 <ul>
 <li><strong>Endianness:</strong> Big-Endian (for observed multi-byte numerical values like IDs, potential pointers, counts).</li>
 <li><strong>Character Encoding:</strong> ASCII (for strings in the String Table section).</li>
@@ -43,7 +58,7 @@
 <li><strong>Encryption:</strong> None observed.</li>
 </ul>
 <hr>
-<h2>4. Detailed Structure</h2>
+<h2 id="detailed-structure">Detailed Structure</h2>
 <p>The <code>.ctb</code> file is composed of several distinct sections. The exact boundaries and sizes may be defined by pointers or counts within the file itself. The general layout appears to be:</p>
 <ol>
 <li><strong>Header Area:</strong> Contains format identifiers, potentially pointers, counts, and other metadata defining the file layout. Structure appears complex and possibly variable.</li>
@@ -102,14 +117,14 @@
 <li><strong>Reference:</strong> The Structured Data section likely contains pointers/indices referring to strings within this table.</li>
 </ul>
 <hr>
-<h2>5. Data Types Reference</h2>
+<h2 id="data-types-reference">Data Types Reference</h2>
 <ul>
 <li><strong><code>uint32_be</code>:</strong> Unsigned 32-bit integer, Big-Endian byte order. Used for IDs and potentially pointers/counts.</li>
 <li><strong><code>ASCII String</code>:</strong> Sequence of bytes representing characters, terminated by a null byte (<code>0x00</code>). Used in the String Table.</li>
 <li><strong><code>byte[N]</code>:</strong> Fixed-size array of N bytes. Purpose varies depending on context (e.g., unknown data blocks, markers).</li>
 </ul>
 <hr>
-<h2>6. Checksums / Integrity Checks</h2>
+<h2 id="checksums-integrity-checks">Checksums / Integrity Checks</h2>
 <ul>
 <li><strong>Type:</strong> None observed or identified.</li>
 <li><strong>Location:</strong> N/A</li>
@@ -117,18 +132,18 @@
 <li><strong>Algorithm Details:</strong> N/A</li>
 </ul>
 <hr>
-<h2>7. Known Variations / Versions</h2>
+<h2 id="known-variations-versions">Known Variations / Versions</h2>
 <ul>
 <li>The format appears significantly more complex than <code>.alb</code>, suggesting potential variations between files, but no specific versions have been identified or differentiated yet.</li>
 </ul>
 <hr>
-<h2>8. Analysis Tools &amp; Methods</h2>
+<h2 id="analysis-tools-methods">Analysis Tools &amp; Methods</h2>
 <ul>
 <li><strong>Tools Used:</strong> Hex Editor (HxD, 010 Editor), comparison with corresponding <code>.alb</code> files.</li>
 <li><strong>Methodology:</strong> Manual analysis, identifying patterns (like potential pointers, markers, IDs), cross-referencing IDs and string content with game behavior or <code>.alb</code> files.</li>
 </ul>
 <hr>
-<h2>9. Open Questions / Uncertainties</h2>
+<h2 id="open-questions-uncertainties">Open Questions / Uncertainties</h2>
 <ul>
 <li>Precise structure and meaning of fields within the Header Area.</li>
 <li>Detailed internal structure and logic representation within the Structured Data Section.</li>
@@ -136,26 +151,26 @@
 <li>Meaning of specific markers (e.g., <code>50 00 00 0X</code>) and data chunks in the Structured Data section.</li>
 </ul>
 <hr>
-<h2>10. References</h2>
+<h2 id="references">References</h2>
 <ul>
 <li>Critically dependent on corresponding <code>.alb</code> files (usually sharing the same base filename) for sound definitions. Requires both <code>.ctb</code> and <code>.alb</code> for full understanding.</li>
 <li>Example file used for offset analysis: <code>global_marg.ctb</code> (and <code>global_marg.alb</code>).</li>
 </ul>
 <hr>
-<h2>11. Revision History (of this document)</h2>
-<table>
+<h2 id="document-history">Document history</h2>
+<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
 <thead>
 <tr>
-<th align="left">Version</th>
-<th align="left">Date</th>
-<th align="left">Author(s)</th>
-<th align="left">Changes Made</th>
+<th align="left" scope="col">Version</th>
+<th align="left" scope="col">Date</th>
+<th align="left" scope="col">Author(s)</th>
+<th align="left" scope="col">Changes Made</th>
 </tr>
 </thead>
 <tbody><tr>
 <td align="left">0.1</td>
 <td align="left">2025-05-05</td>
-<td align="left">[Your Name]</td>
+<td align="left">Contributor not recorded</td>
 <td align="left">Initial draft based on analysis</td>
 </tr>
 <tr>
@@ -164,8 +179,8 @@
 <td align="left"></td>
 <td align="left"></td>
 </tr>
-</tbody></table>
-<h2>12. Other:</h2>
+</tbody></table></div>
+<h2 id="other">Other:</h2>
 <!-- Any other relevant notes or context -->
     </body>
 </html>

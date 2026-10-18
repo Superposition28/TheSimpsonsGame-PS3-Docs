@@ -4,14 +4,29 @@
         <meta charset="utf-8">
         <title>BBN.PS3 Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem; padding-top: 2rem;">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+    <body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Bone bindings (.bbn.PS3)</nav>
+
         <h1>BBN.PS3 Format Documentation</h1>
-<h3>Format: <strong>BBN</strong> ╬ô├ç├╢ Bone Bindings (PS3 build)</h3>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Lists joint names, aliases and candidate binding information for character resources.</p>
+<dl><dt>Identification</dt><dd>Recognizable skeleton-name strings and offset/count tables; no stable magic documented.</dd><dt>Byte order / text</dt><dd>Not fully established for all fields.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="bnk.PS3.html">Animation bank (.bnk.PS3)</a></td><td>Context/tentative</td><td>Bone-name/binding tables and animation banks have complementary character roles. A numeric joint-index or hash mapping between the two has not been established here.</td></tr><tr><td><a href="acs.PS3.html">Character collision resource (.acs.PS3)</a></td><td>Context/tentative</td><td>Candidate character hit-shape attachments could use bone bindings. The field layout and bone-ID join still require verification.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Binding-table and shared-skeleton interpretations are based on the player_default sample. Animation/IK uses and cross-file numeric joins have not been validated by a registered importer.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
+<h3>Format: <strong>BBN</strong> — Bone Bindings (PS3 build)</h3>
 <p>Your <code>player_default.bbn.PS3</code> is a <strong>bone-binding table</strong> compiled for PS3. It defines the canonical skeleton joints, their IDs, names, and lookup tables used by animation, IK, and gameplay systems.</p>
 <h3>Why this fits</h3>
 <ul>
-<li><p>The filename path: <code>.../assets/shared/bonebindings/player_default.bbn.PS3</code> ╬ô├Ñ├å shared skeleton bindings.</p>
+<li><p>The filename path: <code>.../assets/shared/bonebindings/player_default.bbn.PS3</code> → shared skeleton bindings.</p>
 </li>
 <li><p>Clear joint names &amp; aliases in the string block:</p>
 <ul>
@@ -26,12 +41,12 @@
 </ul>
 <h3>What the game uses it for</h3>
 <ul>
-<li><strong>Consistent bone ID ╬ô├Ñ├╢ name mapping</strong> across characters and tools.</li>
+<li><strong>Consistent bone ID ↔ name mapping</strong> across characters and tools.</li>
 <li><strong>Attachment points</strong> for props/weapons (<code>r_weapon</code>, hands, head).</li>
 <li><strong>Animation retarget/IK</strong> constraints (knees, hips, wrists, spine chain).</li>
 <li><strong>Facial/eye controls</strong> (<code>r_eye</code>, eyelids, <code>m_jaw</code>) for look-at and lip/eye cues.</li>
 <li><strong>AI &amp; camera helpers</strong> (<code>AITrajectory</code>).</li>
-<li>Acts as the <strong>shared ╬ô├ç┬úplayer╬ô├ç┬Ñ skeleton contract</strong> that animation banks (e.g., your <code>.bnk</code>) and controllers (<code>.cec</code>) reference at runtime.</li>
+<li>Acts as the <strong>shared “player” skeleton contract</strong> that animation banks (e.g., your <code>.bnk</code>) and controllers (<code>.cec</code>) reference at runtime.</li>
 </ul>
 
     </body>

@@ -6,12 +6,27 @@
   <title>.smb Format Documentation</title>
   <link rel="stylesheet" href="../../../../style/main.css">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body>
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Stream metadata (.smb)</nav>
+
   <div class="pages">
     <div class="doc-overview" id="overview">
       <h1>Stream Meta Bank (.smb)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Contains audio-related metadata and embedded external stream names.</p>
+<dl><dt>Identification</dt><dd>Observed count at 0x10 and pointer tables; no universal signature established here.</dd><dt>Byte order / text</dt><dd>Big-endian integer/float interpretations in samples; ASCII names.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#global-file-structure">Global File Structure</a></li><li><a href="#individual-record-metadata">Individual Record Metadata</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td><td>Observed</td><td>SMB samples contain .exa stream names, while the disc inventory uses .exa.snu wrappers. Filename normalization and a complete numeric-ID join must be verified per sample.</td></tr><tr><td><a href="sbk.html">Sound bank (.sbk)</a></td><td>Unverified</td><td>Both occur in audio contexts. No direct SBK record-to-SMB record mapping has been verified; proximity alone is insufficient.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The stream-name strings are observed. Specific attenuation meanings, hash algorithms and a universal 96-byte record stride remain interpretations until validated across the corpus. No registered SMB-to-SNU resolver exists.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
       <p>
         The <code>.smb</code> (Stream Meta Bank) format serves as an index and metadata table for Electronic Arts'
         streaming audio engine, specifically dictating how external <code>.exa</code> sound streams are loaded and
@@ -24,7 +39,7 @@
         assets (voice lines, SFX, ambience) and supplies playback settings for each.
       </p>
 
-      <h2>Global File Structure</h2>
+      <h2 id="global-file-structure">Global File Structure</h2>
       <ul>
         <li>
           <strong>Header:</strong> The beginning of the file establishes core structural properties. At offset
@@ -40,11 +55,11 @@
         </li>
         <li>
           <strong>Data Payload:</strong> The remainder of the file consists of sequential, fixed-size records (measuring
-          exactly 96 bytes, or <code>0x60</code>, each) mapped sequentially by the offset table.
+          96 bytes in the illustrated examples, or <code>0x60</code>, each) mapped sequentially by the offset table.
         </li>
       </ul>
 
-      <h2>Individual Record Metadata</h2>
+      <h2 id="individual-record-metadata">Individual Record Metadata</h2>
       <ul>
         <li>
           <strong>Identifiers and Context Flags:</strong> Each entry opens with categorical flags and repeated 4-byte ID
@@ -53,11 +68,11 @@
         <li>
           <strong>3D Attenuation Variables:</strong> Several IEEE-754 big-endian floats dictate spatial playback
           behavior. The hex dumps consistently reveal float sequences like <code>41 A0 00 00</code> (20.0) and
-          <code>42 C8 00 00</code> (100.0), which correspond directly to the engine's minimum and maximum 3D distance
+          <code>42 C8 00 00</code> (100.0), which are candidates for minimum and maximum 3D distance
           parameters.
         </li>
         <li>
-          <strong>Cryptographic Asset Hash:</strong> An 8-byte hash sequence uniquely tied to the linked asset sits
+          <strong>Unidentified 8-byte Identifier:</strong> An 8-byte sequence associated with the linked asset sits
           immediately before the string definition.
         </li>
         <li>
@@ -69,10 +84,7 @@
       </ul>
 
       <p>
-        This separated index design guarantees the game engine can load a single, highly compressed TOC file—ranging
-        from tiny 124-byte cutscene indexes to 28 KB global character banks—directly into memory, while the heavy
-        <code>.exa</code> audio assets stream efficiently from the disc only when required.
-      </p>
+        The separate metadata/stream arrangement is consistent with streaming playback. Actual loading behavior, compression and record-to-file resolution have not been established by these byte samples alone.</p>
     </div>
 
     <div class="file-list-container">
@@ -377,7 +389,7 @@
         </li>
       </ul>
     </div>
-    <section class='bodyy'>
+    <details class="research-appendix"><summary>Preserved sample hex dumps</summary><section class='bodyy'>
       <h1>.smb Files: Hex Dump Analysis</h1>
       <div class='file-block'>
         <div class='file-path'><strong>File:</strong>
@@ -91045,7 +91057,7 @@
 000002C0  78 61 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |xa..............|
 000002D0  00 00 00 00                                      |....|</pre>
       </div>
-    </section>
+    </section></details>
   </div>
 </body>
 

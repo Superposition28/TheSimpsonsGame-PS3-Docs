@@ -4,14 +4,29 @@
         <meta charset="utf-8">
         <title>RCB.PS3 Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem; padding-top: 2rem;">
-        <h1>RCB.PS3 Format Documentation</h1>         <h2>Observed Characteristics</h2>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+    <body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Character/controller resource (.rcb.PS3)</nav>
+
+        <h1>RCB.PS3 Format Documentation</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Inventory only · PS3 unless explicitly marked Xbox 360</p>
+<p>Occurs under cct_export for characters and weapons; binary behavior is unresolved.</p>
+<dl><dt>Identification</dt><dd>No consistent header established across the listed samples.</dd><dt>Byte order / text</dt><dd>Not established.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#observed-characteristics">Observed Characteristics</a></li><li><a href="#observed-files">Observed Files</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="bnk.PS3.html">Animation bank (.bnk.PS3)</a></td><td>Context/tentative</td><td>Both appear in CCT-export character/weapon contexts; exact controller/bank bindings are not decoded.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The inventory establishes paths and size variation. Controller logic, resource binding and relationships to animation banks remain candidates, not a decoded specification.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+         <h2 id="observed-characteristics">Observed Characteristics</h2>
         <p>no clear/ consistent header</p>
         <p>they vary in size from 1kb upto 45kb</p>
         <p>all under a cct_export folder</p>
         <p>many related to weapon assets others related to character assets</p>
-        <h2>Observed Files</h2>
+        <h2 id="observed-files">Observed Files</h2>
         <ul class="file-list-scroll">
             <li><code>A2_Characters\GlobalFolder\chars\bart_bc0_grp0_ss1_h0_str\assets\weapons\controller\cct_export\controller_ccde1a.rcb.PS3</code></li>
             <li><code>A2_Characters\GlobalFolder\chars\bart_bc0_grp0_ss1_h0_str\assets\weapons\slingshot\cct_export\slingshot_54e682.rcb.PS3</code></li>

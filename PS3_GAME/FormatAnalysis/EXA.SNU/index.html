@@ -5,17 +5,32 @@
     <meta charset="utf-8">
     <title>EXA.SNU Format Documentation</title>
     <link rel="stylesheet" href="../../../style/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body style="padding: 1.5rem; padding-top: 2rem;">
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>Streamed audio (.exa.snu)</nav>
+
     <h1>File Format Documentation: .exa.snu (SNU container)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
+<p>Wraps compressed audio streams used for dialogue and other streaming sounds.</p>
+<dl><dt>Identification</dt><dd>No single established wrapper magic; inspect the header and validate the embedded audio through a decoder.</dd><dt>Byte order / text</dt><dd>Wrapper variants differ; use valid offsets and payload headers to determine byte order.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#overview">Overview</a></li><li><a href="#identification">Identification</a></li><li><a href="#global-properties">Global properties</a></li><li><a href="#detailed-structure">Detailed Structure</a></li><li><a href="#data-types-reference">Data Types Reference</a></li><li><a href="#checksums-integrity-checks">Checksums / Integrity Checks</a></li><li><a href="#known-variations-versions">Known Variations / Versions</a></li><li><a href="#analysis-tools-methods">Analysis Tools &amp; Methods</a></li><li><a href="#open-questions-uncertainties">Open Questions / Uncertainties</a></li><li><a href="#references">References</a></li><li><a href="#other">Other</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../STR/imbedded-formats/alb.html">Audio alias/library metadata (.alb)</a></td><td>Tentative</td><td>Alias metadata is associated with streamed audio, but a complete ALB-record-to-SNU-filename join has not been implemented.</td></tr><tr><td><a href="../STR/imbedded-formats/ctb.html">Audio control metadata (.ctb)</a></td><td>Tentative</td><td>Event names and IDs describe control metadata; SNU carries decodable audio. Operation 11 decodes files without interpreting CTB event logic.</td></tr><tr><td><a href="../STR/imbedded-formats/smb.html">Stream metadata (.smb)</a></td><td>Observed</td><td>SMB samples contain .exa stream names, while the disc inventory uses .exa.snu wrappers. Filename normalization and a complete numeric-ID join must be verified per sample.</td></tr><tr><td><a href="../STR/imbedded-formats/sbk.html">Sound bank (.sbk)</a></td><td>Related payloads</td><td>Both can carry EA compressed audio, but bank-contained subsongs and standalone SNU files are separate inputs to operations 10 and 11; no mandatory SBK-to-SNU dependency is established.</td></tr><tr><td><a href="../STR/imbedded-formats/mib.html">Mix metadata (.mib)</a></td><td>Audio context</td><td>A decoded WAV preserves audio content, not the MIB routing/ducking rules that may affect playback.</td></tr><tr><td><a href="../MUS/index.html">Segmented music (.mus)</a></td><td>Related payloads</td><td>Both workflows involve EA audio structures. MUS extraction produces paired SNR metadata and SNS payloads; these pairs are not interchangeable with a standalone SNU wrapper.</td></tr></tbody></table></div><p>See the <a href="../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../pipeline.html#op-11">Operation 11: Convert Audio (.snu -&gt; .wav)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li></ul><p><a href="../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Operation 11 matches the final .snu extension, including .exa.snu, and requests Godot-compatible WAV output. Codec and channel counts are file-specific. Decoding does not reconstruct audio-event control logic.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
     <p>This format is understood and easily converted to wav using vgmstream</p>
     <p><strong>Version:</strong> 2.1
         <strong>Last Updated:</strong> 2026-10-06
         <strong>Author(s):</strong> Analysis based on user-provided data
     </p>
     <hr>
-    <h2>1. Overview</h2>
+    <h2 id="overview">Overview</h2>
     <ul>
         <li><strong>Format Name:</strong> Electronic Arts SNU Audio Stream Container</li>
         <li><strong>Observed Full File Suffix:</strong> <code>.exa.snu</code> (SNU is the container format family name.)
@@ -33,7 +48,7 @@
             structure.</li>
     </ul>
     <hr>
-    <h2>2. Identification</h2>
+    <h2 id="identification">Identification</h2>
     <ul>
         <li><strong>Magic Number(s) / Signature:</strong> No definitive universal magic number identified for the SNU
             wrapper itself. The first bytes often vary. vgmstream identifies the format based on header heuristics and
@@ -51,7 +66,7 @@
         </li>
     </ul>
     <hr>
-    <h2>3. Global Properties (If Applicable)</h2>
+    <h2 id="global-properties">Global properties</h2>
     <ul>
         <li><strong>Endianness:</strong> Varies (Big-Endian or Little-Endian). Crucially, the 4-byte integer fields
             within the header (offsets 0x04, 0x08, 0x0C) can be either BE or LE, typically depending on the original
@@ -66,22 +81,22 @@
         <li><strong>Encryption:</strong> None observed.</li>
     </ul>
     <hr>
-    <h2>4. Detailed Structure</h2>
+    <h2 id="detailed-structure">Detailed Structure</h2>
     <p>The .snu file consists of a Header followed by the main Audio Data block (structured as either SPS or SNR/SNS).
     </p>
     <p><strong>Section: SNU Header (First 16 Bytes)</strong></p>
     <p>The initial bytes provide offsets and basic hints about the contained stream.</p>
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th align="left">Offset (Hex)</th>
-                <th align="left">Offset (Dec)</th>
-                <th align="left">Size (Bytes)</th>
-                <th align="left">Data Type</th>
-                <th align="left">Endianness</th>
-                <th align="left">Field Name</th>
-                <th align="left">Description</th>
-                <th align="left">Notes / Example Value</th>
+                <th align="left" scope="col">Offset (Hex)</th>
+                <th align="left" scope="col">Offset (Dec)</th>
+                <th align="left" scope="col">Size (Bytes)</th>
+                <th align="left" scope="col">Data Type</th>
+                <th align="left" scope="col">Endianness</th>
+                <th align="left" scope="col">Field Name</th>
+                <th align="left" scope="col">Description</th>
+                <th align="left" scope="col">Notes / Example Value</th>
             </tr>
         </thead>
         <tbody>
@@ -162,7 +177,7 @@
                 <td align="left">e.g., <code>0x00000000</code>, <code>0x00000020</code></td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
     <p><em>Note: Some SNU files observed in The Simpsons Game contain more extensive headers beyond these first 16
             bytes, including metadata like the embedded filename, loop points, total samples, etc., before the main
             audio data block defined by the Start Offset.</em></p>
@@ -207,7 +222,7 @@
             <code>layered (1 layers)</code>.</li>
     </ul>
     <hr>
-    <h2>5. Data Types Reference</h2>
+    <h2 id="data-types-reference">Data Types Reference</h2>
     <ul>
         <li><strong><code>uint8</code>:</strong> Unsigned 8-bit integer.</li>
         <li><strong><code>uint16_be</code> / <code>uint16_le</code>:</strong> Unsigned 16-bit integer, Big-Endian /
@@ -225,13 +240,13 @@
             containing various EAAC codecs.</li>
     </ul>
     <hr>
-    <h2>6. Checksums / Integrity Checks</h2>
+    <h2 id="checksums-integrity-checks">Checksums / Integrity Checks</h2>
     <ul>
         <li>None observed or known for the SNU wrapper format itself. The contained SPS/SNR formats might have internal
             checks.</li>
     </ul>
     <hr>
-    <h2>7. Known Variations / Versions</h2>
+    <h2 id="known-variations-versions">Known Variations / Versions</h2>
     <ul>
         <li><strong>Platform-Specific Encoding (PS3 vs. Xbox 360):</strong> Unlike <code>.vp6</code> movies, <code>.exa.snu</code> files are not binary-identical across platforms. While corresponding files share the same SNU container, sample rate, channel count, and exact sample length, the internal stream encoding differs:
             <ul>
@@ -247,7 +262,7 @@
             EAAC codec used internally.</li>
     </ul>
     <hr>
-    <h2>8. Analysis Tools &amp; Methods</h2>
+    <h2 id="analysis-tools-methods">Analysis Tools &amp; Methods</h2>
     <ul>
         <li><strong>Tools Used:</strong> Hex Editor (e.g., HxD, 010 Editor), vgmstream / vgmstream-cli (Essential for
             decoding audio and extracting confirmed metadata on both PS3 and Xbox 360; note that <code>ffprobe</code>/FFmpeg does not natively recognize the <code>.exa.snu</code> wrapper and fails with <code>Invalid data found when processing input</code>).</li>
@@ -256,7 +271,7 @@
             implementation).</li>
     </ul>
     <hr>
-    <h2>9. Open Questions / Uncertainties</h2>
+    <h2 id="open-questions-uncertainties">Open Questions / Uncertainties</h2>
     <ul>
         <li>Confirmation of a universal SNU magic number/signature.</li>
         <li>Precise purpose and interpretation of header bytes 0x00, 0x01, 0x02.</li>
@@ -266,7 +281,7 @@
         <li>The exact significance, if any, of intermediate file extensions like <code>.exa</code>.</li>
     </ul>
     <hr>
-    <h2>10. References</h2>
+    <h2 id="references">References</h2>
     <ul>
         <li><strong>Files Analyzed:</strong>
             <ul>
@@ -282,7 +297,7 @@
         </li>
     </ul>
     <hr>
-    <h2>11. Other</h2>
+    <h2 id="other">Other</h2>
     <p><strong>Conversion Example using vgmstream-cli:</strong>
         To convert an SNU file (from either PS3 or Xbox 360) to a standard WAV file:</p>
     <pre><code class="language-powershell"># Example using PowerShell syntax

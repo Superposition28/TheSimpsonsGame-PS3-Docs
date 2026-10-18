@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
     <head>
         <meta charset="utf-8">
         <title>The Simpsons Game - Documentation Site Guide</title>
-        <link rel="stylesheet" href="./style/main.css">
-    </head>
-    <body style="padding: 1.5rem;padding-top: 2rem;">
+        <link rel="stylesheet" href="style/main.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+    <body class="doc-page">
 
         <h1>Documentation Site Guide</h1>
         <p>This page describes the structure and maintenance conventions for the static reverse-engineering documentation site.</p>
@@ -49,7 +50,12 @@
             <li>This keeps container-level <code>.STR</code> notes together with the formats extracted from those containers.</li>
         </ul>
 
-        <h2>Adding a Page</h2>
+        <h2>Format-page conventions</h2><p>Use the shared stylesheet and viewport metadata. Every format page should state purpose, identification, byte order/text encoding, relationships, registered operation support and evidence limits, then preserve the detailed field layout, examples and unresolved questions. Use scrollable table wrappers and collapsible sample-dump appendices.</p>
+<p>Cross-links must explain the join: shared numeric ID, embedded filename, cleaned movie stem, same binary family, or contextual association. Distinguish implemented/observed links from tentative ones. Do not infer hash algorithms, direct dependencies or runtime behavior solely from a directory name. Binary parsing examples must be marked as illustrative when no converter is registered.</p>
+<p><a href="PS3_GAME/FormatAnalysis/relationships.html">Format relationships</a> gives the shared data conventions; <a href="PS3_GAME/FormatAnalysis/pipeline.html">the operation reference</a> records IDs, dependencies and outputs. Byte-level details belong on format pages; directory overviews should stay focused on navigation and resource roles.</p>
+<h2>Validation and maintenance</h2><p>Run <code>python tools/check_docs.py</code> from this documentation directory. It checks local targets, anchors, shell routes, stylesheet/viewport coverage, format coverage sections and reciprocal relationship links. When the module checkout is present it also compares documented operation IDs/dependencies and local operation-script references with the manifest. Review representative format pages and overview pages at desktop and narrow widths after CSS changes.</p>
+<p>Keep proprietary source-file paths as text rather than links outside the hosted site. Source links to module operation code may point to the separate module repository. Historical notes in <code>oldMDonly/</code> are retained research, not automatically the latest specification.</p>
+<h2>Adding a Page</h2>
         <ol>
             <li>Create the content-only HTML page in the appropriate directory.</li>
             <li>Add an iframe with a unique ID and matching source path to <code>index.html</code>.</li>
@@ -59,5 +65,3 @@
 
     </body>
 </html>
-
-

@@ -4,14 +4,29 @@
         <meta charset="utf-8">
         <title>AMB Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem; padding-top: 2rem;">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+    <body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>AMB resource (.amb)</nav>
+
 <h1>File Format Documentation: .amb</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Contains structured AEMS-associated resource metadata in the documented examples.</p>
+<dl><dt>Identification</dt><dd>ABKC observed at 0x40; initial word 0x00000009 in samples.</dd><dt>Byte order / text</dt><dd>Big-endian fields inferred from the samples.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#overview">Overview</a></li><li><a href="#identification">Identification</a></li><li><a href="#global-properties">Global properties</a></li><li><a href="#detailed-structure">Detailed Structure</a></li><li><a href="#data-types-reference">Data Types Reference</a></li><li><a href="#checksums-integrity-checks">Checksums / Integrity Checks</a></li><li><a href="#known-variations-versions">Known Variations / Versions</a></li><li><a href="#analysis-tools-methods">Analysis Tools &amp; Methods</a></li><li><a href="#open-questions-uncertainties">Open Questions / Uncertainties</a></li><li><a href="#references">References</a></li><li><a href="#document-history">Document history</a></li><li><a href="#other">Other</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="alb.html">Audio alias/library metadata (.alb)</a></td><td>Tentative</td><td>Some AMB paths are audio-associated; the ABKC marker and AEMS context do not prove that AMB uses the ALB record schema.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The name expansion and precise runtime role remain tentative. Audio and interaction contexts must be distinguished per sample; neither a universal AMB schema nor an event resolver is implemented in the operation pipeline.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
 <p><strong>Version:</strong> 1.0
 <strong>Last Updated:</strong> 2025-05-05
 <strong>Author(s):</strong> Analysis based on user-provided data</p>
 <hr>
-<h2>1. Overview</h2>
+<h2 id="overview">Overview</h2>
 <ul>
 <li><strong>Format Name:</strong> AEMS Asset Metadata Bundle (Tentative Name based on observed paths)</li>
 <li><strong>Common File Extension(s):</strong> <code>.amb</code></li>
@@ -25,7 +40,7 @@
 <li><strong>General Structure:</strong> Consists of a common Header structure containing identification markers, standard parameters, and configuration bytes, followed by various structured data sections heavily reliant on internal offsets/pointers. The content of the data sections varies based on the asset type being described.</li>
 </ul>
 <hr>
-<h2>2. Identification</h2>
+<h2 id="identification">Identification</h2>
 <ul>
 <li><strong>Magic Number(s) / Signature:</strong> <code>41 42 4B 43</code> (ASCII &quot;ABKC&quot;). This appears to be the primary structural identifier for this format.<ul>
 <li><strong>Offset:</strong> <code>0x40</code> (Decimal: 64)</li>
@@ -38,7 +53,7 @@
 </li>
 </ul>
 <hr>
-<h2>3. Global Properties (If Applicable)</h2>
+<h2 id="global-properties">Global properties</h2>
 <ul>
 <li><strong>Endianness:</strong> Big-Endian (Based on representation of multi-byte integers like offsets and floating-point values).</li>
 <li><strong>Character Encoding:</strong> Primarily N/A as few strings observed. If strings exist in data sections, likely ASCII.</li>
@@ -47,21 +62,21 @@
 <li><strong>Encryption:</strong> None observed.</li>
 </ul>
 <hr>
-<h2>4. Detailed Structure</h2>
+<h2 id="detailed-structure">Detailed Structure</h2>
 <p>The format starts with a relatively consistent header area, followed by data sections whose content depends on the file&#39;s specific purpose.</p>
 <p><strong>Section: Header Area (Approx. 0x00 - 0x7F)</strong></p>
 <p>This initial section contains identifiers, common parameters, and file-specific setup values.</p>
-<table>
+<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
 <thead>
 <tr>
-<th align="left">Offset (Hex)</th>
-<th align="left">Offset (Dec)</th>
-<th align="left">Size (Bytes)</th>
-<th align="left">Data Type</th>
-<th align="left">Endianness</th>
-<th align="left">Field Name</th>
-<th align="left">Description</th>
-<th align="left">Notes / Example Value</th>
+<th align="left" scope="col">Offset (Hex)</th>
+<th align="left" scope="col">Offset (Dec)</th>
+<th align="left" scope="col">Size (Bytes)</th>
+<th align="left" scope="col">Data Type</th>
+<th align="left" scope="col">Endianness</th>
+<th align="left" scope="col">Field Name</th>
+<th align="left" scope="col">Description</th>
+<th align="left" scope="col">Notes / Example Value</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -284,7 +299,7 @@
 <td align="left">List of 3 offsets pointing to related data structures.</td>
 <td align="left">e.g., <code>00 09 4B A4</code>, <code>00 09 4B A8</code>, <code>00 09 4B D8</code></td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <p><strong>Section: Data Sections (Variable Content)</strong></p>
 <ul>
 <li><strong>Location:</strong> Follows the header area (from approx <code>0x80</code> onwards).</li>
@@ -298,7 +313,7 @@
 <li><strong>Audio Waveforms:</strong> No raw or compressed audio waveform data has been observed within <code>.amb</code> files themselves.</li>
 </ul>
 <hr>
-<h2>5. Data Types Reference</h2>
+<h2 id="data-types-reference">Data Types Reference</h2>
 <ul>
 <li><strong><code>uint8</code>:</strong> Unsigned 8-bit integer.</li>
 <li><strong><code>uint32_be</code>:</strong> Unsigned 32-bit integer, Big-Endian byte order.</li>
@@ -306,24 +321,24 @@
 <li><strong><code>char[4]</code>:</strong> Fixed-size array of 4 bytes, used for the &quot;ABKC&quot; marker.</li>
 </ul>
 <hr>
-<h2>6. Checksums / Integrity Checks</h2>
+<h2 id="checksums-integrity-checks">Checksums / Integrity Checks</h2>
 <ul>
 <li>None observed or known for this format.</li>
 </ul>
 <hr>
-<h2>7. Known Variations / Versions</h2>
+<h2 id="known-variations-versions">Known Variations / Versions</h2>
 <ul>
 <li><strong>Content Type:</strong> The primary variation is the type of metadata stored within the common AMB structure (e.g., Interaction data vs. Audio metadata). This might be indicated by the configuration byte at offset <code>0x4B</code>.</li>
 <li><strong>Specific Data:</strong> Offsets, counts, and the content of data records vary significantly between files depending on the specific asset being described.</li>
 </ul>
 <hr>
-<h2>8. Analysis Tools &amp; Methods</h2>
+<h2 id="analysis-tools-methods">Analysis Tools &amp; Methods</h2>
 <ul>
 <li><strong>Tools Used:</strong> Hex Editor (e.g., HxD, 010 Editor).</li>
 <li><strong>Methodology:</strong> Comparison of multiple <code>.amb</code> files from different functional areas (interaction, audio) and for different characters (Bart, Lisa) to identify consistent structural elements (&quot;ABKC&quot;, header pattern, floats) versus variable content sections. Analyzing file paths provided crucial context for interpreting purpose.</li>
 </ul>
 <hr>
-<h2>9. Open Questions / Uncertainties</h2>
+<h2 id="open-questions-uncertainties">Open Questions / Uncertainties</h2>
 <ul>
 <li>What does the &quot;AEMS&quot; acronym stand for?</li>
 <li>What is the precise purpose of the consistent header fields (ID at <code>0x00</code>, IDs/Offsets at <code>0x04</code>/<code>0x0C</code>/<code>0x54</code>/etc., the hash at <code>0x14</code>, the floats <code>1.0</code>/<code>2.0</code>/<code>100.0</code>)?</li>
@@ -332,7 +347,7 @@
 <li>For audio-related <code>.amb</code> files, how exactly do they reference the sound resources? (Via ALB/CTB IDs? Direct SNU references? Hashes?)</li>
 </ul>
 <hr>
-<h2>10. References</h2>
+<h2 id="references">References</h2>
 <ul>
 <li><strong>Files Analyzed:</strong><ul>
 <li><code>char_poles_and_ladders.amb</code></li>
@@ -343,14 +358,14 @@
 <li><strong>Related Formats:</strong> <code>.alb</code>, <code>.ctb</code>, <code>.exa.snu</code> (SNU audio stream container; interacts with assets potentially defined or referenced by <code>.amb</code> files).</li>
 </ul>
 <hr>
-<h2>11. Revision History (of this document)</h2>
-<table>
+<h2 id="document-history">Document history</h2>
+<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
 <thead>
 <tr>
-<th align="left">Version</th>
-<th align="left">Date</th>
-<th align="left">Author(s)</th>
-<th align="left">Changes Made</th>
+<th align="left" scope="col">Version</th>
+<th align="left" scope="col">Date</th>
+<th align="left" scope="col">Author(s)</th>
+<th align="left" scope="col">Changes Made</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -359,9 +374,9 @@
 <td align="left">Analysis based on user-provided data</td>
 <td align="left">Initial draft based on provided examples</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <hr>
-<h2>12. Other</h2>
+<h2 id="other">Other</h2>
 <ul>
 <li>The <code>.amb</code> format within the AEMS system appears to be a flexible, pointer-heavy structure capable of holding metadata for different types of game assets, unified by a common header pattern including the &quot;ABKC&quot; marker. Its specific interpretation relies heavily on the context provided by the file&#39;s path and name.</li>
 </ul>

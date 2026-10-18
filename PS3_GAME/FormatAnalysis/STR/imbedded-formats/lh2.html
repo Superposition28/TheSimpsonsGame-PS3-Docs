@@ -1,90 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Localization table (.LH2)</title>
+    <link rel="stylesheet" href="../../../../style/main.css">
+</head>
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Localization table (.LH2)</nav>
 
-    <head>
-        <meta charset="utf-8">
-        <title>LH2 Format Documentation</title>
-        <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
+<h1>Localization table (.LH2)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
+<p>Maps 32-bit string IDs to one or more columns of localized text or internal labels.</p>
+<dl><dt>Identification</dt><dd>2HCL at 0x00; 32-byte header, ID array and absolute string-pointer matrix.</dd><dt>Byte order / text</dt><dd>Big-endian integers; NUL-terminated Windows-1252 text in the observed PS3 tables.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#header-and-identification">Header and identification</a></li><li><a href="#id-array-pointer-matrix-and-strings">ID array, pointer matrix and strings</a></li><li><a href="#text-columns-and-language-variants">Text columns and language variants</a></li></ul></nav>
 
-    <body style="padding: 1.5rem;padding-top: 2rem;">
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../index.html">STR archive</a></td><td>Implemented</td><td>Extracted localization tables remain inputs to operations 9 and 16.</td></tr><tr><td><a href="inf.html">Bitmap font descriptor (.inf)</a></td><td>Rendering context</td><td>LH2 supplies strings; INF and its atlas supply glyph shapes and metrics. LH2 contains no demonstrated INF filename pointer. Windows-1252 text decoding and the font converter's custom glyph/Unicode aliases must be handled separately.</td></tr><tr><td><a href="tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td><td>Implemented</td><td>Operation 16 joins each TOX StringID to first-column global LH2 text by the same 32-bit ID. The .ss.LH2 variant supplies labels; .en/.es/.fr/.it supply the four output languages.</td></tr><tr><td><a href="../../VP6/index.html">Movie container (.vp6)</a></td><td>Implemented via TOX</td><td>LH2 has subtitle text but no movie cue times. TOX bridges string IDs to the movie clock. Video conversion and text-table CSV export alone cannot create synchronized captions.</td></tr><tr><td><a href="txt.html">Embedded text resources (.txt)</a></td><td>Locale context</td><td>Text locale tables describe language/reference context; LH2 stores binary ID-to-string tables. A locale file is not a replacement for decoding LH2 columns.</td></tr><tr><td><a href="en.LH2.html">English LH2 variant (.en.LH2)</a></td><td>Same binary family</td><td>The suffix identifies a content variant; header, ID array and pointer matrix follow the shared LH2 layout.</td></tr><tr><td><a href="es.LH2.html">Spanish LH2 variant (.es.LH2)</a></td><td>Same binary family</td><td>The suffix identifies a content variant; header, ID array and pointer matrix follow the shared LH2 layout.</td></tr><tr><td><a href="fr.LH2.html">French LH2 variant (.fr.LH2)</a></td><td>Same binary family</td><td>The suffix identifies a content variant; header, ID array and pointer matrix follow the shared LH2 layout.</td></tr><tr><td><a href="it.LH2.html">Italian LH2 variant (.it.LH2)</a></td><td>Same binary family</td><td>The suffix identifies a content variant; header, ID array and pointer matrix follow the shared LH2 layout.</td></tr><tr><td><a href="ss.LH2.html">Internal string labels LH2 variant (.ss.LH2)</a></td><td>Same binary family</td><td>The suffix identifies a content variant; header, ID array and pointer matrix follow the shared LH2 layout.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../../pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li><li><a href="../../pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li></ul><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Operation 9 exports table columns without assigning language names. Operation 16 reads the first column of selected global language files directly, so it does not depend on operation 9 CSV output. A language suffix alone does not prove the contents of every table. Runtime fidelity of operation 9 remains to be checked: its binary integer reader uses <code>string.byte</code>, whereas the newer INF/TOX converters use <code>string.unicode</code> and explicitly document the host's high-byte handling. The structural sample checks do not execute that Lua reader.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
 
-        <h1>Localization Header 2 (.LH2)</h1>
 
-        <p>The <code>.LH2</code> format is a string table used for localization. Strings are typically encoded in Windows-1252.</p>
-
-        <h2>Header</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Offset</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x00</td>
-                    <td>Char[4]</td>
-                    <td>Magic</td>
-                    <td>"2HCL" signature.</td>
-                </tr>
-                <tr>
-                    <td>0x04</td>
-                    <td>Byte[4]</td>
-                    <td>Padding</td>
-                    <td>Skipped.</td>
-                </tr>
-                <tr>
-                    <td>0x10</td>
-                    <td>UInt32</td>
-                    <td>EntryCount</td>
-                    <td>Number of string IDs.</td>
-                </tr>
-                <tr>
-                    <td>0x14</td>
-                    <td>UInt32</td>
-                    <td>TableCount</td>
-                    <td>Number of language tables (columns).</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h2>Data Structure</h2>
-
-        <p>The file uses a structure of offset arrays followed by string data. All offsets are absolute.</p>
-
-        <h3>1. ID Array</h3>
-
-        <p>Located at <code>0x20</code>.</p>
-
-        <ul>
-            <li>Array of <strong>EntryCount</strong> × <code>UInt32</code>.</li>
-            <li>Contains the unique String IDs (Hash or numeric ID).</li>
-        </ul>
-
-        <h3>2. Pointer Matrix</h3>
-
-        <p>Located immediately after the ID Array.</p>
-
-        <ul>
-            <li>A matrix of pointers with dimensions: <strong>TableCount</strong> rows × <strong>EntryCount</strong> columns.</li>
-            <li>Each entry is a <code>UInt32</code> absolute offset to a null-terminated string.</li>
-            <li><strong>Layout:</strong>
-                <ul>
-                    <li>Row 0 (Language 0) Pointers [0..EntryCount]</li>
-                    <li>Row 1 (Language 1) Pointers [0..EntryCount]</li>
-                    <li>...</li>
-                </ul>
-            </li>
-        </ul>
-
-        <h3>3. String Data</h3>
-
-        <p>Strings are stored at the offsets pointed to by the matrix. Strings are null-terminated and typically use <code>cp1252</code> encoding.</p>
-
-    </body>
-
+<p>LH2 maps 32-bit IDs to columns of strings. The observed PS3 signature is <code>2HCL</code>, with big-endian integers and absolute offsets measured from the start of the file.</p>
+<h2 id="header-and-identification">Header and identification</h2>
+<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>32-byte LH2 header; offsets are zero-based</caption><thead><tr><th scope="col">Offset</th><th scope="col">Type</th><th scope="col">Meaning</th></tr></thead><tbody>
+<tr><td>0x00</td><td>char[4]</td><td>Magic <code>2HCL</code>.</td></tr>
+<tr><td>0x04</td><td>uint32 BE</td><td>Declared file size. Operation 9 warns when it differs from the actual length; it is not padding.</td></tr>
+<tr><td>0x08–0x0F</td><td>byte[8]</td><td>Not interpreted by the current converters.</td></tr>
+<tr><td>0x10</td><td>uint32 BE</td><td>EntryCount (N): number of IDs.</td></tr>
+<tr><td>0x14</td><td>uint32 BE</td><td>TableCount (T): number of string columns.</td></tr>
+<tr><td>0x18–0x1F</td><td>byte[8]</td><td>Reserved/runtime fields skipped by operation 9; runtime purpose not verified.</td></tr>
+</tbody></table></div>
+<h2 id="id-array-pointer-matrix-and-strings">ID array, pointer matrix and strings</h2>
+<p>The ID array begins at <code>0x20</code> and contains <code>N</code> unsigned 32-bit values. The pointer matrix begins at <code>0x20 + 4*N</code>. Columns are stored consecutively: table 0 has N pointers, then table 1 has N pointers, and so on. Pointer <code>(t,e)</code> is at <code>0x20 + 4*N + 4*(t*N + e)</code> and points to a NUL-terminated string at an absolute file offset.</p>
+<p>Before reading strings, check that <code>0x20 + 4*N*(1+T)</code> fits inside the file and that every referenced offset and terminator is in bounds. A zero-entry table is distinct from an invalid/truncated header. Shared pointers do not imply duplicate IDs.</p>
+<h2 id="text-columns-and-language-variants">Text columns and language variants</h2>
+<p>The EU flattened inventory contains 654 LH2 files: 554 without a language suffix and 20 each with <code>.en</code>, <code>.es</code>, <code>.fr</code>, <code>.it</code> and <code>.ss</code>. The four language variants supply English, Spanish, French and Italian. The observed global <code>.ss.LH2</code> table supplies internal labels, not an additional Spanish translation.</p>
+<p>Operation 9 writes <code>original.LH2.csv</code> beside the source. It emits an eight-digit hexadecimal String ID and <code>Language 0</code> onward. For multiple columns it treats the final column as <code>String Label</code>; that is a converter convention, not a guaranteed meaning of every LH2 table. Its reader preserves source characters without an explicit CP1252 control-range remap. Operation 16 explicitly decodes Windows-1252 when producing subtitle text.</p>
+<p>Operation 16 selects the first non-empty path-sorted global table for each supported language/label column, reads only its first table, and joins on the numeric ID. It does not merge all duplicate localization copies. The lowercase SDBM label/hash relationship is validated for the TOX dialogue labels described on the timing page; do not generalize that result to every unidentified ID in every format.</p>
+</body>
 </html>

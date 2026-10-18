@@ -1,14 +1,34 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>PS3 Resource Format Documentation</title>
-        <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem;padding-top: 2rem;">
-        <h1>PS3 Resource Files</h1>
-        <ul>
-            this file will summarise all sub formats of the .PS3 format once there docs are complete
-        </ul>
-    </body>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PS3 resource suffix family</title>
+    <link rel="stylesheet" href="../../../../style/main.css">
+</head>
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>PS3 resource suffix family</nav>
+
+<h1>PS3 resource suffix family</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Family overview · PS3 unless explicitly marked Xbox 360</p>
+<p>Groups compiled platform-specific resources with different binary layouts.</p>
+<dl><dt>Identification</dt><dd>.PS3 is a platform suffix, not a magic signature or common container.</dd><dt>Byte order / text</dt><dd>Varies by resource family.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#resource-families">Resource families</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><p>No verified cross-file pointer or ID join is established for this page. Preserve source/archive context when comparing it with other resources; a common suffix or directory is not a demonstrated dependency.</p><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Identify the preceding suffix (.tox, .bnk, .hkt and so on) before choosing a parser. Counts and support vary by resource type.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
+<p><code>.PS3</code> identifies the platform build of several resource families. It does not define one shared file format, endian mode or decoder. Read the full compound suffix before selecting a parser.</p>
+<h2 id="resource-families">Resource families</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Platform resources by role</caption><thead><tr><th scope="col">Family</th><th scope="col">Suffixes</th><th scope="col">Current scope</th></tr></thead><tbody>
+<tr><td>Character motion/control</td><td><a href="bbn.PS3.html">.bbn.PS3</a>, <a href="bnk.PS3.html">.bnk.PS3</a>, <a href="cec.ps3.html">.cec.ps3</a>, <a href="rcb.PS3.html">.rcb.PS3</a></td><td>Binding, animation and controller research; no registered animation/control conversion.</td></tr>
+<tr><td>Collision and physics</td><td><a href="acs.PS3.html">.acs.PS3</a>, <a href="hko.PS3.html">.hko.PS3</a>, <a href="hkt.PS3.html">.hkt.PS3</a></td><td>Character-collision and Havok observations; no registered physics conversion.</td></tr>
+<tr><td>Movie subtitles</td><td><a href="tox.PS3.html">.tox.PS3</a></td><td>Operation 16 joins timing records to LH2 text and produces SRT/VTT/CSV.</td></tr>
+<tr><td>Compiled sequences</td><td><a href="xml.PS3.html">.xml.PS3</a>, .shk.PS3</td><td>Binary/event research; distinct from readable XML.</td></tr>
+<tr><td>Rendered geometry</td><td>.dff.PS3.preinstanced, .rws.PS3.preinstanced</td><td>Compound suffix ends in .preinstanced; operation 8 imports geometry.</td></tr>
+</tbody></table></div><p>The format index links each family separately. Cross-platform <code>.XEN</code> resources require their own layout checks; replacing a filename suffix does not translate native data.</p>
+</body>
 </html>

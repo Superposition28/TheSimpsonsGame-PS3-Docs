@@ -6,31 +6,46 @@
     <title>.mib Format Documentation</title>
     <link rel="stylesheet" href="../../../../style/main.css">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body>
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Mix metadata (.mib)</nav>
+
 
 
     <div class="pages">
         <div class="doc-overview" id="overview">
             <h1>.mib</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Contains audio mix/state-related parameters in the documented samples.</p>
+<dl><dt>Identification</dt><dd>Header and candidate count at 0x20; no universal magic established.</dd><dt>Byte order / text</dt><dd>Big-endian integer and IEEE-754 float interpretations.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#format-architecture">Format Architecture</a></li><li><a href="#implementation-approach">Implementation Approach</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="sbk.html">Sound bank (.sbk)</a></td><td>Audio context</td><td>Mix-state metadata and decoded bank sounds belong to the same audio system. The bus/event join and DSP semantics remain unresolved.</td></tr><tr><td><a href="../../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td><td>Audio context</td><td>A decoded WAV preserves audio content, not the MIB routing/ducking rules that may affect playback.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Bus IDs, parameter meanings, variable record lengths and hash algorithms are not fully verified. The parser sketch below is illustrative, not a registered Deno or Lua operation.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
             <p>The <code>.mib</code> (Mix Information Bank) format dictates audio routing, ducking, and DSP states for
                 EA's sound engine in <em>The Simpsons Game (2007)</em>. These binary configuration files apply mixing
                 rules to specific audio channels or buses based on active game states (e.g., ducking SFX when dialog
                 plays, or applying EQ for the "Robobart" and "Helium" voice modifiers).</p>
 
-            <h2>Format Architecture</h2>
+            <h2 id="format-architecture">Format Architecture</h2>
             <p>The PS3 variation of these files uses standard IEEE 754 <strong>Big-Endian</strong> byte order. The
                 architecture is chunk-based, consisting of a global header followed by sequential, fixed-length
                 parameter blocks representing individual mix nodes.</p>
 
-            <table class="format-counts">
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table class="format-counts">
                 <thead>
                     <tr>
-                        <th>Offset</th>
-                        <th>Type</th>
-                        <th>Description</th>
-                        <th style="text-align: left;">Example Value</th>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Example Value</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,40 +53,39 @@
                         <td><code>0x00</code></td>
                         <td><code>byte[32]</code></td>
                         <td>File magic, versioning, and internal padding.</td>
-                        <td style="text-align: left;"><code>... 18 ... 0E ...</code></td>
+                        <td><code>... 18 ... 0E ...</code></td>
                     </tr>
                     <tr>
                         <td><code>0x20</code></td>
                         <td><code>uint32</code></td>
                         <td>Total Record Count. The number of mix blocks in the file.</td>
-                        <td style="text-align: left;"><code>0x37</code> (55 records)</td>
+                        <td><code>0x37</code> (55 records)</td>
                     </tr>
                     <tr>
                         <td><code>0x24</code></td>
                         <td><code>uint32</code></td>
                         <td>Header padding or master file offset.</td>
-                        <td style="text-align: left;"><code>0x18</code></td>
+                        <td><code>0x18</code></td>
                     </tr>
                     <tr>
                         <td><code>0x28</code></td>
                         <td><code>uint32</code></td>
                         <td>Global state flags or secondary counts.</td>
-                        <td style="text-align: left;"><code>0x00000000</code></td>
+                        <td><code>0x00000000</code></td>
                     </tr>
                     <tr>
                         <td><code>0x2C</code></td>
                         <td><code>uint32</code></td>
                         <td>Master File Hash / ID.</td>
-                        <td style="text-align: left;"><code>0x0000098C</code></td>
+                        <td><code>0x0000098C</code></td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
 
             <h3>Mix Record Block (Starts at 0x30)</h3>
             <p>Each mix target block in standard ducking files is typically 44 bytes (<code>0x2C</code>) long.</p>
             <ul>
-                <li><strong><code>uint32</code> Target Hash (4 bytes):</strong> An identifier (likely FNVA or EA's
-                    custom hash) corresponding to a named audio bus (e.g., <code>1F 96 D6 52</code>).</li>
+                <li><strong><code>uint32</code> Target Hash (4 bytes):</strong> A candidate audio-bus identifier (hash algorithm and bus-name join unverified) (e.g., <code>1F 96 D6 52</code>).</li>
                 <li><strong><code>float32</code> DSP Parameters (32 bytes):</strong> An array of 8 sequential
                     floating-point values determining gain, ducking depth, and fade interpolation.
                     <ul>
@@ -90,21 +104,21 @@
                     nested array or sibling block (e.g., <code>00 00 00 2C</code> for 44 bytes).</li>
             </ul>
 
-            <h2>Implementation Approach</h2>
+            <h2 id="implementation-approach">Implementation Approach</h2>
             <p>When building a custom parser for the RemakeEngine in Deno, the native <code>DataView</code> API handles
                 the endianness inherently by passing <code>false</code> to the getter methods.</p>
 
             <pre><code>export function parseMibBank(buffer: ArrayBuffer) {
     const view = new DataView(buffer);
     const recordCount = view.getUint32(0x20, false);
-    
+
     let offset = 0x30;
     const mixNodes = [];
 
     for (let i = 0; i &lt; recordCount; i++) {
         const hash = view.getUint32(offset, false).toString(16);
         const params = [];
-        
+
         for (let p = 0; p &lt; 8; p++) {
             params.push(view.getFloat32(offset + 4 + (p * 4), false));
         }
@@ -113,9 +127,9 @@
         const nextSize = view.getUint32(offset + 40, false);
 
         mixNodes.push({ hash, params });
-        offset += nextSize &gt; 0 ? nextSize : 44; 
+        offset += nextSize &gt; 0 ? nextSize : 44;
     }
-    
+
     return mixNodes;
 }</code></pre>
 
@@ -309,8 +323,8 @@
                 </li>
             </ul>
         </div>
-        
-        <section class='bodyy'>
+
+        <details class="research-appendix"><summary>Preserved sample hex dumps</summary><section class='bodyy'>
             <h1>.mib Files: Hex Dump Analysis</h1>
             <div class='file-block'>
                 <div class='file-path'><strong>File:</strong>
@@ -14761,7 +14775,7 @@
     00000990  BF 80 00 00 00 00 00 00 00 00 00 00 00 01 77 00  |..............w.|
     000009A0  00 00 00 00                                      |....|</pre>
             </div>
-        </section>
+        </section></details>
     </div>
 </body>
 

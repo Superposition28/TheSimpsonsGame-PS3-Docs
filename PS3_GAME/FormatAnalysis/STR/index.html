@@ -1,13 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="../../../style/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>.STR Archive Structure (EA Stream File)</title>
 </head>
 
-<body style="padding: 1.5rem;padding-top: 2rem;">
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>STR archive</nav>
+
     <h1>.STR Archive Structure (EA Stream File)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Extraction implemented · PS3 unless explicitly marked Xbox 360</p>
+<p>Packages level, character and shared resources for extraction.</p>
+<dl><dt>Identification</dt><dd>SToc at 0x00; section descriptors and aligned section payloads.</dd><dt>Byte order / text</dt><dd>Big-endian archive fields; payload formats vary.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#parsing-algorithm-overview">Parsing Algorithm Overview</a></li><li><a href="#file-header-structure">File Header Structure</a></li><li><a href="#streamfile-struct">StreamFile Struct</a></li><li><a href="#section-descriptor-array-2">Section Descriptor Array</a></li><li><a href="#section-data-decompression-2">Section Data Decompression</a></li><li><a href="#chunk-scanning-and-parsing">Chunk Scanning and Parsing</a></li><li><a href="#known-chunk-types">Known Chunk Types</a></li><li><a href="#embedded-asset-chunk-0x1607">Embedded Asset Chunk (0x1607)</a></li><li><a href="#refpack-stream-quickbms-dk2">RefPack Stream (QuickBMS dk2)</a></li><li><a href="#extraction-reference-and-c-prototype-caveats">Extraction Reference and C++ Prototype Caveats</a></li><li><a href="#summary-parsing-workflow">Summary: Parsing Workflow</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="imbedded-formats/txd.html">Texture dictionary (.txd)</a></td><td>Implemented</td><td>Operation 1 extracts texture dictionaries; operation 3 decodes supported textures to PNG.</td></tr><tr><td><a href="imbedded-formats/preinstanced.html">Preinstanced models</a></td><td>Implemented</td><td>Operation 1 extracts model payloads; operation 8 imports their geometry through Blender.</td></tr><tr><td><a href="imbedded-formats/lh2.html">Localization table (.LH2)</a></td><td>Implemented</td><td>Extracted localization tables remain inputs to operations 9 and 16.</td></tr><tr><td><a href="imbedded-formats/tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td><td>Implemented</td><td>Timing tables are extracted from archives rather than embedded in the converted OGV output.</td></tr><tr><td><a href="imbedded-formats/toc.html">Table-of-contents resources (.toc)</a></td><td>Observed</td><td>Stream and occlusion TOCs describe related streaming data; their records are distinct from STR section descriptors.</td></tr><tr><td><a href="imbedded-formats/NoExtension.html">Resources without a suffix</a></td><td>Extraction context</td><td>STR extraction may emit unnamed or suffixless payloads. Their source section and actual signatures must be retained for identification.</td></tr></tbody></table></div><p>See the <a href="../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../pipeline.html#op-1">Operation 1: Extract Archives (.STR)</a>. Declared dependencies: <code>[-1]</code>; <code>run-all = true</code>.</li></ul><p><a href="../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The registered QuickBMS script is the extraction reference. Decompression and asset extraction do not imply that every extracted payload is decoded.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
     <p><strong>Version:</strong> 1.0<br>
         <strong>Last Updated:</strong> 2026-10-02<br>
         <strong>Author(s):</strong> samarixum
@@ -23,11 +39,11 @@
         string lengths, and payload sizes are read as big-endian. The QuickBMS script discards the outer chunk-size word
         rather than interpreting it.</p>
 
-    <h2>Parsing Algorithm Overview</h2>
+    <h2 id="parsing-algorithm-overview">Parsing Algorithm Overview</h2>
 
     <ol>
         <li>Read and validate file header at offset 0x00</li>
-        <li>Navigate to StreamFile struct at header offset <code>pStreamFile</code></li>
+        <li>The StreamFile structure is additional research metadata; the registered BMS extractor does not need to interpret it.</li>
         <li>Navigate to Section array at header offset <code>pSectionArr</code></li>
         <li>For each section:
             <ol>
@@ -41,33 +57,17 @@
         </li>
     </ol>
 
-    <h2>File Header Structure</h2>
+    <h2 id="file-header-structure">File Header Structure</h2>
 
     <p>Located at offset <code>0x00</code>. <strong>Size: 20 bytes (<code>0x14</code>).</strong></p>
-    <h2>Section Descriptor Array</h2>
-    <p>Located at file offset = header.pSectionArr. Array of nSections entries, each <strong>24 bytes</strong>.</p>
-    <p><strong>To parse:</strong> For i = 0 to nSections-1, seek to (pSectionArr + i*24) and read 24 bytes.</p>
-    <table>
-        <td>Memory allocation policy. Informational; typically 0.</td>
-        <td>Memory allocation policy. Known values in the C++ header are <code>0x00000000</code>,
-            <code>0x5393AC01</code>, and <code>0x9D6870BC</code>.</td>
-        </tr>
-        <p><strong>To parse:</strong> For i = 0 to nSections-1, seek to <code>pSectionArr + i*24</code> and read 24
-            bytes. The QuickBMS script computes the first section-data position by aligning the end of the header and
-            descriptor array up to <code>0x800</code>, then advances by each section's stored size.</p>
-        <h2>Section Data Decompression</h2>
-        <p>The QuickBMS script reads the section table at <code>pSectionArr</code> (the big-endian pointer at file
-            offset <code>0x10</code>). It checks the first two bytes of each section payload for <code>10 FB</code>;
-            when present, <code>clog</code> with <code>dk2</code> expands <code>ReadSize</code> bytes to
-            <code>DataSize</code>. Otherwise the section bytes are copied as raw data. This describes the script's
-            behavior and is distinct from interpreting the section's <code>CompressorID</code> alone.</p>
+    <div class="table-scroll" role="region" aria-label="STR file header" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Offset</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Name</th>
-                <th>Description</th>
+                <th scope="col">Offset</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -121,23 +121,23 @@
                 <td>Absolute offset to Section Descriptor array. Validate: must be ≥ pStreamFile + 32.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
     <p>The 20-byte core header is followed by eight additional UInt32 values that QuickBMS reads but does not interpret,
         bringing its fixed preamble to <code>0x34</code> bytes. Their individual meanings are not established here.</p>
 
-    <h2>StreamFile Struct</h2>
+    <h2 id="streamfile-struct">StreamFile Struct</h2>
 
     <p>Located at file offset = header.pStreamFile. <strong>Size: ~48+ bytes</strong> (variable due to string).</p>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Offset (Rel)</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Name</th>
-                <th>Description</th>
+                <th scope="col">Offset (Rel)</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -146,7 +146,7 @@
                 <td>4</td>
                 <td>UInt32 BE</td>
                 <td>GUID</td>
-                <td>Unique ID, often SDBM hash of filename. Used to identify the stream asset.</td>
+                <td>Candidate stream identifier. A filename/hash relationship must be verified per sample; it is not interpreted by the registered BMS script.</td>
             </tr>
             <tr>
                 <td>0x04</td>
@@ -206,9 +206,9 @@
                 <td>Offset to additional section metadata. Often 0 (none).</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
-    <h2>Section Descriptor Array</h2>
+    <h2 id="section-descriptor-array-2">Section Descriptor Array</h2>
 
     <p>Located at file offset = header.pSectionArr. Array of nSections entries, each <strong>24 bytes</strong>.</p>
 
@@ -217,14 +217,14 @@
         <code>nSections * 24</code>, then rounds that position up to a <code>0x800</code> boundary. It advances from the
         aligned base by each section's stored size; in the standard layout, section data begins at <code>0x800</code>.
     </p>
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Offset (Rel)</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Name</th>
-                <th>Description</th>
+                <th scope="col">Offset (Rel)</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -240,7 +240,7 @@
                 <td>4</td>
                 <td>UInt32 BE</td>
                 <td>CompressorID</td>
-                <td><strong>Critical:</strong> Determines if section data is compressed.
+                <td>Candidate compressor identifier from the research prototype; the registered BMS script instead checks the payload signature.
                     <ul>
                         <li>0xB9F0B9EC = Refpack compression</li>
                         <li>0x0EAC15C8 = Uncompressed (raw data)</li>
@@ -279,9 +279,9 @@
                     ReadSize bytes.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
-    <h2>Section Data Decompression</h2>
+    <h2 id="section-data-decompression-2">Section Data Decompression</h2>
 
     <p><strong>Algorithm:</strong></p>
     <ol>
@@ -305,7 +305,7 @@
         </li>
     </ol>
 
-    <h2>Chunk Scanning and Parsing</h2>
+    <h2 id="chunk-scanning-and-parsing">Chunk Scanning and Parsing</h2>
 
     <p>After section decompression/acquisition, the QuickBMS script walks records sequentially. The first four bytes
         contain a two-byte type identifier and two-byte padding; the following fields include the record version and
@@ -325,15 +325,15 @@
             rounding that length up to a four-byte boundary.</li>
     </ol>
 
-    <h2>Known Chunk Types</h2>
-    <table>
+    <h2 id="known-chunk-types">Known Chunk Types</h2>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Type ID</th>
-                <th>Hex</th>
-                <th>Name</th>
-                <th>Size Field</th>
-                <th>Handling Notes</th>
+                <th scope="col">Type ID</th>
+                <th scope="col">Hex</th>
+                <th scope="col">Name</th>
+                <th scope="col">Size Field</th>
+                <th scope="col">Handling Notes</th>
             </tr>
         </thead>
         <tbody>
@@ -371,22 +371,22 @@
                 <td>Another embedded record type. Its complete payload layout is not specified here.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
-    <h2>Embedded Asset Chunk (0x1607)</h2>
+    <h2 id="embedded-asset-chunk-0x1607">Embedded Asset Chunk (0x1607)</h2>
 
     <p><strong>Location:</strong> Within decompressed section data. The QuickBMS script reads a 16-byte record header,
         then either handles a headerless record or parses a variable-length metadata subheader.</p>
 
     <h3>Outer Record Header (16 bytes)</h3>
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Offset (relative)</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Name</th>
-                <th>Description</th>
+                <th scope="col">Offset (relative)</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -429,7 +429,7 @@
                     remaining section bytes after this outer header as a headerless payload.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
     <p><strong>*ChunkSize interpretation:</strong> In the prototype's model,
         <code>ChunkSize = 4 + HeaderSize + align4(PayloadSize)</code>, where the first four bytes are the
@@ -442,14 +442,14 @@
         used to reach a four-byte boundary. For example, an empty four-byte string field has length <code>4</code>
         followed by <code>00 BF BF BF</code>; those four content bytes are not the length value.</p>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Sequence</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Name</th>
-                <th>Description</th>
+                <th scope="col">Sequence</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -506,7 +506,7 @@
                 <td>Exact unpadded length of the binary asset payload.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
     <h3>Asset Payload and Record Boundary</h3>
     <p>The asset payload begins at <code>chunk_start + 0x10 + HeaderSize</code> and contains exactly
@@ -547,18 +547,18 @@ while record_start &lt; section_size:
     record_start = payload_start + ((payload_size + 3) &amp; ~3)
         </code></pre>
 
-    <h2>RefPack Stream (QuickBMS <code>dk2</code>)</h2>
+    <h2 id="refpack-stream-quickbms-dk2">RefPack Stream (QuickBMS <code>dk2</code>)</h2>
     <p>The section extraction script selects RefPack decompression when the section begins with signature
         <code>0x10FB</code>, then passes the compressed byte count and expected decompressed size to QuickBMS
         <code>clog</code>. The command details below are transcribed from <code>Str_Load_Full::UnCompressSection</code>;
         QuickBMS <code>dk2</code> remains the working decoder.</p>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Stream element</th>
-                <th>Encoding</th>
-                <th>Description</th>
+                <th scope="col">Stream element</th>
+                <th scope="col">Encoding</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -581,17 +581,17 @@ while record_start &lt; section_size:
                 <td>Expected output size for the RefPack stream.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
     <p>Each command starts with <code>byte0</code>. The first matching condition below determines the command form:</p>
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Condition</th>
-                <th>Command bytes</th>
-                <th>Literal bytes before back-reference</th>
-                <th>Back-reference length</th>
-                <th>Backward distance</th>
+                <th scope="col">Condition</th>
+                <th scope="col">Command bytes</th>
+                <th scope="col">Literal bytes before back-reference</th>
+                <th scope="col">Back-reference length</th>
+                <th scope="col">Backward distance</th>
             </tr>
         </thead>
         <tbody>
@@ -617,14 +617,14 @@ while record_start &lt; section_size:
                 <td><code>((byte0 &amp; 0x10) &lt;&lt; 12) + (byte1 &lt;&lt; 8) + byte2 + 1</code></td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
     <p>When <code>(byte0 &amp; 0xE0) == 0xE0</code>, the command is a literal block or terminator. Compute
         <code>literal_count = (byte0 &amp; 0x1F) * 4 + 4</code>. If the result is at most <code>0x70</code>, copy that
         many literal bytes. Otherwise, copy <code>byte0 &amp; 0x03</code> trailing literal bytes and end decompression.
     </p>
 
-    <h2>Extraction Reference and C++ Prototype Caveats</h2>
+    <h2 id="extraction-reference-and-c-prototype-caveats">Extraction Reference and C++ Prototype Caveats</h2>
     <p>Use <code>operations/simpsons_str.bms</code> with QuickBMS as the extraction reference. The C++ files under
         <code>reversing/TheSimpsonsGameFileExtractor-main/project/Source</code> are an unfinished prototype, not an
         equivalent parser:</p>
@@ -643,7 +643,7 @@ while record_start &lt; section_size:
             unspecified; this can lose the original section order.</li>
     </ul>
 
-    <h2>Summary: Parsing Workflow</h2>
+    <h2 id="summary-parsing-workflow">Summary: Parsing Workflow</h2>
 
     <ol>
         <li><strong>Validate magic</strong>: Read header, verify "SToc"</li>

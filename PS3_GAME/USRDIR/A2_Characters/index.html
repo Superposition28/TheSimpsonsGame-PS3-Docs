@@ -4,12 +4,13 @@
 <head>
     <meta charset="utf-8">
     <title>A2_Characters (simpsons_chars) - Asset Overview</title>
-    <link rel="stylesheet" href="../../style/main.css">
+    <link rel="stylesheet" href="../../../style/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body style="padding: 1.5rem; padding-top: 2rem;">
+<body class="doc-page">
     <div class="doc-overview">
-        <h1>A2_Characters (<code>simpsons_chars</code>)</h1>
+        <h1>A2_Characters (<code>simpsons_chars</code>)</h1><p>Character archives contain multiple resource families: rendered geometry and textures, font resources shared by the game, and separate animation/controller/collision metadata. Operation 8 imports geometry; it does not reconstruct the character animation or physics system.</p><p>Shared INF fonts and TXD-derived atlases can render LH2 UI/dialogue text, including text resolved for movie subtitles. The <a href="../../FormatAnalysis/relationships.html#characters">character relationships</a> and <a href="../../FormatAnalysis/relationships.html#media">text/font workflow</a> distinguish these connections.</p>
         <p>
             Contains global character archives (<code>simpsonsCharsGlobalStr</code>) and shared UI/HUD typography assets used across character HUD overlays and in-game prompts.
         </p>
@@ -19,7 +20,7 @@
             Six <a href="../../FormatAnalysis/STR/imbedded-formats/inf.html"><code>.inf</code> (<code>FONT</code> v6)</a> binary font descriptors reside in <code>A2_Characters/simpsonsCharsGlobalStr/assetsShared/fonts/</code> and map to extracted <code>.png</code> texture atlases under <code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/</code>:
         </p>
 
-        <table class="format-counts" style="max-width: 100%;">
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table class="format-counts">
             <caption>A2_Characters Font Descriptor (<code>.inf</code>) to Texture Atlas (<code>.png</code>) Mapping</caption>
             <thead>
                 <tr>
@@ -74,7 +75,7 @@
                     <td><code>512&times;256</code></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     </div>
 </body>
 

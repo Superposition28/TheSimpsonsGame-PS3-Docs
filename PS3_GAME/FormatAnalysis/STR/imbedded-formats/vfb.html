@@ -4,22 +4,37 @@
         <meta charset="utf-8">
         <title>VFB Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem; padding-top: 2rem;">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+    <body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Effect bundle (.vfb)</nav>
+
 <h1>VFB (Visual-FX Bundle)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Contains named effect blocks with offset and timing/parameter tables.</p>
+<dl><dt>Identification</dt><dd>Observed 32-byte header, version word 6 and candidate 28-byte table entries.</dd><dt>Byte order / text</dt><dd>Big-endian integer/float interpretations in samples.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#global-header-32-bytes">Global Header (32 Bytes)</a></li><li><a href="#offset-table-28-bytes-per-entry">Offset Table (28 Bytes per Entry)</a></li><li><a href="#global-padding-block-16-bytes">Global Padding Block (16 Bytes)</a></li><li><a href="#data-blocks">Data Blocks</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="imb.html">Impact resource (.imb)</a></td><td>Tentative</td><td>Material/effect clusters and VFX bundles suggest an impact-to-effect relationship; exact hashes and effect selection are not resolved.</td></tr><tr><td><a href="preinstanced.html">Preinstanced models</a></td><td>Visual context</td><td>Effects can accompany rendered assets, but geometry export does not reproduce VFB emitters, timing or sound triggers.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Field names such as duration, intensity and fade are provisional until runtime correlation. No effect player or VFB converter is registered.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
 <p>  <strong>Purpose</strong>
-Container for VFX parameters for a single move/ability (e.g., Lisa╬ô├ç├ûs ╬ô├ç┬úspin╬ô├ç┬Ñ). Holds emitter/curve blocks and
+Container for VFX parameters for a single move/ability (e.g., Lisa’s “spin”). Holds emitter/curve blocks and
 timing/scale values, referenced by an offset table.
     <strong>Format Overview: .vfb (Visual-FX Bundle)</strong></p>
 <p>The <code>.vfb</code> format is a proprietary, Big-Endian binary container used on the PlayStation 3 to store timing, offsets, and parameters for visual and audio effects. The file consists of a fixed-size global header, an array of offset table entries, a standard padding block, and a payload of sequentially stored effect blocks (particles, sounds, scripts).</p>
-<h2>Global Header (32 Bytes)</h2>
+<h2 id="global-header-32-bytes">Global Header (32 Bytes)</h2>
 <p>The file always begins with a 32-byte (0x20) global header containing the effect&#39;s internal name and entry counts.</p>
-<table>
+<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
 <thead>
 <tr>
-<th>Offset</th>
-<th>Type</th>
-<th>Description</th>
+<th scope="col">Offset</th>
+<th scope="col">Type</th>
+<th scope="col">Description</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -52,16 +67,16 @@ timing/scale values, referenced by an offset table.
 <td>Uint16</td>
 <td>Padding or minor flags (typically <code>00 00</code>, <code>00 01</code>, or <code>01 00</code>).</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <hr>
-<h2>Offset Table (28 Bytes per Entry)</h2>
+<h2 id="offset-table-28-bytes-per-entry">Offset Table (28 Bytes per Entry)</h2>
 <p>Immediately following the header at <code>0x20</code> is an array of <code>N</code> offset table entries. Each entry is exactly 28 bytes (0x1C) and acts as a timeline node, dictating when an effect triggers, how it scales, and exactly where its data resides in the file.</p>
-<table>
+<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
 <thead>
 <tr>
-<th>Offset</th>
-<th>Type</th>
-<th>Description</th>
+<th scope="col">Offset</th>
+<th scope="col">Type</th>
+<th scope="col">Description</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -99,9 +114,9 @@ timing/scale values, referenced by an offset table.
 <td>Uint32</td>
 <td>Block type flag or initialization state (e.g., <code>00 00 02 00</code>).</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 <hr>
-<h2>Global Padding Block (16 Bytes)</h2>
+<h2 id="global-padding-block-16-bytes">Global Padding Block (16 Bytes)</h2>
 <p>After the offset table concludes, but before the first data block begins, there is a fixed 16-byte padding sequence. In almost all populated files, this resolves to:</p>
 <ul>
 <li><code>00 00 00 00</code></li>
@@ -110,7 +125,7 @@ timing/scale values, referenced by an offset table.
 <li><code>3D 4C CC CD</code> (Float 0.05)</li>
 </ul>
 <hr>
-<h2>Data Blocks</h2>
+<h2 id="data-blocks">Data Blocks</h2>
 <p>Data blocks start at the precise addresses designated by the Offset Table (<code>0x10</code> of each entry). Blocks utilize 4-character ASCII identifiers, often prefixed or padded with ASCII <code>#</code> characters (<code>23 23 23 23</code>) for memory alignment.</p>
 <p><strong>Common Block Types:</strong></p>
 <ul>

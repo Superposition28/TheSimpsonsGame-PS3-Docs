@@ -6,19 +6,34 @@
   <title>.sbk Format Documentation</title>
   <link rel="stylesheet" href="../../../../style/main.css">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body>
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Sound bank (.sbk)</nav>
+
   <div class="pages">
     <div class="doc-overview" id="overview">
 
       <h1>Compiled Sound Bank Format (.sbk)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
+<p>Contains sound-bank metadata and, in verified samples, selectable embedded audio streams.</p>
+<dl><dt>Identification</dt><dd>Observed bytes 6B 6E 62 73 (knbs).</dd><dt>Byte order / text</dt><dd>Big-endian fields observed; codec payloads follow their own structures.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#internal-structure-data">Internal Structure & Data</a></li><li><a href="#verified-audio-payload">Verified Audio Payload</a></li><li><a href="#auditory-survey">Auditory Survey</a></li><li><a href="#runtime-usage-logic">Runtime Usage & Logic</a></li><li><a href="#relationship-to-other-formats">Relationship to Other Formats</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td><td>Related payloads</td><td>Both can carry EA compressed audio, but bank-contained subsongs and standalone SNU files are separate inputs to operations 10 and 11; no mandatory SBK-to-SNU dependency is established.</td></tr><tr><td><a href="smb.html">Stream metadata (.smb)</a></td><td>Unverified</td><td>Both occur in audio contexts. No direct SBK record-to-SMB record mapping has been verified; proximity alone is insufficient.</td></tr><tr><td><a href="mib.html">Mix metadata (.mib)</a></td><td>Audio context</td><td>Mix-state metadata and decoded bank sounds belong to the same audio system. The bus/event join and DSP semantics remain unresolved.</td></tr><tr><td><a href="rcm_b.html">Character audio metadata (.rcm_b)</a></td><td>Tentative</td><td>Character audioscript paths suggest related vocal/gameplay audio, but exact record IDs and bank selections are unresolved.</td></tr><tr><td><a href="imb.html">Impact resource (.imb)</a></td><td>Tentative</td><td>Impact resources contain candidate effect/audio identifiers. A collision-material-to-bank-subsong mapping is not verified.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../../pipeline.html#op-10">Operation 10: Convert Audio (.sbk -&gt; .wav)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li></ul><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>A verified sample reports 289 selectable streams. The manifest does not request exhaustive subsong enumeration, so one WAV per bank must not be described as recovery of every sound. Playback graph and routing semantics remain unverified.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
       <p><code>*.sbk</code> is a <strong>compiled sound bank</strong>. Magic <code>6B 6E 62 73</code>
         = <code>"knbs"</code> → <strong>“sbnk” (sound bank) on a big-endian platform (PS3)</strong>. At least some
         SBKs embed playable audio streams directly, alongside the bank metadata and playback configuration.
       </p>
 
-      <h2>Internal Structure & Data</h2>
+      <h2 id="internal-structure-data">Internal Structure & Data</h2>
       <ul>
         <li><strong>Header magic:</strong> <code>6B 6E 62 73</code> = <code>k n b s</code> → “<strong>sbnk</strong>”
           reversed by endianness (PS3 is big-endian). It’s a very common naming for “sound bank”.</li>
@@ -35,7 +50,7 @@
           assignments, and <strong>ducking</strong> rules.</li>
       </ul>
 
-      <h2>Verified Audio Payload</h2>
+      <h2 id="verified-audio-payload">Verified Audio Payload</h2>
       <p>Running <code>vgmstream-cli.exe -o test.wav .\bart_bc0_grp0_ss1_h0_ae0c63.sbk</code> on the extracted
         <code>bart_bc0_grp0_ss1_h0_ae0c63.sbk</code> sample identifies its embedded stream data as follows:</p>
       <ul>
@@ -49,7 +64,7 @@
         remaining tables, including whether they encode playback graphs, mix routing, or event metadata, remains
         unverified.</p>
 
-      <h2>Auditory Survey</h2>
+      <h2 id="auditory-survey">Auditory Survey</h2>
       <p>Most of the 157 WAV files produced by an SBK conversion were reviewed by listening. The reviewed material is
         predominantly sound effects rather than music or extended dialogue:</p>
       <ul>
@@ -63,7 +78,7 @@
         hits, impacts, and object interactions. Individual stream-to-event assignments remain unverified and should
         be confirmed by correlating stream IDs with in-game triggers or sound-event names.</p>
 
-      <h2>Runtime Usage & Logic</h2>
+      <h2 id="runtime-usage-logic">Runtime Usage & Logic</h2>
       <p>The <strong>SBK</strong> appears to contain audio streams plus metadata that may define playback behavior:</p>
       <ul>
         <li>Which <strong>event IDs</strong> exist for the hub (VO lines, UI beeps, ambience beds, props).</li>
@@ -83,7 +98,7 @@
           files must be verified from additional samples.</li>
       </ol>
 
-      <h2>Relationship to Other Formats</h2>
+      <h2 id="relationship-to-other-formats">Relationship to Other Formats</h2>
       <ul>
         <li><strong><code>.sbk</code> (this file):</strong> a bank that can embed EA SNS audio streams and metadata.</li>
         <li><strong><code>.smb</code> and <code>.exa</code>:</strong> their relationship to SBK is not yet verified by

@@ -5,37 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PS3 Game USRDIR Contents</title>
     <link rel="stylesheet" href="../../style/main.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1, h2 {
-            color: #b9b9b9;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 20px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
 
-        .section {
-            margin: 30px 0;
-        }
-    </style>
 </head>
-<body>
-    <h1>PS3 Game USRDIR Contents</h1>
+<body class="doc-page">
+    <h1>USRDIR source and normalized layouts</h1>
+<p>USRDIR is the source game's data directory. The first list retains disc folder names; the organization list uses the readable groups created by the module. These two views describe different stages of the same assets.</p>
+<h2>Extraction and normalization</h2><p>Operation 1 extracts STR payloads. Operation 2 copies movies and audiostreams that already exist outside those archives. Operation 4 renames base folders, operation 5 reorganizes audio using available AudioMap rules, and operation 6 writes a flattened dataset plus JSON path maps. Normalization removes build/platform path segments and adds path-derived filename UIDs; it does not change binary format semantics.</p>
+<p>Keep the source/normalized map when following references: a rendered asset can span model geometry, textures, MetaModel properties, collision and effect files. A movie can span a video file, TOX timings and global LH2 text; fonts and atlases are a separate rendering input.</p>
+<p><a href="../FormatAnalysis/relationships.html">Format relationships</a> · <a href="../FormatAnalysis/pipeline.html">Operation pipeline</a> · <a href="../FormatAnalysis/index.html">Format inventory</a></p>
 
     <div class="section">
         <h2>Main Files</h2>
@@ -109,14 +86,14 @@
     </div>
 
     <div class="section">
-        <h2>File Summary - EU Version</h2>
-        <table>
+        <h2>File Summary - EU Version</h2><p>Recorded source inventory; percentages and totals depend on the build and counting method.</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
             <tr>
-                <th>Extension</th>
-                <th>File Type</th>
-                <th>Percent</th>
-                <th>Files</th>
+                <th scope="col">Extension</th>
+                <th scope="col">File Type</th>
+                <th scope="col">Percent</th>
+                <th scope="col">Files</th>
             </tr>
             </thead>
             <tbody>
@@ -163,18 +140,18 @@
                 <td>1</td>
             </tr>
             </tbody>
-        </table>
+        </table></div>
     </div>
 
     <div class="section">
         <h2>File Summary - US Version</h2>
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
             <tr>
-                <th>Extension</th>
-                <th>File Type</th>
-                <th>Percent</th>
-                <th>Files</th>
+                <th scope="col">Extension</th>
+                <th scope="col">File Type</th>
+                <th scope="col">Percent</th>
+                <th scope="col">Files</th>
             </tr>
             </thead>
             <tbody>
@@ -221,7 +198,7 @@
                 <td>1</td>
             </tr>
             </tbody>
-        </table>
+        </table></div>
     </div>
 
 </body>

@@ -5,10 +5,25 @@
     <meta charset="utf-8">
     <title>MUS Format Documentation</title>
     <link rel="stylesheet" href="../../../style/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body style="padding: 1.5rem; padding-top: 2rem;">
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>Segmented music (.mus)</nav>
+
     <h1>Simpsons Game <code>.mus</code> Audio Format</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
+<p>Packages paired SNR metadata and SNS audio payloads for interactive music segments.</p>
+<dl><dt>Identification</dt><dd>The registered BMS skips the first four bytes, reads a byte count at 0x04 and a descriptor table at 0x28.</dd><dt>Byte order / text</dt><dd>Big-endian extraction fields; packed offsets use different scale units.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#high-level-analysis-header-notes">High-Level Analysis &amp; Header Notes</a></li><li><a href="#verified-archive-structure-what-we-know">Verified Archive Structure (What We Know)</a></li><li><a href="#platform-differences-ps3-vs-xbox-360">Platform Differences (PS3 vs. Xbox 360)</a></li><li><a href="#background-music-segment-playback-construction">Background Music Segment Playback &amp; Construction</a></li><li><a href="#quickbms-extraction-vgmstream-verification">QuickBMS Extraction &amp; vgmstream Verification</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../STR/imbedded-formats/msb.html">Interactive music metadata (.msb)</a></td><td>Observed</td><td>MSB samples name .mus containers and expose PFDx event/part symbols. Operation 12 extracts and decodes SNR/SNS segments without reading the MSB transition logic.</td></tr><tr><td><a href="../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td><td>Related payloads</td><td>Both workflows involve EA audio structures. MUS extraction produces paired SNR metadata and SNS payloads; these pairs are not interchangeable with a standalone SNU wrapper.</td></tr></tbody></table></div><p>See the <a href="../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../pipeline.html#op-12">Operation 12: Convert Music (.mus -&gt; .snr/.sns -&gt; .wav)</a>. Declared dependencies: <code>[10]</code>; <code>run-all = false</code>.</li></ul><p><a href="../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Operation 12 decodes individual segments, then removes temporary SNR/SNS files. It does not interpret MSB transitions or assemble a complete adaptive soundtrack. Header-family interpretations in the research notes remain hypotheses.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
     <p><strong>File Extension:</strong> <code>.mus</code></p>
     <p><strong>Origin:</strong> The Simpsons Game (PS3 &amp; Xbox 360 Versions), proprietary format from EA Redwood Shores.</p>
     <p><strong>Purpose:</strong> Container archives for Interactive, Segmented, and Layered background music.</p>
@@ -29,9 +44,9 @@
 
     <hr>
 
-    <h2>High-Level Analysis &amp; Header Notes</h2>
+    <h2 id="high-level-analysis-header-notes">High-Level Analysis &amp; Header Notes</h2>
 
-    <h3>1. File Name Meanings</h3>
+    <h3>File Name Meanings</h3>
     <p>Using the <code>naming.md</code> document, we can map the directory's <code>.mus</code> files directly to the game's levels. These files contain the primary streaming background music tracks for each respective area:</p>
     <pre><code>80b_mus.mus: Around the World in 80 Bites
 bin.mus: Bargain Bin
@@ -51,7 +66,7 @@ spr_mus.mus: Springfield hub/house/interiors
 sss_mus.mus: Invasion of the Yokel-Snatchers (The Day Springfield Stood Still)
 treetemp.mus: Lisa the Tree Hugger</code></pre>
 
-    <h3>2. Discovery of Header Signatures</h3>
+    <h3>Discovery of Header Signatures</h3>
     <p>Initial notes only documented two subtypes, but analysis across all files reveals four distinct signatures. Notice the pattern in the first byte of the signature sequence:</p>
     <p><strong>The "Type 1" Family (Ends in <code>78 01 32 00</code>):</strong></p>
     <pre><code>0F 00 00 00 78 01 32 00 (Known Type 1) - Found in brt_mus, hub_mus, loc_mus, mob_mus, mtp_mus, nvq_mus, rwc_mus, sss_mus.
@@ -59,19 +74,19 @@ treetemp.mus: Lisa the Tree Hugger</code></pre>
     <p><strong>The "Type 2" Family (Ends in <code>02 03 02 03</code>):</strong></p>
     <pre><code>0B 00 00 00 02 03 02 03 (Known Type 2) - Found in bsh_mus, spr_mus, treetemp.mus.
 0C 00 00 00 02 03 02 03 (Variant)      - Found in bin.mus, cheater.mus, moh_mus.</code></pre>
-    <p><strong>What this means:</strong> The first byte (<code>0x0F</code>/<code>0x0E</code> or <code>0x0B</code>/<code>0x0C</code>) is likely a flag or a format version number, while the last 4 bytes are the true "magic number" identifying the encoding algorithm or block structure.</p>
+    <p><strong>What this means:</strong> The first byte (<code>0x0F</code>/<code>0x0E</code> or <code>0x0B</code>/<code>0x0C</code>) is likely a flag or a format version number, while the last four bytes form observed signature groups. Their role as a codec identifier has not been demonstrated by the registered extraction script.</p>
 
-    <h3>3. The Unknown Integer is a "Cue/Track Count"</h3>
+    <h3>Count byte and earlier header interpretation</h3>
     <p>The <code>Unk/Size</code> variable at offset <code>0x04</code> returns values ranging from <code>6</code> (for <code>hub_mus.mus</code> and <code>gts_mus.mus</code>) up to <code>249</code> (for <code>nvq_mus.mus</code>).</p>
-    <p>Because these files are enormous (e.g., <code>nvq_mus.mus</code> is 188 MB but its integer is only 249), this integer is not a file size, byte offset, or total sample count. Since background music uses interactive stems (multiple segments/layers of music fading in and out based on gameplay), this integer represents the number of individual streams, cues, or segments multiplexed into the container.</p>
+    <p>Because these files are enormous (e.g., <code>nvq_mus.mus</code> is 188 MB but its integer is only 249), this integer is not a file size, byte offset, or total sample count. Since background music uses interactive stems (multiple segments/layers of music fading in and out based on gameplay), the earlier notes proposed a stream/cue count. The registered BMS actually reads one byte at 0x04 as its descriptor count; the meaning of surrounding bytes must be assessed separately.</p>
 
-    <h3>4. VBR Frame Delimiters Confirmed</h3>
+    <h3>Candidate frame delimiters</h3>
     <p>Scanning <code>hub_mus.mus</code> showed that the <code>0C 00 00 00</code> padding marker appears in 12.47% of the 64-byte chunks.</p>
     <p><strong>What this means:</strong> If the marker was only used at the very end of the file, it would be 0.001%. Because it appears roughly 1 out of every 8 chunks (100 / 12.47 &approx; 8.01), this strongly supports the theory that this marker denotes the end of logical audio frames. An average audio frame in this format spans about 8 physical chunks (~512 bytes).</p>
 
     <hr>
 
-    <h2>1. Verified Archive Structure (What We Know)</h2>
+    <h2 id="verified-archive-structure-what-we-know">Verified Archive Structure (What We Know)</h2>
     <ul>
         <li><strong>It is an Archive, Not a Flat Stream:</strong> <code>.mus</code> files are not single continuous audio tracks. They are containers holding multiple distinct audio segments (metadata and payload pairs). Treating them as a single raw stream results in corrupted static/noise.</li>
         <li><strong>Big-Endian Table of Contents (TOC):</strong> The archive structure relies on a directory/TOC that begins at offset <code>0x28</code>. The total number of files/segments inside the archive is read as a single byte at offset <code>0x04</code> of the header.</li>
@@ -94,16 +109,16 @@ treetemp.mus: Lisa the Tree Hugger</code></pre>
 
     <hr>
 
-    <h2>2. Platform Differences (PS3 vs. Xbox 360)</h2>
+    <h2 id="platform-differences-ps3-vs-xbox-360">Platform Differences (PS3 vs. Xbox 360)</h2>
     <p>The <code>.mus</code> archives have the exact same container structure and stream inventory across platforms (for example, <code>bin.mus</code> contains 63 numbered <code>.snr</code>/<code>.sns</code> pairs on both PS3 and Xbox 360). The difference lies strictly in the audio codec used inside those stream pairs:</p>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <caption>Comparison of embedded stream <code>bin__000</code> (from <code>bin.mus</code>) across platforms</caption>
         <thead>
             <tr>
-                <th>Property</th>
-                <th>PS3</th>
-                <th>Xbox 360</th>
+                <th scope="col">Property</th>
+                <th scope="col">PS3</th>
+                <th scope="col">Xbox 360</th>
             </tr>
         </thead>
         <tbody>
@@ -143,7 +158,7 @@ treetemp.mus: Lisa the Tree Hugger</code></pre>
                 <td>319,872 bytes</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
     <ul>
         <li><strong><code>DIFF_BY_PLATFORM</code> Expected:</strong> PS3 stores the music segments as <code>EA-XAS 4-bit ADPCM v1</code> (header codec byte <code>0x04</code>), while Xbox 360 stores the exact same timed multichannel segments as <code>XMA2</code> (header codec byte <code>0x03</code>).</li>
@@ -153,7 +168,7 @@ treetemp.mus: Lisa the Tree Hugger</code></pre>
 
     <hr>
 
-    <h2>3. Background Music Segment Playback &amp; Construction</h2>
+    <h2 id="background-music-segment-playback-construction">Background Music Segment Playback &amp; Construction</h2>
     <p>Because the tracks are split into numerous ~2-second snippets, reconstruction of a full playable soundtrack requires sequencing. The typical workflow used in the <code>mustest.ps1</code> test script details this behavior:</p>
     <ol>
         <li>Unpack the <code>.mus</code> file (PS3 or Xbox 360) with <code>operations/mus.bms</code> using QuickBMS to extract all numbered <code>.snr</code> and <code>.sns</code> chunks.</li>
@@ -165,16 +180,16 @@ treetemp.mus: Lisa the Tree Hugger</code></pre>
     <h3>Level-Specific Extraction Statistics</h3>
     <p>A recursive duration scan using <code>ffprobe</code> across all converted WAV folders reveals the typical length properties of the sequential music segments:</p>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Folder (Level)</th>
-                <th>Source File</th>
-                <th>Files Count</th>
-                <th>Shortest</th>
-                <th>Longest</th>
-                <th>Mean</th>
-                <th>Median</th>
+                <th scope="col">Folder (Level)</th>
+                <th scope="col">Source File</th>
+                <th scope="col">Files Count</th>
+                <th scope="col">Shortest</th>
+                <th scope="col">Longest</th>
+                <th scope="col">Mean</th>
+                <th scope="col">Median</th>
             </tr>
         </thead>
         <tbody>
@@ -332,11 +347,11 @@ treetemp.mus: Lisa the Tree Hugger</code></pre>
                 <td>00:00:03.828</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
     <hr>
 
-    <h2>4. QuickBMS Extraction &amp; vgmstream Verification</h2>
+    <h2 id="quickbms-extraction-vgmstream-verification">QuickBMS Extraction &amp; vgmstream Verification</h2>
     <ul>
         <li><strong>QuickBMS Extraction Works (PS3 &amp; Xbox 360):</strong> The module script <code>operations/mus.bms</code> successfully extracts each <code>.mus</code> archive on both platforms into paired <code>.snr</code> and <code>.sns</code> files.</li>
         <li><strong>vgmstream Playback Works (PS3 &amp; Xbox 360):</strong> Running <code>vgmstream</code> on the extracted <code>.snr</code> files produces valid decoded <code>.wav</code> audio for both platforms, reporting <code>Electronic Arts EA-XAS 4-bit ADPCM v1</code> (<code>0x04</code>) on PS3 and <code>Xbox Media Audio 2</code> (<code>0x03</code>) on Xbox 360 with <code>Electronic Arts SNR+SNS header</code> metadata.</li>

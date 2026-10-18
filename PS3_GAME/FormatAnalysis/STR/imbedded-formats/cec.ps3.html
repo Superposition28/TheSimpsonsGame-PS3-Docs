@@ -1,27 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
     <head>
         <meta charset="utf-8">
         <title>Controller Event Config Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
 
-    <body style="padding: 1.5rem;padding-top: 2rem;">
+    <body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Controller event configuration (.cec.ps3)</nav>
+
 
         <h1>Controller Event Config (.cec.ps3)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Contains controller event records including names and parameters.</p>
+<dl><dt>Identification</dt><dd>Header and event layout are recorded below; unknown fields are retained.</dd><dt>Byte order / text</dt><dd>Use the per-field layout; global properties need further validation.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#header">Header</a></li><li><a href="#event-entry">Event Entry</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="bnk.PS3.html">Animation bank (.bnk.PS3)</a></td><td>Context/tentative</td><td>Animation names and controller events are related character-system concepts; no complete event-to-clip mapping is decoded.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>No dedicated controller-event converter is registered. A contextual relationship with character animation does not establish event-to-clip IDs.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
 
         <p>Defines controller input patterns and their mapped events.</p>
 
-        <h2>Header</h2>
+        <h2 id="header">Header</h2>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Offset</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -62,19 +77,19 @@
                     <td>Source location path (null-terminated).</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
-        <h2>Event Entry</h2>
+        <h2 id="event-entry">Event Entry</h2>
 
         <p>Events start at offset <code>0xC0</code>.</p>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset (Rel)</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Offset (Rel)</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -109,7 +124,7 @@
                     <td>Array of 7 input pattern structures.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
     </body>
 

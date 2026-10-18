@@ -1,27 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
     <head>
         <meta charset="utf-8">
         <title>MetaModel Binary Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
 
-    <body style="padding: 1.5rem;padding-top: 2rem;">
+    <body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Compiled MetaModel (.meta.xml)</nav>
+
 
         <h1>MetaModel Binary (.meta.xml)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Contains binary class/object/attribute data despite the .xml suffix.</p>
+<dl><dt>Identification</dt><dd>Binary header with section offsets and counts; see the tables below.</dd><dt>Byte order / text</dt><dd>Use per-field definitions; the suffix does not imply XML text.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#header">Header</a></li><li><a href="#section-offsets-int32">Section Offsets (Int32)</a></li><li><a href="#section-counts-uint16">Section Counts (UInt16)</a></li><li><a href="#data-structures">Data Structures</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="simgroup.dat.html">Simulation group (.dat)</a></td><td>Scene context</td><td>Binary MetaModel properties and simulation-group instances are complementary scene resources. Their object/resource identifier joins require validation.</td></tr><tr><td><a href="preinstanced.html">Preinstanced models</a></td><td>Scene context</td><td>Rendered geometry is only one component of an object. The registered model importer does not assemble MetaModel classes, properties or behavior around it.</td></tr><tr><td><a href="xml.PS3.html">Compiled sequence resource (.xml.PS3)</a></td><td>Different binary families</td><td>Both names contain .xml but identify different compiled layouts: MetaModel section data versus observed seqm/seqb blocks. Neither should be decoded as XML text.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Section layouts are documented, but complete runtime object reconstruction and cross-resource resolution are not registered operations.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
 
         <p>Despite the extension <code>.xml</code>, these files in the STR container are compiled binary MetaModel resources containing class definitions, attributes, and object states.</p>
 
-        <h2>Header</h2>
+        <h2 id="header">Header</h2>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Offset</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -74,18 +89,18 @@
                     <td>Hash of the source.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
-        <h2>Section Offsets (Int32)</h2>
+        <h2 id="section-offsets-int32">Section Offsets (Int32)</h2>
 
         <p>Offsets are absolute. If 0 or negative, the section is empty.</p>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Offset</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -120,17 +135,17 @@
                     <td>Start of Part array.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
-        <h2>Section Counts (UInt16)</h2>
+        <h2 id="section-counts-uint16">Section Counts (UInt16)</h2>
 
         <p>Located at <code>0x4C</code>.</p>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset</th>
-                    <th>Name</th>
+                    <th scope="col">Offset</th>
+                    <th scope="col">Name</th>
                 </tr>
             </thead>
             <tbody>
@@ -159,9 +174,9 @@
                     <td>PartCount</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
-        <h2>Data Structures</h2>
+        <h2 id="data-structures">Data Structures</h2>
 
         <h3>Strings</h3>
 
@@ -169,12 +184,12 @@
 
         <h3>Attribute Structure</h3>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -209,7 +224,7 @@
                     <td>Value Type Flags.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <h3>Value Type Flags</h3>
 
@@ -224,12 +239,12 @@
 
         <h3>State Structure</h3>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -284,7 +299,7 @@
                     <td>Number of predicates.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
     </body>
 

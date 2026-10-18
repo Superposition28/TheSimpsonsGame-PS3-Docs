@@ -1,37 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <title>.imb Format Documentation</title>
     <link rel="stylesheet" href="../../../../style/main.css">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body style="padding: 1.5rem;padding-top: 2rem;">
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Impact resource (.imb)</nav>
+
 
         <div class="">
             <h1>.imb</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Contains material/effect identifiers and candidate interaction tables.</p>
+<dl><dt>Identification</dt><dd>Observed 5B A0 8C AA magic, version 2, 28-byte header and four offsets.</dd><dt>Byte order / text</dt><dd>Big-endian integer interpretations.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#format-analysis-structure-breakdown">Format Analysis &amp; Structure Breakdown</a></li><li><a href="#data-blocks">Data Blocks</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="vfb.html">Effect bundle (.vfb)</a></td><td>Tentative</td><td>Material/effect clusters and VFX bundles suggest an impact-to-effect relationship; exact hashes and effect selection are not resolved.</td></tr><tr><td><a href="sbk.html">Sound bank (.sbk)</a></td><td>Tentative</td><td>Impact resources contain candidate effect/audio identifiers. A collision-material-to-bank-subsong mapping is not verified.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Material-interaction and effect-cluster roles are inferred from layout and context. No MurmurHash/Jenkins identification or numeric join to sound/VFX resources is demonstrated.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
             <p>Based on the hex dumps and offset calculations, the <code>.imb</code> (Impact Table) format is a
                 structured binary asset used by the engine to map collision events between physics materials to
                 specific visual and audio effects (particles, decals, sound banks).</p>
             <p>File sizes range from <strong>816 bytes to 40.4 KB</strong> depending on the volume of materials and
                 interactions mapped within the level.</p>
 
-            <h2>Format Analysis &amp; Structure Breakdown</h2>
+            <h2 id="format-analysis-structure-breakdown">Format Analysis &amp; Structure Breakdown</h2>
             <p>The file is composed of a <strong>28-byte Header</strong> followed by <strong>4 distinct Data
                     Blocks</strong>.</p>
 
-            <h3>1. File Header (0x1C / 28 bytes)</h3>
+            <h3>File Header (0x1C / 28 bytes)</h3>
             <p>The header is consistent across all files and provides the counts and offset pointers for the 4 data
                 blocks. It is written in Big-Endian format.</p>
 
-            <table class="format-counts">
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table class="format-counts">
                 <thead>
                     <tr>
-                        <th>Offset</th>
-                        <th>Type</th>
-                        <th>Description</th>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Description</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,9 +100,9 @@
                         <td><strong>Offset 4 (Alias Map):</strong> Pointer to the start of Block 4.</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
 
-            <h2>2. Data Blocks</h2>
+            <h2 id="data-blocks">Data Blocks</h2>
 
             <h3>Block 1: Material Interaction Grid</h3>
             <ul>
@@ -104,8 +119,7 @@
                 <li><strong>Total Size:</strong> <code>Effect Count * 32</code> bytes.</li>
                 <li>This block holds the actual visual and audio asset references. For each "Effect" (dictated by
                     the Effect Count), there are exactly <strong>eight 32-bit hashes</strong> (8 * 4 = 32 bytes per
-                    cluster). These 32-bit values are EA standard string hashes (often variations of
-                    MurmurHash/Jenkins) that resolve to particle systems, sound banks, or decals (e.g., light hit,
+                    cluster). These 32-bit values are candidate asset identifiers (the hash algorithm is not established) that resolve to particle systems, sound banks, or decals (e.g., light hit,
                     heavy hit, footstep, scrape).</li>
                 <li><em>Verification: In <code>impact_table_spr_hub.imb</code>, Effect Count is 417. 417 * 32 =
                         13344 bytes. <code>0x9840 - 0x6420 = 13344</code>. Perfect match.</em></li>
@@ -251,7 +265,7 @@
             </ul>
         </div>
 
-    <section class="bodyy">
+    <details class="research-appendix"><summary>Preserved sample hex dumps</summary><section class="bodyy">
         <h1>.imb Files: Hex Dump Analysis</h1>
         <div class='file-block'>
             <div class='file-path'><strong>File:</strong>
@@ -25280,7 +25294,7 @@
 00000310  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00000320  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
         </div>
-    </section>
+    </section></details>
 </body>
 
 </html>

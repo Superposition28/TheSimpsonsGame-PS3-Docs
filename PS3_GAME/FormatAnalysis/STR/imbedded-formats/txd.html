@@ -1,12 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Texture Dictionary (.txd) - Complete Format Analysis</title>
     <link rel="stylesheet" href="../../../../style/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body style="padding: 1.5rem;padding-top: 2rem;">
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Texture dictionary (.txd)</nav>
+
     <h1>RenderWare Texture Dictionary (.txd)</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
+<p>Stores named textures, including model materials and bitmap-font atlases.</p>
+<dl><dt>Identification</dt><dd>RenderWare texture-dictionary chunk 0x16; PS3 native-texture platform ID 10.</dd><dt>Byte order / text</dt><dd>Little-endian RenderWare framing; PS3 native fields require per-field decoding.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#parsing-algorithm-overview">Parsing Algorithm Overview</a></li><li><a href="#file-header">File Header</a></li><li><a href="#segment-markers">Segment Markers</a></li><li><a href="#related-research-artifacts">Related Research Artifacts</a></li><li><a href="#texture-record-structure">Texture Record Structure</a></li><li><a href="#pixel-data-blob">Pixel Data Blob</a></li><li><a href="#morton-unswizzling-for-swizzled-formats">Morton Unswizzling (for Swizzled Formats)</a></li><li><a href="#mipmaps">Mipmaps</a></li><li><a href="#dds-export-helper">DDS Export Helper</a></li><li><a href="#complete-parsing-example-pseudocode">Complete Parsing Example (Pseudocode)</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../index.html">STR archive</a></td><td>Implemented</td><td>Operation 1 extracts texture dictionaries; operation 3 decodes supported textures to PNG.</td></tr><tr><td><a href="preinstanced.html">Preinstanced models</a></td><td>Implemented</td><td>The Blender workflow resolves model texture names to extracted PNGs using normalized path/map context; material assignment remains partial.</td></tr><tr><td><a href="inf.html">Bitmap font descriptor (.inf)</a></td><td>Implemented</td><td>Operation 3 supplies the PNG atlas used by operation 15. INF stores glyph rectangles/metrics, while the texture dictionary supplies pixels. The font converter matches cleaned base names, preferring the same archive context.</td></tr><tr><td><a href="uix.html">Compiled APT interface (.uix)</a></td><td>Observed/context</td><td>UIX samples name visual resources and shared dictionaries; TXD supplies decoded texture assets. The complete UI resource resolver is not implemented.</td></tr><tr><td><a href="xbox/itxd.html">Xbox 360 instanced textures (.itxd)</a></td><td>Platform comparison</td><td>Both represent texture dictionaries; PS3 native textures and Xbox Xenos tiled textures require different decoding paths. A platform suffix substitution cannot convert the data.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../../pipeline.html#op-3">Operation 3: Extract Textures (.txd -&gt; .png)</a>. Declared dependencies: <code>[2]</code>; <code>run-all = false</code>.</li></ul><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Operation 3 requests PNG output from the engine TXD extractor. The DDS examples below explain intermediate pixel representation; unsupported native formats and material assignment remain separate concerns.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
 
     <p><strong>Version:</strong> 1.0<br>
     <strong>Last Updated:</strong> 2026-10-02<br>
@@ -17,7 +32,7 @@
     <p><strong>Endianness:</strong> Mixed (see details per section).<br>
     <strong>Character Encoding:</strong> UTF-8 for texture names.</p>
 
-    <h2>Parsing Algorithm Overview</h2>
+    <h2 id="parsing-algorithm-overview">Parsing Algorithm Overview</h2>
 
     <ol>
         <li>Read the 12-byte RenderWare chunk header at offset <code>0x00</code>; its type is <code>0x16</code> (Texture Dictionary).</li>
@@ -35,16 +50,16 @@
         <li>Export to standard image format (DDS)</li>
     </ol>
 
-    <h2>File Header</h2>
+    <h2 id="file-header">File Header</h2>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Offset</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Endian</th>
-                <th>Description</th>
+                <th scope="col">Offset</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Endian</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -77,37 +92,37 @@
                 <td><code>rwID_STRUCT</code> (<code>0x01</code>) chunk header. Its four-byte payload at <code>0x18</code> contains the UInt16 texture count followed by the UInt16 device ID.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
-    <h2>Segment Markers</h2>
+    <h2 id="segment-markers">Segment Markers</h2>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Marker (Hex)</th>
-                <th>Purpose</th>
-                <th>Notes</th>
+                <th scope="col">Marker (Hex)</th>
+                <th scope="col">Purpose</th>
+                <th scope="col">Notes</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td style="font-family: monospace;">03 00 00 00 14 00 00 00 2D 00 02 1C 2F EA 00 00 08 00 00 00 2D 00 02 1C</td>
+                <td>03 00 00 00 14 00 00 00 2D 00 02 1C 2F EA 00 00 08 00 00 00 2D 00 02 1C</td>
                 <td>Per-texture <code>rwID_EXTENSION</code> chunk containing the EA plugin record.</td>
                 <td>The chunk header is type <code>0x03</code>, size <code>0x14</code>, version <code>0x1C02002D</code>. Its payload contains plugin ID <code>0x0000EA2F</code>, an 8-byte plugin payload, and the plugin version. This terminates a native-texture record; it is not a block-start marker.</td>
             </tr>
             <tr>
-                <td style="font-family: monospace;">2D 00 02 1C 00 00 00 0A</td>
+                <td>2D 00 02 1C 00 00 00 0A</td>
                 <td>Native-texture record marker</td>
                 <td>The bytes contain the RenderWare version stamp and big-endian PS3 platform ID <code>10</code>. Four filter/address bytes follow; the fixed-width texture-name field begins 12 bytes after this marker.</td>
             </tr>
             <tr>
-                <td style="font-family: monospace;">03 00 00 00 00 00 00 00 2D 00 02 1C</td>
+                <td>03 00 00 00 00 00 00 00 2D 00 02 1C</td>
                 <td>Empty dictionary <code>rwID_EXTENSION</code> chunk</td>
                 <td>Type <code>0x03</code>, payload size <code>0</code>, followed by the RenderWare version. It closes the outer dictionary; the per-texture extension and this chunk appear adjacent at the end of the file.</td>
             </tr>
         </tbody>
-    </table>
-    <h2>Related Research Artifacts</h2>
+    </table></div>
+    <h2 id="related-research-artifacts">Related Research Artifacts</h2>
 
     <p>The TXD notes are maintained alongside the preinstanced research tools, because the texture names recovered from preinstanced files are resolved against this archive format.</p>
 
@@ -118,7 +133,7 @@
 
     <p><strong>Maintenance note:</strong> When new samples expose additional header variants, update both the HTML analysis and the validation script so the documented marker families stay in sync with actual files.</p>
 
-    <h2>Texture Record Structure</h2>
+    <h2 id="texture-record-structure">Texture Record Structure</h2>
 
     <p><strong>Scanning algorithm:</strong> Locate the native-texture record marker (<code>2D 00 02 1C 00 00 00 0A</code>). The texture-name field and metadata are at fixed offsets from this marker in the observed PS3 record layout.</p>
 
@@ -147,15 +162,15 @@
 
     <p>The block begins at record-marker offset <code>+0x50</code> in the observed PS3 layout. Its fields are mixed-endian: dimensions are big-endian and the base-mip byte count is little-endian. The parser's preamble search remains a compatibility fallback.</p>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Offset</th>
-                <th>Size</th>
-                <th>Type</th>
-                <th>Endian</th>
-                <th>Name</th>
-                <th>Description</th>
+                <th scope="col">Offset</th>
+                <th scope="col">Size</th>
+                <th scope="col">Type</th>
+                <th scope="col">Endian</th>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
             </tr>
         </thead>
         <tbody>
@@ -248,7 +263,7 @@
                 <td>Little-endian byte count for mip level 0 only. The current exporter reads this many bytes after the metadata; it is not the sum of all mip levels.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
     <h3>Validation Rules</h3>
 
@@ -259,21 +274,21 @@
         <li>The exporter treats invalid dimensions, sizes, or unsupported formats as an export error. A zero-by-zero record is treated as a placeholder.</li>
     </ul>
 
-    <h2>Pixel Data Blob</h2>
+    <h2 id="pixel-data-blob">Pixel Data Blob</h2>
 
     <p><strong>Base mip location:</strong> Immediately after the 16-byte metadata block (at offset metadata_block_start + 16).<br>
     <strong>Base mip length:</strong> Initial Mip Size bytes (from metadata). Other readers indicate that later levels may be stored as repeated little-endian <code>UInt32 size</code> prefixes followed by each level's payload. The current C# exporter does not parse or export those later levels.</p>
 
     <h3>Format Codes</h3>
 
-    <table>
+    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
         <thead>
             <tr>
-                <th>Format Code (Hex)</th>
-                <th>Format Name</th>
-                <th>Compression</th>
-                <th>Bytes Per Pixel (if uncompressed)</th>
-                <th>Handling</th>
+                <th scope="col">Format Code (Hex)</th>
+                <th scope="col">Format Name</th>
+                <th scope="col">Compression</th>
+                <th scope="col">Bytes Per Pixel (if uncompressed)</th>
+                <th scope="col">Handling</th>
             </tr>
         </thead>
         <tbody>
@@ -313,11 +328,11 @@
                 <td>Unswizzle. The current converter exports one-byte data as black with alpha and two-byte data as grayscale with alpha; it does not perform palette lookup.</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 
     <p>Codes <code>0x55</code> and <code>0x56</code> have been associated with DXT2 and DXT4 in other parser research, but no such codes were found in the 858 TXD files scanned for this game. They remain unverified and are not accepted by the current converter.</p>
 
-    <h2>Morton Unswizzling (for Swizzled Formats)</h2>
+    <h2 id="morton-unswizzling-for-swizzled-formats">Morton Unswizzling (for Swizzled Formats)</h2>
 
     <p><strong>Purpose:</strong> PS3 stores textures in Morton/Z-order to improve cache coherency. Data must be reordered to linear memory layout.</p>
 
@@ -360,13 +375,13 @@ function morton_encode_2d(x, y, width, height) {
         <li>Return unswizzled buffer</li>
     </ol>
 
-    <h2>Mipmaps</h2>
+    <h2 id="mipmaps">Mipmaps</h2>
 
     <p><strong>Current implementation:</strong> The size field at metadata offset <code>0x0C</code> describes the base-mip payload. The C# exporter consumes that payload and does not parse subsequent mip-level size prefixes. Other parser implementations report later levels as repeated little-endian <code>UInt32 size</code> values followed by each level's data; this layout is not currently handled by the C# exporter.</p>
 
     <p><strong>DDS export:</strong> When the available payload only covers the base level, the C# converter forces the DDS mip count to 1. It does not claim that unexported mip levels are present.</p>
 
-    <h2>DDS Export Helper</h2>
+    <h2 id="dds-export-helper">DDS Export Helper</h2>
 
     <p><strong>For DXT Formats (0x52, 0x53, 0x54):</strong></p>
 
@@ -385,7 +400,7 @@ function morton_encode_2d(x, y, width, height) {
         <li>No FourCC needed (use pixel format flags)</li>
     </ul>
 
-    <h2>Complete Parsing Example (Pseudocode)</h2>
+    <h2 id="complete-parsing-example-pseudocode">Complete Parsing Example (Pseudocode)</h2>
 
     <pre><code>
 function parse_txd(file_data) {

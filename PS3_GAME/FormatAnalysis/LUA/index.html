@@ -4,33 +4,48 @@
 	<meta charset="UTF-8">
 	<title>Lua Source Files</title>
 	<link rel="stylesheet" href="../../../style/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body style="padding: 1.5rem; padding-top: 2rem;">
-	<h1>Lua Source Files</h1>
-	<p>The EU PS3 and Xbox 360 NTSC source trees contain the same three Lua files. Their SHA-256 hashes match pairwise, so no content differences were found in these scripts.</p>
-	<p>Links below open the source files. Hashes are calculated over the original file bytes.</p>
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>Game Lua source (.lua)</nav>
 
-	<h2>simpsons_gameflow.lua</h2>
+	<h1>Lua Source Files</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>Documents the three original game-flow and score scripts.</p>
+<dl><dt>Identification</dt><dd>Human-readable Lua source in the compared builds.</dd><dt>Byte order / text</dt><dd>Text; original byte encoding should be preserved when comparing hashes.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#simpsons-gameflow-lua">simpsons_gameflow.lua</a></li><li><a href="#simpsons-gameflow-helpers-lua">simpsons_gameflow_helpers.lua</a></li><li><a href="#simpsons-scores-lua">simpsons_scores.lua</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../VP6/index.html">Movie container (.vp6)</a></td><td>Observed script context</td><td>Game-flow scripts attach movie packages to episodes/modes. That high-level association does not describe the VP6 chunk layout or TOX cue records.</td></tr></tbody></table></div><p>See the <a href="../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The script inventory and historical hashes do not establish that the original game API is implemented by Remake Engine. No source-Lua translation operation is registered.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
+	<p>The EU PS3 and Xbox 360 NTSC source trees contain the same three Lua files. Their SHA-256 hashes match pairwise, so no content differences were found in these scripts.</p>
+	<p>Paths below refer to local source copies, which are not distributed with this documentation site. The recorded hashes describe the original comparison, not a new cross-platform verification.</p>
+
+	<h2 id="simpsons-gameflow-lua">simpsons_gameflow.lua</h2>
 	<p>Builds the game's flow configuration: registers costumes, creates the game and episodes, and attaches modes, maps, movies, and metric screens.</p>
 	<ul>
-		<li>PS3 EU: <a href="../../../../../Source/EU/PS3_GAME/USRDIR/simpsons_gameflow.lua">USRDIR/simpsons_gameflow.lua</a></li>
-		<li>Xbox 360 NTSC: <a href="../../../../../Source/x360-NTSC/x360-NTSC/simpsons_gameflow.lua">x360-NTSC/simpsons_gameflow.lua</a></li>
+		<li>PS3 EU: <code>EU/PS3_GAME/USRDIR/simpsons_gameflow.lua</code></li>
+		<li>Xbox 360 NTSC: <code>x360-NTSC/x360-NTSC/simpsons_gameflow.lua</code></li>
 	</ul>
 	<p>309 lines; 30,050 bytes. SHA-256: <code>11A6872ED4EC510836CDC65A263544107E102A23DE8E66A09E70ED2E9D0098B7</code></p>
 
-	<h2>simpsons_gameflow_helpers.lua</h2>
+	<h2 id="simpsons-gameflow-helpers-lua">simpsons_gameflow_helpers.lua</h2>
 	<p>Provides constructors for game, episode, mode, movie, map, and metric-screen packages. The helpers attach created objects to the game-flow hierarchy and transfer ownership to Lua.</p>
 	<ul>
-		<li>PS3 EU: <a href="../../../../../Source/EU/PS3_GAME/USRDIR/simpsons_gameflow_helpers.lua">USRDIR/simpsons_gameflow_helpers.lua</a></li>
-		<li>Xbox 360 NTSC: <a href="../../../../../Source/x360-NTSC/x360-NTSC/simpsons_gameflow_helpers.lua">x360-NTSC/simpsons_gameflow_helpers.lua</a></li>
+		<li>PS3 EU: <code>EU/PS3_GAME/USRDIR/simpsons_gameflow_helpers.lua</code></li>
+		<li>Xbox 360 NTSC: <code>x360-NTSC/x360-NTSC/simpsons_gameflow_helpers.lua</code></li>
 	</ul>
 	<p>115 lines; 3,765 bytes. SHA-256: <code>56C8BD124EF87456A8DF7B36B9B9FABC0A4E1120885F4A5C2DEF38D395F74DC3</code></p>
 
-	<h2>simpsons_scores.lua</h2>
+	<h2 id="simpsons-scores-lua">simpsons_scores.lua</h2>
 	<p>Defines ScoreKeeper data and setup routines for episode progression, completion and timing, achievements, collectibles, tutorials, costumes, power-ups, and score-event gates.</p>
 	<ul>
-		<li>PS3 EU: <a href="../../../../../Source/EU/PS3_GAME/USRDIR/simpsons_scores.lua">USRDIR/simpsons_scores.lua</a></li>
-		<li>Xbox 360 NTSC: <a href="../../../../../Source/x360-NTSC/x360-NTSC/simpsons_scores.lua">x360-NTSC/simpsons_scores.lua</a></li>
+		<li>PS3 EU: <code>EU/PS3_GAME/USRDIR/simpsons_scores.lua</code></li>
+		<li>Xbox 360 NTSC: <code>x360-NTSC/x360-NTSC/simpsons_scores.lua</code></li>
 	</ul>
 	<p>1,415 lines; 54,009 bytes. SHA-256: <code>20B0EA2303F9FA27D5DAB7D1DF5B55265CFC29CE3342C5BBB362C88F0C3C07FA</code></p>
 </body>

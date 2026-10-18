@@ -4,65 +4,28 @@
         <meta charset="utf-8">
         <title>INF Format Documentation (.inf)</title>
         <link rel="stylesheet" href="../../../../style/main.css">
-        <style>
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                margin: 1rem 0 2rem;
-                background: #181818;
-                border: 1px solid #343434;
-            }
-            th, td {
-                padding: 0.6rem 0.9rem;
-                border: 1px solid #2a2a2a;
-                text-align: left;
-                vertical-align: top;
-            }
-            thead th {
-                color: #f0f4f8;
-                background: #242424;
-            }
-            tbody tr:hover {
-                background: #20252b;
-            }
-            code {
-                background: #242424;
-                color: #ce9178;
-                padding: 2px 5px;
-                border-radius: 4px;
-                font-family: monospace;
-            }
-            pre code {
-                display: block;
-                background: #141414;
-                border: 1px solid #2f2f2f;
-                padding: 14px;
-                overflow-x: auto;
-                color: #d7e1eb;
-                font-size: 0.88rem;
-                line-height: 1.45;
-            }
-            .callout {
-                background: #18202c;
-                border-left: 4px solid #58a6ff;
-                padding: 12px 16px;
-                margin: 1rem 0 1.5rem;
-                border-radius: 4px;
-            }
-            .callout-warn {
-                background: #281d15;
-                border-left: 4px solid #db6d28;
-                padding: 12px 16px;
-                margin: 1rem 0 1.5rem;
-                border-radius: 4px;
-            }
-        </style>
-    </head>
-    <body style="padding: 1.5rem; padding-top: 2rem;">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+    <body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Bitmap font descriptor (.inf)</nav>
+
         <h1>EA Font Descriptor (<code>.inf</code> / <code>FONT</code> v6) Format Documentation</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
+<p>Maps font character codes to glyph metrics and rectangles in a texture atlas.</p>
+<dl><dt>Identification</dt><dd>FONT at 0x00; observed version 6; 24-byte glyph records.</dd><dt>Byte order / text</dt><dd>Big-endian numeric fields; character code plus trailing zero byte.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#memory-map-file-layout-overview">Memory Map &amp; File Layout Overview</a></li><li><a href="#main-file-header-0x00-0x28-40-bytes">Main File Header (0x00 .. 0x28, 40 Bytes)</a></li><li><a href="#runtime-character-index-buffer-kerning-header-0x028-0x434-1036-bytes">Runtime Character Index Buffer &amp; Kerning Header (0x028 .. 0x434, 1036 Bytes)</a></li><li><a href="#glyph-table-0x0434-lookuptableoffset-glyphcount-24-bytes">Glyph Table (0x0434 .. LookupTableOffset, GlyphCount &times; 24 Bytes)</a></li><li><a href="#kerning-table-kerningtableoffset-eof">Kerning Table (KerningTableOffset .. EOF)</a></li><li><a href="#character-sets-special-glyph-remappings">Character Sets &amp; Special Glyph Remappings</a></li><li><a href="#complete-inf-png-asset-mapping-ps3-flattened-archive">Complete .inf &harr; .png Asset Mapping (PS3 Flattened Archive)</a></li><li><a href="#reference-python-parser-godot-fnt-converter">Registered Lua converter and illustrative Python parser</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="txd.html">Texture dictionary (.txd)</a></td><td>Implemented</td><td>Operation 3 supplies the PNG atlas used by operation 15. INF stores glyph rectangles/metrics, while the texture dictionary supplies pixels. The font converter matches cleaned base names, preferring the same archive context.</td></tr><tr><td><a href="lh2.html">Localization table (.LH2)</a></td><td>Rendering context</td><td>LH2 supplies strings; INF and its atlas supply glyph shapes and metrics. LH2 contains no demonstrated INF filename pointer. Windows-1252 text decoding and the font converter's custom glyph/Unicode aliases must be handled separately.</td></tr><tr><td><a href="tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td><td>Rendering context</td><td>A subtitle renderer can display TOX-timed LH2 text using an INF-derived FNT and atlas. TOX contains no font selection or atlas pointer, and operation 16 does not require operation 15.</td></tr><tr><td><a href="../../VP6/index.html">Movie container (.vp6)</a></td><td>Rendering context</td><td>Movies provide the playback timeline; subtitles may use the bitmap fonts after TOX/LH2 resolution. No direct INF-to-VP6 resource reference is established. OGV conversion does not render or burn in those fonts.</td></tr><tr><td><a href="uix.html">Compiled APT interface (.uix)</a></td><td>Observed/context</td><td>UIX samples contain font names; INF/TXD resources provide bitmap-font data. A specific UIX name-to-INF mapping must be verified per module rather than assumed from proximity.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../../pipeline.html#op-15">Operation 15: Convert Fonts (.inf -&gt; .fnt)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li></ul><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The 12-file EU inventory and glyph measurements below describe that dataset. Runtime lookup-buffer purposes and the cause of the truncated kerning tails are interpretations; the Lua converter consumes only surviving complete records.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
         <p>
-            <strong>Version:</strong> 2.0 (Validated across all 12 PS3 files &amp; 1,813 glyphs)<br>
-            <strong>Last Updated:</strong> 2026-10-16<br>
+            <strong>Version:</strong> 2.0 (Validated across all 12 PS3 files &amp; 1,784 glyphs)<br>
+            <strong>Last Updated:</strong> 2026-10-18<br>
             <strong>Author(s):</strong> yggdrasil-au, samarixum
         </p>
 
@@ -73,7 +36,7 @@
         <p>
             <strong>Endianness:</strong> Big-Endian throughout (with 8-bit character IDs padded by a trailing zero byte).<br>
             <strong>Character Encoding:</strong> ASCII (<code>0x20..0x7E</code>), Extended Latin-1 / Windows-1252 hybrid (<code>0xA0..0xFF</code>), and Custom Controller Button Indices (<code>0x00..0x20</code>).<br>
-            <strong>Converter Script:</strong> <code>operations/inf_to_fnt.Fonts.py</code> (exports Godot 4-compatible AngelCode BMFont <code>.fnt</code> descriptors).
+            <strong>Converter Script:</strong> <code>operations/inf_to_fnt.Fonts.lua</code> (exports Godot 4-compatible AngelCode BMFont <code>.fnt</code> descriptors).
         </p>
 
         <div class="callout">
@@ -81,7 +44,7 @@
             <ul>
                 <li><strong>Shelf Packing Order:</strong> Glyphs in the <code>.inf</code> Glyph Table (at offset <code>0x0434</code>) are sorted in descending order of pixel <code>Height</code>, matching the top-to-bottom, left-to-right shelf packing in the companion <code>.png</code> texture atlas.</li>
                 <li><strong>Pixel Dimensions &amp; Offsets:</strong> Each 24-byte glyph record stores integer pixel <code>Width</code> (<code>+0x02</code>), <code>Height</code> (<code>+0x04</code>), horizontal cursor <code>XAdvance</code> (<code>+0x06</code>), signed horizontal bearing <code>XOffset</code> (<code>+0x08</code>), and signed vertical bearing <code>YOffset</code> from the top of the line (<code>+0x0A</code>).</li>
-                <li><strong>12.4 Fixed-Point Atlas Coordinates:</strong> The top-left and bottom-right texture coordinates (<code>X0_Fixed</code>, <code>Y0_Fixed</code>, <code>X1_Fixed</code>, <code>Y1_Fixed</code> at <code>+0x0C..+0x12</code>) are stored in <strong>12.4 fixed-point subpixels</strong> (1/16th of a pixel). Shifting right by 4 bits (<code>px = fixed &gt;&gt; 4</code>, or dividing by 16) yields the exact integer pixel coordinates on the <code>.png</code> image. Across all 1,813 glyphs in the game, <code>(X1_Fixed - X0_Fixed) &gt;&gt; 4 == Width</code> and <code>(Y1_Fixed - Y0_Fixed) &gt;&gt; 4 == Height</code> hold with 100% accuracy.</li>
+                <li><strong>12.4 Fixed-Point Atlas Coordinates:</strong> The top-left and bottom-right texture coordinates (<code>X0_Fixed</code>, <code>Y0_Fixed</code>, <code>X1_Fixed</code>, <code>Y1_Fixed</code> at <code>+0x0C..+0x12</code>) are stored in <strong>12.4 fixed-point subpixels</strong> (1/16th of a pixel). Shifting right by 4 bits (<code>px = fixed &gt;&gt; 4</code>, or dividing by 16) yields the exact integer pixel coordinates on the <code>.png</code> image. Across all 1,784 glyphs in the game, <code>(X1_Fixed - X0_Fixed) &gt;&gt; 4 == Width</code> and <code>(Y1_Fixed - Y0_Fixed) &gt;&gt; 4 == Height</code> hold with 100% accuracy.</li>
             </ul>
         </div>
 
@@ -89,15 +52,15 @@
             <strong>Correction to Legacy v1.0 Notes:</strong> Earlier preliminary notes assumed the Glyph Table started at offset <code>0x78</code> (120) with 20-byte records. In reality, bytes <code>0x028..0x428</code> form a 1024-byte zero-initialized runtime pointer/index buffer, the Kerning Header sits at <code>0x428..0x434</code>, and the Glyph Table always starts at <code>0x0434</code> (1076 decimal, pointed to by header field <code>0x0C</code>) with <strong>24-byte</strong> records. Reading 20-byte structs from <code>0x78</code> produced ~48 blank <code>char id=0</code> entries and unaligned 16&times;-oversized coordinates that caused Godot 4 to reject the resulting <code>.fnt</code> files with <code>valid=false</code>.
         </div>
 
-        <h2>Memory Map &amp; File Layout Overview</h2>
-        <table>
+        <h2 id="memory-map-file-layout-overview">Memory Map &amp; File Layout Overview</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Start Offset</th>
-                    <th>End Offset</th>
-                    <th>Size (Bytes)</th>
-                    <th>Section Name</th>
-                    <th>Description</th>
+                    <th scope="col">Start Offset</th>
+                    <th scope="col">End Offset</th>
+                    <th scope="col">Size (Bytes)</th>
+                    <th scope="col">Section Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -139,23 +102,23 @@
                 <tr>
                     <td><code>KerningTableOffset</code></td>
                     <td><code>EOF</code></td>
-                    <td><code>KerningCount &times; 3</code></td>
+                    <td><code>EOF - KerningTableOffset</code> (observed allocation: <code>KerningCount &times; 3</code>)</td>
                     <td>Kerning Table</td>
                     <td>6-byte preamble followed by 4-byte kerning records (<code>FirstChar</code>, <code>SecondChar</code>, <code>Pad=0</code>, <code>Amount</code>). Present only when <code>KerningCount &gt; 0</code>.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
-        <h2>1. Main File Header (<code>0x00 .. 0x28</code>, 40 Bytes)</h2>
-        <table>
+        <h2 id="main-file-header-0x00-0x28-40-bytes">Main File Header (<code>0x00 .. 0x28</code>, 40 Bytes)</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Endian</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Offset</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Endian</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -248,18 +211,18 @@
                     <td>Constant <code>0x00000004</code> (4).</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
-        <h2>2. Runtime Character Index Buffer &amp; Kerning Header (<code>0x028 .. 0x434</code>, 1036 Bytes)</h2>
-        <table>
+        <h2 id="runtime-character-index-buffer-kerning-header-0x028-0x434-1036-bytes">Runtime Character Index Buffer &amp; Kerning Header (<code>0x028 .. 0x434</code>, 1036 Bytes)</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Endian</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Offset</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Endian</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -304,21 +267,21 @@
                     <td>Always <code>0x00000000</code>.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
-        <h2>3. Glyph Table (<code>0x0434 .. LookupTableOffset</code>, <code>GlyphCount &times; 24</code> Bytes)</h2>
+        <h2 id="glyph-table-0x0434-lookuptableoffset-glyphcount-24-bytes">Glyph Table (<code>0x0434 .. LookupTableOffset</code>, <code>GlyphCount &times; 24</code> Bytes)</h2>
         <p>
             Begins at <code>GlyphTableOffset</code> (<code>0x0434</code>). Each glyph is defined by a <strong>24-byte (<code>0x18</code>) structure</strong>.
         </p>
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Rel Offset</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Endian</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Rel Offset</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Endian</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -427,9 +390,9 @@
                     <td>0-based start index into the active kerning pair array (beginning at <code>KerningTableOffset + 6</code>).</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
-        <h2>4. Kerning Table (<code>KerningTableOffset .. EOF</code>)</h2>
+        <h2 id="kerning-table-kerningtableoffset-eof">Kerning Table (<code>KerningTableOffset .. EOF</code>)</h2>
         <p>
             Present when <code>KerningCount &gt; 0</code> and <code>KerningTableOffset != 0</code>. Begins immediately after the 1028-byte post-glyph runtime lookup buffer (at <code>LookupTableOffset + 0x404</code>).
         </p>
@@ -437,15 +400,15 @@
             <li><strong>6-Byte Preamble (<code>KerningTableOffset .. KerningTableOffset + 6</code>):</strong> Consists of a 2-byte table flag (<code>01 00</code> or <code>00 00</code>) followed by a 4-byte dummy/sentinel kerning entry whose <code>FirstChar</code> is <code>0x00</code> (e.g., <code>00 54 00 FD</code>).</li>
             <li><strong>Active Kerning Array (<code>KerningTableOffset + 6 .. EOF</code>):</strong> Indexed from <code>0</code> by each glyph's <code>KerningStartIndex</code> and <code>KerningCount</code>. Each entry is <strong>4 bytes</strong>:</li>
         </ul>
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Rel Offset</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Endian</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Rel Offset</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Endian</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -482,24 +445,24 @@
                     <td>Signed 8-bit pixel spacing adjustment applied to the cursor before drawing <code>SecondChar</code> (e.g., <code>0xFD</code> = <code>-3</code> px).</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <div class="callout-warn">
-            <strong>EA Offline Font Exporter Truncation Quirk:</strong> Across all 9 kerning-enabled <code>.inf</code> files in the PS3 build, the total file size satisfies <code>FileSize == KerningTableOffset + (KerningCount &times; 3)</code>. Because each kerning entry is actually 4 bytes (after the 6-byte preamble), EA's offline font compiler allocated <code>KerningCount &times; 3</code> bytes when serializing the kerning block, truncating the final ~25% of kerning pairs cleanly at EOF. Parsers must stop reading kerning records when <code>offset + 4 &gt; len(data)</code>.
+            <strong>EA Offline Font Exporter Truncation Quirk:</strong> Across all 8 kerning-enabled <code>.inf</code> files in the PS3 build, the total file size satisfies <code>FileSize == KerningTableOffset + (KerningCount &times; 3)</code>. Because each kerning entry is actually 4 bytes (after the 6-byte preamble), The observed block length is consistent with an exporter allocating <code>KerningCount &times; 3</code> bytes when serializing the kerning block, which would truncate the final ~25% of kerning pairs cleanly at EOF. Parsers must stop reading kerning records when <code>offset + 4 &gt; len(data)</code>.
         </div>
 
-        <h2>5. Character Sets &amp; Special Glyph Remappings</h2>
+        <h2 id="character-sets-special-glyph-remappings">Character Sets &amp; Special Glyph Remappings</h2>
         <h3>A. 191-Glyph European UI Fonts (<code>DomCasualStd3636</code>, <code>HighlanderStdBold6060b</code>, <code>HighlanderStdMed3636</code>, <code>LetterGothicStdBold2424b</code>)</h3>
         <p>
             Contain 95 printable ASCII characters (<code>0x20..0x7E</code>) plus 96 extended characters (<code>0xA0..0xFF</code>). While most of <code>0xA0..0xFF</code> follows ISO-8859-1 (Latin-1), 7 byte codes corresponding to rarely used Latin-1 symbols (<code>&not; &plusmn; &sup2; &sup3; &frac14; &frac12; &frac34;</code>) are repurposed to hold Windows-1252 / MacRoman typographic glyphs required by localized European strings:
         </p>
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th><code>.inf</code> Byte Code</th>
-                    <th>Standard ISO-8859-1</th>
-                    <th>Actual Glyph in Texture Atlas</th>
-                    <th>Unicode Codepoint Alias</th>
+                    <th scope="col"><code>.inf</code> Byte Code</th>
+                    <th scope="col">Standard ISO-8859-1</th>
+                    <th scope="col">Actual Glyph in Texture Atlas</th>
+                    <th scope="col">Unicode Codepoint Alias</th>
                 </tr>
             </thead>
             <tbody>
@@ -546,7 +509,7 @@
                     <td><code>U+0153</code> (339)</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <h3>B. 95-Glyph Numeric &amp; Title Fonts (<code>simpsons_font</code>, <code>HighlanderStdNumsBold3636b</code>)</h3>
         <ul>
@@ -558,13 +521,13 @@
         <p>
             Maps character IDs <code>0x00..0x20</code> (<code>0..32</code>) onto the <code>256&times;256</code> <code>buttons.png</code> texture. Indices <code>0..15</code> correspond to <code>btn_0..btn_15</code> in <code>controller.uix</code>:
         </p>
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Char ID</th>
-                    <th>PUA Alias</th>
-                    <th>Atlas Rect <code>(X, Y, W, H)</code></th>
-                    <th>PS3 Controller Button / Icon</th>
+                    <th scope="col">Char ID</th>
+                    <th scope="col">PUA Alias</th>
+                    <th scope="col">Atlas Rect <code>(X, Y, W, H)</code></th>
+                    <th scope="col">PS3 Controller Button / Icon</th>
                 </tr>
             </thead>
             <tbody>
@@ -583,24 +546,24 @@
                 <tr><td><code>15</code> (<code>0x0F</code>)</td><td><code>U+E00F</code> (57359)</td><td><code>(64, 64, 64, 64)</code></td><td><strong>R3 / Right Stick</strong></td></tr>
                 <tr><td><code>16..32</code> (<code>0x10..0x20</code>)</td><td><code>U+E010..U+E020</code></td><td><code>10&times;10</code> / <code>60&times;9</code> slices</td><td>Auxiliary small UI indicator slices</td></tr>
             </tbody>
-        </table>
+        </table></div>
 
-        <h2>6. Complete <code>.inf</code> &harr; <code>.png</code> Asset Mapping (PS3 Flattened Archive)</h2>
+        <h2 id="complete-inf-png-asset-mapping-ps3-flattened-archive">Complete <code>.inf</code> &harr; <code>.png</code> Asset Mapping (PS3 Flattened Archive)</h2>
         <p>
             In <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed</code>, all 12 <code>.inf</code> files reside in two font directories and map 1-to-1 to extracted <code>.png</code> textures in their respective archive's <code>assetsRws/txd/*_txd/</code> folders:
         </p>
 
         <h3>Folder 1: <code>A2_Characters/simpsonsCharsGlobalStr/assetsShared/fonts/</code></h3>
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th><code>.inf</code> Font File</th>
-                    <th>Size</th>
-                    <th>Glyphs</th>
-                    <th>Metrics (<code>LH / Base / MaxW</code>)</th>
-                    <th>Kernings (Valid / Decl)</th>
-                    <th>Companion <code>.png</code> Texture Path</th>
-                    <th>PNG Size</th>
+                    <th scope="col"><code>.inf</code> Font File</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Glyphs</th>
+                    <th scope="col">Metrics (<code>LH / Base / MaxW</code>)</th>
+                    <th scope="col">Kernings (Valid / Decl)</th>
+                    <th scope="col">Companion <code>.png</code> Texture Path</th>
+                    <th scope="col">PNG Size</th>
                 </tr>
             </thead>
             <tbody>
@@ -659,19 +622,19 @@
                     <td><code>512&times;256</code></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <h3>Folder 2: <code>A2_Frontend/frontendStr/assets/shared/fonts/</code></h3>
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th><code>.inf</code> Font File</th>
-                    <th>Size</th>
-                    <th>Glyphs</th>
-                    <th>Metrics (<code>LH / Base / MaxW</code>)</th>
-                    <th>Kernings (Valid / Decl)</th>
-                    <th>Companion <code>.png</code> Texture Path</th>
-                    <th>PNG Size</th>
+                    <th scope="col"><code>.inf</code> Font File</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Glyphs</th>
+                    <th scope="col">Metrics (<code>LH / Base / MaxW</code>)</th>
+                    <th scope="col">Kernings (Valid / Decl)</th>
+                    <th scope="col">Companion <code>.png</code> Texture Path</th>
+                    <th scope="col">PNG Size</th>
                 </tr>
             </thead>
             <tbody>
@@ -730,16 +693,17 @@
                     <td><code>256&times;128</code></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
         <p>
             <em>Note:</em> The 5 shared fonts present in both <code>A2_Characters</code> and <code>A2_Frontend</code> (<code>buttons</code>, <code>DomCasualStd3636</code>, <code>HighlanderStdBold6060b</code>, <code>HighlanderStdMed3636</code>, and <code>LetterGothicStdBold2424b</code>) are byte-for-byte identical in both <code>.inf</code> and <code>.png</code> content across the two archives.
         </p>
 
-        <h2>7. Reference Python Parser &amp; Godot <code>.fnt</code> Converter</h2>
+        <h2 id="reference-python-parser-godot-fnt-converter">Registered Lua converter and illustrative Python parser</h2>
         <p>
-            The conversion script at <code>operations/inf_to_fnt.Fonts.py</code> parses all 12 <code>.inf</code> files, matches them to their <code>.png</code> texture atlases, reads the exact PNG <code>IHDR</code> dimensions, shifts the 12.4 fixed-point UVs into pixel coordinates, and writes valid AngelCode BMFont <code>.fnt</code> files for Godot 4:
+            The conversion script at <code>operations/inf_to_fnt.Fonts.lua</code> parses all 12 <code>.inf</code> files, matches them to their <code>.png</code> texture atlases, reads the exact PNG <code>IHDR</code> dimensions, shifts the 12.4 fixed-point UVs into pixel coordinates, and writes valid AngelCode BMFont <code>.fnt</code> files for Godot 4:
         </p>
-<pre><code>import struct
+<p>From the engine root, run <code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 15</code>. The Lua entry point accepts <code>--input-dir</code>, <code>--output-dir</code>, <code>--copy-png</code> and <code>--no-unicode-aliases</code>. Output defaults beside each INF, with a relative atlas reference.</p>
+<p>The Python fragment below illustrates binary layout only. It is not the registered converter, does not write FNT, and omits several validation/Unicode-alias checks present in the Lua implementation.</p><pre><code>import struct
 from pathlib import Path
 
 def parse_inf(filepath: Path):
@@ -788,7 +752,9 @@ def parse_inf(filepath: Path):
         k_off = kerning_table_offset + 6
         while k_off + 4 &lt;= len(data) and len(kernings) &lt; kerning_count:
             c1, c2, pad, amount = struct.unpack("&gt;BBBb", data[k_off : k_off + 4])
-            if pad == 0 and c1 != 0 and c2 != 0:
+            if pad != 0:
+                break
+            if c1 != 0 and c2 != 0:
                 kernings.append({"first": c1, "second": c2, "amount": amount})
             k_off += 4
 

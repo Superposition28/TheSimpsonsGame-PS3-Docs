@@ -1,17 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
     <head>
         <meta charset="utf-8">
         <link rel="stylesheet" href="../../../../style/main.css">
-    </head>
-    <body style="padding: 1.5rem;padding-top: 2rem;">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preinstanced Asset Format (EARS_MESH) - Complete Implementation Guide</title>
+</head>
+    <body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Preinstanced models</nav>
+
         <h1>Preinstanced Asset Format (EARS_MESH) - Complete Implementation Guide</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Partial conversion · PS3 unless explicitly marked Xbox 360</p>
+<p>Stores PS3 geometry, UVs and texture-name associations in .dff.PS3.preinstanced and .rws.PS3.preinstanced resources.</p>
+<dl><dt>Identification</dt><dd>Mesh anchors and RenderWare string chunks; see the marker tables below.</dd><dt>Byte order / text</dt><dd>Mixed; follow the field-level tables.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#overview">Overview</a></li><li><a href="#parsing-algorithm-overview">Parsing Algorithm Overview</a></li><li><a href="#identification-signatures">Identification Signatures</a></li><li><a href="#texture-name-extraction">Texture Name Extraction</a></li><li><a href="#mesh-chunk-header-structure">Mesh Chunk Header Structure</a></li><li><a href="#mesh-data-extraction">Mesh Data Extraction</a></li><li><a href="#complete-parsing-example-pseudocode">Complete Parsing Example (Pseudocode)</a></li><li><a href="#validation-rules">Validation Rules</a></li><li><a href="#known-limitations-unknowns">Known Limitations & Unknowns</a></li><li><a href="#research-log-notes">Research Log Notes</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../index.html">STR archive</a></td><td>Implemented</td><td>Operation 1 extracts model payloads; operation 8 imports their geometry through Blender.</td></tr><tr><td><a href="txd.html">Texture dictionary (.txd)</a></td><td>Implemented</td><td>The Blender workflow resolves model texture names to extracted PNGs using normalized path/map context; material assignment remains partial.</td></tr><tr><td><a href="bnk.PS3.html">Animation bank (.bnk.PS3)</a></td><td>Reconstruction context</td><td>Geometry import does not decode BNK animation or guarantee compatible skeleton bindings. Both would be required for a verified animated character reconstruction.</td></tr><tr><td><a href="hkt.PS3.html">Havok collision resource (.hkt.PS3)</a></td><td>Asset context</td><td>A rendered prop/character mesh can have a separate Havok collision resource. Operation 8 exports the visual geometry without reconstructing that physics resource.</td></tr><tr><td><a href="meta.xml.html">Compiled MetaModel (.meta.xml)</a></td><td>Scene context</td><td>Rendered geometry is only one component of an object. The registered model importer does not assemble MetaModel classes, properties or behavior around it.</td></tr><tr><td><a href="vfb.html">Effect bundle (.vfb)</a></td><td>Visual context</td><td>Effects can accompany rendered assets, but geometry export does not reproduce VFB emitters, timing or sound triggers.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../../pipeline.html#op-8">Operation 8: Convert Models (.preinstanced -&gt; .blend)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li></ul><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The Blender importer converts geometry and can export GLB or FBX. Texture/material associations remain provisional. Animation banks, Havok physics and gameplay assembly are not reconstructed by operation 8.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
         <p><strong>Version:</strong> 2.1</p>
         <p><strong>Last Updated:</strong> 2026-10-02</p>
         <p><strong>Author(s):</strong> samarixum (based on reverse-engineering research)</p>
 
-        <h2>Overview</h2>
+        <h2 id="overview">Overview</h2>
         <ul>
             <li><strong>Format Name:</strong> Simpsons Game Preinstanced Asset / EARS_MESH</li>
             <li><strong>Common File Extension(s):</strong> <code>.dff.preinstanced</code>, <code>.rws.preinstanced</code> (embedded in STR sections)</li>
@@ -22,7 +38,7 @@
             <li><strong>Endianness:</strong> <strong>Mixed-Endian</strong>. Almost all data is Big-Endian, except for <code>FaceDataOff</code> and <code>MeshDataSize</code> in mesh chunk headers (Little-Endian).</li>
         </ul>
 
-        <h2>Parsing Algorithm Overview</h2>
+        <h2 id="parsing-algorithm-overview">Parsing Algorithm Overview</h2>
 
         <ol>
             <li>Scan file sequentially from byte 0 to EOF</li>
@@ -52,17 +68,17 @@
             <li><strong>DFF/RWS distinction:</strong> The Blender addon currently handles both extensions through the same preinstanced importer. The separate C++ readers are prototypes; their differences are not sufficient to define the complete on-disk distinction.</li>
         </ul>
 
-        <h2>Identification Signatures</h2>
+        <h2 id="identification-signatures">Identification Signatures</h2>
         <p><strong>Research references:</strong> keep this page aligned with <code>reversing/preinstanced_viewer.py</code> and <code>reversing/docs/FormatAnalysis/original.md-docs/preinstanced/test/check12.py</code>. The viewer is the live inspection tool; <code>check12.py</code> holds conservative validation patterns discovered during early reverse engineering and is useful for confirming whether a new sample still fits the current header family.</p>
 
         <h3>Observed Chunk Signatures</h3>
         <p>The C++ <code>Chunk</code> helper reads type, size, and version as little-endian UInt32 values and recognizes EA type <code>0x0000EA33</code>. The Blender addon uses byte-pattern anchors rather than a recursive RenderWare chunk reader. These interpretations describe observed reader behavior and byte patterns, not a complete proof of every enclosing hierarchy.</p>
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Bytes</th>
-                    <th>Observed interpretation</th>
-                    <th>Confidence and caveat</th>
+                    <th scope="col">Bytes</th>
+                    <th scope="col">Observed interpretation</th>
+                    <th scope="col">Confidence and caveat</th>
                 </tr>
             </thead>
             <tbody>
@@ -97,7 +113,7 @@
                     <td>The addon detects but does not use it for material grouping. Its proposed DFLT meaning is unverified.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <h3>Texture Name String Chunks</h3>
         <p>The current parser recognizes a RenderWare <code>rwID_STRUCT</code> chunk with a four-byte payload, followed by an <code>rwID_STRING</code> chunk. The version stamp observed in both chunk headers is <code>2D 00 02 1C</code>. Four filter/address bytes occur in the struct payload; the string chunk then supplies its own byte length and payload. The parser validates chunk types, sizes, version stamps, bounds, and printable ASCII rather than requiring one exact filter value.</p>
@@ -120,7 +136,7 @@
         <p><code>16 EA 00 00 05 00 00 00 2D 00 02 1C 01 00 00 00 00</code></p>
         <p><strong>Function:</strong> Signals end of valid file data. Parsing should stop here.</p>
 
-        <h2>Texture Name Extraction</h2>
+        <h2 id="texture-name-extraction">Texture Name Extraction</h2>
 
         <p><strong>Location:</strong> Inside the payload of a validated <code>rwID_STRING</code> chunk following the texture-name struct chunk. The string chunk carries a little-endian byte length; payloads may contain a null terminator and <code>0xBF</code> padding.</p>
 
@@ -129,7 +145,7 @@
         <h3>DFF and RWS Notes</h3>
         <p>The Blender addon uses the same preinstanced scanner for both extensions. The current C++ source has separate <code>DFFOpen</code> and <code>RwsOpen</code> classes with largely parallel chunk/geometry code. Although <code>DFFOpen</code> declares a <code>HasSkin</code> member, its current chunk walk does not process a SkinPLG; do not treat this as working skin support. Neither implementation alone establishes that all DFFs are single-clump/skinned or all RWS files are multi-clump/two-UV. Confirm extension-specific claims with representative extracted samples before treating them as format rules.</p>
 
-        <h2>Mesh Chunk Header Structure</h2>
+        <h2 id="mesh-chunk-header-structure">Mesh Chunk Header Structure</h2>
 
         <p><strong>Location:</strong> Starts at the byte after the mesh chunk signature (<code>33 EA 00 00 ?? ?? ?? ?? 2D 00 02 1C</code>).</p>
 
@@ -137,15 +153,15 @@
 
         <h3>Header Layout</h3>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset (Abs)</th>
-                    <th>Offset (Rel)</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Endian</th>
-                    <th>Field Name</th>
+                    <th scope="col">Offset (Abs)</th>
+                    <th scope="col">Offset (Rel)</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Endian</th>
+                    <th scope="col">Field Name</th>
                 </tr>
             </thead>
             <tbody>
@@ -206,7 +222,7 @@
                     <td><strong>MeshChunkStart (Header Base)</strong></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <p><code>FaceDataOff</code> is used by the importer as a shared base for both vertex and face buffers: <code>MeshChunkStart + FaceDataOff + relative_buffer_offset</code>. <code>MeshDataSize</code> is read but is not used by the importer to bound those buffers. Its exact extent and the proposed identity with the enclosing size word remain unverified.</p>
 
@@ -214,14 +230,14 @@
 
         <p><code>MeshChunkStart</code> is absolute offset <code>0x18</code>, immediately after the 12-byte mesh anchor and the two little-endian fields. The current addon, viewer, and C++ readers skip <code>0x14</code> bytes from this base, then read <code>TableCount</code> at relative <code>+0x14</code> (mesh-anchor offset <code>+0x2C</code>) and <code>SubmeshCount</code> at relative <code>+0x18</code> (mesh-anchor offset <code>+0x30</code>), both big-endian.</p>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset (Rel to Base)</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Endian</th>
-                    <th>Field Name</th>
+                    <th scope="col">Offset (Rel to Base)</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Endian</th>
+                    <th scope="col">Field Name</th>
                 </tr>
             </thead>
             <tbody>
@@ -240,20 +256,20 @@
                     <td>SubmeshCount</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <h4>Sub-Mesh Table Entries</h4>
 
         <p>Located at <code>MeshChunkStart + 0x1C + TableCount * 8</code>. Each submesh table entry is 12 bytes and contains an 8-byte prefix followed by a big-endian relative pointer to a separate submesh header.</p>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset (Sub-Mesh)</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Field Name</th>
-                    <th>Description</th>
+                    <th scope="col">Offset (Sub-Mesh)</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Field Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -272,18 +288,18 @@
                     <td>Big-endian relative offset from <code>MeshChunkStart</code> to a separate submesh header.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <h4>Pointed-To Submesh Header</h4>
         <p>Located at <code>MeshChunkStart + SubmeshRelOffset</code>. The current readers consume this 12-byte header, then read the vertex-info relative pointer at its <code>+0x0C</code> field.</p>
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset (relative)</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th scope="col">Offset (relative)</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -316,20 +332,20 @@
                     <td>Relative offset from <code>MeshChunkStart</code> to the vertex-info block.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <h3>Vertex Information Structure</h3>
 
         <p>The big-endian <code>VertexInfoRelOffset</code> is stored at <code>SubmeshHeader + 0x0C</code> and is relative to <code>MeshChunkStart</code>. Following that pointer:</p>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset (VertInfo)</th>
-                    <th>Type</th>
-                    <th>Endian</th>
-                    <th>Field Name</th>
-                    <th>Description</th>
+                    <th scope="col">Offset (VertInfo)</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Endian</th>
+                    <th scope="col">Field Name</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -369,7 +385,7 @@
                     <td>Offset to face data (relative to <code>FaceDataOff</code>).</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <h3>Header Traversal Algorithm (Unified)</h3>
 
@@ -402,7 +418,7 @@ for submesh_index in range(submesh_count):
     face_buffer = mesh_chunk_start + face_data_off + face_start_rel
         </code></pre>
 
-        <h2>Mesh Data Extraction</h2>
+        <h2 id="mesh-data-extraction">Mesh Data Extraction</h2>
 
         <h3>Vertex Buffer</h3>
 
@@ -412,14 +428,14 @@ for submesh_index in range(submesh_count):
 
         <p><strong>Observed vertex fields (per vertex, Big-Endian floats):</strong> UV0 is available when <code>VertChunkSize &gt;= 0x1C</code>. UV1 is available when <code>VertChunkSize &gt;= 0x24</code>; the importer now defaults a missing channel rather than reading into the next vertex. The flag byte in the geometry struct includes a prelit bit, but its relationship to these bytes and the proposed edge-culling use have not been validated on sample assets.</p>
 
-        <table>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
             <thead>
                 <tr>
-                    <th>Offset</th>
-                    <th>Size</th>
-                    <th>Type</th>
-                    <th>Field</th>
-                    <th>Description</th>
+                    <th scope="col">Offset</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Field</th>
+                    <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -480,7 +496,7 @@ for submesh_index in range(submesh_count):
                     <td>Additional attributes may include more UV channels, skinning data, or other fields; layout is not established. DFF skin/plugin handling must be checked per sample.</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <h3>Face/Index Buffer</h3>
 
@@ -525,7 +541,7 @@ for strip in strips:
         flipped = not flipped
         </code></pre>
 
-        <h2>Complete Parsing Example (Pseudocode)</h2>
+        <h2 id="complete-parsing-example-pseudocode">Complete Parsing Example (Pseudocode)</h2>
 
         <pre><code>
 function parse_preinstanced(file_data):
@@ -604,7 +620,7 @@ function parse_preinstanced(file_data):
     return meshes
         </code></pre>
 
-        <h2>Validation Rules</h2>
+        <h2 id="validation-rules">Validation Rules</h2>
 
         <ul>
             <li><strong>Vertex Count:</strong> Must be &gt; 0. If 0, mesh is invalid.</li>
@@ -615,7 +631,7 @@ function parse_preinstanced(file_data):
             <li><strong>Texture Association:</strong> Texture names, TLFD events, submesh material IDs, and material slots need cross-checking against a known-good imported asset; do not infer a two-name-per-material rule from counts alone.</li>
         </ul>
 
-        <h2>Known Limitations & Unknowns</h2>
+        <h2 id="known-limitations-unknowns">Known Limitations & Unknowns</h2>
 
         <ul>
             <li><strong>mDataTable:</strong> Latest dumps do not support the old texture/material ID hypothesis. It looks more like an offset/flag table, but the exact semantics are still unclear.</li>
@@ -628,7 +644,7 @@ function parse_preinstanced(file_data):
             <li><strong>Shared section markers:</strong> The repeated family <code>13/15/16/33 EA 00 00 ... 2D 00 02 1C</code> is useful when tracing section boundaries. The viewer highlights these as shared/unknown section headers until the exact semantics are confirmed.</li>
         </ul>
 
-        <h2>Research Log Notes</h2>
+        <h2 id="research-log-notes">Research Log Notes</h2>
 
         <ul>
             <li><code>reversing/preinstanced_viewer.py</code> now decodes the main file header, texture headers, TLFD markers, mesh anchors, submesh blocks, vertex info, vertex buffers, and face buffers inline.</li>

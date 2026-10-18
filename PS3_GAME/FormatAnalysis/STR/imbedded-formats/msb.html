@@ -6,16 +6,31 @@
     <title>.msb Format Documentation</title>
     <link rel="stylesheet" href="../../../../style/main.css">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body>
+<body class="doc-page">
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Interactive music metadata (.msb)</nav>
+
 
     <div class="pages">
         <div class="doc-overview" id="overview">
             <h1>.msb</h1>
+<section class="format-summary" aria-label="Format summary">
+<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+<p>References MUS music containers and includes Pathfinder-related event/part metadata.</p>
+<dl><dt>Identification</dt><dd>PFDx observed at 0x50 in documented examples; embedded .mus names.</dd><dt>Byte order / text</dt><dd>Mixed/partly unresolved; do not apply a global endian assumption.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
+</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#format-structure-breakdown">Format Structure &amp; Breakdown</a></li></ul></nav>
+
+<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../../MUS/index.html">Segmented music (.mus)</a></td><td>Observed</td><td>MSB samples name .mus containers and expose PFDx event/part symbols. Operation 12 extracts and decodes SNR/SNS segments without reading the MSB transition logic.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
+<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
+<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The MUS linkage and readable symbols are observed. Transition/state-machine semantics are not implemented by operation 12, and the PFDx offset should be checked per file.</p>
+<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
+
+
             <p>Based on the provided hex dumps and file paths, the <code>.msb</code> format is an <strong>EA Pathfinder Interactive Music Data Bank</strong> used to govern dynamic audio routing and playback logic in titles like <em>The Simpsons Game</em>.</p>
 
-            <h2>Format Structure &amp; Breakdown</h2>
+            <h2 id="format-structure-breakdown">Format Structure &amp; Breakdown</h2>
             <ul>
                 <li><strong>File Linkage Header:</strong> The first <code>0x50</code> bytes act as a wrapper that directly references the paired audio stream file containing the actual music data. You can see the target filename encoded in plaintext right before the main data chunk (e.g., <code>menu_mus.mus</code>, <code>loc_mus.mus</code>, <code>brt_mus.mus</code>).</li>
                 <li><strong>Pathfinder Magic Number:</strong> At exact offset <code>0x50</code>, the chunk identifier <code>PFDx</code> appears, signaling the start of the Electronic Arts Pathfinder engine data.</li>
@@ -56,7 +71,7 @@
             </ul>
         </div>
 
-        <section class="bodyy" id="hex-analysis">
+        <details class="research-appendix"><summary>Preserved sample hex dumps</summary><section class="bodyy" id="hex-analysis">
             <h1>.msb Files: Hex Dump Analysis</h1>
             <div class="file-block">
                 <div class="file-path"><strong>File:</strong>
@@ -8689,8 +8704,8 @@
 00002300  45 4E 53 49 54 59 20 30 0D 50 41 54 48 5F 52 41  |ENSITY 0.PATH_RA|
 00002310  4E 44 4F 4D 20 31 0D                             |NDOM 1.|</pre>
         </div>
-    </section>
-
+    </section></details>
+    </div>
 </body>
 
 </html>

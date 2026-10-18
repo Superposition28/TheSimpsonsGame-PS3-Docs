@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 	<head>
 		<meta charset="utf-8">
 		<title>A1_Audio</title>
 		<link rel="stylesheet" href="../../../style/main.css">
-	</head>
-	<body style="padding: 1.5rem;padding-top: 2rem;">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+	<body class="doc-page">
 
-		<h1>A1_Audio</h1>
+		<h1>A1_Audio</h1><p>This directory groups streamed audio and segmented music after source copying and audio reorganization. Operations 10, 11 and 12 decode SBK, SNU and MUS through separate paths. AudioMap.yaml is used by SetupAudioDir.lua for readable path organization; it does not decode binary audio-event graphs.</p><p>See <a href="../../FormatAnalysis/relationships.html#audio">audio relationships</a> for ALB/CTB/SMB metadata and <a href="../../FormatAnalysis/pipeline.html">pipeline coverage</a> for exact registered behavior.</p>
 
 		<p>the audio streams/A1_Audio contains these items in EU:</p>
 		<ul>
@@ -75,17 +76,17 @@
 
 		<h3>Music Folder Structure & Segment Extraction Statistics</h3>
 		<p>Extracted background music (located in the <code>A1_Audio/Music</code> directory structure) is packed into structured level segment directories. Statistics from a recursive scan using <code>ffprobe</code> outlines the files count and segment durations for each level:</p>
-		
-		<table border="1" cellpadding="5" style="border-collapse: collapse; margin-bottom: 2rem; width: 100%;">
+
+		<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table border="1" cellpadding="5">
 			<thead>
-				<tr style="background-color: #333; color: #fff;">
-					<th>Folder Name</th>
-					<th>Source Archive</th>
-					<th>Files Count</th>
-					<th>Shortest Segment</th>
-					<th>Longest Segment</th>
-					<th>Mean Segment</th>
-					<th>Median Segment</th>
+				<tr>
+					<th scope="col">Folder Name</th>
+					<th scope="col">Source Archive</th>
+					<th scope="col">Files Count</th>
+					<th scope="col">Shortest Segment</th>
+					<th scope="col">Longest Segment</th>
+					<th scope="col">Mean Segment</th>
+					<th scope="col">Median Segment</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -243,7 +244,7 @@
 					<td>00:00:03.828</td>
 				</tr>
 			</tbody>
-		</table>
+		</table></div>
 
 		<p>the US version only has the EN and Global folders, and mus files</p>
 
