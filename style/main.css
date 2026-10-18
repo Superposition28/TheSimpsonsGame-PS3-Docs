@@ -264,6 +264,49 @@ a {
     font-size: 1.35rem;
 }
 
+.documentation-tree-heading h2 {
+    margin: 0 0 6px;
+    color: #f0f4f8;
+    font-size: 1.35rem;
+}
+
+.documentation-tree a.format-status-link {
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+}
+
+.format-status-link .coverage-icon {
+    margin-top: 0.25em;
+}
+
+.documentation-tree-format-group {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+.documentation-tree-format-group > .documentation-tree-leaves {
+    margin: 8px 0 12px;
+    padding-left: 12px;
+    border-left: 1px solid #3a3a3a;
+}
+
+.documentation-tree-group-label {
+    display: block;
+    padding: 7px 9px;
+    color: #d7e1eb;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.documentation-tree-note {
+    margin: 6px 0 12px;
+    color: #9ba7b3;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
 .documentation-tree-heading p {
     margin: 0;
     color: #9ba7b3;
