@@ -1,14 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>A2_Frontend (frontend) - Asset Overview</title>
     <link rel="stylesheet" href="../../style/main.css">
 </head>
 
-<body style="padding: 1.5rem;padding-top: 2rem;">
+<body style="padding: 1.5rem; padding-top: 2rem;">
+    <div class="doc-overview">
+        <h1>A2_Frontend (<code>frontend</code>)</h1>
+        <p>
+            Contains front-end menu archives (<code>frontendStr</code>, <code>frontendGlobalStr</code>), APT UIX layouts, texture dictionaries, and shared menu/subtitle typography.
+        </p>
 
+        <h2>Embedded Font Descriptors (<code>.inf</code>) &amp; Texture Atlases (<code>.png</code>)</h2>
+        <p>
+            Six <a href="../../FormatAnalysis/STR/imbedded-formats/inf.html"><code>.inf</code> (<code>FONT</code> v6)</a> binary font descriptors reside in <code>A2_Frontend/frontendStr/assets/shared/fonts/</code> and map to extracted <code>.png</code> texture atlases under <code>A2_Frontend/frontendStr/assetsRws/txd/</code>:
+        </p>
+
+        <table class="format-counts" style="max-width: 100%;">
+            <caption>A2_Frontend Font Descriptor (<code>.inf</code>) to Texture Atlas (<code>.png</code>) Mapping</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Font Descriptor (<code>.inf</code>)</th>
+                    <th scope="col">Glyphs</th>
+                    <th scope="col">Metrics (<code>LH / Base / MaxW</code>)</th>
+                    <th scope="col">Companion Texture Atlas (<code>.png</code>)</th>
+                    <th scope="col">Dimensions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>assets/shared/fonts/buttons_fd7e46.inf</code></td>
+                    <td>33</td>
+                    <td><code>68 / 0 / 102</code> px</td>
+                    <td><code>assetsRws/txd/frontend_split16_704679_txd/buttons.png</code></td>
+                    <td><code>256&times;256</code></td>
+                </tr>
+                <tr>
+                    <td><code>assets/shared/fonts/DomCasualStd3636_09608f.inf</code></td>
+                    <td>191</td>
+                    <td><code>57 / 45 / 45</code> px</td>
+                    <td><code>assetsRws/txd/frontend_split23_b54bef_txd/DomCasualStd3636.png</code></td>
+                    <td><code>512&times;256</code></td>
+                </tr>
+                <tr>
+                    <td><code>assets/shared/fonts/HighlanderStdBold6060b_929fdc.inf</code></td>
+                    <td>191</td>
+                    <td><code>97 / 78 / 76</code> px</td>
+                    <td><code>assetsRws/txd/frontend_split16_704679_txd/HighlanderStdBold6060b.png</code></td>
+                    <td><code>1024&times;512</code></td>
+                </tr>
+                <tr>
+                    <td><code>assets/shared/fonts/HighlanderStdMed3636_c14f63.inf</code></td>
+                    <td>191</td>
+                    <td><code>56 / 44 / 51</code> px</td>
+                    <td><code>assetsRws/txd/frontend_split19_127e84_txd/HighlanderStdMed3636.png</code></td>
+                    <td><code>512&times;512</code></td>
+                </tr>
+                <tr>
+                    <td><code>assets/shared/fonts/LetterGothicStdBold2424b_4aa417.inf</code></td>
+                    <td>191</td>
+                    <td><code>41 / 32 / 20</code> px</td>
+                    <td><code>assetsRws/txd/frontend_split24_a22477_txd/LetterGothicStdBold2424b.png</code></td>
+                    <td><code>512&times;256</code></td>
+                </tr>
+                <tr>
+                    <td><code>assets/shared/fonts/simpsons_font_acdf54.inf</code></td>
+                    <td>95</td>
+                    <td><code>33 / 24 / 25</code> px</td>
+                    <td><code>assetsRws/txd/frontend_split28_426807_txd/simpsons_font.png</code></td>
+                    <td><code>256&times;128</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </body>
 
 </html>

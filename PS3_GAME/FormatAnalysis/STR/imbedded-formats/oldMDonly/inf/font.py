@@ -5,101 +5,100 @@ import glob
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
-# Based on the hex dump, the header is padded before the first glyph begins.
-# Offset 120 (0x78) is the standard baseline for this specific EA font format.
-GLYPH_START_OFFSET = 120
+# Offset 0x0434 (1076) is stored at header offset 0x0C (GlyphTableOffset) after
+# the 40-byte main header (0x00..0x28), 1024-byte runtime index buffer (0x28..0x428),
+# and 12-byte kerning header (0x428..0x434).
+DEFAULT_GLYPH_START_OFFSET = 0x0434
+GLYPH_RECORD_SIZE = 24
+
 
 def scan_inf_file(filepath):
-    print(f"\n{'-'*50}")
+    print(f"\n{'-'*60}")
     print(f"Scanning: {os.path.basename(filepath)}")
-    print(f"{'-'*50}")
+    print(f"{'-'*60}")
 
-    with open(filepath, 'rb') as f:
+    with open(filepath, "rb") as f:
         data = f.read()
 
     file_len = len(data)
-    if file_len < 16:
+    if file_len < DEFAULT_GLYPH_START_OFFSET:
         print("  [FAIL] File too small to be a valid .inf font map.")
         return False
 
-    # 1. Parse Header
+    # 1. Parse 40-byte Main Header (0x00..0x28)
     magic = data[0:4]
-    if magic != b'FONT':
+    if magic != b"FONT":
         print(f"  [FAIL] Invalid magic signature: {magic}. Expected b'FONT'.")
         return False
 
-    # Unpack Bytes 4-15: Size(u32), Version(u16), GlyphCount(u16), Unknown(u32)
-    expected_size = struct.unpack('>I', data[4:8])[0]
-    version = struct.unpack('>H', data[8:10])[0]
-    glyph_count = struct.unpack('>H', data[10:12])[0]
-    header_unk = struct.unpack('>I', data[12:16])[0]
+    (
+        expected_size,
+        version,
+        glyph_count,
+        glyph_table_offset,
+        flags,
+        max_glyph_width,
+        line_height,
+        baseline,
+        lookup_table_offset,
+        alignment,
+    ) = struct.unpack(">IHHIIIIIII", data[0x04:0x28])
 
-    print(f"  [INFO] Header parsed successfully:")
+    kerning_count, _, kerning_table_offset, _ = struct.unpack(">HHII", data[0x428:0x434])
+
+    print("  [INFO] Header parsed successfully:")
     print(f"         - Magic: {magic.decode('ascii')}")
     print(f"         - Declared Size: {expected_size} bytes (Actual: {file_len} bytes)")
     print(f"         - Version: {version}")
     print(f"         - Glyph Count: {glyph_count}")
-    print(f"         - Header Bytes 12-15: {header_unk} (Hex: 0x{header_unk:08X})")
+    print(f"         - Glyph Table Offset: 0x{glyph_table_offset:04X} ({glyph_table_offset})")
+    print(f"         - Metrics: MaxWidth={max_glyph_width}px, LineHeight={line_height}px, Baseline={baseline}px")
+    print(f"         - Lookup Table Offset: 0x{lookup_table_offset:04X}")
+    print(f"         - Kerning Count: {kerning_count} (Offset: 0x{kerning_table_offset:04X})")
 
-    # 2. Locate and Validate Glyph Table
-    if GLYPH_START_OFFSET + (glyph_count * 20) > file_len:
-        print(f"  [FAIL] Glyph table exceeds actual file size! Check GLYPH_START_OFFSET.")
+    # 2. Locate and Validate Glyph Table (24 bytes per glyph)
+    if glyph_table_offset + (glyph_count * GLYPH_RECORD_SIZE) > file_len:
+        print("  [FAIL] Glyph table exceeds actual file size!")
         return False
 
-    print(f"\n  [INFO] Validating Glyph Table (Start Offset: {GLYPH_START_OFFSET})...")
+    print(f"\n  [INFO] Validating Glyph Table (Start Offset: 0x{glyph_table_offset:04X})...")
     valid_glyphs = 0
-    offset = GLYPH_START_OFFSET
+    offset = glyph_table_offset
 
     try:
         for _ in range(glyph_count):
-            # Unpack 20 bytes: X(u16), Y(u16), Pad(u32), Char(u8), Pad(u8), W(u16), H(u16), Xadv(u16), Xoff(s16), Yoff(s16)
-            g_data = struct.unpack('>HHIBBHHHhh', data[offset:offset+20])
-            char_code = g_data[3]
-
-            if char_code > 0:
+            char_code = data[offset]
+            w, h, xadv, xoff, yoff, x0_fix, y0_fix, x1_fix, y1_fix, kc, ki = struct.unpack(
+                ">HHHhhHHHHHH", data[offset + 2 : offset + 24]
+            )
+            x0, y0 = x0_fix >> 4, y0_fix >> 4
+            x1, y1 = x1_fix >> 4, y1_fix >> 4
+            if (x1 - x0) == w and (y1 - y0) == h:
                 valid_glyphs += 1
+            offset += GLYPH_RECORD_SIZE
 
-            offset += 20
-
-        print(f"  [PASS] Successfully parsed {glyph_count} x 20-byte glyph structures.")
-        print(f"         - Valid mapped characters found: {valid_glyphs}/{glyph_count}")
+        print(f"  [PASS] Successfully parsed {glyph_count} x 24-byte glyph structures.")
+        print(f"         - Verified 12.4 fixed-point UV boxes: {valid_glyphs}/{glyph_count}")
 
     except struct.error as e:
         print(f"  [FAIL] Struct unpacking error in glyph table at offset {offset}: {e}")
         return False
 
     # 3. Locate and Validate Kerning Table
-    # The kerning table starts immediately after the last glyph struct.
-    kerning_start = offset
-    remaining_bytes = file_len - kerning_start
+    if kerning_count > 0 and kerning_table_offset > 0:
+        print(f"\n  [INFO] Validating Kerning Table (Start Offset: 0x{kerning_table_offset:04X})...")
+        k_offset = kerning_table_offset + 6
+        valid_kerning = 0
+        while k_offset + 4 <= file_len and valid_kerning < kerning_count:
+            c1, c2, pad, amt = struct.unpack(">BBBb", data[k_offset : k_offset + 4])
+            if pad == 0 and c1 != 0 and c2 != 0:
+                valid_kerning += 1
+            k_offset += 4
+        print(f"  [PASS] Successfully parsed {valid_kerning}/{kerning_count} 4-byte kerning pairs.")
 
-    print(f"\n  [INFO] Validating Kerning Table (Start Offset: {kerning_start})...")
-
-    if remaining_bytes % 4 != 0:
-        print(f"  [WARN] Remaining bytes ({remaining_bytes}) is not perfectly divisible by 4.")
-        print(f"         This may indicate trailing footer padding or an offset shift.")
-
-    # Calculate how many 4-byte kerning pairs fit in the remaining file space
-    kerning_count = remaining_bytes // 4
-    print(f"  [INFO] Estimated Kerning Pairs: {kerning_count}")
-
-    valid_kerning = 0
-    try:
-        for _ in range(kerning_count):
-            # Unpack 4 bytes: Char1(u8), Char2(u8), Pad(u8), Amount(s8)
-            # 'b' is used for the signed 8-bit integer at the end (kerning amount)
-            k_data = struct.unpack('>BBBb', data[offset:offset+4])
-            offset += 4
-            valid_kerning += 1
-
-        print(f"  [PASS] Successfully parsed {valid_kerning} x 4-byte kerning structures.")
-
-    except struct.error as e:
-        print(f"  [FAIL] Struct unpacking error in kerning table at offset {offset}: {e}")
-        return False
-
-    print("\n  [PASS] File structure is fully contiguous and successfully mapped!")
+    print("\n  [PASS] File structure is fully validated!")
     return True
+
 
 def main():
     print("Initializing batch validation for EA .inf font files...")
@@ -116,9 +115,10 @@ def main():
         if scan_inf_file(f):
             success_count += 1
 
-    print(f"\n{'='*50}")
+    print(f"\n{'='*60}")
     print(f"Batch Scan Complete! Successfully Parsed: {success_count}/{len(inf_files)}")
-    print(f"{'='*50}")
+    print(f"{'='*60}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
