@@ -1,100 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
-
     <head>
         <meta charset="utf-8">
         <title>SimGroup Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
+    </head>
     <body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Simulation group (.dat)</nav>
-
-
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Simulation group (.dat)</nav>
         <h1>SimGroup (.dat)</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
-<p>Contains grouped entity/instance entries and identifiers.</p>
-<dl><dt>Identification</dt><dd>Header and entity entry layouts are described below; .dat is not a unique format identifier.</dd><dt>Byte order / text</dt><dd>Use the per-field tables.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#header">Header</a></li><li><a href="#entity-entry">Entity Entry</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="meta.xml.html">Compiled MetaModel (.meta.xml)</a></td><td>Scene context</td><td>Binary MetaModel properties and simulation-group instances are complementary scene resources. Their object/resource identifier joins require validation.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Entity IDs and resource references must be matched against the correct level context. No scene-assembly operation is registered.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-
-
+        <section class="format-summary" aria-label="Format summary">
+            <p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+            <p>Contains grouped entity/instance entries and identifiers.</p>
+            <dl>
+                <dt>Identification</dt>
+                <dd>Header and entity entry layouts are described below; .dat is not a unique format identifier.</dd>
+                <dt>Byte order / text</dt>
+                <dd>Use the per-field tables.</dd>
+                <dt>Documentation scope</dt>
+                <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+            </dl>
+        </section>
+        <nav class="page-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <ul>
+                <li><a href="#related-formats-2">Related formats</a></li>
+                <li><a href="#operation-support-2">Operation support</a></li>
+                <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                <li><a href="#header">Header</a></li>
+                <li><a href="#entity-entry">Entity Entry</a></li>
+            </ul>
+        </nav>
+        <section id="related-formats">
+            <h2 id="related-formats-2">Related formats</h2>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                <table>
+                    <caption>Related formats and strength of the connection</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Related format</th>
+                            <th scope="col">Evidence</th>
+                            <th scope="col">Relationship and practical consequence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="meta.xml.html">Compiled MetaModel (.meta.xml)</a></td>
+                            <td>Scene context</td>
+                            <td>Binary MetaModel properties and simulation-group instances are complementary scene resources. Their object/resource identifier joins require validation.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
+        </section>
+        <section id="operation-support">
+            <h2 id="operation-support-2">Operation support</h2>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="evidence-limits">
+            <h2 id="evidence-and-limitations">Evidence and limitations</h2>
+            <p>Entity IDs and resource references must be matched against the correct level context. No scene-assembly operation is registered.</p>
+            <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+        </section>
         <p>Defines groups of entities, their behaviors, and attributes.</p>
-
         <h2 id="header">Header</h2>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Offset</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x08</td>
-                    <td>UInt32</td>
-                    <td>Magic</td>
-                    <td><code>0x53696D47</code> ("SimG").</td>
-                </tr>
-                <tr>
-                    <td>0x0C</td>
-                    <td>UInt32</td>
-                    <td>GUIDHash</td>
-                    <td>Hash of GUID.</td>
-                </tr>
-                <tr>
-                    <td>0x10</td>
-                    <td>UInt32</td>
-                    <td>EntityCount</td>
-                    <td>Number of entities in the group.</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x08</td>
+                        <td>UInt32</td>
+                        <td>Magic</td>
+                        <td><code>0x53696D47</code> ("SimG").</td>
+                    </tr>
+                    <tr>
+                        <td>0x0C</td>
+                        <td>UInt32</td>
+                        <td>GUIDHash</td>
+                        <td>Hash of GUID.</td>
+                    </tr>
+                    <tr>
+                        <td>0x10</td>
+                        <td>UInt32</td>
+                        <td>EntityCount</td>
+                        <td>Number of entities in the group.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 id="entity-entry">Entity Entry</h2>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Type</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>UInt8</td>
-                    <td>SpawnMask</td>
-                    <td>Spawn configuration mask.</td>
-                </tr>
-                <tr>
-                    <td>Byte[16]</td>
-                    <td>GUID</td>
-                    <td>Entity GUID (looked up via GuidOffset in header).</td>
-                </tr>
-                <tr>
-                    <td>UInt32</td>
-                    <td>BehaviorID</td>
-                    <td>Behavior identifier.</td>
-                </tr>
-                <tr>
-                    <td>Bitfield</td>
-                    <td>Attributes</td>
-                    <td>Bitfield defining which attributes are active. Attributes are 4-byte values (Int, Float, or Pointers).</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>UInt8</td>
+                        <td>SpawnMask</td>
+                        <td>Spawn configuration mask.</td>
+                    </tr>
+                    <tr>
+                        <td>Byte[16]</td>
+                        <td>GUID</td>
+                        <td>Entity GUID (looked up via GuidOffset in header).</td>
+                    </tr>
+                    <tr>
+                        <td>UInt32</td>
+                        <td>BehaviorID</td>
+                        <td>Behavior identifier.</td>
+                    </tr>
+                    <tr>
+                        <td>Bitfield</td>
+                        <td>Attributes</td>
+                        <td>Bitfield defining which attributes are active. Attributes are 4-byte values (Int, Float, or Pointers).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </body>
-
 </html>

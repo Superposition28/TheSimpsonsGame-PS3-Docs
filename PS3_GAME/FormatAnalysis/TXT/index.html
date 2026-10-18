@@ -1,40 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Locale configuration (localetable.txt)</title>
-    <link rel="stylesheet" href="../../../style/main.css">
-</head>
-<body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>Locale configuration (localetable.txt)</nav>
-<h1>Locale configuration (localetable.txt)</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Usable text source · five PS3 / Xbox 360 samples · 2026-10-18</p>
-<p>The line-based <code>text/localetable.txt</code> file describes locale entries for a particular build. Five supplied copies cover PS3 EU, PS3 demo, PS3 US, Xbox 360 EU and Xbox 360 US. Their locale lists and header tokens differ. The file is separate from binary LH2 string tables and locale-reference text files extracted from STR archives.</p>
-<dl><dt>Identification</dt><dd>Plain text: five header lines, then five lines per locale record. The leading value 5 is not a reliable record count.</dd><dt>Byte order / text</dt><dd>ASCII with LF line endings; numeric values are decimal text, so binary endianness does not apply.</dd><dt>Scope</dt><dd>All five supplied text files compared; PS3 title IDs cross-checked with adjacent PARAM.SFO metadata. Earlier PS3 EU locale-reference/LH2 checks are retained with their original scope. No executable parser analysis.</dd></dl>
-</section>
-<nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#identification-and-scope">Inspected files</a></li><li><a href="#contents">PS3 EU reference contents</a></li><li><a href="#layout">Header and locale records</a></li><li><a href="#variants">Platform and regional variants</a></li><li><a href="#variant-contents">Exact variant contents</a></li><li><a href="#localization-context">Localization relationships</a></li><li><a href="#related-formats">Related formats</a></li><li><a href="#operation-support">Operation support</a></li><li><a href="#evidence-limits">Evidence and limitations</a></li></ul></nav>
-<section id="identification-and-scope">
-<h2>Inspected files</h2>
-<div class="table-scroll" role="region" aria-label="Compared source copies; hashes identify exact file bytes" tabindex="0">
-<table>
-<caption>Compared source copies; hashes identify exact file bytes</caption>
-<thead><tr><th scope="col">Sample</th><th scope="col">Source path</th><th scope="col">Bytes / LF terminators</th><th scope="col">SHA-256</th></tr></thead>
-<tbody>
-<tr><td>PS3 EU</td><td><code>Source/PS3/EU/1/PS3_GAME/USRDIR/text/localetable.txt</code></td><td>128 bytes / 31 LF</td><td><code>8a776f5b966ac4fd0f5edf1abd81696182ceb2db4ae95ec78777e74170594951</code></td></tr>
-<tr><td>PS3 demo</td><td><code>Source/PS3/DEMO/1/NPEB90029/USRDIR/text/localetable.txt</code></td><td>73 bytes / 16 LF</td><td><code>ed78376700c93e571459fe44ce98d8847353633a43e244bb8e1a9264f951228c</code></td></tr>
-<tr><td>Xbox 360 EU</td><td><code>Source/XBOX360/EU/1/TSG/text/localetable.txt</code></td><td>139 bytes / 31 LF</td><td><code>8246c061d73f81541f23a70b6d355e32dd9ae41e80e7f0e4f050f1ddb2c970d0</code></td></tr>
-<tr><td>PS3 US</td><td><code>Source/PS3/US/1/PS3_GAME/USRDIR/text/localetable.txt</code></td><td>73 bytes / 16 LF</td><td><code>90cf838785d2e2e1aca8e2141406acf917b3085d097ff27d1bdf2a7fa936c7a7</code></td></tr>
-<tr><td>Xbox 360 US</td><td><code>Source/XBOX360/US/1/extractedFiles/text/localetable.txt</code></td><td>77 bytes / 16 LF</td><td><code>87c577f2c11f86e985696e5f422c19ea7c680cc2a410788d4d2b834be2c97557</code></td></tr>
-</tbody>
-</table>
-</div><p>All five files contain only ASCII bytes and are also valid UTF-8, with no BOM, CR or NUL bytes. Each ends with two LF bytes: the final record terminator followed by one empty trailing line. The five-record files have 30 non-empty lines and 31 LF terminators; two-record files have 15 non-empty lines and 16 LF terminators.</p>
-<p>Paths identify the exact supplied copies. In particular, the Xbox 360 EU copy is the supplied <code>TSG</code> tree; its contents must not be generalized to every European Xbox 360 release. Source paths are descriptive rather than links into proprietary files.</p>
-</section>
-<section id="contents">
-<h2>PS3 EU reference contents</h2>
-<pre><code>5
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Locale configuration (localetable.txt)</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>Locale configuration (localetable.txt)</nav>
+        <h1>Locale configuration (localetable.txt)</h1>
+        <section class="format-summary" aria-label="Format summary">
+            <p class="eyebrow">Usable text source · five PS3 / Xbox 360 samples · 2026-10-18</p>
+            <p>The line-based <code>text/localetable.txt</code> file describes locale entries for a particular build. Five supplied copies cover PS3 EU, PS3 demo, PS3 US, Xbox 360 EU and Xbox 360 US. Their locale lists and header tokens differ. The file is separate from binary LH2 string tables and locale-reference text files extracted from STR archives.</p>
+            <dl>
+                <dt>Identification</dt>
+                <dd>Plain text: five header lines, then five lines per locale record. The leading value 5 is not a reliable record count.</dd>
+                <dt>Byte order / text</dt>
+                <dd>ASCII with LF line endings; numeric values are decimal text, so binary endianness does not apply.</dd>
+                <dt>Scope</dt>
+                <dd>All five supplied text files compared; PS3 title IDs cross-checked with adjacent PARAM.SFO metadata. Earlier PS3 EU locale-reference/LH2 checks are retained with their original scope. No executable parser analysis.</dd>
+            </dl>
+        </section>
+        <nav class="page-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <ul>
+                <li><a href="#identification-and-scope">Inspected files</a></li>
+                <li><a href="#contents">PS3 EU reference contents</a></li>
+                <li><a href="#layout">Header and locale records</a></li>
+                <li><a href="#variants">Platform and regional variants</a></li>
+                <li><a href="#variant-contents">Exact variant contents</a></li>
+                <li><a href="#localization-context">Localization relationships</a></li>
+                <li><a href="#related-formats">Related formats</a></li>
+                <li><a href="#operation-support">Operation support</a></li>
+                <li><a href="#evidence-limits">Evidence and limitations</a></li>
+            </ul>
+        </nav>
+        <section id="identification-and-scope">
+            <h2>Inspected files</h2>
+            <div class="table-scroll" role="region" aria-label="Compared source copies; hashes identify exact file bytes" tabindex="0">
+                <table>
+                    <caption>Compared source copies; hashes identify exact file bytes</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Sample</th>
+                            <th scope="col">Source path</th>
+                            <th scope="col">Bytes / LF terminators</th>
+                            <th scope="col">SHA-256</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PS3 EU</td>
+                            <td><code>Source/PS3/EU/1/PS3_GAME/USRDIR/text/localetable.txt</code></td>
+                            <td>128 bytes / 31 LF</td>
+                            <td><code>8a776f5b966ac4fd0f5edf1abd81696182ceb2db4ae95ec78777e74170594951</code></td>
+                        </tr>
+                        <tr>
+                            <td>PS3 demo</td>
+                            <td><code>Source/PS3/DEMO/1/NPEB90029/USRDIR/text/localetable.txt</code></td>
+                            <td>73 bytes / 16 LF</td>
+                            <td><code>ed78376700c93e571459fe44ce98d8847353633a43e244bb8e1a9264f951228c</code></td>
+                        </tr>
+                        <tr>
+                            <td>Xbox 360 EU</td>
+                            <td><code>Source/XBOX360/EU/1/TSG/text/localetable.txt</code></td>
+                            <td>139 bytes / 31 LF</td>
+                            <td><code>8246c061d73f81541f23a70b6d355e32dd9ae41e80e7f0e4f050f1ddb2c970d0</code></td>
+                        </tr>
+                        <tr>
+                            <td>PS3 US</td>
+                            <td><code>Source/PS3/US/1/PS3_GAME/USRDIR/text/localetable.txt</code></td>
+                            <td>73 bytes / 16 LF</td>
+                            <td><code>90cf838785d2e2e1aca8e2141406acf917b3085d097ff27d1bdf2a7fa936c7a7</code></td>
+                        </tr>
+                        <tr>
+                            <td>Xbox 360 US</td>
+                            <td><code>Source/XBOX360/US/1/extractedFiles/text/localetable.txt</code></td>
+                            <td>77 bytes / 16 LF</td>
+                            <td><code>87c577f2c11f86e985696e5f422c19ea7c680cc2a410788d4d2b834be2c97557</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>All five files contain only ASCII bytes and are also valid UTF-8, with no BOM, CR or NUL bytes. Each ends with two LF bytes: the final record terminator followed by one empty trailing line. The five-record files have 30 non-empty lines and 31 LF terminators; two-record files have 15 non-empty lines and 16 LF terminators.</p>
+            <p>Paths identify the exact supplied copies. In particular, the Xbox 360 EU copy is the supplied <code>TSG</code> tree; its contents must not be generalized to every European Xbox 360 release. Source paths are descriptive rather than links into proprietary files.</p>
+        </section>
+        <section id="contents">
+            <h2>PS3 EU reference contents</h2>
+            <pre><code>5
 BLES00142
 pal_en
 0
@@ -66,77 +119,305 @@ StringIDs
 (none)
 
 </code></pre>
-</section>
-<section id="layout">
-<h2>Header and locale records</h2>
-<div class="table-scroll" role="region" aria-label="Five-line header; line numbers are one-based" tabindex="0">
-<table>
-<caption>Five-line header; line numbers are one-based</caption>
-<thead><tr><th scope="col">Line</th><th scope="col">Value</th><th scope="col">Interpretation</th></tr></thead>
-<tbody>
-<tr><td>1</td><td><code>5</code></td><td>Unresolved header marker, invariant across all five samples. It coincides with the five EU records but remains 5 in the three files with only two records; it cannot be treated as a reliable entry count.</td></tr>
-<tr><td>2</td><td><code>BLES00142</code></td><td>Matches TITLE_ID in the adjacent PS3_GAME/PARAM.SFO.</td></tr>
-<tr><td>3</td><td><code>pal_en</code></td><td>Build/locale token also observed in extracted asset paths; precise loader meaning unverified.</td></tr>
-<tr><td>4</td><td><code>0</code></td><td>Unresolved header integer: 1 in the supplied Xbox 360 EU copy; 0 in the other four samples.</td></tr>
-<tr><td>5</td><td><code>1</code></td><td>Unresolved header integer: 1 in PS3 EU and PS3 demo; 0 in PS3 US and both Xbox 360 samples.</td></tr>
-</tbody>
-</table>
-</div><p>Records start at line 6 and consume five lines each. In these five samples, <code>RecordCount = (NonEmptyLineCount - 5) / 5</code>, yielding five or two records. This count is derived from the observed layout, not the leading 5. The following table is the PS3 EU reference; field names are descriptive, not recovered variable names.</p><div class="table-scroll" role="region" aria-label="Locale records in original order" tabindex="0">
-<table>
-<caption>Locale records in original order</caption>
-<thead><tr><th scope="col">Lines</th><th scope="col">Field 1: locale key</th><th scope="col">Field 2: associated code</th><th scope="col">Field 3: label</th><th scope="col">Field 4: integer</th><th scope="col">Field 5: tag</th></tr></thead>
-<tbody>
-<tr><td>6–10</td><td><code>en</code></td><td><code>en</code></td><td><code>English</code></td><td><code>1</code></td><td><code>(none)</code></td></tr>
-<tr><td>11–15</td><td><code>fr</code></td><td><code>fr</code></td><td><code>French</code></td><td><code>0</code></td><td><code>FR</code></td></tr>
-<tr><td>16–20</td><td><code>it</code></td><td><code>it</code></td><td><code>Italian</code></td><td><code>0</code></td><td><code>IT</code></td></tr>
-<tr><td>21–25</td><td><code>es</code></td><td><code>es</code></td><td><code>Spanish</code></td><td><code>0</code></td><td><code>ES</code></td></tr>
-<tr><td>26–30</td><td><code>ss</code></td><td><code>en</code></td><td><code>StringIDs</code></td><td><code>0</code></td><td><code>(none)</code></td></tr>
-</tbody>
-</table>
-</div><p>In the PS3 EU sample, only English has record field 4 set to 1. The supplied Xbox 360 EU copy also sets this field to 1 for Dansk, Norsk and Suomi, so a unique default-language interpretation is not supported across the sample set. Associated code <code>en</code> appears for those entries and for <code>ss</code>; alias, fallback or shared-resource behavior is plausible but not runtime-verified. The final tag is a literal string such as <code>FR</code> or <code>(none)</code>, not an absent line.</p>
-<p>Preserve five-line record boundaries, literal markers and record order. Read the five-line header separately, derive the observed record count from complete records, and retain unresolved values. Do not use the leading 5 to read past EOF in a two-record variant, remove a <code>StringIDs</code> entry as if it were a blank record, or assume one record flag uniquely selects a default language. Blank-line handling by the original game parser remains unverified.</p>
-</section>
-<section id="variants">
-<h2>Platform and regional variants</h2>
-<div class="table-scroll" role="region" aria-label="Variant comparison; header columns retain their physical line numbers" tabindex="0">
-<table>
-<caption>Variant comparison; header columns retain their physical line numbers</caption>
-<thead><tr><th scope="col">Sample</th><th scope="col">Line 1 marker</th><th scope="col">Line 2 identifier</th><th scope="col">Line 3 build/locale token</th><th scope="col">Line 4 integer</th><th scope="col">Line 5 integer</th><th scope="col">Actual records</th><th scope="col">Locale keys, in order</th></tr></thead>
-<tbody>
-<tr><td>PS3 EU</td><td><code>5</code></td><td><code>BLES00142</code></td><td><code>pal_en</code></td><td><code>0</code></td><td><code>1</code></td><td>5</td><td><code>en, fr, it, es, ss</code></td></tr>
-<tr><td>PS3 demo</td><td><code>5</code></td><td><code>BLUS30065</code></td><td><code>ntsc_en</code></td><td><code>0</code></td><td><code>1</code></td><td>2</td><td><code>en, ss</code></td></tr>
-<tr><td>Xbox 360 EU</td><td><code>5</code></td><td><code>EA205702E0X11</code></td><td><code>pal_en</code></td><td><code>1</code></td><td><code>0</code></td><td>5</td><td><code>en, da, no, fi, ss</code></td></tr>
-<tr><td>PS3 US</td><td><code>5</code></td><td><code>BLUS30065</code></td><td><code>ntsc_en</code></td><td><code>0</code></td><td><code>0</code></td><td>2</td><td><code>en, ss</code></td></tr>
-<tr><td>Xbox 360 US</td><td><code>5</code></td><td><code>EA205701A0X11</code></td><td><code>ntsc_en</code></td><td><code>0</code></td><td><code>0</code></td><td>2</td><td><code>en, ss</code></td></tr>
-</tbody>
-</table>
-</div><p><strong>Leading marker:</strong> every file starts with <code>5</code>, regardless of whether two or five records follow. A version/type marker is a possibility; its actual meaning remains unknown. This comparison supersedes the earlier single-sample count interpretation.</p>
-<p><strong>PS3 demo versus PS3 US:</strong> both are 73 bytes and contain the same identifier, build token and EN/SS records. They differ at exactly one byte: file offset <code>0x16</code> (22 decimal), where header line 5 is ASCII <code>1</code> in the demo and <code>0</code> in the US copy. That observation alone does not establish a demo flag: the full PS3 EU copy also uses 1.</p>
-<p><strong>Demo identity mismatch:</strong> the demo table stores <code>BLUS30065</code>, while its adjacent PARAM.SFO identifies <code>NPEB90029</code> and <code>The Simpsons™ Game Demo</code>. The PS3 EU and US table identifiers match their adjacent PARAM.SFO title IDs. Treat the demo table identifier as a stored token, not authoritative proof of the installed package's identity. A reused configuration is a possible explanation, not an established build history.</p>
-<p><strong>Supplied Xbox 360 EU copy:</strong> the records are English, Dansk, Norsk, Suomi and StringIDs, not the English/French/Italian/Spanish set in the PS3 EU copy. Every associated code is <code>en</code>, and every tag is <code>(none)</code>. The four named-language entries have record integer 1. These bytes do not by themselves demonstrate separate Danish, Norwegian or Finnish translation or audio assets.</p>
-<p><strong>US comparison:</strong> PS3 US and Xbox 360 US have identical header values other than the line 2 identifier, and identical EN/SS record blocks. Xbox identifiers <code>EA205702E0X11</code> and <code>EA205701A0X11</code> are preserved as observed tokens; their internal structure has not been decoded.</p>
-<div class="table-scroll" role="region" aria-label="Distinct record profiles; all values retained in source order" tabindex="0">
-<table>
-<caption>Distinct record profiles; all values retained in source order</caption>
-<thead><tr><th scope="col">Sample group</th><th scope="col">Locale key</th><th scope="col">Associated code</th><th scope="col">Label</th><th scope="col">Record integer</th><th scope="col">Tag</th></tr></thead>
-<tbody>
-<tr><td>PS3 EU</td><td><code>en</code></td><td><code>en</code></td><td><code>English</code></td><td><code>1</code></td><td><code>(none)</code></td></tr>
-<tr><td>PS3 EU</td><td><code>fr</code></td><td><code>fr</code></td><td><code>French</code></td><td><code>0</code></td><td><code>FR</code></td></tr>
-<tr><td>PS3 EU</td><td><code>it</code></td><td><code>it</code></td><td><code>Italian</code></td><td><code>0</code></td><td><code>IT</code></td></tr>
-<tr><td>PS3 EU</td><td><code>es</code></td><td><code>es</code></td><td><code>Spanish</code></td><td><code>0</code></td><td><code>ES</code></td></tr>
-<tr><td>PS3 EU</td><td><code>ss</code></td><td><code>en</code></td><td><code>StringIDs</code></td><td><code>0</code></td><td><code>(none)</code></td></tr>
-<tr><td>Xbox 360 EU (supplied TSG copy)</td><td><code>en</code></td><td><code>en</code></td><td><code>English</code></td><td><code>1</code></td><td><code>(none)</code></td></tr>
-<tr><td>Xbox 360 EU (supplied TSG copy)</td><td><code>da</code></td><td><code>en</code></td><td><code>Dansk</code></td><td><code>1</code></td><td><code>(none)</code></td></tr>
-<tr><td>Xbox 360 EU (supplied TSG copy)</td><td><code>no</code></td><td><code>en</code></td><td><code>Norsk</code></td><td><code>1</code></td><td><code>(none)</code></td></tr>
-<tr><td>Xbox 360 EU (supplied TSG copy)</td><td><code>fi</code></td><td><code>en</code></td><td><code>Suomi</code></td><td><code>1</code></td><td><code>(none)</code></td></tr>
-<tr><td>Xbox 360 EU (supplied TSG copy)</td><td><code>ss</code></td><td><code>en</code></td><td><code>StringIDs</code></td><td><code>0</code></td><td><code>(none)</code></td></tr>
-<tr><td>PS3 demo / PS3 US / Xbox 360 US</td><td><code>en</code></td><td><code>en</code></td><td><code>English</code></td><td><code>1</code></td><td><code>(none)</code></td></tr>
-<tr><td>PS3 demo / PS3 US / Xbox 360 US</td><td><code>ss</code></td><td><code>en</code></td><td><code>StringIDs</code></td><td><code>0</code></td><td><code>(none)</code></td></tr>
-</tbody>
-</table>
-</div></section>
-<section id="variant-contents"><h2>Exact variant contents</h2><p>The PS3 EU baseline is shown above. Expand each additional copy below; the final blank line is preserved in the code block.</p><details class="research-appendix"><summary>PS3 demo · 73 bytes</summary>
-<pre><code>5
+        </section>
+        <section id="layout">
+            <h2>Header and locale records</h2>
+            <div class="table-scroll" role="region" aria-label="Five-line header; line numbers are one-based" tabindex="0">
+                <table>
+                    <caption>Five-line header; line numbers are one-based</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Line</th>
+                            <th scope="col">Value</th>
+                            <th scope="col">Interpretation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><code>5</code></td>
+                            <td>Unresolved header marker, invariant across all five samples. It coincides with the five EU records but remains 5 in the three files with only two records; it cannot be treated as a reliable entry count.</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><code>BLES00142</code></td>
+                            <td>Matches TITLE_ID in the adjacent PS3_GAME/PARAM.SFO.</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><code>pal_en</code></td>
+                            <td>Build/locale token also observed in extracted asset paths; precise loader meaning unverified.</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><code>0</code></td>
+                            <td>Unresolved header integer: 1 in the supplied Xbox 360 EU copy; 0 in the other four samples.</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><code>1</code></td>
+                            <td>Unresolved header integer: 1 in PS3 EU and PS3 demo; 0 in PS3 US and both Xbox 360 samples.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Records start at line 6 and consume five lines each. In these five samples, <code>RecordCount = (NonEmptyLineCount - 5) / 5</code>, yielding five or two records. This count is derived from the observed layout, not the leading 5. The following table is the PS3 EU reference; field names are descriptive, not recovered variable names.</p>
+            <div class="table-scroll" role="region" aria-label="Locale records in original order" tabindex="0">
+                <table>
+                    <caption>Locale records in original order</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Lines</th>
+                            <th scope="col">Field 1: locale key</th>
+                            <th scope="col">Field 2: associated code</th>
+                            <th scope="col">Field 3: label</th>
+                            <th scope="col">Field 4: integer</th>
+                            <th scope="col">Field 5: tag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>6–10</td>
+                            <td><code>en</code></td>
+                            <td><code>en</code></td>
+                            <td><code>English</code></td>
+                            <td><code>1</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                        <tr>
+                            <td>11–15</td>
+                            <td><code>fr</code></td>
+                            <td><code>fr</code></td>
+                            <td><code>French</code></td>
+                            <td><code>0</code></td>
+                            <td><code>FR</code></td>
+                        </tr>
+                        <tr>
+                            <td>16–20</td>
+                            <td><code>it</code></td>
+                            <td><code>it</code></td>
+                            <td><code>Italian</code></td>
+                            <td><code>0</code></td>
+                            <td><code>IT</code></td>
+                        </tr>
+                        <tr>
+                            <td>21–25</td>
+                            <td><code>es</code></td>
+                            <td><code>es</code></td>
+                            <td><code>Spanish</code></td>
+                            <td><code>0</code></td>
+                            <td><code>ES</code></td>
+                        </tr>
+                        <tr>
+                            <td>26–30</td>
+                            <td><code>ss</code></td>
+                            <td><code>en</code></td>
+                            <td><code>StringIDs</code></td>
+                            <td><code>0</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>In the PS3 EU sample, only English has record field 4 set to 1. The supplied Xbox 360 EU copy also sets this field to 1 for Dansk, Norsk and Suomi, so a unique default-language interpretation is not supported across the sample set. Associated code <code>en</code> appears for those entries and for <code>ss</code>; alias, fallback or shared-resource behavior is plausible but not runtime-verified. The final tag is a literal string such as <code>FR</code> or <code>(none)</code>, not an absent line.</p>
+            <p>Preserve five-line record boundaries, literal markers and record order. Read the five-line header separately, derive the observed record count from complete records, and retain unresolved values. Do not use the leading 5 to read past EOF in a two-record variant, remove a <code>StringIDs</code> entry as if it were a blank record, or assume one record flag uniquely selects a default language. Blank-line handling by the original game parser remains unverified.</p>
+        </section>
+        <section id="variants">
+            <h2>Platform and regional variants</h2>
+            <div class="table-scroll" role="region" aria-label="Variant comparison; header columns retain their physical line numbers" tabindex="0">
+                <table>
+                    <caption>Variant comparison; header columns retain their physical line numbers</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Sample</th>
+                            <th scope="col">Line 1 marker</th>
+                            <th scope="col">Line 2 identifier</th>
+                            <th scope="col">Line 3 build/locale token</th>
+                            <th scope="col">Line 4 integer</th>
+                            <th scope="col">Line 5 integer</th>
+                            <th scope="col">Actual records</th>
+                            <th scope="col">Locale keys, in order</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PS3 EU</td>
+                            <td><code>5</code></td>
+                            <td><code>BLES00142</code></td>
+                            <td><code>pal_en</code></td>
+                            <td><code>0</code></td>
+                            <td><code>1</code></td>
+                            <td>5</td>
+                            <td><code>en, fr, it, es, ss</code></td>
+                        </tr>
+                        <tr>
+                            <td>PS3 demo</td>
+                            <td><code>5</code></td>
+                            <td><code>BLUS30065</code></td>
+                            <td><code>ntsc_en</code></td>
+                            <td><code>0</code></td>
+                            <td><code>1</code></td>
+                            <td>2</td>
+                            <td><code>en, ss</code></td>
+                        </tr>
+                        <tr>
+                            <td>Xbox 360 EU</td>
+                            <td><code>5</code></td>
+                            <td><code>EA205702E0X11</code></td>
+                            <td><code>pal_en</code></td>
+                            <td><code>1</code></td>
+                            <td><code>0</code></td>
+                            <td>5</td>
+                            <td><code>en, da, no, fi, ss</code></td>
+                        </tr>
+                        <tr>
+                            <td>PS3 US</td>
+                            <td><code>5</code></td>
+                            <td><code>BLUS30065</code></td>
+                            <td><code>ntsc_en</code></td>
+                            <td><code>0</code></td>
+                            <td><code>0</code></td>
+                            <td>2</td>
+                            <td><code>en, ss</code></td>
+                        </tr>
+                        <tr>
+                            <td>Xbox 360 US</td>
+                            <td><code>5</code></td>
+                            <td><code>EA205701A0X11</code></td>
+                            <td><code>ntsc_en</code></td>
+                            <td><code>0</code></td>
+                            <td><code>0</code></td>
+                            <td>2</td>
+                            <td><code>en, ss</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><strong>Leading marker:</strong> every file starts with <code>5</code>, regardless of whether two or five records follow. A version/type marker is a possibility; its actual meaning remains unknown. This comparison supersedes the earlier single-sample count interpretation.</p>
+            <p><strong>PS3 demo versus PS3 US:</strong> both are 73 bytes and contain the same identifier, build token and EN/SS records. They differ at exactly one byte: file offset <code>0x16</code> (22 decimal), where header line 5 is ASCII <code>1</code> in the demo and <code>0</code> in the US copy. That observation alone does not establish a demo flag: the full PS3 EU copy also uses 1.</p>
+            <p><strong>Demo identity mismatch:</strong> the demo table stores <code>BLUS30065</code>, while its adjacent PARAM.SFO identifies <code>NPEB90029</code> and <code>The Simpsons™ Game Demo</code>. The PS3 EU and US table identifiers match their adjacent PARAM.SFO title IDs. Treat the demo table identifier as a stored token, not authoritative proof of the installed package's identity. A reused configuration is a possible explanation, not an established build history.</p>
+            <p><strong>Supplied Xbox 360 EU copy:</strong> the records are English, Dansk, Norsk, Suomi and StringIDs, not the English/French/Italian/Spanish set in the PS3 EU copy. Every associated code is <code>en</code>, and every tag is <code>(none)</code>. The four named-language entries have record integer 1. These bytes do not by themselves demonstrate separate Danish, Norwegian or Finnish translation or audio assets.</p>
+            <p><strong>US comparison:</strong> PS3 US and Xbox 360 US have identical header values other than the line 2 identifier, and identical EN/SS record blocks. Xbox identifiers <code>EA205702E0X11</code> and <code>EA205701A0X11</code> are preserved as observed tokens; their internal structure has not been decoded.</p>
+            <div class="table-scroll" role="region" aria-label="Distinct record profiles; all values retained in source order" tabindex="0">
+                <table>
+                    <caption>Distinct record profiles; all values retained in source order</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Sample group</th>
+                            <th scope="col">Locale key</th>
+                            <th scope="col">Associated code</th>
+                            <th scope="col">Label</th>
+                            <th scope="col">Record integer</th>
+                            <th scope="col">Tag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PS3 EU</td>
+                            <td><code>en</code></td>
+                            <td><code>en</code></td>
+                            <td><code>English</code></td>
+                            <td><code>1</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                        <tr>
+                            <td>PS3 EU</td>
+                            <td><code>fr</code></td>
+                            <td><code>fr</code></td>
+                            <td><code>French</code></td>
+                            <td><code>0</code></td>
+                            <td><code>FR</code></td>
+                        </tr>
+                        <tr>
+                            <td>PS3 EU</td>
+                            <td><code>it</code></td>
+                            <td><code>it</code></td>
+                            <td><code>Italian</code></td>
+                            <td><code>0</code></td>
+                            <td><code>IT</code></td>
+                        </tr>
+                        <tr>
+                            <td>PS3 EU</td>
+                            <td><code>es</code></td>
+                            <td><code>es</code></td>
+                            <td><code>Spanish</code></td>
+                            <td><code>0</code></td>
+                            <td><code>ES</code></td>
+                        </tr>
+                        <tr>
+                            <td>PS3 EU</td>
+                            <td><code>ss</code></td>
+                            <td><code>en</code></td>
+                            <td><code>StringIDs</code></td>
+                            <td><code>0</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Xbox 360 EU (supplied TSG copy)</td>
+                            <td><code>en</code></td>
+                            <td><code>en</code></td>
+                            <td><code>English</code></td>
+                            <td><code>1</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Xbox 360 EU (supplied TSG copy)</td>
+                            <td><code>da</code></td>
+                            <td><code>en</code></td>
+                            <td><code>Dansk</code></td>
+                            <td><code>1</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Xbox 360 EU (supplied TSG copy)</td>
+                            <td><code>no</code></td>
+                            <td><code>en</code></td>
+                            <td><code>Norsk</code></td>
+                            <td><code>1</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Xbox 360 EU (supplied TSG copy)</td>
+                            <td><code>fi</code></td>
+                            <td><code>en</code></td>
+                            <td><code>Suomi</code></td>
+                            <td><code>1</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                        <tr>
+                            <td>Xbox 360 EU (supplied TSG copy)</td>
+                            <td><code>ss</code></td>
+                            <td><code>en</code></td>
+                            <td><code>StringIDs</code></td>
+                            <td><code>0</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                        <tr>
+                            <td>PS3 demo / PS3 US / Xbox 360 US</td>
+                            <td><code>en</code></td>
+                            <td><code>en</code></td>
+                            <td><code>English</code></td>
+                            <td><code>1</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                        <tr>
+                            <td>PS3 demo / PS3 US / Xbox 360 US</td>
+                            <td><code>ss</code></td>
+                            <td><code>en</code></td>
+                            <td><code>StringIDs</code></td>
+                            <td><code>0</code></td>
+                            <td><code>(none)</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section id="variant-contents">
+            <h2>Exact variant contents</h2>
+            <p>The PS3 EU baseline is shown above. Expand each additional copy below; the final blank line is preserved in the code block.</p>
+            <details class="research-appendix">
+                <summary>PS3 demo · 73 bytes</summary>
+                <pre><code>5
 BLUS30065
 ntsc_en
 0
@@ -153,9 +434,10 @@ StringIDs
 (none)
 
 </code></pre>
-</details>
-<details class="research-appendix"><summary>Xbox 360 EU · 139 bytes</summary>
-<pre><code>5
+            </details>
+            <details class="research-appendix">
+                <summary>Xbox 360 EU · 139 bytes</summary>
+                <pre><code>5
 EA205702E0X11
 pal_en
 1
@@ -187,9 +469,10 @@ StringIDs
 (none)
 
 </code></pre>
-</details>
-<details class="research-appendix"><summary>PS3 US · 73 bytes</summary>
-<pre><code>5
+            </details>
+            <details class="research-appendix">
+                <summary>PS3 US · 73 bytes</summary>
+                <pre><code>5
 BLUS30065
 ntsc_en
 0
@@ -206,9 +489,10 @@ StringIDs
 (none)
 
 </code></pre>
-</details>
-<details class="research-appendix"><summary>Xbox 360 US · 77 bytes</summary>
-<pre><code>5
+            </details>
+            <details class="research-appendix">
+                <summary>Xbox 360 US · 77 bytes</summary>
+                <pre><code>5
 EA205701A0X11
 ntsc_en
 0
@@ -225,39 +509,67 @@ StringIDs
 (none)
 
 </code></pre>
-</details>
-</section>
-<section id="localization-context">
-<h2>Localization relationships</h2>
-<p>All five copies retain <code>ss / en / StringIDs / 0 / (none)</code>. This label distinguishes the internal entry from named-language entries, even in the two-record variants. In the previously inspected PS3 EU dataset, global <a href="../STR/imbedded-formats/lh2.html">LH2 tables</a> corroborate this: EN/FR/IT/ES contain readable localized text; SS contains internal labels such as <code>CREDITS_IntEngineers_1</code>. This locale configuration contains no translated strings, per-string IDs, subtitle timings or font selection.</p>
-<p>The two previously inspected PS3 EU <code>localereftableD4815ED6_*.txt</code> files under extracted frontend and character archives list the PS3 EU locale keys and these resource IDs. This resource mapping has not been re-established for the other four variants:</p><div class="table-scroll" role="region" aria-label="Locale-reference IDs observed in both extracted tables" tabindex="0">
-<table>
-<caption>Locale-reference IDs observed in both extracted tables</caption>
-<thead><tr><th scope="col">Key</th><th scope="col">Hexadecimal resource ID</th><th scope="col">Signed decimal ID</th></tr></thead>
-<tbody>
-<tr><td>en</td><td><code>81DE1738</code></td><td><code>-2116151496</code></td></tr>
-<tr><td>fr</td><td><code>CD99D1BE</code></td><td><code>-845557314</code></td></tr>
-<tr><td>it</td><td><code>6255953C</code></td><td><code>1649775932</code></td></tr>
-<tr><td>es</td><td><code>2919CD42</code></td><td><code>689556802</code></td></tr>
-<tr><td>ss</td><td><code>95F47026</code></td><td><code>-1779142618</code></td></tr>
-</tbody>
-</table>
-</div><p>In every row of both reference tables, <code>signed_decimal &amp; 0xFFFFFFFF == hexadecimal_ID</code>. These are two representations of the same 32-bit ID, not evidence of a separate content checksum. The PS3 EU reference tables start with <code>2</code>; their layout is distinct from the five-line-header locale configuration family documented here.</p>
-<p>Matching ID-named localization directories and global LH2 suffixes support the locale/resource association. Lookup order and fallback behavior remain unverified. Resource paths and IDs belong to the separate reference tables; <code>localetable.txt</code> itself does not store them.</p>
-</section>
-<section id="related-formats">
-<h2>Related formats</h2>
-<p><a href="../STR/imbedded-formats/txt.html">Embedded text resources (.txt)</a> describes the separate locale-reference family. Its historical checksum/loader hypotheses should be read alongside the direct signed-ID comparison above. The <a href="../relationships.html#media">format relationship guide</a> explains localization, movie timing and font rendering.</p>
-<p><a href="../../PARAM.SFO.html">PARAM.SFO metadata</a> compares the authoritative PS3 title IDs with the locale-table identifiers, including the demo mismatch, and documents the separate binary metadata layout.</p>
-</section>
-<section id="operation-support">
-<h2>Operation support</h2>
-<p>The file is readable directly; no conversion is required for inspection and no dedicated locale-configuration parser is registered in <code>operations.toml</code>. This source-disc file is not a payload produced by STR extraction. Operations 9 and 16 read LH2 resources, not this configuration. See the <a href="../pipeline.html">operation pipeline</a> for their actual inputs.</p>
-</section>
-<section id="evidence-limits">
-<h2>Evidence and limitations</h2>
-<p>All five supplied locale tables were read directly on 2026-10-18. Sizes, SHA-256 values, ASCII/LF encoding, five-line headers, complete five-line record groups and trailing blank lines were checked. The three PS3 table identifiers were compared with adjacent PARAM.SFO metadata; demo/US byte differences and shared record blocks were compared exactly. Xbox package identifiers were not cross-validated against an independent metadata source. Earlier signed-ID and LH2 checks apply to PS3 EU only.</p>
-<p>The invariant leading marker, header integers, record integer, associated-code behavior, tags and original runtime loading rules remain unresolved. Locale labels and path names do not prove that translated assets exist or that every release in a region uses the same table. No executable analysis was performed; the comparisons are limited to these five copies.</p>
-</section>
-</body>
+            </details>
+        </section>
+        <section id="localization-context">
+            <h2>Localization relationships</h2>
+            <p>All five copies retain <code>ss / en / StringIDs / 0 / (none)</code>. This label distinguishes the internal entry from named-language entries, even in the two-record variants. In the previously inspected PS3 EU dataset, global <a href="../STR/imbedded-formats/lh2.html">LH2 tables</a> corroborate this: EN/FR/IT/ES contain readable localized text; SS contains internal labels such as <code>CREDITS_IntEngineers_1</code>. This locale configuration contains no translated strings, per-string IDs, subtitle timings or font selection.</p>
+            <p>The two previously inspected PS3 EU <code>localereftableD4815ED6_*.txt</code> files under extracted frontend and character archives list the PS3 EU locale keys and these resource IDs. This resource mapping has not been re-established for the other four variants:</p>
+            <div class="table-scroll" role="region" aria-label="Locale-reference IDs observed in both extracted tables" tabindex="0">
+                <table>
+                    <caption>Locale-reference IDs observed in both extracted tables</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Key</th>
+                            <th scope="col">Hexadecimal resource ID</th>
+                            <th scope="col">Signed decimal ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>en</td>
+                            <td><code>81DE1738</code></td>
+                            <td><code>-2116151496</code></td>
+                        </tr>
+                        <tr>
+                            <td>fr</td>
+                            <td><code>CD99D1BE</code></td>
+                            <td><code>-845557314</code></td>
+                        </tr>
+                        <tr>
+                            <td>it</td>
+                            <td><code>6255953C</code></td>
+                            <td><code>1649775932</code></td>
+                        </tr>
+                        <tr>
+                            <td>es</td>
+                            <td><code>2919CD42</code></td>
+                            <td><code>689556802</code></td>
+                        </tr>
+                        <tr>
+                            <td>ss</td>
+                            <td><code>95F47026</code></td>
+                            <td><code>-1779142618</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>In every row of both reference tables, <code>signed_decimal &amp; 0xFFFFFFFF == hexadecimal_ID</code>. These are two representations of the same 32-bit ID, not evidence of a separate content checksum. The PS3 EU reference tables start with <code>2</code>; their layout is distinct from the five-line-header locale configuration family documented here.</p>
+            <p>Matching ID-named localization directories and global LH2 suffixes support the locale/resource association. Lookup order and fallback behavior remain unverified. Resource paths and IDs belong to the separate reference tables; <code>localetable.txt</code> itself does not store them.</p>
+        </section>
+        <section id="related-formats">
+            <h2>Related formats</h2>
+            <p><a href="../STR/imbedded-formats/txt.html">Embedded text resources (.txt)</a> describes the separate locale-reference family. Its historical checksum/loader hypotheses should be read alongside the direct signed-ID comparison above. The <a href="../relationships.html#media">format relationship guide</a> explains localization, movie timing and font rendering.</p>
+            <p><a href="../../PARAM.SFO.html">PARAM.SFO metadata</a> compares the authoritative PS3 title IDs with the locale-table identifiers, including the demo mismatch, and documents the separate binary metadata layout.</p>
+        </section>
+        <section id="operation-support">
+            <h2>Operation support</h2>
+            <p>The file is readable directly; no conversion is required for inspection and no dedicated locale-configuration parser is registered in <code>operations.toml</code>. This source-disc file is not a payload produced by STR extraction. Operations 9 and 16 read LH2 resources, not this configuration. See the <a href="../pipeline.html">operation pipeline</a> for their actual inputs.</p>
+        </section>
+        <section id="evidence-limits">
+            <h2>Evidence and limitations</h2>
+            <p>All five supplied locale tables were read directly on 2026-10-18. Sizes, SHA-256 values, ASCII/LF encoding, five-line headers, complete five-line record groups and trailing blank lines were checked. The three PS3 table identifiers were compared with adjacent PARAM.SFO metadata; demo/US byte differences and shared record blocks were compared exactly. Xbox package identifiers were not cross-validated against an independent metadata source. Earlier signed-ID and LH2 checks apply to PS3 EU only.</p>
+            <p>The invariant leading marker, header integers, record integer, associated-code behavior, tags and original runtime loading rules remain unresolved. Locale labels and path names do not prove that translated assets exist or that every release in a region uses the same table. No executable analysis was performed; the comparisons are limited to these five copies.</p>
+        </section>
+    </body>
 </html>

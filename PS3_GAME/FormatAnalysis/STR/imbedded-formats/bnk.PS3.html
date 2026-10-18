@@ -5,53 +5,116 @@
         <title>BNK.PS3 Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+    </head>
     <body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Animation bank (.bnk.PS3)</nav>
-
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Animation bank (.bnk.PS3)</nav>
         <h1>BNK.PS3 Format Documentation</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
-<p>Contains animation/state names and structured character motion-related data.</p>
-<dl><dt>Identification</dt><dd>Animation names and offset tables in the documented Frink sample; no stable magic established.</dd><dt>Byte order / text</dt><dd>Big-endian field interpretations in samples; compressed tracks remain unresolved.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="bbn.PS3.html">Bone bindings (.bbn.PS3)</a></td><td>Context/tentative</td><td>Bone-name/binding tables and animation banks have complementary character roles. A numeric joint-index or hash mapping between the two has not been established here.</td></tr><tr><td><a href="cec.ps3.html">Controller event configuration (.cec.ps3)</a></td><td>Context/tentative</td><td>Animation names and controller events are related character-system concepts; no complete event-to-clip mapping is decoded.</td></tr><tr><td><a href="preinstanced.html">Preinstanced models</a></td><td>Reconstruction context</td><td>Geometry import does not decode BNK animation or guarantee compatible skeleton bindings. Both would be required for a verified animated character reconstruction.</td></tr><tr><td><a href="rcb.PS3.html">Character/controller resource (.rcb.PS3)</a></td><td>Context/tentative</td><td>Both appear in CCT-export character/weapon contexts; exact controller/bank bindings are not decoded.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Clip compression, transitions and bindings are not completely decoded. This animation-bank suffix is distinct from the .sbk audio-bank suffix; operation 8 does not decode BNK animation.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-
-<p><code>.bnk.PS3</code> is a <strong>character animation bank</strong> (“BNK” = bank) compiled for PS3. It’s part of EA’s RenderWare/EA-Character pipeline (CCT export path is in the filename) and contains <strong>charactor specific motion data + tables</strong> that the runtime uses to drive his state machine.</p>
-<ul>
-<li><p>Clear <strong>animation/state names</strong> in the string table:</p>
-<ul>
-<li><code>idle_frink</code>, <code>walk_frink</code>, <code>jump_frink</code>, <code>airstate_fall_frink</code>, <code>taunt_frink</code>, plus generic <code>idle</code>, etc.</li>
-</ul>
-</li>
-<li><p>Repeated <strong>record blocks</strong> pairing a name with ranges/offsets and parameters, with floats like <code>3F 80 00 00</code> (= 1.0) typical for <strong>blend weights/speeds</strong>.</p>
-</li>
-<li><p>Lots of <strong>offset tables</strong> near the top, then per-clip chunks (start/end pointers like <code>00 00 01 90 … 00 00 01 A0</code>, etc.)—classic bank layout: header → indices → clip payloads.</p>
-</li>
-<li><p>Small tags like <code>C3</code>, <code>Co</code>, and numeric tuples following entries—these show up in banks as <strong>channels/curves</strong> (e.g., 3-component transforms, coefficients) and <strong>per-clip metadata</strong> (rates, durations).</p>
-</li>
-<li><p>Big mid/end blobs of compact numbers/patterns (e.g., long runs of <code>0x078C</code>, <code>AA/55</code> bitmasks) typical of <strong>compressed keyframes/bit-packed event tracks</strong> tuned for SPU/PPU playback on PS3.</p>
-</li>
-</ul>
-<h3>What the game uses it for</h3>
-<ul>
-<li><p>Provides the <strong>runtime animations and blend data</strong> for Dr. Frink:</p>
-<ul>
-<li>Base loops (<code>idle_*</code>, <code>walk_*</code>), locomotion variants, air/fall, jump, taunt.</li>
-</ul>
-</li>
-<li><p>Contains <strong>transition definitions</strong> and <strong>blend params</strong> the character controller reads to switch states smoothly.</p>
-</li>
-<li><p>Packs <strong>curves/events</strong> (timings, notifies, maybe footstep markers) in a CPU/SPU-friendly format.</p>
-</li>
-<li><p>Loaded alongside the character’s CCT asset so gameplay code can request “play <code>jump_frink</code>”, “blend to <code>idle_frink</code>”, etc., without touching source <code>.anm/.skel</code> files.</p>
-</li>
-</ul>
-
+        <section class="format-summary" aria-label="Format summary">
+            <p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+            <p>Contains animation/state names and structured character motion-related data.</p>
+            <dl>
+                <dt>Identification</dt>
+                <dd>Animation names and offset tables in the documented Frink sample; no stable magic established.</dd>
+                <dt>Byte order / text</dt>
+                <dd>Big-endian field interpretations in samples; compressed tracks remain unresolved.</dd>
+                <dt>Documentation scope</dt>
+                <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+            </dl>
+        </section>
+        <nav class="page-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <ul>
+                <li><a href="#related-formats-2">Related formats</a></li>
+                <li><a href="#operation-support-2">Operation support</a></li>
+                <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+            </ul>
+        </nav>
+        <section id="related-formats">
+            <h2 id="related-formats-2">Related formats</h2>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                <table>
+                    <caption>Related formats and strength of the connection</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Related format</th>
+                            <th scope="col">Evidence</th>
+                            <th scope="col">Relationship and practical consequence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="bbn.PS3.html">Bone bindings (.bbn.PS3)</a></td>
+                            <td>Context/tentative</td>
+                            <td>Bone-name/binding tables and animation banks have complementary character roles. A numeric joint-index or hash mapping between the two has not been established here.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="cec.ps3.html">Controller event configuration (.cec.ps3)</a></td>
+                            <td>Context/tentative</td>
+                            <td>Animation names and controller events are related character-system concepts; no complete event-to-clip mapping is decoded.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="preinstanced.html">Preinstanced models</a></td>
+                            <td>Reconstruction context</td>
+                            <td>Geometry import does not decode BNK animation or guarantee compatible skeleton bindings. Both would be required for a verified animated character reconstruction.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="rcb.PS3.html">Character/controller resource (.rcb.PS3)</a></td>
+                            <td>Context/tentative</td>
+                            <td>Both appear in CCT-export character/weapon contexts; exact controller/bank bindings are not decoded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
+        </section>
+        <section id="operation-support">
+            <h2 id="operation-support-2">Operation support</h2>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="evidence-limits">
+            <h2 id="evidence-and-limitations">Evidence and limitations</h2>
+            <p>Clip compression, transitions and bindings are not completely decoded. This animation-bank suffix is distinct from the .sbk audio-bank suffix; operation 8 does not decode BNK animation.</p>
+            <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+        </section>
+        <p><code>.bnk.PS3</code> is a <strong>character animation bank</strong> (“BNK” = bank) compiled for PS3. It’s part of EA’s RenderWare/EA-Character pipeline (CCT export path is in the filename) and contains <strong>charactor specific motion data + tables</strong> that the runtime uses to drive his state machine.</p>
+        <ul>
+            <li>
+                <p>Clear <strong>animation/state names</strong> in the string table:</p>
+                <ul>
+                    <li><code>idle_frink</code>, <code>walk_frink</code>, <code>jump_frink</code>, <code>airstate_fall_frink</code>, <code>taunt_frink</code>, plus generic <code>idle</code>, etc.</li>
+                </ul>
+            </li>
+            <li>
+                <p>Repeated <strong>record blocks</strong> pairing a name with ranges/offsets and parameters, with floats like <code>3F 80 00 00</code> (= 1.0) typical for <strong>blend weights/speeds</strong>.</p>
+            </li>
+            <li>
+                <p>Lots of <strong>offset tables</strong> near the top, then per-clip chunks (start/end pointers like <code>00 00 01 90 … 00 00 01 A0</code>, etc.)—classic bank layout: header → indices → clip payloads.</p>
+            </li>
+            <li>
+                <p>Small tags like <code>C3</code>, <code>Co</code>, and numeric tuples following entries—these show up in banks as <strong>channels/curves</strong> (e.g., 3-component transforms, coefficients) and <strong>per-clip metadata</strong> (rates, durations).</p>
+            </li>
+            <li>
+                <p>Big mid/end blobs of compact numbers/patterns (e.g., long runs of <code>0x078C</code>, <code>AA/55</code> bitmasks) typical of <strong>compressed keyframes/bit-packed event tracks</strong> tuned for SPU/PPU playback on PS3.</p>
+            </li>
+        </ul>
+        <h3>What the game uses it for</h3>
+        <ul>
+            <li>
+                <p>Provides the <strong>runtime animations and blend data</strong> for Dr. Frink:</p>
+                <ul>
+                    <li>Base loops (<code>idle_*</code>, <code>walk_*</code>), locomotion variants, air/fall, jump, taunt.</li>
+                </ul>
+            </li>
+            <li>
+                <p>Contains <strong>transition definitions</strong> and <strong>blend params</strong> the character controller reads to switch states smoothly.</p>
+            </li>
+            <li>
+                <p>Packs <strong>curves/events</strong> (timings, notifies, maybe footstep markers) in a CPU/SPU-friendly format.</p>
+            </li>
+            <li>
+                <p>Loaded alongside the character’s CCT asset so gameplay code can request “play <code>jump_frink</code>”, “blend to <code>idle_frink</code>”, etc., without touching source <code>.anm/.skel</code> files.</p>
+            </li>
+        </ul>
     </body>
 </html>

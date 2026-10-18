@@ -12,7 +12,10 @@ import sys
 import tomllib
 from urllib.parse import unquote, urlsplit
 
-VOID_TAGS = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'}
+try:
+    from format_docs import VOID_TAGS, check_html_formatting
+except ImportError:
+    from tools.format_docs import VOID_TAGS, check_html_formatting
 
 
 class Document(HTMLParser):
@@ -131,6 +134,8 @@ def check(root: Path) -> int:
                 errors.append(f'{label}: unbalanced {tag}: {opened} opens, {closed} closes')
         if re.search(r'╬|├|�', text):
             errors.append(f'{label}: unresolved text encoding damage')
+        for issue in check_html_formatting(path.read_bytes()):
+            errors.append(f'{label}: {issue}')
 
     for source, targets in relationships.items():
         for target in targets:

@@ -1,82 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>A2_Characters (simpsons_chars) - Asset Overview</title>
-    <link rel="stylesheet" href="../../../style/main.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
-<body class="doc-page">
-    <div class="doc-overview">
-        <h1>A2_Characters (<code>simpsons_chars</code>)</h1><p>Character archives contain multiple resource families: rendered geometry and textures, font resources shared by the game, and separate animation/controller/collision metadata. Operation 8 imports geometry; it does not reconstruct the character animation or physics system.</p><p>Shared INF fonts and TXD-derived atlases can render LH2 UI/dialogue text, including text resolved for movie subtitles. The <a href="../../FormatAnalysis/relationships.html#characters">character relationships</a> and <a href="../../FormatAnalysis/relationships.html#media">text/font workflow</a> distinguish these connections.</p>
-        <p>
-            Contains global character archives (<code>simpsonsCharsGlobalStr</code>) and shared UI/HUD typography assets used across character HUD overlays and in-game prompts.
-        </p>
-
-        <h2>Embedded Font Descriptors (<code>.inf</code>) &amp; Texture Atlases (<code>.png</code>)</h2>
-        <p>
-            Six <a href="../../FormatAnalysis/STR/imbedded-formats/inf.html"><code>.inf</code> (<code>FONT</code> v6)</a> binary font descriptors reside in <code>A2_Characters/simpsonsCharsGlobalStr/assetsShared/fonts/</code> and map to extracted <code>.png</code> texture atlases under <code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/</code>:
-        </p>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table class="format-counts">
-            <caption>A2_Characters Font Descriptor (<code>.inf</code>) to Texture Atlas (<code>.png</code>) Mapping</caption>
-            <thead>
-                <tr>
-                    <th scope="col">Font Descriptor (<code>.inf</code>)</th>
-                    <th scope="col">Glyphs</th>
-                    <th scope="col">Metrics (<code>LH / Base / MaxW</code>)</th>
-                    <th scope="col">Companion Texture Atlas (<code>.png</code>)</th>
-                    <th scope="col">Dimensions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>assetsShared/fonts/buttons_37bb42.inf</code></td>
-                    <td>33</td>
-                    <td><code>68 / 0 / 102</code> px</td>
-                    <td><code>assetsRws/txd/simpsons_chars_global_split8_ce6120_txd/buttons.png</code></td>
-                    <td><code>256&times;256</code></td>
-                </tr>
-                <tr>
-                    <td><code>assetsShared/fonts/DomCasualStd3636_ff9566.inf</code></td>
-                    <td>191</td>
-                    <td><code>57 / 45 / 45</code> px</td>
-                    <td><code>assetsRws/txd/simpsons_chars_global_split9_bade57_txd/DomCasualStd3636.png</code></td>
-                    <td><code>512&times;256</code></td>
-                </tr>
-                <tr>
-                    <td><code>assetsShared/fonts/HighlanderStdBold6060b_1d35c8.inf</code></td>
-                    <td>191</td>
-                    <td><code>97 / 78 / 76</code> px</td>
-                    <td><code>assetsRws/txd/simpsons_chars_global_split6_c2ec11_txd/HighlanderStdBold6060b.png</code></td>
-                    <td><code>1024&times;512</code></td>
-                </tr>
-                <tr>
-                    <td><code>assetsShared/fonts/HighlanderStdMed3636_ca0d81.inf</code></td>
-                    <td>191</td>
-                    <td><code>56 / 44 / 51</code> px</td>
-                    <td><code>assetsRws/txd/simpsons_chars_global_split7_6b8b06_txd/HighlanderStdMed3636.png</code></td>
-                    <td><code>512&times;512</code></td>
-                </tr>
-                <tr>
-                    <td><code>assetsShared/fonts/HighlanderStdNumsBold3636b_85009b.inf</code></td>
-                    <td>95 (14 active)</td>
-                    <td><code>54 / 46 / 28</code> px</td>
-                    <td><code>assetsRws/txd/simpsons_chars_global_split8_ce6120_txd/HighlanderStdNumsBold3636b.png</code></td>
-                    <td><code>128&times;128</code></td>
-                </tr>
-                <tr>
-                    <td><code>assetsShared/fonts/LetterGothicStdBold2424b_c7c53d.inf</code></td>
-                    <td>191</td>
-                    <td><code>41 / 32 / 20</code> px</td>
-                    <td><code>assetsRws/txd/simpsons_chars_global_split9_bade57_txd/LetterGothicStdBold2424b.png</code></td>
-                    <td><code>512&times;256</code></td>
-                </tr>
-            </tbody>
-        </table></div>
-    </div>
-</body>
-
+    <head>
+        <meta charset="utf-8">
+        <title>A2_Characters (simpsons_chars) - Asset Overview</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body class="doc-page">
+        <div class="doc-overview">
+            <h1>A2_Characters (<code>simpsons_chars</code>)</h1>
+            <p>Character archives contain multiple resource families: rendered geometry and textures, font resources shared by the game, and separate animation/controller/collision metadata. Operation 8 imports geometry; it does not reconstruct the character animation or physics system.</p>
+            <p>Shared INF fonts and TXD-derived atlases can render LH2 UI/dialogue text, including text resolved for movie subtitles. The <a href="../../FormatAnalysis/relationships.html#characters">character relationships</a> and <a href="../../FormatAnalysis/relationships.html#media">text/font workflow</a> distinguish these connections.</p>
+            <p>Contains global character archives (<code>simpsonsCharsGlobalStr</code>) and shared UI/HUD typography assets used across character HUD overlays and in-game prompts.</p>
+            <h2>Embedded Font Descriptors (<code>.inf</code>) &amp; Texture Atlases (<code>.png</code>)</h2>
+            <p>Six <a href="../../FormatAnalysis/STR/imbedded-formats/inf.html"><code>.inf</code> (<code>FONT</code> v6)</a> binary font descriptors reside in <code>A2_Characters/simpsonsCharsGlobalStr/assetsShared/fonts/</code> and map to extracted <code>.png</code> texture atlases under <code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/</code>:</p>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                <table class="format-counts">
+                    <caption>A2_Characters Font Descriptor (<code>.inf</code>) to Texture Atlas (<code>.png</code>) Mapping</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Font Descriptor (<code>.inf</code>)</th>
+                            <th scope="col">Glyphs</th>
+                            <th scope="col">Metrics (<code>LH / Base / MaxW</code>)</th>
+                            <th scope="col">Companion Texture Atlas (<code>.png</code>)</th>
+                            <th scope="col">Dimensions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>assetsShared/fonts/buttons_37bb42.inf</code></td>
+                            <td>33</td>
+                            <td><code>68 / 0 / 102</code> px</td>
+                            <td><code>assetsRws/txd/simpsons_chars_global_split8_ce6120_txd/buttons.png</code></td>
+                            <td><code>256&times;256</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>assetsShared/fonts/DomCasualStd3636_ff9566.inf</code></td>
+                            <td>191</td>
+                            <td><code>57 / 45 / 45</code> px</td>
+                            <td><code>assetsRws/txd/simpsons_chars_global_split9_bade57_txd/DomCasualStd3636.png</code></td>
+                            <td><code>512&times;256</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>assetsShared/fonts/HighlanderStdBold6060b_1d35c8.inf</code></td>
+                            <td>191</td>
+                            <td><code>97 / 78 / 76</code> px</td>
+                            <td><code>assetsRws/txd/simpsons_chars_global_split6_c2ec11_txd/HighlanderStdBold6060b.png</code></td>
+                            <td><code>1024&times;512</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>assetsShared/fonts/HighlanderStdMed3636_ca0d81.inf</code></td>
+                            <td>191</td>
+                            <td><code>56 / 44 / 51</code> px</td>
+                            <td><code>assetsRws/txd/simpsons_chars_global_split7_6b8b06_txd/HighlanderStdMed3636.png</code></td>
+                            <td><code>512&times;512</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>assetsShared/fonts/HighlanderStdNumsBold3636b_85009b.inf</code></td>
+                            <td>95 (14 active)</td>
+                            <td><code>54 / 46 / 28</code> px</td>
+                            <td><code>assetsRws/txd/simpsons_chars_global_split8_ce6120_txd/HighlanderStdNumsBold3636b.png</code></td>
+                            <td><code>128&times;128</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>assetsShared/fonts/LetterGothicStdBold2424b_c7c53d.inf</code></td>
+                            <td>191</td>
+                            <td><code>41 / 32 / 20</code> px</td>
+                            <td><code>assetsRws/txd/simpsons_chars_global_split9_bade57_txd/LetterGothicStdBold2424b.png</code></td>
+                            <td><code>512&times;256</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
 </html>

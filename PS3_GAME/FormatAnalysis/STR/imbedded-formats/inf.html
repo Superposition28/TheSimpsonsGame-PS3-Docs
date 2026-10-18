@@ -4,41 +4,97 @@
         <meta charset="utf-8">
         <title>INF Format Documentation (.inf)</title>
         <link rel="stylesheet" href="../../../../style/main.css">
-
         <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+    </head>
     <body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Bitmap font descriptor (.inf)</nav>
-
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Bitmap font descriptor (.inf)</nav>
         <h1>EA Font Descriptor (<code>.inf</code> / <code>FONT</code> v6) Format Documentation</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
-<p>Maps font character codes to glyph metrics and rectangles in a texture atlas.</p>
-<dl><dt>Identification</dt><dd>FONT at 0x00; observed version 6; 24-byte glyph records.</dd><dt>Byte order / text</dt><dd>Big-endian numeric fields; character code plus trailing zero byte.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#memory-map-file-layout-overview">Memory Map &amp; File Layout Overview</a></li><li><a href="#main-file-header-0x00-0x28-40-bytes">Main File Header (0x00 .. 0x28, 40 Bytes)</a></li><li><a href="#runtime-character-index-buffer-kerning-header-0x028-0x434-1036-bytes">Runtime Character Index Buffer &amp; Kerning Header (0x028 .. 0x434, 1036 Bytes)</a></li><li><a href="#glyph-table-0x0434-lookuptableoffset-glyphcount-24-bytes">Glyph Table (0x0434 .. LookupTableOffset, GlyphCount &times; 24 Bytes)</a></li><li><a href="#kerning-table-kerningtableoffset-eof">Kerning Table (KerningTableOffset .. EOF)</a></li><li><a href="#character-sets-special-glyph-remappings">Character Sets &amp; Special Glyph Remappings</a></li><li><a href="#complete-inf-png-asset-mapping-ps3-flattened-archive">Complete .inf &harr; .png Asset Mapping (PS3 Flattened Archive)</a></li><li><a href="#reference-python-parser-godot-fnt-converter">Registered Lua converter and illustrative Python parser</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="txd.html">Texture dictionary (.txd)</a></td><td>Implemented</td><td>Operation 3 supplies the PNG atlas used by operation 15. INF stores glyph rectangles/metrics, while the texture dictionary supplies pixels. The font converter matches cleaned base names, preferring the same archive context.</td></tr><tr><td><a href="lh2.html">Localization table (.LH2)</a></td><td>Rendering context</td><td>LH2 supplies strings; INF and its atlas supply glyph shapes and metrics. LH2 contains no demonstrated INF filename pointer. Windows-1252 text decoding and the font converter's custom glyph/Unicode aliases must be handled separately.</td></tr><tr><td><a href="tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td><td>Rendering context</td><td>A subtitle renderer can display TOX-timed LH2 text using an INF-derived FNT and atlas. TOX contains no font selection or atlas pointer, and operation 16 does not require operation 15.</td></tr><tr><td><a href="../../VP6/index.html">Movie container (.vp6)</a></td><td>Rendering context</td><td>Movies provide the playback timeline; subtitles may use the bitmap fonts after TOX/LH2 resolution. No direct INF-to-VP6 resource reference is established. OGV conversion does not render or burn in those fonts.</td></tr><tr><td><a href="uix.html">Compiled APT interface (.uix)</a></td><td>Observed/context</td><td>UIX samples contain font names; INF/TXD resources provide bitmap-font data. A specific UIX name-to-INF mapping must be verified per module rather than assumed from proximity.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../../pipeline.html#op-15">Operation 15: Convert Fonts (.inf -&gt; .fnt)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li></ul><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The 12-file EU inventory and glyph measurements below describe that dataset. Runtime lookup-buffer purposes and the cause of the truncated kerning tails are interpretations; the Lua converter consumes only surviving complete records.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-
-        <p>
-            <strong>Version:</strong> 2.0 (Validated across all 12 PS3 files &amp; 1,784 glyphs)<br>
-            <strong>Last Updated:</strong> 2026-10-18<br>
-            <strong>Author(s):</strong> yggdrasil-au, samarixum
-        </p>
-
-        <p>
-            The <code>.inf</code> format (magic signature <code>FONT</code>, version <code>6</code>) is Electronic Arts' binary bitmap font descriptor used in <em>The Simpsons Game</em> (PS3) to map characters and controller button prompts onto companion <code>.png</code> texture atlases extracted from RenderWare <code>.txd</code> dictionaries. Each <code>.inf</code> file defines global line metrics, 24-byte per-glyph bounding boxes and typographic bearings, <strong>12.4 fixed-point subpixel atlas coordinates</strong>, and a 4-byte kerning pair table.
-        </p>
-
-        <p>
-            <strong>Endianness:</strong> Big-Endian throughout (with 8-bit character IDs padded by a trailing zero byte).<br>
-            <strong>Character Encoding:</strong> ASCII (<code>0x20..0x7E</code>), Extended Latin-1 / Windows-1252 hybrid (<code>0xA0..0xFF</code>), and Custom Controller Button Indices (<code>0x00..0x20</code>).<br>
-            <strong>Converter Script:</strong> <code>operations/inf_to_fnt.Fonts.lua</code> (exports Godot 4-compatible AngelCode BMFont <code>.fnt</code> descriptors).
-        </p>
-
+        <section class="format-summary" aria-label="Format summary">
+            <p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
+            <p>Maps font character codes to glyph metrics and rectangles in a texture atlas.</p>
+            <dl>
+                <dt>Identification</dt>
+                <dd>FONT at 0x00; observed version 6; 24-byte glyph records.</dd>
+                <dt>Byte order / text</dt>
+                <dd>Big-endian numeric fields; character code plus trailing zero byte.</dd>
+                <dt>Documentation scope</dt>
+                <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+            </dl>
+        </section>
+        <nav class="page-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <ul>
+                <li><a href="#related-formats-2">Related formats</a></li>
+                <li><a href="#operation-support-2">Operation support</a></li>
+                <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                <li><a href="#memory-map-file-layout-overview">Memory Map &amp; File Layout Overview</a></li>
+                <li><a href="#main-file-header-0x00-0x28-40-bytes">Main File Header (0x00 .. 0x28, 40 Bytes)</a></li>
+                <li><a href="#runtime-character-index-buffer-kerning-header-0x028-0x434-1036-bytes">Runtime Character Index Buffer &amp; Kerning Header (0x028 .. 0x434, 1036 Bytes)</a></li>
+                <li><a href="#glyph-table-0x0434-lookuptableoffset-glyphcount-24-bytes">Glyph Table (0x0434 .. LookupTableOffset, GlyphCount &times; 24 Bytes)</a></li>
+                <li><a href="#kerning-table-kerningtableoffset-eof">Kerning Table (KerningTableOffset .. EOF)</a></li>
+                <li><a href="#character-sets-special-glyph-remappings">Character Sets &amp; Special Glyph Remappings</a></li>
+                <li><a href="#complete-inf-png-asset-mapping-ps3-flattened-archive">Complete .inf &harr; .png Asset Mapping (PS3 Flattened Archive)</a></li>
+                <li><a href="#reference-python-parser-godot-fnt-converter">Registered Lua converter and illustrative Python parser</a></li>
+            </ul>
+        </nav>
+        <section id="related-formats">
+            <h2 id="related-formats-2">Related formats</h2>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                <table>
+                    <caption>Related formats and strength of the connection</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Related format</th>
+                            <th scope="col">Evidence</th>
+                            <th scope="col">Relationship and practical consequence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="txd.html">Texture dictionary (.txd)</a></td>
+                            <td>Implemented</td>
+                            <td>Operation 3 supplies the PNG atlas used by operation 15. INF stores glyph rectangles/metrics, while the texture dictionary supplies pixels. The font converter matches cleaned base names, preferring the same archive context.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="lh2.html">Localization table (.LH2)</a></td>
+                            <td>Rendering context</td>
+                            <td>LH2 supplies strings; INF and its atlas supply glyph shapes and metrics. LH2 contains no demonstrated INF filename pointer. Windows-1252 text decoding and the font converter's custom glyph/Unicode aliases must be handled separately.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td>
+                            <td>Rendering context</td>
+                            <td>A subtitle renderer can display TOX-timed LH2 text using an INF-derived FNT and atlas. TOX contains no font selection or atlas pointer, and operation 16 does not require operation 15.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="../../VP6/index.html">Movie container (.vp6)</a></td>
+                            <td>Rendering context</td>
+                            <td>Movies provide the playback timeline; subtitles may use the bitmap fonts after TOX/LH2 resolution. No direct INF-to-VP6 resource reference is established. OGV conversion does not render or burn in those fonts.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="uix.html">Compiled APT interface (.uix)</a></td>
+                            <td>Observed/context</td>
+                            <td>UIX samples contain font names; INF/TXD resources provide bitmap-font data. A specific UIX name-to-INF mapping must be verified per module rather than assumed from proximity.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
+        </section>
+        <section id="operation-support">
+            <h2 id="operation-support-2">Operation support</h2>
+            <ul>
+                <li><a href="../../pipeline.html#op-15">Operation 15: Convert Fonts (.inf -&gt; .fnt)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="evidence-limits">
+            <h2 id="evidence-and-limitations">Evidence and limitations</h2>
+            <p>The 12-file EU inventory and glyph measurements below describe that dataset. Runtime lookup-buffer purposes and the cause of the truncated kerning tails are interpretations; the Lua converter consumes only surviving complete records.</p>
+            <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+        </section>
+        <p><strong>Version:</strong> 2.0 (Validated across all 12 PS3 files &amp; 1,784 glyphs)<br><strong>Last Updated:</strong> 2026-10-18<br><strong>Author(s):</strong> yggdrasil-au, samarixum</p>
+        <p>The <code>.inf</code> format (magic signature <code>FONT</code>, version <code>6</code>) is Electronic Arts' binary bitmap font descriptor used in <em>The Simpsons Game</em> (PS3) to map characters and controller button prompts onto companion <code>.png</code> texture atlases extracted from RenderWare <code>.txd</code> dictionaries. Each <code>.inf</code> file defines global line metrics, 24-byte per-glyph bounding boxes and typographic bearings, <strong>12.4 fixed-point subpixel atlas coordinates</strong>, and a 4-byte kerning pair table.</p>
+        <p><strong>Endianness:</strong> Big-Endian throughout (with 8-bit character IDs padded by a trailing zero byte).<br><strong>Character Encoding:</strong> ASCII (<code>0x20..0x7E</code>), Extended Latin-1 / Windows-1252 hybrid (<code>0xA0..0xFF</code>), and Custom Controller Button Indices (<code>0x00..0x20</code>).<br><strong>Converter Script:</strong> <code>operations/inf_to_fnt.Fonts.lua</code> (exports Godot 4-compatible AngelCode BMFont <code>.fnt</code> descriptors).</p>
         <div class="callout">
             <strong>How <code>.inf</code> Coincides with <code>.png</code> Font Textures:</strong>
             <ul>
@@ -47,663 +103,720 @@
                 <li><strong>12.4 Fixed-Point Atlas Coordinates:</strong> The top-left and bottom-right texture coordinates (<code>X0_Fixed</code>, <code>Y0_Fixed</code>, <code>X1_Fixed</code>, <code>Y1_Fixed</code> at <code>+0x0C..+0x12</code>) are stored in <strong>12.4 fixed-point subpixels</strong> (1/16th of a pixel). Shifting right by 4 bits (<code>px = fixed &gt;&gt; 4</code>, or dividing by 16) yields the exact integer pixel coordinates on the <code>.png</code> image. Across all 1,784 glyphs in the game, <code>(X1_Fixed - X0_Fixed) &gt;&gt; 4 == Width</code> and <code>(Y1_Fixed - Y0_Fixed) &gt;&gt; 4 == Height</code> hold with 100% accuracy.</li>
             </ul>
         </div>
-
-        <div class="callout-warn">
-            <strong>Correction to Legacy v1.0 Notes:</strong> Earlier preliminary notes assumed the Glyph Table started at offset <code>0x78</code> (120) with 20-byte records. In reality, bytes <code>0x028..0x428</code> form a 1024-byte zero-initialized runtime pointer/index buffer, the Kerning Header sits at <code>0x428..0x434</code>, and the Glyph Table always starts at <code>0x0434</code> (1076 decimal, pointed to by header field <code>0x0C</code>) with <strong>24-byte</strong> records. Reading 20-byte structs from <code>0x78</code> produced ~48 blank <code>char id=0</code> entries and unaligned 16&times;-oversized coordinates that caused Godot 4 to reject the resulting <code>.fnt</code> files with <code>valid=false</code>.
-        </div>
-
+        <div class="callout-warn"><strong>Correction to Legacy v1.0 Notes:</strong> Earlier preliminary notes assumed the Glyph Table started at offset <code>0x78</code> (120) with 20-byte records. In reality, bytes <code>0x028..0x428</code> form a 1024-byte zero-initialized runtime pointer/index buffer, the Kerning Header sits at <code>0x428..0x434</code>, and the Glyph Table always starts at <code>0x0434</code> (1076 decimal, pointed to by header field <code>0x0C</code>) with <strong>24-byte</strong> records. Reading 20-byte structs from <code>0x78</code> produced ~48 blank <code>char id=0</code> entries and unaligned 16&times;-oversized coordinates that caused Godot 4 to reject the resulting <code>.fnt</code> files with <code>valid=false</code>.</div>
         <h2 id="memory-map-file-layout-overview">Memory Map &amp; File Layout Overview</h2>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Start Offset</th>
-                    <th scope="col">End Offset</th>
-                    <th scope="col">Size (Bytes)</th>
-                    <th scope="col">Section Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>0x0000</code></td>
-                    <td><code>0x0028</code></td>
-                    <td><code>40</code> (<code>0x28</code>)</td>
-                    <td>Main File Header</td>
-                    <td>Magic signature (<code>"FONT"</code>), file size, version (<code>6</code>), glyph count, table offsets, and global typographic metrics (<code>MaxGlyphWidth</code>, <code>LineHeight</code>, <code>Baseline</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>0x0028</code></td>
-                    <td><code>0x0428</code></td>
-                    <td><code>1024</code> (<code>0x400</code>)</td>
-                    <td>Runtime Character Index Buffer</td>
-                    <td>Zero-filled block (<code>256 &times; 4</code> bytes) reserved for in-place runtime fast lookup of 8-bit character codes (<code>0x00..0xFF</code>) after loading into memory.</td>
-                </tr>
-                <tr>
-                    <td><code>0x0428</code></td>
-                    <td><code>0x0434</code></td>
-                    <td><code>12</code> (<code>0x0C</code>)</td>
-                    <td>Kerning Table Header</td>
-                    <td>Declares total <code>KerningCount</code> (<code>UInt16 BE</code> at <code>0x428</code>) and <code>KerningTableOffset</code> (<code>UInt32 BE</code> at <code>0x42C</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>0x0434</code></td>
-                    <td><code>LookupTableOffset</code></td>
-                    <td><code>GlyphCount &times; 24</code></td>
-                    <td>Glyph Table</td>
-                    <td>Contiguous array of 24-byte glyph descriptors sorted by descending pixel height.</td>
-                </tr>
-                <tr>
-                    <td><code>LookupTableOffset</code></td>
-                    <td><code>LookupTableOffset + 0x404</code></td>
-                    <td><code>1028</code> (<code>0x404</code>)</td>
-                    <td>Post-Glyph Runtime Lookup Buffer</td>
-                    <td>Zero-filled 1028-byte runtime table immediately following the Glyph Table. If <code>KerningCount == 0</code>, the file ends at <code>LookupTableOffset + 0x404</code>.</td>
-                </tr>
-                <tr>
-                    <td><code>KerningTableOffset</code></td>
-                    <td><code>EOF</code></td>
-                    <td><code>EOF - KerningTableOffset</code> (observed allocation: <code>KerningCount &times; 3</code>)</td>
-                    <td>Kerning Table</td>
-                    <td>6-byte preamble followed by 4-byte kerning records (<code>FirstChar</code>, <code>SecondChar</code>, <code>Pad=0</code>, <code>Amount</code>). Present only when <code>KerningCount &gt; 0</code>.</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Start Offset</th>
+                        <th scope="col">End Offset</th>
+                        <th scope="col">Size (Bytes)</th>
+                        <th scope="col">Section Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>0x0000</code></td>
+                        <td><code>0x0028</code></td>
+                        <td><code>40</code> (<code>0x28</code>)</td>
+                        <td>Main File Header</td>
+                        <td>Magic signature (<code>"FONT"</code>), file size, version (<code>6</code>), glyph count, table offsets, and global typographic metrics (<code>MaxGlyphWidth</code>, <code>LineHeight</code>, <code>Baseline</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0028</code></td>
+                        <td><code>0x0428</code></td>
+                        <td><code>1024</code> (<code>0x400</code>)</td>
+                        <td>Runtime Character Index Buffer</td>
+                        <td>Zero-filled block (<code>256 &times; 4</code> bytes) reserved for in-place runtime fast lookup of 8-bit character codes (<code>0x00..0xFF</code>) after loading into memory.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0428</code></td>
+                        <td><code>0x0434</code></td>
+                        <td><code>12</code> (<code>0x0C</code>)</td>
+                        <td>Kerning Table Header</td>
+                        <td>Declares total <code>KerningCount</code> (<code>UInt16 BE</code> at <code>0x428</code>) and <code>KerningTableOffset</code> (<code>UInt32 BE</code> at <code>0x42C</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0434</code></td>
+                        <td><code>LookupTableOffset</code></td>
+                        <td><code>GlyphCount &times; 24</code></td>
+                        <td>Glyph Table</td>
+                        <td>Contiguous array of 24-byte glyph descriptors sorted by descending pixel height.</td>
+                    </tr>
+                    <tr>
+                        <td><code>LookupTableOffset</code></td>
+                        <td><code>LookupTableOffset + 0x404</code></td>
+                        <td><code>1028</code> (<code>0x404</code>)</td>
+                        <td>Post-Glyph Runtime Lookup Buffer</td>
+                        <td>Zero-filled 1028-byte runtime table immediately following the Glyph Table. If <code>KerningCount == 0</code>, the file ends at <code>LookupTableOffset + 0x404</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>KerningTableOffset</code></td>
+                        <td><code>EOF</code></td>
+                        <td><code>EOF - KerningTableOffset</code> (observed allocation: <code>KerningCount &times; 3</code>)</td>
+                        <td>Kerning Table</td>
+                        <td>6-byte preamble followed by 4-byte kerning records (<code>FirstChar</code>, <code>SecondChar</code>, <code>Pad=0</code>, <code>Amount</code>). Present only when <code>KerningCount &gt; 0</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 id="main-file-header-0x00-0x28-40-bytes">Main File Header (<code>0x00 .. 0x28</code>, 40 Bytes)</h2>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Offset</th>
-                    <th scope="col">Size</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Endian</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>0x00</code></td>
-                    <td>4</td>
-                    <td><code>Char[4]</code></td>
-                    <td>-</td>
-                    <td><code>Magic</code></td>
-                    <td>ASCII signature <code>"FONT"</code> (<code>46 4F 4E 54</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>0x04</code></td>
-                    <td>4</td>
-                    <td><code>UInt32</code></td>
-                    <td>BE</td>
-                    <td><code>FileSize</code></td>
-                    <td>Exact total size of the <code>.inf</code> file in bytes.</td>
-                </tr>
-                <tr>
-                    <td><code>0x08</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>Version</code></td>
-                    <td>Format version identifier. Always <code>0x0006</code> (6) across all PS3 files.</td>
-                </tr>
-                <tr>
-                    <td><code>0x0A</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>GlyphCount</code></td>
-                    <td>Total number of 24-byte glyph records in the Glyph Table (<code>33</code>, <code>95</code>, or <code>191</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>0x0C</code></td>
-                    <td>4</td>
-                    <td><code>UInt32</code></td>
-                    <td>BE</td>
-                    <td><code>GlyphTableOffset</code></td>
-                    <td>Absolute byte offset to the start of the Glyph Table. Always <code>0x00000434</code> (1076 bytes).</td>
-                </tr>
-                <tr>
-                    <td><code>0x10</code></td>
-                    <td>4</td>
-                    <td><code>UInt32</code></td>
-                    <td>BE</td>
-                    <td><code>Flags</code></td>
-                    <td>Reserved / format flags; always <code>0x00000000</code>.</td>
-                </tr>
-                <tr>
-                    <td><code>0x14</code></td>
-                    <td>4</td>
-                    <td><code>UInt32</code></td>
-                    <td>BE</td>
-                    <td><code>MaxGlyphWidth</code></td>
-                    <td>Nominal maximum character width / horizontal advance in pixels (e.g., <code>25</code>, <code>20</code>, <code>45</code>, <code>51</code>, <code>28</code>, <code>76</code>, <code>102</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>0x18</code></td>
-                    <td>4</td>
-                    <td><code>UInt32</code></td>
-                    <td>BE</td>
-                    <td><code>LineHeight</code></td>
-                    <td>Vertical line height in pixels, equal to <code>max(YOffset + Height)</code> across all glyphs (e.g., <code>33</code>, <code>41</code>, <code>54</code>, <code>56</code>, <code>57</code>, <code>68</code>, <code>97</code>). Maps directly to BMFont <code>common lineHeight</code>.</td>
-                </tr>
-                <tr>
-                    <td><code>0x1C</code></td>
-                    <td>4</td>
-                    <td><code>UInt32</code></td>
-                    <td>BE</td>
-                    <td><code>Baseline</code></td>
-                    <td>Distance in pixels from the top of the line to the alphabetic baseline (e.g., <code>24</code>, <code>32</code>, <code>44</code>, <code>45</code>, <code>46</code>, <code>78</code>; <code>0</code> for <code>buttons</code>). Maps directly to BMFont <code>common base</code>.</td>
-                </tr>
-                <tr>
-                    <td><code>0x20</code></td>
-                    <td>4</td>
-                    <td><code>UInt32</code></td>
-                    <td>BE</td>
-                    <td><code>LookupTableOffset</code></td>
-                    <td>Absolute byte offset to the 1028-byte post-glyph runtime lookup table. Always equals <code>0x0434 + (GlyphCount &times; 24)</code> (<code>0x074C</code>, <code>0x0D1C</code>, or <code>0x161C</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>0x24</code></td>
-                    <td>4</td>
-                    <td><code>UInt32</code></td>
-                    <td>BE</td>
-                    <td><code>Alignment</code></td>
-                    <td>Constant <code>0x00000004</code> (4).</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Endian</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>0x00</code></td>
+                        <td>4</td>
+                        <td><code>Char[4]</code></td>
+                        <td>-</td>
+                        <td><code>Magic</code></td>
+                        <td>ASCII signature <code>"FONT"</code> (<code>46 4F 4E 54</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x04</code></td>
+                        <td>4</td>
+                        <td><code>UInt32</code></td>
+                        <td>BE</td>
+                        <td><code>FileSize</code></td>
+                        <td>Exact total size of the <code>.inf</code> file in bytes.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x08</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>Version</code></td>
+                        <td>Format version identifier. Always <code>0x0006</code> (6) across all PS3 files.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0A</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>GlyphCount</code></td>
+                        <td>Total number of 24-byte glyph records in the Glyph Table (<code>33</code>, <code>95</code>, or <code>191</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0C</code></td>
+                        <td>4</td>
+                        <td><code>UInt32</code></td>
+                        <td>BE</td>
+                        <td><code>GlyphTableOffset</code></td>
+                        <td>Absolute byte offset to the start of the Glyph Table. Always <code>0x00000434</code> (1076 bytes).</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x10</code></td>
+                        <td>4</td>
+                        <td><code>UInt32</code></td>
+                        <td>BE</td>
+                        <td><code>Flags</code></td>
+                        <td>Reserved / format flags; always <code>0x00000000</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x14</code></td>
+                        <td>4</td>
+                        <td><code>UInt32</code></td>
+                        <td>BE</td>
+                        <td><code>MaxGlyphWidth</code></td>
+                        <td>Nominal maximum character width / horizontal advance in pixels (e.g., <code>25</code>, <code>20</code>, <code>45</code>, <code>51</code>, <code>28</code>, <code>76</code>, <code>102</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x18</code></td>
+                        <td>4</td>
+                        <td><code>UInt32</code></td>
+                        <td>BE</td>
+                        <td><code>LineHeight</code></td>
+                        <td>Vertical line height in pixels, equal to <code>max(YOffset + Height)</code> across all glyphs (e.g., <code>33</code>, <code>41</code>, <code>54</code>, <code>56</code>, <code>57</code>, <code>68</code>, <code>97</code>). Maps directly to BMFont <code>common lineHeight</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x1C</code></td>
+                        <td>4</td>
+                        <td><code>UInt32</code></td>
+                        <td>BE</td>
+                        <td><code>Baseline</code></td>
+                        <td>Distance in pixels from the top of the line to the alphabetic baseline (e.g., <code>24</code>, <code>32</code>, <code>44</code>, <code>45</code>, <code>46</code>, <code>78</code>; <code>0</code> for <code>buttons</code>). Maps directly to BMFont <code>common base</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x20</code></td>
+                        <td>4</td>
+                        <td><code>UInt32</code></td>
+                        <td>BE</td>
+                        <td><code>LookupTableOffset</code></td>
+                        <td>Absolute byte offset to the 1028-byte post-glyph runtime lookup table. Always equals <code>0x0434 + (GlyphCount &times; 24)</code> (<code>0x074C</code>, <code>0x0D1C</code>, or <code>0x161C</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x24</code></td>
+                        <td>4</td>
+                        <td><code>UInt32</code></td>
+                        <td>BE</td>
+                        <td><code>Alignment</code></td>
+                        <td>Constant <code>0x00000004</code> (4).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 id="runtime-character-index-buffer-kerning-header-0x028-0x434-1036-bytes">Runtime Character Index Buffer &amp; Kerning Header (<code>0x028 .. 0x434</code>, 1036 Bytes)</h2>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Offset</th>
-                    <th scope="col">Size</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Endian</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>0x028</code></td>
-                    <td>1024</td>
-                    <td><code>UInt32[256]</code></td>
-                    <td>BE</td>
-                    <td><code>RuntimeCharMap</code></td>
-                    <td>All zeros on disk. Populated at runtime to map 8-bit character codes (<code>0x00..0xFF</code>) directly to glyph pointers.</td>
-                </tr>
-                <tr>
-                    <td><code>0x428</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>KerningCount</code></td>
-                    <td>Total number of kerning pairs declared across all glyphs (equals <code>sum(glyph.KerningCount)</code>). Observed values: <code>0</code>, <code>77</code>, <code>272</code>, <code>281</code>, <code>377</code>, <code>411</code>.</td>
-                </tr>
-                <tr>
-                    <td><code>0x42A</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>Padding</code></td>
-                    <td>Always <code>0x0000</code>.</td>
-                </tr>
-                <tr>
-                    <td><code>0x42C</code></td>
-                    <td>4</td>
-                    <td><code>UInt32</code></td>
-                    <td>BE</td>
-                    <td><code>KerningTableOffset</code></td>
-                    <td>Absolute byte offset to the Kerning Table (<code>LookupTableOffset + 0x404</code>: <code>0x1120</code> for 95-glyph fonts, <code>0x1A20</code> for 191-glyph fonts, or <code>0x00000000</code> when <code>KerningCount == 0</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>0x430</code></td>
-                    <td>4</td>
-                    <td><code>UInt32</code></td>
-                    <td>BE</td>
-                    <td><code>Padding</code></td>
-                    <td>Always <code>0x00000000</code>.</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Endian</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>0x028</code></td>
+                        <td>1024</td>
+                        <td><code>UInt32[256]</code></td>
+                        <td>BE</td>
+                        <td><code>RuntimeCharMap</code></td>
+                        <td>All zeros on disk. Populated at runtime to map 8-bit character codes (<code>0x00..0xFF</code>) directly to glyph pointers.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x428</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>KerningCount</code></td>
+                        <td>Total number of kerning pairs declared across all glyphs (equals <code>sum(glyph.KerningCount)</code>). Observed values: <code>0</code>, <code>77</code>, <code>272</code>, <code>281</code>, <code>377</code>, <code>411</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x42A</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>Padding</code></td>
+                        <td>Always <code>0x0000</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x42C</code></td>
+                        <td>4</td>
+                        <td><code>UInt32</code></td>
+                        <td>BE</td>
+                        <td><code>KerningTableOffset</code></td>
+                        <td>Absolute byte offset to the Kerning Table (<code>LookupTableOffset + 0x404</code>: <code>0x1120</code> for 95-glyph fonts, <code>0x1A20</code> for 191-glyph fonts, or <code>0x00000000</code> when <code>KerningCount == 0</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x430</code></td>
+                        <td>4</td>
+                        <td><code>UInt32</code></td>
+                        <td>BE</td>
+                        <td><code>Padding</code></td>
+                        <td>Always <code>0x00000000</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 id="glyph-table-0x0434-lookuptableoffset-glyphcount-24-bytes">Glyph Table (<code>0x0434 .. LookupTableOffset</code>, <code>GlyphCount &times; 24</code> Bytes)</h2>
-        <p>
-            Begins at <code>GlyphTableOffset</code> (<code>0x0434</code>). Each glyph is defined by a <strong>24-byte (<code>0x18</code>) structure</strong>.
-        </p>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Rel Offset</th>
-                    <th scope="col">Size</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Endian</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>+0x00</code></td>
-                    <td>1</td>
-                    <td><code>UInt8</code></td>
-                    <td>-</td>
-                    <td><code>CharCode</code></td>
-                    <td>8-bit character ID (or 0..32 button index for <code>buttons.inf</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>+0x01</code></td>
-                    <td>1</td>
-                    <td><code>UInt8</code></td>
-                    <td>-</td>
-                    <td><code>CharPad</code></td>
-                    <td>Always <code>0x00</code> (allows reading <code>+0x00</code> as a Little-Endian <code>UInt16</code> or an 8-bit char followed by 1 byte of padding).</td>
-                </tr>
-                <tr>
-                    <td><code>+0x02</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>Width</code></td>
-                    <td>Bounding box width of the glyph in pixels.</td>
-                </tr>
-                <tr>
-                    <td><code>+0x04</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>Height</code></td>
-                    <td>Bounding box height of the glyph in pixels.</td>
-                </tr>
-                <tr>
-                    <td><code>+0x06</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>XAdvance</code></td>
-                    <td>Horizontal cursor advance in pixels after drawing this glyph.</td>
-                </tr>
-                <tr>
-                    <td><code>+0x08</code></td>
-                    <td>2</td>
-                    <td><code>Int16</code></td>
-                    <td>BE</td>
-                    <td><code>XOffset</code></td>
-                    <td>Signed horizontal bearing offset in pixels relative to the current cursor position (can be negative for overhanging glyphs like <code>j</code> or <code>/</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>+0x0A</code></td>
-                    <td>2</td>
-                    <td><code>Int16</code></td>
-                    <td>BE</td>
-                    <td><code>YOffset</code></td>
-                    <td>Signed vertical offset in pixels from the top of the line to the top of the glyph bounding box.</td>
-                </tr>
-                <tr>
-                    <td><code>+0x0C</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>X0_Fixed</code></td>
-                    <td>Left texture coordinate in <strong>12.4 fixed-point subpixels</strong>. Integer pixel coordinate: <code>X0 = X0_Fixed &gt;&gt; 4</code>.</td>
-                </tr>
-                <tr>
-                    <td><code>+0x0E</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>Y0_Fixed</code></td>
-                    <td>Top texture coordinate in <strong>12.4 fixed-point subpixels</strong>. Integer pixel coordinate: <code>Y0 = Y0_Fixed &gt;&gt; 4</code>.</td>
-                </tr>
-                <tr>
-                    <td><code>+0x10</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>X1_Fixed</code></td>
-                    <td>Right texture coordinate in <strong>12.4 fixed-point subpixels</strong>. Integer pixel coordinate: <code>X1 = X1_Fixed &gt;&gt; 4</code> (always equals <code>X0 + Width</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>+0x12</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>Y1_Fixed</code></td>
-                    <td>Bottom texture coordinate in <strong>12.4 fixed-point subpixels</strong>. Integer pixel coordinate: <code>Y1 = Y1_Fixed &gt;&gt; 4</code> (always equals <code>Y0 + Height</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>+0x14</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>KerningCount</code></td>
-                    <td>Number of kerning pairs in the Kerning Table where <code>FirstChar == CharCode</code>.</td>
-                </tr>
-                <tr>
-                    <td><code>+0x16</code></td>
-                    <td>2</td>
-                    <td><code>UInt16</code></td>
-                    <td>BE</td>
-                    <td><code>KerningStartIndex</code></td>
-                    <td>0-based start index into the active kerning pair array (beginning at <code>KerningTableOffset + 6</code>).</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <p>Begins at <code>GlyphTableOffset</code> (<code>0x0434</code>). Each glyph is defined by a <strong>24-byte (<code>0x18</code>) structure</strong>.</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Rel Offset</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Endian</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>+0x00</code></td>
+                        <td>1</td>
+                        <td><code>UInt8</code></td>
+                        <td>-</td>
+                        <td><code>CharCode</code></td>
+                        <td>8-bit character ID (or 0..32 button index for <code>buttons.inf</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x01</code></td>
+                        <td>1</td>
+                        <td><code>UInt8</code></td>
+                        <td>-</td>
+                        <td><code>CharPad</code></td>
+                        <td>Always <code>0x00</code> (allows reading <code>+0x00</code> as a Little-Endian <code>UInt16</code> or an 8-bit char followed by 1 byte of padding).</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x02</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>Width</code></td>
+                        <td>Bounding box width of the glyph in pixels.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x04</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>Height</code></td>
+                        <td>Bounding box height of the glyph in pixels.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x06</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>XAdvance</code></td>
+                        <td>Horizontal cursor advance in pixels after drawing this glyph.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x08</code></td>
+                        <td>2</td>
+                        <td><code>Int16</code></td>
+                        <td>BE</td>
+                        <td><code>XOffset</code></td>
+                        <td>Signed horizontal bearing offset in pixels relative to the current cursor position (can be negative for overhanging glyphs like <code>j</code> or <code>/</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x0A</code></td>
+                        <td>2</td>
+                        <td><code>Int16</code></td>
+                        <td>BE</td>
+                        <td><code>YOffset</code></td>
+                        <td>Signed vertical offset in pixels from the top of the line to the top of the glyph bounding box.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x0C</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>X0_Fixed</code></td>
+                        <td>Left texture coordinate in <strong>12.4 fixed-point subpixels</strong>. Integer pixel coordinate: <code>X0 = X0_Fixed &gt;&gt; 4</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x0E</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>Y0_Fixed</code></td>
+                        <td>Top texture coordinate in <strong>12.4 fixed-point subpixels</strong>. Integer pixel coordinate: <code>Y0 = Y0_Fixed &gt;&gt; 4</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x10</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>X1_Fixed</code></td>
+                        <td>Right texture coordinate in <strong>12.4 fixed-point subpixels</strong>. Integer pixel coordinate: <code>X1 = X1_Fixed &gt;&gt; 4</code> (always equals <code>X0 + Width</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x12</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>Y1_Fixed</code></td>
+                        <td>Bottom texture coordinate in <strong>12.4 fixed-point subpixels</strong>. Integer pixel coordinate: <code>Y1 = Y1_Fixed &gt;&gt; 4</code> (always equals <code>Y0 + Height</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x14</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>KerningCount</code></td>
+                        <td>Number of kerning pairs in the Kerning Table where <code>FirstChar == CharCode</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x16</code></td>
+                        <td>2</td>
+                        <td><code>UInt16</code></td>
+                        <td>BE</td>
+                        <td><code>KerningStartIndex</code></td>
+                        <td>0-based start index into the active kerning pair array (beginning at <code>KerningTableOffset + 6</code>).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 id="kerning-table-kerningtableoffset-eof">Kerning Table (<code>KerningTableOffset .. EOF</code>)</h2>
-        <p>
-            Present when <code>KerningCount &gt; 0</code> and <code>KerningTableOffset != 0</code>. Begins immediately after the 1028-byte post-glyph runtime lookup buffer (at <code>LookupTableOffset + 0x404</code>).
-        </p>
+        <p>Present when <code>KerningCount &gt; 0</code> and <code>KerningTableOffset != 0</code>. Begins immediately after the 1028-byte post-glyph runtime lookup buffer (at <code>LookupTableOffset + 0x404</code>).</p>
         <ul>
             <li><strong>6-Byte Preamble (<code>KerningTableOffset .. KerningTableOffset + 6</code>):</strong> Consists of a 2-byte table flag (<code>01 00</code> or <code>00 00</code>) followed by a 4-byte dummy/sentinel kerning entry whose <code>FirstChar</code> is <code>0x00</code> (e.g., <code>00 54 00 FD</code>).</li>
             <li><strong>Active Kerning Array (<code>KerningTableOffset + 6 .. EOF</code>):</strong> Indexed from <code>0</code> by each glyph's <code>KerningStartIndex</code> and <code>KerningCount</code>. Each entry is <strong>4 bytes</strong>:</li>
         </ul>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Rel Offset</th>
-                    <th scope="col">Size</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Endian</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>+0x00</code></td>
-                    <td>1</td>
-                    <td><code>UInt8</code></td>
-                    <td>-</td>
-                    <td><code>FirstChar</code></td>
-                    <td>Character code of the left/first glyph in the kerning pair (matches the owning glyph's <code>CharCode</code>).</td>
-                </tr>
-                <tr>
-                    <td><code>+0x01</code></td>
-                    <td>1</td>
-                    <td><code>UInt8</code></td>
-                    <td>-</td>
-                    <td><code>SecondChar</code></td>
-                    <td>Character code of the right/second glyph in the kerning pair.</td>
-                </tr>
-                <tr>
-                    <td><code>+0x02</code></td>
-                    <td>1</td>
-                    <td><code>UInt8</code></td>
-                    <td>-</td>
-                    <td><code>Padding</code></td>
-                    <td>Always <code>0x00</code>.</td>
-                </tr>
-                <tr>
-                    <td><code>+0x03</code></td>
-                    <td>1</td>
-                    <td><code>Int8</code></td>
-                    <td>-</td>
-                    <td><code>Amount</code></td>
-                    <td>Signed 8-bit pixel spacing adjustment applied to the cursor before drawing <code>SecondChar</code> (e.g., <code>0xFD</code> = <code>-3</code> px).</td>
-                </tr>
-            </tbody>
-        </table></div>
-
-        <div class="callout-warn">
-            <strong>EA Offline Font Exporter Truncation Quirk:</strong> Across all 8 kerning-enabled <code>.inf</code> files in the PS3 build, the total file size satisfies <code>FileSize == KerningTableOffset + (KerningCount &times; 3)</code>. Because each kerning entry is actually 4 bytes (after the 6-byte preamble), The observed block length is consistent with an exporter allocating <code>KerningCount &times; 3</code> bytes when serializing the kerning block, which would truncate the final ~25% of kerning pairs cleanly at EOF. Parsers must stop reading kerning records when <code>offset + 4 &gt; len(data)</code>.
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Rel Offset</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Endian</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>+0x00</code></td>
+                        <td>1</td>
+                        <td><code>UInt8</code></td>
+                        <td>-</td>
+                        <td><code>FirstChar</code></td>
+                        <td>Character code of the left/first glyph in the kerning pair (matches the owning glyph's <code>CharCode</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x01</code></td>
+                        <td>1</td>
+                        <td><code>UInt8</code></td>
+                        <td>-</td>
+                        <td><code>SecondChar</code></td>
+                        <td>Character code of the right/second glyph in the kerning pair.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x02</code></td>
+                        <td>1</td>
+                        <td><code>UInt8</code></td>
+                        <td>-</td>
+                        <td><code>Padding</code></td>
+                        <td>Always <code>0x00</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>+0x03</code></td>
+                        <td>1</td>
+                        <td><code>Int8</code></td>
+                        <td>-</td>
+                        <td><code>Amount</code></td>
+                        <td>Signed 8-bit pixel spacing adjustment applied to the cursor before drawing <code>SecondChar</code> (e.g., <code>0xFD</code> = <code>-3</code> px).</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-
+        <div class="callout-warn"><strong>EA Offline Font Exporter Truncation Quirk:</strong> Across all 8 kerning-enabled <code>.inf</code> files in the PS3 build, the total file size satisfies <code>FileSize == KerningTableOffset + (KerningCount &times; 3)</code>. Because each kerning entry is actually 4 bytes (after the 6-byte preamble), The observed block length is consistent with an exporter allocating <code>KerningCount &times; 3</code> bytes when serializing the kerning block, which would truncate the final ~25% of kerning pairs cleanly at EOF. Parsers must stop reading kerning records when <code>offset + 4 &gt; len(data)</code>.</div>
         <h2 id="character-sets-special-glyph-remappings">Character Sets &amp; Special Glyph Remappings</h2>
         <h3>A. 191-Glyph European UI Fonts (<code>DomCasualStd3636</code>, <code>HighlanderStdBold6060b</code>, <code>HighlanderStdMed3636</code>, <code>LetterGothicStdBold2424b</code>)</h3>
-        <p>
-            Contain 95 printable ASCII characters (<code>0x20..0x7E</code>) plus 96 extended characters (<code>0xA0..0xFF</code>). While most of <code>0xA0..0xFF</code> follows ISO-8859-1 (Latin-1), 7 byte codes corresponding to rarely used Latin-1 symbols (<code>&not; &plusmn; &sup2; &sup3; &frac14; &frac12; &frac34;</code>) are repurposed to hold Windows-1252 / MacRoman typographic glyphs required by localized European strings:
-        </p>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col"><code>.inf</code> Byte Code</th>
-                    <th scope="col">Standard ISO-8859-1</th>
-                    <th scope="col">Actual Glyph in Texture Atlas</th>
-                    <th scope="col">Unicode Codepoint Alias</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>0xAC</code> (172)</td>
-                    <td><code>&not;</code> (Not Sign)</td>
-                    <td><strong><code>&trade;</code> (Trade Mark Sign)</strong></td>
-                    <td><code>U+2122</code> (8482)</td>
-                </tr>
-                <tr>
-                    <td><code>0xB1</code> (177)</td>
-                    <td><code>&plusmn;</code> (Plus-Minus)</td>
-                    <td><strong><code>&Scaron;</code> (Latin Capital Letter S with Caron)</strong></td>
-                    <td><code>U+0160</code> (352)</td>
-                </tr>
-                <tr>
-                    <td><code>0xB2</code> (178)</td>
-                    <td><code>&sup2;</code> (Superscript Two)</td>
-                    <td><strong><code>&OElig;</code> (Latin Capital Ligature OE)</strong></td>
-                    <td><code>U+0152</code> (338)</td>
-                </tr>
-                <tr>
-                    <td><code>0xB3</code> (179)</td>
-                    <td><code>&sup3;</code> (Superscript Three)</td>
-                    <td><strong><code>&scaron;</code> (Latin Small Letter S with Caron)</strong></td>
-                    <td><code>U+0161</code> (353)</td>
-                </tr>
-                <tr>
-                    <td><code>0xBC</code> (188)</td>
-                    <td><code>&frac14;</code> (Vulgar Fraction 1/4)</td>
-                    <td><strong><code>&infin;</code> (Infinity / Simpsons Symbol)</strong></td>
-                    <td><code>U+221E</code> (8734)</td>
-                </tr>
-                <tr>
-                    <td><code>0xBD</code> (189)</td>
-                    <td><code>&frac12;</code> (Vulgar Fraction 1/2)</td>
-                    <td><strong><code>&euro;</code> (Euro Sign)</strong></td>
-                    <td><code>U+20AC</code> (8364)</td>
-                </tr>
-                <tr>
-                    <td><code>0xBE</code> (190)</td>
-                    <td><code>&frac34;</code> (Vulgar Fraction 3/4)</td>
-                    <td><strong><code>&oelig;</code> (Latin Small Ligature OE)</strong></td>
-                    <td><code>U+0153</code> (339)</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <p>Contain 95 printable ASCII characters (<code>0x20..0x7E</code>) plus 96 extended characters (<code>0xA0..0xFF</code>). While most of <code>0xA0..0xFF</code> follows ISO-8859-1 (Latin-1), 7 byte codes corresponding to rarely used Latin-1 symbols (<code>&not; &plusmn; &sup2; &sup3; &frac14; &frac12; &frac34;</code>) are repurposed to hold Windows-1252 / MacRoman typographic glyphs required by localized European strings:</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col"><code>.inf</code> Byte Code</th>
+                        <th scope="col">Standard ISO-8859-1</th>
+                        <th scope="col">Actual Glyph in Texture Atlas</th>
+                        <th scope="col">Unicode Codepoint Alias</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>0xAC</code> (172)</td>
+                        <td><code>&not;</code> (Not Sign)</td>
+                        <td><strong><code>&trade;</code> (Trade Mark Sign)</strong></td>
+                        <td><code>U+2122</code> (8482)</td>
+                    </tr>
+                    <tr>
+                        <td><code>0xB1</code> (177)</td>
+                        <td><code>&plusmn;</code> (Plus-Minus)</td>
+                        <td><strong><code>&Scaron;</code> (Latin Capital Letter S with Caron)</strong></td>
+                        <td><code>U+0160</code> (352)</td>
+                    </tr>
+                    <tr>
+                        <td><code>0xB2</code> (178)</td>
+                        <td><code>&sup2;</code> (Superscript Two)</td>
+                        <td><strong><code>&OElig;</code> (Latin Capital Ligature OE)</strong></td>
+                        <td><code>U+0152</code> (338)</td>
+                    </tr>
+                    <tr>
+                        <td><code>0xB3</code> (179)</td>
+                        <td><code>&sup3;</code> (Superscript Three)</td>
+                        <td><strong><code>&scaron;</code> (Latin Small Letter S with Caron)</strong></td>
+                        <td><code>U+0161</code> (353)</td>
+                    </tr>
+                    <tr>
+                        <td><code>0xBC</code> (188)</td>
+                        <td><code>&frac14;</code> (Vulgar Fraction 1/4)</td>
+                        <td><strong><code>&infin;</code> (Infinity / Simpsons Symbol)</strong></td>
+                        <td><code>U+221E</code> (8734)</td>
+                    </tr>
+                    <tr>
+                        <td><code>0xBD</code> (189)</td>
+                        <td><code>&frac12;</code> (Vulgar Fraction 1/2)</td>
+                        <td><strong><code>&euro;</code> (Euro Sign)</strong></td>
+                        <td><code>U+20AC</code> (8364)</td>
+                    </tr>
+                    <tr>
+                        <td><code>0xBE</code> (190)</td>
+                        <td><code>&frac34;</code> (Vulgar Fraction 3/4)</td>
+                        <td><strong><code>&oelig;</code> (Latin Small Ligature OE)</strong></td>
+                        <td><code>U+0153</code> (339)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h3>B. 95-Glyph Numeric &amp; Title Fonts (<code>simpsons_font</code>, <code>HighlanderStdNumsBold3636b</code>)</h3>
         <ul>
             <li><code>simpsons_font_acdf54.inf</code> maps all 95 printable ASCII characters (<code>0x20..0x7E</code>) onto a <code>256&times;128</code> atlas.</li>
             <li><code>HighlanderStdNumsBold3636b_85009b.inf</code> defines 95 ASCII entries (<code>0x20..0x7E</code>) so the engine's ASCII lookup logic works without bounds checks, but only the first 14 records (<code>/ 4 0 3 2 8 6 9 5 7 1 : , .</code>) have full rendered bitmaps in its <code>128&times;128</code> texture; the remaining 81 non-numeric ASCII characters map to <code>1&times;1</code> transparent pixels along row <code>Y = 109</code> while retaining valid horizontal <code>XAdvance</code> metrics.</li>
         </ul>
-
         <h3>C. 33-Glyph Controller Button Atlas (<code>buttons_37bb42.inf</code>, <code>buttons_fd7e46.inf</code>)</h3>
-        <p>
-            Maps character IDs <code>0x00..0x20</code> (<code>0..32</code>) onto the <code>256&times;256</code> <code>buttons.png</code> texture. Indices <code>0..15</code> correspond to <code>btn_0..btn_15</code> in <code>controller.uix</code>:
-        </p>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Char ID</th>
-                    <th scope="col">PUA Alias</th>
-                    <th scope="col">Atlas Rect <code>(X, Y, W, H)</code></th>
-                    <th scope="col">PS3 Controller Button / Icon</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td><code>0</code> (<code>0x00</code>)</td><td><code>U+E000</code> (57344)</td><td><code>(128, 64, 84, 64)</code></td><td><strong>START</strong> (Red pill icon)</td></tr>
-                <tr><td><code>1</code> (<code>0x01</code>)</td><td><code>U+E001</code> (57345)</td><td><code>(64, 0, 102, 64)</code></td><td><strong>SELECT</strong> (Red rectangular icon)</td></tr>
-                <tr><td><code>2</code> (<code>0x02</code>)</td><td><code>U+E002</code> (57346)</td><td><code>(128, 192, 64, 64)</code></td><td><strong>L2</strong> Trigger</td></tr>
-                <tr><td><code>3</code> (<code>0x03</code>)</td><td><code>U+E003</code> (57347)</td><td><code>(0, 192, 64, 64)</code></td><td><strong>L1</strong> Shoulder Button</td></tr>
-                <tr><td><code>4</code> (<code>0x04</code>)</td><td><code>U+E004</code> (57348)</td><td><code>(192, 192, 64, 64)</code></td><td><strong>R2</strong> Trigger (with <code>XOffset=6, YOffset=4</code>)</td></tr>
-                <tr><td><code>5</code> (<code>0x05</code>)</td><td><code>U+E005</code> (57349)</td><td><code>(64, 192, 64, 64)</code></td><td><strong>R1</strong> Shoulder Button</td></tr>
-                <tr><td><code>6..9</code> (<code>0x06..0x09</code>)</td><td><code>U+E006..U+E009</code></td><td><code>(0, 0, 64, 64)</code></td><td><strong>D-Pad</strong> Cross Icon</td></tr>
-                <tr><td><code>10</code> (<code>0x0A</code>)</td><td><code>U+E00A</code> (57354)</td><td><code>(64, 128, 64, 64)</code></td><td><strong>Square</strong> (<code>&square;</code> Pink)</td></tr>
-                <tr><td><code>11</code> (<code>0x0B</code>)</td><td><code>U+E00B</code> (57355)</td><td><code>(128, 128, 64, 64)</code></td><td><strong>Circle</strong> (<code>&bigcirc;</code> Red)</td></tr>
-                <tr><td><code>12</code> (<code>0x0C</code>)</td><td><code>U+E00C</code> (57356)</td><td><code>(0, 128, 64, 64)</code></td><td><strong>Triangle</strong> (<code>&triangle;</code> Green)</td></tr>
-                <tr><td><code>13</code> (<code>0x0D</code>)</td><td><code>U+E00D</code> (57357)</td><td><code>(192, 128, 64, 64)</code></td><td><strong>Cross / X</strong> (<code>&times;</code> Blue)</td></tr>
-                <tr><td><code>14</code> (<code>0x0E</code>)</td><td><code>U+E00E</code> (57358)</td><td><code>(0, 64, 64, 64)</code></td><td><strong>L3 / Left Stick</strong></td></tr>
-                <tr><td><code>15</code> (<code>0x0F</code>)</td><td><code>U+E00F</code> (57359)</td><td><code>(64, 64, 64, 64)</code></td><td><strong>R3 / Right Stick</strong></td></tr>
-                <tr><td><code>16..32</code> (<code>0x10..0x20</code>)</td><td><code>U+E010..U+E020</code></td><td><code>10&times;10</code> / <code>60&times;9</code> slices</td><td>Auxiliary small UI indicator slices</td></tr>
-            </tbody>
-        </table></div>
-
+        <p>Maps character IDs <code>0x00..0x20</code> (<code>0..32</code>) onto the <code>256&times;256</code> <code>buttons.png</code> texture. Indices <code>0..15</code> correspond to <code>btn_0..btn_15</code> in <code>controller.uix</code>:</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Char ID</th>
+                        <th scope="col">PUA Alias</th>
+                        <th scope="col">Atlas Rect <code>(X, Y, W, H)</code></th>
+                        <th scope="col">PS3 Controller Button / Icon</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>0</code> (<code>0x00</code>)</td>
+                        <td><code>U+E000</code> (57344)</td>
+                        <td><code>(128, 64, 84, 64)</code></td>
+                        <td><strong>START</strong> (Red pill icon)</td>
+                    </tr>
+                    <tr>
+                        <td><code>1</code> (<code>0x01</code>)</td>
+                        <td><code>U+E001</code> (57345)</td>
+                        <td><code>(64, 0, 102, 64)</code></td>
+                        <td><strong>SELECT</strong> (Red rectangular icon)</td>
+                    </tr>
+                    <tr>
+                        <td><code>2</code> (<code>0x02</code>)</td>
+                        <td><code>U+E002</code> (57346)</td>
+                        <td><code>(128, 192, 64, 64)</code></td>
+                        <td><strong>L2</strong> Trigger</td>
+                    </tr>
+                    <tr>
+                        <td><code>3</code> (<code>0x03</code>)</td>
+                        <td><code>U+E003</code> (57347)</td>
+                        <td><code>(0, 192, 64, 64)</code></td>
+                        <td><strong>L1</strong> Shoulder Button</td>
+                    </tr>
+                    <tr>
+                        <td><code>4</code> (<code>0x04</code>)</td>
+                        <td><code>U+E004</code> (57348)</td>
+                        <td><code>(192, 192, 64, 64)</code></td>
+                        <td><strong>R2</strong> Trigger (with <code>XOffset=6, YOffset=4</code>)</td>
+                    </tr>
+                    <tr>
+                        <td><code>5</code> (<code>0x05</code>)</td>
+                        <td><code>U+E005</code> (57349)</td>
+                        <td><code>(64, 192, 64, 64)</code></td>
+                        <td><strong>R1</strong> Shoulder Button</td>
+                    </tr>
+                    <tr>
+                        <td><code>6..9</code> (<code>0x06..0x09</code>)</td>
+                        <td><code>U+E006..U+E009</code></td>
+                        <td><code>(0, 0, 64, 64)</code></td>
+                        <td><strong>D-Pad</strong> Cross Icon</td>
+                    </tr>
+                    <tr>
+                        <td><code>10</code> (<code>0x0A</code>)</td>
+                        <td><code>U+E00A</code> (57354)</td>
+                        <td><code>(64, 128, 64, 64)</code></td>
+                        <td><strong>Square</strong> (<code>&square;</code> Pink)</td>
+                    </tr>
+                    <tr>
+                        <td><code>11</code> (<code>0x0B</code>)</td>
+                        <td><code>U+E00B</code> (57355)</td>
+                        <td><code>(128, 128, 64, 64)</code></td>
+                        <td><strong>Circle</strong> (<code>&bigcirc;</code> Red)</td>
+                    </tr>
+                    <tr>
+                        <td><code>12</code> (<code>0x0C</code>)</td>
+                        <td><code>U+E00C</code> (57356)</td>
+                        <td><code>(0, 128, 64, 64)</code></td>
+                        <td><strong>Triangle</strong> (<code>&triangle;</code> Green)</td>
+                    </tr>
+                    <tr>
+                        <td><code>13</code> (<code>0x0D</code>)</td>
+                        <td><code>U+E00D</code> (57357)</td>
+                        <td><code>(192, 128, 64, 64)</code></td>
+                        <td><strong>Cross / X</strong> (<code>&times;</code> Blue)</td>
+                    </tr>
+                    <tr>
+                        <td><code>14</code> (<code>0x0E</code>)</td>
+                        <td><code>U+E00E</code> (57358)</td>
+                        <td><code>(0, 64, 64, 64)</code></td>
+                        <td><strong>L3 / Left Stick</strong></td>
+                    </tr>
+                    <tr>
+                        <td><code>15</code> (<code>0x0F</code>)</td>
+                        <td><code>U+E00F</code> (57359)</td>
+                        <td><code>(64, 64, 64, 64)</code></td>
+                        <td><strong>R3 / Right Stick</strong></td>
+                    </tr>
+                    <tr>
+                        <td><code>16..32</code> (<code>0x10..0x20</code>)</td>
+                        <td><code>U+E010..U+E020</code></td>
+                        <td><code>10&times;10</code> / <code>60&times;9</code> slices</td>
+                        <td>Auxiliary small UI indicator slices</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 id="complete-inf-png-asset-mapping-ps3-flattened-archive">Complete <code>.inf</code> &harr; <code>.png</code> Asset Mapping (PS3 Flattened Archive)</h2>
-        <p>
-            In <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed</code>, all 12 <code>.inf</code> files reside in two font directories and map 1-to-1 to extracted <code>.png</code> textures in their respective archive's <code>assetsRws/txd/*_txd/</code> folders:
-        </p>
-
+        <p>In <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed</code>, all 12 <code>.inf</code> files reside in two font directories and map 1-to-1 to extracted <code>.png</code> textures in their respective archive's <code>assetsRws/txd/*_txd/</code> folders:</p>
         <h3>Folder 1: <code>A2_Characters/simpsonsCharsGlobalStr/assetsShared/fonts/</code></h3>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col"><code>.inf</code> Font File</th>
-                    <th scope="col">Size</th>
-                    <th scope="col">Glyphs</th>
-                    <th scope="col">Metrics (<code>LH / Base / MaxW</code>)</th>
-                    <th scope="col">Kernings (Valid / Decl)</th>
-                    <th scope="col">Companion <code>.png</code> Texture Path</th>
-                    <th scope="col">PNG Size</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>buttons_37bb42.inf</code></td>
-                    <td>2,896 B</td>
-                    <td>33</td>
-                    <td><code>68 / 0 / 102</code> px</td>
-                    <td>0 / 0</td>
-                    <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split8_ce6120_txd/buttons.png</code></td>
-                    <td><code>256&times;256</code></td>
-                </tr>
-                <tr>
-                    <td><code>DomCasualStd3636_ff9566.inf</code></td>
-                    <td>7,531 B</td>
-                    <td>191</td>
-                    <td><code>57 / 45 / 45</code> px</td>
-                    <td>209 / 281</td>
-                    <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split9_bade57_txd/DomCasualStd3636.png</code></td>
-                    <td><code>512&times;256</code></td>
-                </tr>
-                <tr>
-                    <td><code>HighlanderStdBold6060b_1d35c8.inf</code></td>
-                    <td>7,921 B</td>
-                    <td>191</td>
-                    <td><code>97 / 78 / 76</code> px</td>
-                    <td>306 / 411</td>
-                    <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split6_c2ec11_txd/HighlanderStdBold6060b.png</code></td>
-                    <td><code>1024&times;512</code></td>
-                </tr>
-                <tr>
-                    <td><code>HighlanderStdMed3636_ca0d81.inf</code></td>
-                    <td>7,819 B</td>
-                    <td>191</td>
-                    <td><code>56 / 44 / 51</code> px</td>
-                    <td>281 / 377</td>
-                    <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split7_6b8b06_txd/HighlanderStdMed3636.png</code></td>
-                    <td><code>512&times;512</code></td>
-                </tr>
-                <tr>
-                    <td><code>HighlanderStdNumsBold3636b_85009b.inf</code></td>
-                    <td>5,200 B</td>
-                    <td>95</td>
-                    <td><code>54 / 46 / 28</code> px</td>
-                    <td>202 / 272</td>
-                    <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split8_ce6120_txd/HighlanderStdNumsBold3636b.png</code></td>
-                    <td><code>128&times;128</code></td>
-                </tr>
-                <tr>
-                    <td><code>LetterGothicStdBold2424b_c7c53d.inf</code></td>
-                    <td>6,688 B</td>
-                    <td>191</td>
-                    <td><code>41 / 32 / 20</code> px</td>
-                    <td>0 / 0</td>
-                    <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split9_bade57_txd/LetterGothicStdBold2424b.png</code></td>
-                    <td><code>512&times;256</code></td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col"><code>.inf</code> Font File</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Glyphs</th>
+                        <th scope="col">Metrics (<code>LH / Base / MaxW</code>)</th>
+                        <th scope="col">Kernings (Valid / Decl)</th>
+                        <th scope="col">Companion <code>.png</code> Texture Path</th>
+                        <th scope="col">PNG Size</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>buttons_37bb42.inf</code></td>
+                        <td>2,896 B</td>
+                        <td>33</td>
+                        <td><code>68 / 0 / 102</code> px</td>
+                        <td>0 / 0</td>
+                        <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split8_ce6120_txd/buttons.png</code></td>
+                        <td><code>256&times;256</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>DomCasualStd3636_ff9566.inf</code></td>
+                        <td>7,531 B</td>
+                        <td>191</td>
+                        <td><code>57 / 45 / 45</code> px</td>
+                        <td>209 / 281</td>
+                        <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split9_bade57_txd/DomCasualStd3636.png</code></td>
+                        <td><code>512&times;256</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>HighlanderStdBold6060b_1d35c8.inf</code></td>
+                        <td>7,921 B</td>
+                        <td>191</td>
+                        <td><code>97 / 78 / 76</code> px</td>
+                        <td>306 / 411</td>
+                        <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split6_c2ec11_txd/HighlanderStdBold6060b.png</code></td>
+                        <td><code>1024&times;512</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>HighlanderStdMed3636_ca0d81.inf</code></td>
+                        <td>7,819 B</td>
+                        <td>191</td>
+                        <td><code>56 / 44 / 51</code> px</td>
+                        <td>281 / 377</td>
+                        <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split7_6b8b06_txd/HighlanderStdMed3636.png</code></td>
+                        <td><code>512&times;512</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>HighlanderStdNumsBold3636b_85009b.inf</code></td>
+                        <td>5,200 B</td>
+                        <td>95</td>
+                        <td><code>54 / 46 / 28</code> px</td>
+                        <td>202 / 272</td>
+                        <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split8_ce6120_txd/HighlanderStdNumsBold3636b.png</code></td>
+                        <td><code>128&times;128</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>LetterGothicStdBold2424b_c7c53d.inf</code></td>
+                        <td>6,688 B</td>
+                        <td>191</td>
+                        <td><code>41 / 32 / 20</code> px</td>
+                        <td>0 / 0</td>
+                        <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/txd/simpsons_chars_global_split9_bade57_txd/LetterGothicStdBold2424b.png</code></td>
+                        <td><code>512&times;256</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h3>Folder 2: <code>A2_Frontend/frontendStr/assets/shared/fonts/</code></h3>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col"><code>.inf</code> Font File</th>
-                    <th scope="col">Size</th>
-                    <th scope="col">Glyphs</th>
-                    <th scope="col">Metrics (<code>LH / Base / MaxW</code>)</th>
-                    <th scope="col">Kernings (Valid / Decl)</th>
-                    <th scope="col">Companion <code>.png</code> Texture Path</th>
-                    <th scope="col">PNG Size</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>buttons_fd7e46.inf</code></td>
-                    <td>2,896 B</td>
-                    <td>33</td>
-                    <td><code>68 / 0 / 102</code> px</td>
-                    <td>0 / 0</td>
-                    <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split16_704679_txd/buttons.png</code></td>
-                    <td><code>256&times;256</code></td>
-                </tr>
-                <tr>
-                    <td><code>DomCasualStd3636_09608f.inf</code></td>
-                    <td>7,531 B</td>
-                    <td>191</td>
-                    <td><code>57 / 45 / 45</code> px</td>
-                    <td>209 / 281</td>
-                    <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split23_b54bef_txd/DomCasualStd3636.png</code></td>
-                    <td><code>512&times;256</code></td>
-                </tr>
-                <tr>
-                    <td><code>HighlanderStdBold6060b_929fdc.inf</code></td>
-                    <td>7,921 B</td>
-                    <td>191</td>
-                    <td><code>97 / 78 / 76</code> px</td>
-                    <td>306 / 411</td>
-                    <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split16_704679_txd/HighlanderStdBold6060b.png</code></td>
-                    <td><code>1024&times;512</code></td>
-                </tr>
-                <tr>
-                    <td><code>HighlanderStdMed3636_c14f63.inf</code></td>
-                    <td>7,819 B</td>
-                    <td>191</td>
-                    <td><code>56 / 44 / 51</code> px</td>
-                    <td>281 / 377</td>
-                    <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split19_127e84_txd/HighlanderStdMed3636.png</code></td>
-                    <td><code>512&times;512</code></td>
-                </tr>
-                <tr>
-                    <td><code>LetterGothicStdBold2424b_4aa417.inf</code></td>
-                    <td>6,688 B</td>
-                    <td>191</td>
-                    <td><code>41 / 32 / 20</code> px</td>
-                    <td>0 / 0</td>
-                    <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split24_a22477_txd/LetterGothicStdBold2424b.png</code></td>
-                    <td><code>512&times;256</code></td>
-                </tr>
-                <tr>
-                    <td><code>simpsons_font_acdf54.inf</code></td>
-                    <td>4,615 B</td>
-                    <td>95</td>
-                    <td><code>33 / 24 / 25</code> px</td>
-                    <td>56 / 77</td>
-                    <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split28_426807_txd/simpsons_font.png</code></td>
-                    <td><code>256&times;128</code></td>
-                </tr>
-            </tbody>
-        </table></div>
-        <p>
-            <em>Note:</em> The 5 shared fonts present in both <code>A2_Characters</code> and <code>A2_Frontend</code> (<code>buttons</code>, <code>DomCasualStd3636</code>, <code>HighlanderStdBold6060b</code>, <code>HighlanderStdMed3636</code>, and <code>LetterGothicStdBold2424b</code>) are byte-for-byte identical in both <code>.inf</code> and <code>.png</code> content across the two archives.
-        </p>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col"><code>.inf</code> Font File</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Glyphs</th>
+                        <th scope="col">Metrics (<code>LH / Base / MaxW</code>)</th>
+                        <th scope="col">Kernings (Valid / Decl)</th>
+                        <th scope="col">Companion <code>.png</code> Texture Path</th>
+                        <th scope="col">PNG Size</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>buttons_fd7e46.inf</code></td>
+                        <td>2,896 B</td>
+                        <td>33</td>
+                        <td><code>68 / 0 / 102</code> px</td>
+                        <td>0 / 0</td>
+                        <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split16_704679_txd/buttons.png</code></td>
+                        <td><code>256&times;256</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>DomCasualStd3636_09608f.inf</code></td>
+                        <td>7,531 B</td>
+                        <td>191</td>
+                        <td><code>57 / 45 / 45</code> px</td>
+                        <td>209 / 281</td>
+                        <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split23_b54bef_txd/DomCasualStd3636.png</code></td>
+                        <td><code>512&times;256</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>HighlanderStdBold6060b_929fdc.inf</code></td>
+                        <td>7,921 B</td>
+                        <td>191</td>
+                        <td><code>97 / 78 / 76</code> px</td>
+                        <td>306 / 411</td>
+                        <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split16_704679_txd/HighlanderStdBold6060b.png</code></td>
+                        <td><code>1024&times;512</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>HighlanderStdMed3636_c14f63.inf</code></td>
+                        <td>7,819 B</td>
+                        <td>191</td>
+                        <td><code>56 / 44 / 51</code> px</td>
+                        <td>281 / 377</td>
+                        <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split19_127e84_txd/HighlanderStdMed3636.png</code></td>
+                        <td><code>512&times;512</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>LetterGothicStdBold2424b_4aa417.inf</code></td>
+                        <td>6,688 B</td>
+                        <td>191</td>
+                        <td><code>41 / 32 / 20</code> px</td>
+                        <td>0 / 0</td>
+                        <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split24_a22477_txd/LetterGothicStdBold2424b.png</code></td>
+                        <td><code>512&times;256</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>simpsons_font_acdf54.inf</code></td>
+                        <td>4,615 B</td>
+                        <td>95</td>
+                        <td><code>33 / 24 / 25</code> px</td>
+                        <td>56 / 77</td>
+                        <td><code>A2_Frontend/frontendStr/assetsRws/txd/frontend_split28_426807_txd/simpsons_font.png</code></td>
+                        <td><code>256&times;128</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p><em>Note:</em> The 5 shared fonts present in both <code>A2_Characters</code> and <code>A2_Frontend</code> (<code>buttons</code>, <code>DomCasualStd3636</code>, <code>HighlanderStdBold6060b</code>, <code>HighlanderStdMed3636</code>, and <code>LetterGothicStdBold2424b</code>) are byte-for-byte identical in both <code>.inf</code> and <code>.png</code> content across the two archives.</p>
         <h2 id="reference-python-parser-godot-fnt-converter">Registered Lua converter and illustrative Python parser</h2>
-        <p>
-            The conversion script at <code>operations/inf_to_fnt.Fonts.lua</code> parses all 12 <code>.inf</code> files, matches them to their <code>.png</code> texture atlases, reads the exact PNG <code>IHDR</code> dimensions, shifts the 12.4 fixed-point UVs into pixel coordinates, and writes valid AngelCode BMFont <code>.fnt</code> files for Godot 4:
-        </p>
-<p>From the engine root, run <code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 15</code>. The Lua entry point accepts <code>--input-dir</code>, <code>--output-dir</code>, <code>--copy-png</code> and <code>--no-unicode-aliases</code>. Output defaults beside each INF, with a relative atlas reference.</p>
-<p>The Python fragment below illustrates binary layout only. It is not the registered converter, does not write FNT, and omits several validation/Unicode-alias checks present in the Lua implementation.</p><pre><code>import struct
+        <p>The conversion script at <code>operations/inf_to_fnt.Fonts.lua</code> parses all 12 <code>.inf</code> files, matches them to their <code>.png</code> texture atlases, reads the exact PNG <code>IHDR</code> dimensions, shifts the 12.4 fixed-point UVs into pixel coordinates, and writes valid AngelCode BMFont <code>.fnt</code> files for Godot 4:</p>
+        <p>From the engine root, run <code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 15</code>. The Lua entry point accepts <code>--input-dir</code>, <code>--output-dir</code>, <code>--copy-png</code> and <code>--no-unicode-aliases</code>. Output defaults beside each INF, with a relative atlas reference.</p>
+        <p>The Python fragment below illustrates binary layout only. It is not the registered converter, does not write FNT, and omits several validation/Unicode-alias checks present in the Lua implementation.</p>
+        <pre><code>import struct
 from pathlib import Path
 
 def parse_inf(filepath: Path):

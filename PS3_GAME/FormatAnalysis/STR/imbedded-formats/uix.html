@@ -1,91 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>.uix Format Documentation</title>
-    <link rel="stylesheet" href="../../../../style/main.css">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
-<body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Compiled APT interface (.uix)</nav>
-
-    <div class="pages">
-        <div class="doc-overview" id="overview">
-            <h1>EA APT UIX Format (.uix)</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
-<p>Contains UI modules, APT payloads and references to UI names/resources.</p>
-<dl><dt>Identification</dt><dd>Observed uixf, titl, alig and apti chunks; Apt Data:74 marker.</dd><dt>Byte order / text</dt><dd>Per-chunk; candidate big-endian payload fields need validation.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#standard-chunk-structure">Standard Chunk Structure</a></li><li><a href="#observed-file-variants">Observed File Variants</a></li><li><a href="#apt-and-actionscript-style-observations">APT and ActionScript-style observations</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="inf.html">Bitmap font descriptor (.inf)</a></td><td>Observed/context</td><td>UIX samples contain font names; INF/TXD resources provide bitmap-font data. A specific UIX name-to-INF mapping must be verified per module rather than assumed from proximity.</td></tr><tr><td><a href="txd.html">Texture dictionary (.txd)</a></td><td>Observed/context</td><td>UIX samples name visual resources and shared dictionaries; TXD supplies decoded texture assets. The complete UI resource resolver is not implemented.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>APT and ActionScript-like strings are observed. They do not prove Scaleform middleware, a complete Flash runtime or an executable UI reconstruction. Font names can suggest associations but need explicit resource matching.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-
-            <p>These are modular, compiled containers for EA's proprietary
-                APT UI framework. They manage various layers of the UI stack, bridging engine data, physical inputs, and
-                APT interface resources and ActionScript-style concepts.</p>
-
-            <h2 id="standard-chunk-structure">Standard Chunk Structure</h2>
-            <p>Regardless of their function, <code>.uix</code> files share a strict internal hierarchy:</p>
-            <ul>
-                <li><strong><code>uixf</code> (Magic Header):</strong> The signature identifying the compiled UI
-                    container, followed by size and version allocations.</li>
-                <li><strong><code>titl</code> (Title Chunk):</strong> A null-terminated string declaring the internal
-                    module name (e.g., <code>base</code>, <code>platform</code>, <code>TeamPhoto</code>).</li>
-                <li><strong><code>alig</code> (Alignment Chunk):</strong> A structural block used to pad and align
-                    subsequent memory data.</li>
-                <li><strong><code>apti</code> (APT Payload):</strong> The core compiled data block, marked by the string
-                    <code>Apt Data:74</code>. This section houses 32-bit big-endian pointer tables, float
-                    arrays, and string pools.</li>
-            </ul>
-
-            <h2 id="observed-file-variants">Observed File Variants</h2>
-            <p>Instead of a monolithic layout format, <code>.uix</code> files instantiate distinct object classes based
-                on their role within the game's UI hierarchy:</p>
-            <ul>
-                <li><strong>Core Logic & Input Routers (<code>base.uix</code>, <code>platform.uix</code>):</strong> Act
-                    as the middleware between physical hardware and UI logic. They map specific controller inputs
-                    (<code>PAD_LEFT</code>, <code>L1</code>, <code>JOYSTICK_RIGHT</code>) to generic APT events
-                    (<code>UI_EVENT_PAD_LEFT</code>) and bind them to interactive ActionScript functions
-                    (<code>ui_toggle_on_off</code>, <code>ui_slider</code>).</li>
-                <li><strong>Widget Layouts (<code>TeamPhoto.uix</code>):</strong> Small, discrete files defining
-                    specific visual elements. They encode raw typography calls (<code>HighlanderStdBoldOut60</code>),
-                    hex color arrays, and layout bounding boxes rather than active scripts.</li>
-                <li><strong>Shared Dictionaries (<code>SharedLibrary.uix</code>):</strong> Act as centralized asset
-                    string pools containing universal textures (<code>.tga</code> files) and generic button templates
-                    loaded globally to prevent memory duplication.</li>
-            </ul>
-
-            <h2 id="apt-and-actionscript-style-observations">APT and ActionScript-style observations</h2>
-            <p>The strings in <code>base.uix</code> show APT and ActionScript-style concepts. These observations do not establish Scaleform middleware or a complete Flash runtime. Embedded strings reveal standard ActionScript paradigms:</p>
-            <ul>
-                <li><strong>MovieClip Execution:</strong> Engine handlers natively reference Flash objects and commands
-                    like <code>movieClipAnimation</code>, <code>startMovieClipPulse</code>, and standard layer targeting
-                    (<code>_level0</code>).</li>
-                <li><strong>File Linkages:</strong> Layouts maintain hard references to paired Flash binaries
-                    (<code>base.swf</code>) and external scripting files (<code>base.as</code>, <code>system.as</code>).
-                </li>
-                <li><strong>Dynamic Property Hooks:</strong> The engine manipulates elements on the fly by targeting
-                    reserved instance names (<code>placeHolder_mc</code>) and built-in properties
-                    (<code>_visible</code>, <code>setTextFormat</code>, <code>setRGB</code>).</li>
-            </ul>
-        </div>
-    </div>
-
-    <details class="research-appendix"><summary>Preserved sample hex dumps</summary><section class='bodyy'>
-        <h1>.uix Files: Hex Dump Analysis</h1>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Characters\simpsons_chars_global_str\build\PS3\pal_en\assets\shared\ui\menus\options\stub_team_photo\TeamPhoto.uix
+    <head>
+        <meta charset="utf-8">
+        <title>.uix Format Documentation</title>
+        <link rel="stylesheet" href="../../../../style/main.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Compiled APT interface (.uix)</nav>
+        <div class="pages">
+            <div class="doc-overview" id="overview">
+                <h1>EA APT UIX Format (.uix)</h1>
+                <section class="format-summary" aria-label="Format summary">
+                    <p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+                    <p>Contains UI modules, APT payloads and references to UI names/resources.</p>
+                    <dl>
+                        <dt>Identification</dt>
+                        <dd>Observed uixf, titl, alig and apti chunks; Apt Data:74 marker.</dd>
+                        <dt>Byte order / text</dt>
+                        <dd>Per-chunk; candidate big-endian payload fields need validation.</dd>
+                        <dt>Documentation scope</dt>
+                        <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+                    </dl>
+                </section>
+                <nav class="page-toc" aria-label="On this page">
+                    <strong>On this page</strong>
+                    <ul>
+                        <li><a href="#related-formats-2">Related formats</a></li>
+                        <li><a href="#operation-support-2">Operation support</a></li>
+                        <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                        <li><a href="#standard-chunk-structure">Standard Chunk Structure</a></li>
+                        <li><a href="#observed-file-variants">Observed File Variants</a></li>
+                        <li><a href="#apt-and-actionscript-style-observations">APT and ActionScript-style observations</a></li>
+                    </ul>
+                </nav>
+                <section id="related-formats">
+                    <h2 id="related-formats-2">Related formats</h2>
+                    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                        <table>
+                            <caption>Related formats and strength of the connection</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Related format</th>
+                                    <th scope="col">Evidence</th>
+                                    <th scope="col">Relationship and practical consequence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><a href="inf.html">Bitmap font descriptor (.inf)</a></td>
+                                    <td>Observed/context</td>
+                                    <td>UIX samples contain font names; INF/TXD resources provide bitmap-font data. A specific UIX name-to-INF mapping must be verified per module rather than assumed from proximity.</td>
+                                </tr>
+                                <tr>
+                                    <td><a href="txd.html">Texture dictionary (.txd)</a></td>
+                                    <td>Observed/context</td>
+                                    <td>UIX samples name visual resources and shared dictionaries; TXD supplies decoded texture assets. The complete UI resource resolver is not implemented.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
+                </section>
+                <section id="operation-support">
+                    <h2 id="operation-support-2">Operation support</h2>
+                    <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+                    <p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+                </section>
+                <section id="evidence-limits">
+                    <h2 id="evidence-and-limitations">Evidence and limitations</h2>
+                    <p>APT and ActionScript-like strings are observed. They do not prove Scaleform middleware, a complete Flash runtime or an executable UI reconstruction. Font names can suggest associations but need explicit resource matching.</p>
+                    <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+                </section>
+                <p>These are modular, compiled containers for EA's proprietary APT UI framework. They manage various layers of the UI stack, bridging engine data, physical inputs, and APT interface resources and ActionScript-style concepts.</p>
+                <h2 id="standard-chunk-structure">Standard Chunk Structure</h2>
+                <p>Regardless of their function, <code>.uix</code> files share a strict internal hierarchy:</p>
+                <ul>
+                    <li><strong><code>uixf</code> (Magic Header):</strong> The signature identifying the compiled UI container, followed by size and version allocations.</li>
+                    <li><strong><code>titl</code> (Title Chunk):</strong> A null-terminated string declaring the internal module name (e.g., <code>base</code>, <code>platform</code>, <code>TeamPhoto</code>).</li>
+                    <li><strong><code>alig</code> (Alignment Chunk):</strong> A structural block used to pad and align subsequent memory data.</li>
+                    <li><strong><code>apti</code> (APT Payload):</strong> The core compiled data block, marked by the string <code>Apt Data:74</code>. This section houses 32-bit big-endian pointer tables, float arrays, and string pools.</li>
+                </ul>
+                <h2 id="observed-file-variants">Observed File Variants</h2>
+                <p>Instead of a monolithic layout format, <code>.uix</code> files instantiate distinct object classes based on their role within the game's UI hierarchy:</p>
+                <ul>
+                    <li><strong>Core Logic & Input Routers (<code>base.uix</code>, <code>platform.uix</code>):</strong> Act as the middleware between physical hardware and UI logic. They map specific controller inputs (<code>PAD_LEFT</code>, <code>L1</code>, <code>JOYSTICK_RIGHT</code>) to generic APT events (<code>UI_EVENT_PAD_LEFT</code>) and bind them to interactive ActionScript functions (<code>ui_toggle_on_off</code>, <code>ui_slider</code>).</li>
+                    <li><strong>Widget Layouts (<code>TeamPhoto.uix</code>):</strong> Small, discrete files defining specific visual elements. They encode raw typography calls (<code>HighlanderStdBoldOut60</code>), hex color arrays, and layout bounding boxes rather than active scripts.</li>
+                    <li><strong>Shared Dictionaries (<code>SharedLibrary.uix</code>):</strong> Act as centralized asset string pools containing universal textures (<code>.tga</code> files) and generic button templates loaded globally to prevent memory duplication.</li>
+                </ul>
+                <h2 id="apt-and-actionscript-style-observations">APT and ActionScript-style observations</h2>
+                <p>The strings in <code>base.uix</code> show APT and ActionScript-style concepts. These observations do not establish Scaleform middleware or a complete Flash runtime. Embedded strings reveal standard ActionScript paradigms:</p>
+                <ul>
+                    <li><strong>MovieClip Execution:</strong> Engine handlers natively reference Flash objects and commands like <code>movieClipAnimation</code>, <code>startMovieClipPulse</code>, and standard layer targeting (<code>_level0</code>).</li>
+                    <li><strong>File Linkages:</strong> Layouts maintain hard references to paired Flash binaries (<code>base.swf</code>) and external scripting files (<code>base.as</code>, <code>system.as</code>).</li>
+                    <li><strong>Dynamic Property Hooks:</strong> The engine manipulates elements on the fly by targeting reserved instance names (<code>placeHolder_mc</code>) and built-in properties (<code>_visible</code>, <code>setTextFormat</code>, <code>setRGB</code>).</li>
+                </ul>
             </div>
-            <div class='file-size'><strong>Size:</strong> 536 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 02 18 74 69 74 6C 00 00 00 12  |uixf....titl....|
+        </div>
+        <details class="research-appendix">
+            <summary>Preserved sample hex dumps</summary>
+            <section class="bodyy">
+                <h1>.uix Files: Hex Dump Analysis</h1>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Characters\simpsons_chars_global_str\build\PS3\pal_en\assets\shared\ui\menus\options\stub_team_photo\TeamPhoto.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 536 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 02 18 74 69 74 6C 00 00 00 12  |uixf....titl....|
 00000010  54 65 61 6D 50 68 6F 74 6F 00 61 6C 69 67 00 00  |TeamPhoto.alig..|
 00000020  00 0E 00 00 00 00 00 00 61 70 74 69 00 00 01 B8  |........apti....|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -119,13 +138,11 @@
 000001F0  41 70 74 20 63 6F 6E 73 74 61 6E 74 20 66 69 6C  |Apt constant fil|
 00000200  65 1A 00 00 00 00 00 48 00 00 00 00 00 00 00 20  |e......H....... |
 00000210  61 6C 69 67 00 00 00 08                          |alig....|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\options\real_team_photo\TeamPhoto.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 592 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 02 50 74 69 74 6C 00 00 00 12  |uixf...Ptitl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\options\real_team_photo\TeamPhoto.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 592 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 02 50 74 69 74 6C 00 00 00 12  |uixf...Ptitl....|
 00000010  54 65 61 6D 50 68 6F 74 6F 00 61 6C 69 67 00 00  |TeamPhoto.alig..|
 00000020  00 0E 00 00 00 00 00 00 61 70 74 69 00 00 01 9C  |........apti....|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -162,13 +179,11 @@
 00000220  FF FF FF FF 3F 80 00 00 00 00 00 00 44 80 00 00  |....?.......D...|
 00000230  00 00 00 00 3F 80 00 00 43 80 00 00 00 00 00 01  |....?...C.......|
 00000240  00 00 00 00 FF FE C0 00 F0 00 40 00 10 00 00 00  |..........@.....|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\controller_ps3\controller.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 4376 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 11 18 74 69 74 6C 00 00 00 13  |uixf....titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\controller_ps3\controller.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 4376 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 11 18 74 69 74 6C 00 00 00 13  |uixf....titl....|
 00000010  63 6F 6E 74 72 6F 6C 6C 65 72 00 61 6C 69 67 00  |controller.alig.|
 00000020  00 00 0D 00 00 00 00 00 61 70 74 69 00 00 0C EA  |........apti....|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -442,13 +457,11 @@
 000010F0  13 88 11 B1 13 48 16 FE 13 48 00 03 16 FE 18 61  |.....H...H.....a|
 00001100  10 08 18 20 16 FE 18 21 00 03 13 6B 10 E3 13 2B  |... ...!...k...+|
 00001110  10 86 13 6B 10 86 00 00                          |...k....|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Characters\simpsons_chars_global_str\build\PS3\pal_en\assets\shared\ui\menus\platform_xbox\platform.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 4752 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 12 90 74 69 74 6C 00 00 00 11  |uixf....titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Characters\simpsons_chars_global_str\build\PS3\pal_en\assets\shared\ui\menus\platform_xbox\platform.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 4752 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 12 90 74 69 74 6C 00 00 00 11  |uixf....titl....|
 00000010  70 6C 61 74 66 6F 72 6D 00 61 6C 69 67 00 00 00  |platform.alig...|
 00000020  0F 00 00 00 00 00 00 00 61 70 74 69 00 00 11 AC  |........apti....|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -745,13 +758,11 @@
 00001260  00 00 00 80 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00001270  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00001280  00 00 00 00 00 02 00 00 00 00 0C 80 03 00 00 00  |................|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\platform_ps3\platform.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 5296 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 14 B0 74 69 74 6C 00 00 00 11  |uixf....titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\platform_ps3\platform.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 5296 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 14 B0 74 69 74 6C 00 00 00 11  |uixf....titl....|
 00000010  70 6C 61 74 66 6F 72 6D 00 61 6C 69 67 00 00 00  |platform.alig...|
 00000020  0F 00 00 00 00 00 00 00 61 70 74 69 00 00 12 BC  |........apti....|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -1082,13 +1093,11 @@
 00001480  00 00 00 80 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00001490  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 000014A0  00 00 00 00 00 02 00 00 00 00 0C 80 03 00 00 00  |................|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\shared_movie\shared_movie.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 10480 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 28 F0 74 69 74 6C 00 00 00 15  |uixf..(.titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\shared_movie\shared_movie.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 10480 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 28 F0 74 69 74 6C 00 00 00 15  |uixf..(.titl....|
 00000010  73 68 61 72 65 64 5F 6D 6F 76 69 65 00 61 6C 69  |shared_movie.ali|
 00000020  67 00 00 00 0B 00 00 00 61 70 74 69 00 00 27 BC  |g.......apti..&#x27;.|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -1743,13 +1752,11 @@
 000028C0  00 00 00 FF 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 000028D0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 000028E0  00 00 00 00 00 02 00 00 00 00 10 00 02 90 00 00  |................|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Characters\simpsons_chars_global_str\build\PS3\pal_en\assets\shared\ui\menus\base\base.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 14728 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 39 88 74 69 74 6C 00 00 00 0D  |uixf..9.titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Characters\simpsons_chars_global_str\build\PS3\pal_en\assets\shared\ui\menus\base\base.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 14728 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 39 88 74 69 74 6C 00 00 00 0D  |uixf..9.titl....|
 00000010  62 61 73 65 00 61 6C 69 67 00 00 00 13 00 00 00  |base.alig.......|
 00000020  00 00 00 00 00 00 00 00 61 70 74 69 00 00 1E B4  |........apti....|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -2670,13 +2677,11 @@
 00003960  5F 67 6C 6F 62 61 6C 00 73 79 73 74 65 6D 00 00  |_global.system..|
 00003970  54 69 63 6B 00 61 6C 69 67 00 00 00 13 00 00 00  |Tick.alig.......|
 00003980  00 00 00 00 00 00 00 00                          |........|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\base\base.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 14728 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 39 88 74 69 74 6C 00 00 00 0D  |uixf..9.titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\base\base.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 14728 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 39 88 74 69 74 6C 00 00 00 0D  |uixf..9.titl....|
 00000010  62 61 73 65 00 61 6C 69 67 00 00 00 13 00 00 00  |base.alig.......|
 00000020  00 00 00 00 00 00 00 00 61 70 74 69 00 00 1E B4  |........apti....|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -3597,13 +3602,11 @@
 00003960  5F 67 6C 6F 62 61 6C 00 73 79 73 74 65 6D 00 00  |_global.system..|
 00003970  54 69 63 6B 00 61 6C 69 67 00 00 00 13 00 00 00  |Tick.alig.......|
 00003980  00 00 00 00 00 00 00 00                          |........|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\language\language.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 21344 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 53 60 74 69 74 6C 00 00 00 11  |uixf..S`titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\language\language.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 21344 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 53 60 74 69 74 6C 00 00 00 11  |uixf..S`titl....|
 00000010  6C 61 6E 67 75 61 67 65 00 61 6C 69 67 00 00 00  |language.alig...|
 00000020  0F 00 00 00 00 00 00 00 61 70 74 69 00 00 3B BA  |........apti..;.|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -4937,13 +4940,11 @@
 00005330  FF FF FF FF 3F 80 00 00 00 00 00 00 00 00 00 00  |....?...........|
 00005340  00 00 00 00 3F 80 00 00 00 00 00 00 00 00 00 07  |....?...........|
 00005350  00 00 00 00 00 02 00 00 00 00 04 00 04 00 00 00  |................|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\level_specific_art\ui_assets.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 22824 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 59 28 74 69 74 6C 00 00 00 12  |uixf..Y(titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\level_specific_art\ui_assets.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 22824 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 59 28 74 69 74 6C 00 00 00 12  |uixf..Y(titl....|
 00000010  75 69 5F 61 73 73 65 74 73 00 61 6C 69 67 00 00  |ui_assets.alig..|
 00000020  00 0E 00 00 00 00 00 00 61 70 74 69 00 00 58 C8  |........apti..X.|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -6370,13 +6371,11 @@
 00005900  41 70 74 20 63 6F 6E 73 74 61 6E 74 20 66 69 6C  |Apt constant fil|
 00005910  65 1A 00 00 00 00 13 E8 00 00 00 00 00 00 00 20  |e.............. |
 00005920  61 6C 69 67 00 00 00 08                          |alig....|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\build\PS3\pal_en\assets\shared\ui\menus\level_specific_art\gamehub\ui_assets.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 23008 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 59 E0 74 69 74 6C 00 00 00 12  |uixf..Y.titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\build\PS3\pal_en\assets\shared\ui\menus\level_specific_art\gamehub\ui_assets.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 23008 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 59 E0 74 69 74 6C 00 00 00 12  |uixf..Y.titl....|
 00000010  75 69 5F 61 73 73 65 74 73 00 61 6C 69 67 00 00  |ui_assets.alig..|
 00000020  00 0E 00 00 00 00 00 00 61 70 74 69 00 00 59 00  |........apti..Y.|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -7814,13 +7813,11 @@
 000059B0  FF FF FF FF 3F 80 00 00 00 00 00 00 43 00 00 00  |....?.......C...|
 000059C0  00 00 00 00 3F 80 00 00 43 00 00 00 00 00 00 02  |....?...C.......|
 000059D0  00 00 00 00 00 02 F0 00 F0 00 10 00 10 00 00 00  |................|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_str\build\PS3\pal_en\assets\shared\ui\menus\level_specific_art\loc\ui_assets.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 23056 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 5A 10 74 69 74 6C 00 00 00 12  |uixf..Z.titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_str\build\PS3\pal_en\assets\shared\ui\menus\level_specific_art\loc\ui_assets.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 23056 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 5A 10 74 69 74 6C 00 00 00 12  |uixf..Z.titl....|
 00000010  75 69 5F 61 73 73 65 74 73 00 61 6C 69 67 00 00  |ui_assets.alig..|
 00000020  00 0E 00 00 00 00 00 00 61 70 74 69 00 00 59 24  |........apti..Y$|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -9261,13 +9258,11 @@
 000059E0  FF FF FF FF 3F 80 00 00 00 00 00 00 42 80 00 00  |....?.......B...|
 000059F0  00 00 00 00 3F 80 00 00 42 E9 4C CD 00 00 00 01  |....?...B.L.....|
 00005A00  00 00 00 00 00 02 F8 00 F1 6C 08 00 11 6B 00 00  |.........l...k..|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_str\build\PS3\pal_en\assets\shared\ui\menus\level_specific_art\neverquest\ui_assets.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 23136 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 5A 60 74 69 74 6C 00 00 00 12  |uixf..Z`titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_str\build\PS3\pal_en\assets\shared\ui\menus\level_specific_art\neverquest\ui_assets.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 23136 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 5A 60 74 69 74 6C 00 00 00 12  |uixf..Z`titl....|
 00000010  75 69 5F 61 73 73 65 74 73 00 61 6C 69 67 00 00  |ui_assets.alig..|
 00000020  00 0E 00 00 00 00 00 00 61 70 74 69 00 00 59 40  |........apti..Y@|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -10713,13 +10708,11 @@
 00005A30  FF FF FF FF 3F 80 00 00 00 00 00 00 42 80 00 00  |....?.......B...|
 00005A40  00 00 00 00 3F 80 00 00 43 00 00 00 00 00 00 02  |....?...C.......|
 00005A50  00 00 00 00 00 02 F8 00 F0 00 08 00 10 00 00 00  |................|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_str\build\PS3\pal_en\assets\shared\ui\menus\level_specific_art\dayofthedolphins\ui_assets.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 23152 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 5A 70 74 69 74 6C 00 00 00 12  |uixf..Zptitl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_str\build\PS3\pal_en\assets\shared\ui\menus\level_specific_art\dayofthedolphins\ui_assets.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 23152 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 5A 70 74 69 74 6C 00 00 00 12  |uixf..Zptitl....|
 00000010  75 69 5F 61 73 73 65 74 73 00 61 6C 69 67 00 00  |ui_assets.alig..|
 00000020  00 0E 00 00 00 00 00 00 61 70 74 69 00 00 59 50  |........apti..YP|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -12166,13 +12159,11 @@
 00005A40  FF FF FF FF 3F 80 00 00 00 00 00 00 43 00 00 00  |....?.......C...|
 00005A50  00 00 00 00 3F 80 00 00 43 00 00 00 00 00 00 02  |....?...C.......|
 00005A60  00 00 00 00 00 02 F0 00 F0 00 10 00 10 00 00 00  |................|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\savegame\savegame.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 25740 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 64 8C 74 69 74 6C 00 00 00 11  |uixf..d.titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\savegame\savegame.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 25740 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 64 8C 74 69 74 6C 00 00 00 11  |uixf..d.titl....|
 00000010  73 61 76 65 67 61 6D 65 00 61 6C 69 67 00 00 00  |savegame.alig...|
 00000020  0F 00 00 00 00 00 00 00 61 70 74 69 00 00 41 BC  |........apti..A.|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -13781,13 +13772,11 @@
 00006460  05 00 31 80 05 00 32 00 05 80 31 80 00 80 00 03  |..1...2...1.....|
 00006470  00 80 05 00 32 00 05 80 00 00 05 80 00 03 00 80  |....2...........|
 00006480  00 80 00 80 05 00 00 00 05 00 00 00              |............|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_str\build\PS3\pal_en\assets\shared\ui\menus\medal_of_homer\medal_of_homer.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 30128 bytes</div>
-            <pre>00000000  75 69 78 66 00 00 75 B0 74 69 74 6C 00 00 00 17  |uixf..u.titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_str\build\PS3\pal_en\assets\shared\ui\menus\medal_of_homer\medal_of_homer.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 30128 bytes</div>
+                    <pre>00000000  75 69 78 66 00 00 75 B0 74 69 74 6C 00 00 00 17  |uixf..u.titl....|
 00000010  6D 65 64 61 6C 5F 6F 66 5F 68 6F 6D 65 72 00 61  |medal_of_homer.a|
 00000020  6C 69 67 00 00 00 09 00 61 70 74 69 00 00 49 51  |lig.....apti..IQ|
 00000030  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
@@ -15629,13 +15618,11 @@
 00007580  FF FF FF FF 40 00 00 00 00 00 00 00 42 00 00 00  |....@.......B...|
 00007590  00 00 00 00 40 00 00 00 42 6E 66 66 00 00 00 07  |....@...Bnff....|
 000075A0  00 00 00 00 00 02 FE 00 FC 47 02 00 00 46 00 00  |.........G...F..|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\options\options.uix
-            </div>
-            <div class='file-size'><strong>Size:</strong> 76496 bytes</div>
-            <pre>00000000  75 69 78 66 00 01 2A D0 74 69 74 6C 00 00 00 10  |uixf..*.titl....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\ui\menus\options\options.uix</div>
+                    <div class="file-size"><strong>Size:</strong> 76496 bytes</div>
+                    <pre>00000000  75 69 78 66 00 01 2A D0 74 69 74 6C 00 00 00 10  |uixf..*.titl....|
 00000010  6F 70 74 69 6F 6E 73 00 61 70 74 69 00 00 C4 BA  |options.apti....|
 00000020  41 70 74 20 44 61 74 61 3A 37 34 1A 00 00 00 00  |Apt Data:74.....|
 00000030  00 00 00 E0 00 00 00 F0 00 00 00 0B 00 00 00 00  |................|
@@ -20420,9 +20407,8 @@
 00012AA0  CC CC CC FF 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00012AB0  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00012AC0  00 00 00 00 00 02 DE 02 E2 05 22 01 1E 04 00 00  |..........&quot;.....|</pre>
-        </div>
-    </section></details>
-
-</body>
-
+                </div>
+            </section>
+        </details>
+    </body>
 </html>

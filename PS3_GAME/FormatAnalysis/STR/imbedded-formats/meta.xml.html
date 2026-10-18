@@ -1,233 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
-
     <head>
         <meta charset="utf-8">
         <title>MetaModel Binary Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
+    </head>
     <body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Compiled MetaModel (.meta.xml)</nav>
-
-
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Compiled MetaModel (.meta.xml)</nav>
         <h1>MetaModel Binary (.meta.xml)</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
-<p>Contains binary class/object/attribute data despite the .xml suffix.</p>
-<dl><dt>Identification</dt><dd>Binary header with section offsets and counts; see the tables below.</dd><dt>Byte order / text</dt><dd>Use per-field definitions; the suffix does not imply XML text.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#header">Header</a></li><li><a href="#section-offsets-int32">Section Offsets (Int32)</a></li><li><a href="#section-counts-uint16">Section Counts (UInt16)</a></li><li><a href="#data-structures">Data Structures</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="simgroup.dat.html">Simulation group (.dat)</a></td><td>Scene context</td><td>Binary MetaModel properties and simulation-group instances are complementary scene resources. Their object/resource identifier joins require validation.</td></tr><tr><td><a href="preinstanced.html">Preinstanced models</a></td><td>Scene context</td><td>Rendered geometry is only one component of an object. The registered model importer does not assemble MetaModel classes, properties or behavior around it.</td></tr><tr><td><a href="xml.PS3.html">Compiled sequence resource (.xml.PS3)</a></td><td>Different binary families</td><td>Both names contain .xml but identify different compiled layouts: MetaModel section data versus observed seqm/seqb blocks. Neither should be decoded as XML text.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Section layouts are documented, but complete runtime object reconstruction and cross-resource resolution are not registered operations.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-
-
+        <section class="format-summary" aria-label="Format summary">
+            <p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+            <p>Contains binary class/object/attribute data despite the .xml suffix.</p>
+            <dl>
+                <dt>Identification</dt>
+                <dd>Binary header with section offsets and counts; see the tables below.</dd>
+                <dt>Byte order / text</dt>
+                <dd>Use per-field definitions; the suffix does not imply XML text.</dd>
+                <dt>Documentation scope</dt>
+                <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+            </dl>
+        </section>
+        <nav class="page-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <ul>
+                <li><a href="#related-formats-2">Related formats</a></li>
+                <li><a href="#operation-support-2">Operation support</a></li>
+                <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                <li><a href="#header">Header</a></li>
+                <li><a href="#section-offsets-int32">Section Offsets (Int32)</a></li>
+                <li><a href="#section-counts-uint16">Section Counts (UInt16)</a></li>
+                <li><a href="#data-structures">Data Structures</a></li>
+            </ul>
+        </nav>
+        <section id="related-formats">
+            <h2 id="related-formats-2">Related formats</h2>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                <table>
+                    <caption>Related formats and strength of the connection</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Related format</th>
+                            <th scope="col">Evidence</th>
+                            <th scope="col">Relationship and practical consequence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="simgroup.dat.html">Simulation group (.dat)</a></td>
+                            <td>Scene context</td>
+                            <td>Binary MetaModel properties and simulation-group instances are complementary scene resources. Their object/resource identifier joins require validation.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="preinstanced.html">Preinstanced models</a></td>
+                            <td>Scene context</td>
+                            <td>Rendered geometry is only one component of an object. The registered model importer does not assemble MetaModel classes, properties or behavior around it.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="xml.PS3.html">Compiled sequence resource (.xml.PS3)</a></td>
+                            <td>Different binary families</td>
+                            <td>Both names contain .xml but identify different compiled layouts: MetaModel section data versus observed seqm/seqb blocks. Neither should be decoded as XML text.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
+        </section>
+        <section id="operation-support">
+            <h2 id="operation-support-2">Operation support</h2>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="evidence-limits">
+            <h2 id="evidence-and-limitations">Evidence and limitations</h2>
+            <p>Section layouts are documented, but complete runtime object reconstruction and cross-resource resolution are not registered operations.</p>
+            <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+        </section>
         <p>Despite the extension <code>.xml</code>, these files in the STR container are compiled binary MetaModel resources containing class definitions, attributes, and object states.</p>
-
         <h2 id="header">Header</h2>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Offset</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x00</td>
-                    <td>UInt32</td>
-                    <td>Magic</td>
-                    <td>File signature.</td>
-                </tr>
-                <tr>
-                    <td>0x04</td>
-                    <td>UInt32</td>
-                    <td>Version</td>
-                    <td>Format version.</td>
-                </tr>
-                <tr>
-                    <td>0x08</td>
-                    <td>UInt32</td>
-                    <td>Size</td>
-                    <td>Total file size.</td>
-                </tr>
-                <tr>
-                    <td>0x0C</td>
-                    <td>UInt32</td>
-                    <td>Flags</td>
-                    <td>Meta flags.</td>
-                </tr>
-                <tr>
-                    <td>0x10</td>
-                    <td>UInt128</td>
-                    <td>GUID</td>
-                    <td>16-byte resource GUID.</td>
-                </tr>
-                <tr>
-                    <td>0x20</td>
-                    <td>UInt32</td>
-                    <td>NameHash</td>
-                    <td>Hash of the name.</td>
-                </tr>
-                <tr>
-                    <td>0x24</td>
-                    <td>UInt32</td>
-                    <td>PathHash</td>
-                    <td>Hash of the path.</td>
-                </tr>
-                <tr>
-                    <td>0x28</td>
-                    <td>UInt32</td>
-                    <td>SourceHash</td>
-                    <td>Hash of the source.</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x00</td>
+                        <td>UInt32</td>
+                        <td>Magic</td>
+                        <td>File signature.</td>
+                    </tr>
+                    <tr>
+                        <td>0x04</td>
+                        <td>UInt32</td>
+                        <td>Version</td>
+                        <td>Format version.</td>
+                    </tr>
+                    <tr>
+                        <td>0x08</td>
+                        <td>UInt32</td>
+                        <td>Size</td>
+                        <td>Total file size.</td>
+                    </tr>
+                    <tr>
+                        <td>0x0C</td>
+                        <td>UInt32</td>
+                        <td>Flags</td>
+                        <td>Meta flags.</td>
+                    </tr>
+                    <tr>
+                        <td>0x10</td>
+                        <td>UInt128</td>
+                        <td>GUID</td>
+                        <td>16-byte resource GUID.</td>
+                    </tr>
+                    <tr>
+                        <td>0x20</td>
+                        <td>UInt32</td>
+                        <td>NameHash</td>
+                        <td>Hash of the name.</td>
+                    </tr>
+                    <tr>
+                        <td>0x24</td>
+                        <td>UInt32</td>
+                        <td>PathHash</td>
+                        <td>Hash of the path.</td>
+                    </tr>
+                    <tr>
+                        <td>0x28</td>
+                        <td>UInt32</td>
+                        <td>SourceHash</td>
+                        <td>Hash of the source.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 id="section-offsets-int32">Section Offsets (Int32)</h2>
-
         <p>Offsets are absolute. If 0 or negative, the section is empty.</p>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Offset</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x2C</td>
-                    <td>AssetOffset</td>
-                    <td>Start of Asset array.</td>
-                </tr>
-                <tr>
-                    <td>0x30</td>
-                    <td>StateOffset</td>
-                    <td>Start of State array.</td>
-                </tr>
-                <tr>
-                    <td>0x34</td>
-                    <td>VariableOffset</td>
-                    <td>Start of Variable array.</td>
-                </tr>
-                <tr>
-                    <td>0x38</td>
-                    <td>AttributeOffset</td>
-                    <td>Start of Attribute array.</td>
-                </tr>
-                <tr>
-                    <td>0x3C</td>
-                    <td>PredicateOffset</td>
-                    <td>Start of Predicate array.</td>
-                </tr>
-                <tr>
-                    <td>0x40</td>
-                    <td>PartOffset</td>
-                    <td>Start of Part array.</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x2C</td>
+                        <td>AssetOffset</td>
+                        <td>Start of Asset array.</td>
+                    </tr>
+                    <tr>
+                        <td>0x30</td>
+                        <td>StateOffset</td>
+                        <td>Start of State array.</td>
+                    </tr>
+                    <tr>
+                        <td>0x34</td>
+                        <td>VariableOffset</td>
+                        <td>Start of Variable array.</td>
+                    </tr>
+                    <tr>
+                        <td>0x38</td>
+                        <td>AttributeOffset</td>
+                        <td>Start of Attribute array.</td>
+                    </tr>
+                    <tr>
+                        <td>0x3C</td>
+                        <td>PredicateOffset</td>
+                        <td>Start of Predicate array.</td>
+                    </tr>
+                    <tr>
+                        <td>0x40</td>
+                        <td>PartOffset</td>
+                        <td>Start of Part array.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 id="section-counts-uint16">Section Counts (UInt16)</h2>
-
         <p>Located at <code>0x4C</code>.</p>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Offset</th>
-                    <th scope="col">Name</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>0x4C</td>
-                    <td>AssetCount</td>
-                </tr>
-                <tr>
-                    <td>0x4E</td>
-                    <td>StateCount</td>
-                </tr>
-                <tr>
-                    <td>0x50</td>
-                    <td>VariableCount</td>
-                </tr>
-                <tr>
-                    <td>0x52</td>
-                    <td>AttributeCount</td>
-                </tr>
-                <tr>
-                    <td>0x54</td>
-                    <td>PredicateCount</td>
-                </tr>
-                <tr>
-                    <td>0x56</td>
-                    <td>PartCount</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x4C</td>
+                        <td>AssetCount</td>
+                    </tr>
+                    <tr>
+                        <td>0x4E</td>
+                        <td>StateCount</td>
+                    </tr>
+                    <tr>
+                        <td>0x50</td>
+                        <td>VariableCount</td>
+                    </tr>
+                    <tr>
+                        <td>0x52</td>
+                        <td>AttributeCount</td>
+                    </tr>
+                    <tr>
+                        <td>0x54</td>
+                        <td>PredicateCount</td>
+                    </tr>
+                    <tr>
+                        <td>0x56</td>
+                        <td>PartCount</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 id="data-structures">Data Structures</h2>
-
         <h3>Strings</h3>
-
         <p>Strings are stored as relative pointers (<code>Int32</code>) to null-terminated arrays. The pointer is relative to the current position.</p>
-
         <h3>Attribute Structure</h3>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Type</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Byte[4]</td>
-                    <td>Value</td>
-                    <td>Raw value (interpretation depends on type).</td>
-                </tr>
-                <tr>
-                    <td>RelPtr</td>
-                    <td>Name</td>
-                    <td>Attribute name.</td>
-                </tr>
-                <tr>
-                    <td>RelPtr</td>
-                    <td>Scope</td>
-                    <td>Scope name.</td>
-                </tr>
-                <tr>
-                    <td>UInt32</td>
-                    <td>UIndex</td>
-                    <td>Unknown index.</td>
-                </tr>
-                <tr>
-                    <td>UInt32</td>
-                    <td>ID</td>
-                    <td>Attribute ID.</td>
-                </tr>
-                <tr>
-                    <td>Int32</td>
-                    <td>Type</td>
-                    <td>Value Type Flags.</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Byte[4]</td>
+                        <td>Value</td>
+                        <td>Raw value (interpretation depends on type).</td>
+                    </tr>
+                    <tr>
+                        <td>RelPtr</td>
+                        <td>Name</td>
+                        <td>Attribute name.</td>
+                    </tr>
+                    <tr>
+                        <td>RelPtr</td>
+                        <td>Scope</td>
+                        <td>Scope name.</td>
+                    </tr>
+                    <tr>
+                        <td>UInt32</td>
+                        <td>UIndex</td>
+                        <td>Unknown index.</td>
+                    </tr>
+                    <tr>
+                        <td>UInt32</td>
+                        <td>ID</td>
+                        <td>Attribute ID.</td>
+                    </tr>
+                    <tr>
+                        <td>Int32</td>
+                        <td>Type</td>
+                        <td>Value Type Flags.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h3>Value Type Flags</h3>
-
         <ul>
             <li><strong>0x01:</strong> Boolean (Value[0])</li>
             <li><strong>0x02:</strong> Integer (Big Endian)</li>
@@ -236,71 +279,69 @@
             <li><strong>0x10:</strong> Asset Pointer (Absolute offset to Asset)</li>
             <li><strong>0x20:</strong> Matrix Pointer (Absolute offset)</li>
         </ul>
-
         <h3>State Structure</h3>
-
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-            <thead>
-                <tr>
-                    <th scope="col">Type</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>UInt32</td>
-                    <td>ClassID</td>
-                    <td>Class identifier.</td>
-                </tr>
-                <tr>
-                    <td>RelPtr</td>
-                    <td>ClassName</td>
-                    <td>Class name string.</td>
-                </tr>
-                <tr>
-                    <td>RelPtr</td>
-                    <td>Name</td>
-                    <td>State name string.</td>
-                </tr>
-                <tr>
-                    <td>Int32</td>
-                    <td>AttrArrOffset</td>
-                    <td>Absolute offset to array of Attribute pointers (Int32).</td>
-                </tr>
-                <tr>
-                    <td>UInt16</td>
-                    <td>AttrCount</td>
-                    <td>Number of attributes.</td>
-                </tr>
-                <tr>
-                    <td>UInt16</td>
-                    <td>ObjType</td>
-                    <td>Object type.</td>
-                </tr>
-                <tr>
-                    <td>Int32</td>
-                    <td>PartArrOffset</td>
-                    <td>Absolute offset to array of Part pointers.</td>
-                </tr>
-                <tr>
-                    <td>Int32</td>
-                    <td>PredArrOffset</td>
-                    <td>Absolute offset to array of Predicate pointers.</td>
-                </tr>
-                <tr>
-                    <td>UInt16</td>
-                    <td>PartCount</td>
-                    <td>Number of parts.</td>
-                </tr>
-                <tr>
-                    <td>UInt16</td>
-                    <td>PredCount</td>
-                    <td>Number of predicates.</td>
-                </tr>
-            </tbody>
-        </table></div>
-
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>UInt32</td>
+                        <td>ClassID</td>
+                        <td>Class identifier.</td>
+                    </tr>
+                    <tr>
+                        <td>RelPtr</td>
+                        <td>ClassName</td>
+                        <td>Class name string.</td>
+                    </tr>
+                    <tr>
+                        <td>RelPtr</td>
+                        <td>Name</td>
+                        <td>State name string.</td>
+                    </tr>
+                    <tr>
+                        <td>Int32</td>
+                        <td>AttrArrOffset</td>
+                        <td>Absolute offset to array of Attribute pointers (Int32).</td>
+                    </tr>
+                    <tr>
+                        <td>UInt16</td>
+                        <td>AttrCount</td>
+                        <td>Number of attributes.</td>
+                    </tr>
+                    <tr>
+                        <td>UInt16</td>
+                        <td>ObjType</td>
+                        <td>Object type.</td>
+                    </tr>
+                    <tr>
+                        <td>Int32</td>
+                        <td>PartArrOffset</td>
+                        <td>Absolute offset to array of Part pointers.</td>
+                    </tr>
+                    <tr>
+                        <td>Int32</td>
+                        <td>PredArrOffset</td>
+                        <td>Absolute offset to array of Predicate pointers.</td>
+                    </tr>
+                    <tr>
+                        <td>UInt16</td>
+                        <td>PartCount</td>
+                        <td>Number of parts.</td>
+                    </tr>
+                    <tr>
+                        <td>UInt16</td>
+                        <td>PredCount</td>
+                        <td>Number of predicates.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </body>
-
 </html>

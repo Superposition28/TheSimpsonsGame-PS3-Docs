@@ -5,394 +5,470 @@
         <title>BSP Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+    </head>
     <body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Spatial partition resource (.bsp)</nav>
-
-<h1>File Format Documentation: .bsp (The Simpsons Game)</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
-<p>Describes candidate level spatial partition structures and associated lumps.</p>
-<dl><dt>Identification</dt><dd>Observed first word 0x0000000B and a lump directory beginning at 0x10.</dd><dt>Byte order / text</dt><dd>Big-endian fields in documented PS3 samples.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#overview">Overview</a></li><li><a href="#identification">Identification</a></li><li><a href="#global-properties">Global properties</a></li><li><a href="#detailed-structure">Detailed Structure</a></li><li><a href="#data-types-reference">Data Types Reference</a></li><li><a href="#checksums-integrity-checks">Checksums / Integrity Checks</a></li><li><a href="#known-variations-versions">Known Variations / Versions</a></li><li><a href="#analysis-tools-methods">Analysis Tools &amp; Methods</a></li><li><a href="#open-questions-uncertainties">Open Questions / Uncertainties</a></li><li><a href="#references">References</a></li><li><a href="#document-history">Document history</a></li><li><a href="#other">Other:</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="graph.html">Navigation graph (.graph)</a></td><td>Level context</td><td>Spatial partitioning and navigation describe the same level space but have different node/edge models. No shared node numbering or coordinate transform is established.</td></tr><tr><td><a href="toc.html">Table-of-contents resources (.toc)</a></td><td>Level context</td><td>Spatial partition and occlusion/stream index data support level organization. TOC records are not demonstrated BSP node references.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Node/lump semantics and collision/visibility uses remain partly inferred. This is not a specification for an unrelated BSP family, and operation 8 does not import these files.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-
-<p><strong>Version:</strong> 0.9
-<strong>Last Updated:</strong> 2025-05-05
-<strong>Author(s):</strong> Contributor not recorded</p>
-<hr>
-<h2 id="overview">Overview</h2>
-<ul>
-<li><strong>Format Name:</strong> Custom Binary Space Partitioning (BSP) File</li>
-<li><strong>Common File Extension(s):</strong> <code>.bsp</code></li>
-<li><strong>Purpose/Domain:</strong> 3D Game Level Data. Stores the spatial partitioning structure (BSP tree) and potentially other related level geometry data for a zone within the game. Used for efficient visibility determination, collision detection, and organizing level data.</li>
-<li><strong>Originating Application/System:</strong> The Simpsons Game (Likely using a customized RenderWare engine)</li>
-<li><strong>Format Type:</strong> Binary</li>
-<li><strong>General Structure:</strong> File Header, Lump Directory, Variable Metadata Section, Main BSP Node Data (Lump 3), potentially other data lumps (Vertices, Faces, Textures, etc.), optional trailing data.</li>
-</ul>
-<hr>
-<h2 id="identification">Identification</h2>
-<ul>
-<li><strong>Magic Number(s) / Signature:</strong> <code>0x0000000B</code><ul>
-<li><strong>Offset:</strong> <code>0x00</code></li>
-</ul>
-</li>
-<li><strong>Version Information:</strong> The magic number <code>0x0000000B</code> might indicate Version 11.<ul>
-<li><strong>Location:</strong> Offset <code>0x00</code></li>
-<li><strong>Data Type:</strong> <code>uint32</code> (Big-Endian)</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2 id="global-properties">Global properties</h2>
-<ul>
-<li><strong>Endianness:</strong> Big-Endian</li>
-<li><strong>Character Encoding:</strong> N/A (Primarily non-text binary data)</li>
-<li><strong>Default Alignment:</strong> Likely 4-byte alignment for node structure components (floats, ints), but overall alignment rules are not explicitly confirmed. BSP nodes are 64 bytes.</li>
-<li><strong>Compression:</strong> None identified in the analyzed sections.</li>
-<li><strong>Encryption:</strong> None identified in the analyzed sections.</li>
-</ul>
-<hr>
-<h2 id="detailed-structure">Detailed Structure</h2>
-<p><strong>Section: File Header</strong></p>
-<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-<thead>
-<tr>
-<th align="left" scope="col">Offset (Hex)</th>
-<th align="left" scope="col">Offset (Dec)</th>
-<th align="left" scope="col">Size (Bytes)</th>
-<th align="left" scope="col">Data Type</th>
-<th align="left" scope="col">Endianness</th>
-<th align="left" scope="col">Field Name</th>
-<th align="left" scope="col">Description</th>
-<th align="left" scope="col">Notes / Example Value</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left"><code>0x00</code></td>
-<td align="left">0</td>
-<td align="left">4</td>
-<td align="left"><code>uint32</code></td>
-<td align="left">BE</td>
-<td align="left">Magic/Version</td>
-<td align="left">File identifier, possibly format version</td>
-<td align="left"><code>0x0000000B</code> (Maybe Version 11)</td>
-</tr>
-<tr>
-<td align="left"><code>0x04</code></td>
-<td align="left">4</td>
-<td align="left">4</td>
-<td align="left"><code>uint32?</code></td>
-<td align="left">BE</td>
-<td align="left">Unknown</td>
-<td align="left">Unknown purpose</td>
-<td align="left"></td>
-</tr>
-<tr>
-<td align="left"><code>0x08</code></td>
-<td align="left">8</td>
-<td align="left">4</td>
-<td align="left"><code>uint32</code></td>
-<td align="left">BE</td>
-<td align="left">Metadata Count</td>
-<td align="left">Controls structure/count of subsequent metadata</td>
-<td align="left">Varies (6 in zone01, 1 in zone13)</td>
-</tr>
-<tr>
-<td align="left"><code>0x0C</code></td>
-<td align="left">12</td>
-<td align="left">4</td>
-<td align="left"><code>uint32</code></td>
-<td align="left">BE</td>
-<td align="left">Metadata Offset</td>
-<td align="left">Offset from start of file to Variable Metadata</td>
-<td align="left"><code>0x00000070</code> (Example from zone01)</td>
-</tr>
-</tbody></table></div>
-<p><strong>Section: Lump Directory</strong></p>
-<ul>
-<li><strong>Location:</strong> Starts at <code>0x10</code>, ends at <code>0x6F</code>.</li>
-<li><strong>Description:</strong> Acts as a directory containing entries pointing to various data chunks (&quot;lumps&quot;) within the file. The exact structure is not fully decoded, but entries likely contain at least an offset and a size for each lump.</li>
-<li><strong>Known Entry:</strong> The entry at index 3 (file offset <code>0x30</code>) points to the start (Offset) and size (Length) of the main BSP node data chunk (Lump 3). Other entries likely point to vertices, faces, textures, etc.</li>
-</ul>
-<p><strong>Section: Variable Metadata Section</strong></p>
-<ul>
-<li><strong>Location:</strong> Starts at the offset specified in <code>Header.MetadataOffset</code> (e.g., <code>0x70</code>).</li>
-<li><strong>Structure:</strong> Varies depending on the value of <code>Header.MetadataCount</code>.<ul>
-<li>If Count is 6 (e.g., zone01), this section contains 6 identical-looking 16-byte blocks marked with <code>PE0</code>. Total size 96 bytes (<code>0x60</code>).</li>
-<li>If Count is 1 (e.g., zone13), this section contains different data (example bytes: <code>C8 FD CE AB...</code>).</li>
-</ul>
-</li>
-<li><strong>Purpose:</strong> Unknown, precedes the main BSP node data.</li>
-</ul>
-<p><strong>Section: Main BSP Node Data (Lump 3)</strong></p>
-<ul>
-<li><strong>Structure Name:</strong> <code>BSPNode</code></li>
-<li><strong>Count:</strong> Determined by <code>LumpDirectory[3].Length / 64</code>.</li>
-<li><strong>Location:</strong> Starts at offset <code>LumpDirectory[3].Offset</code> (e.g., <code>0xD0</code> in zone01, <code>0x80</code> in zone13).</li>
-<li><strong>Total Size per Record:</strong> 64 bytes.</li>
-<li><strong>Format:</strong> 8 Floats, 8 Integers (all Big-Endian).</li>
-</ul>
-<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-<thead>
-<tr>
-<th align="left" scope="col">Offset (Relative)</th>
-<th align="left" scope="col">Size (Bytes)</th>
-<th align="left" scope="col">Data Type</th>
-<th align="left" scope="col">Endianness</th>
-<th align="left" scope="col">Field Name</th>
-<th align="left" scope="col">Description</th>
-<th align="left" scope="col">Notes / Interpretation</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left"><code>0x00</code></td>
-<td align="left">4</td>
-<td align="left"><code>float32</code></td>
-<td align="left">BE</td>
-<td align="left">Plane Normal X</td>
-<td align="left">X component of the node&#39;s splitting plane normal</td>
-<td align="left">Unnormalized?</td>
-</tr>
-<tr>
-<td align="left"><code>0x04</code></td>
-<td align="left">4</td>
-<td align="left"><code>float32</code></td>
-<td align="left">BE</td>
-<td align="left">Plane Normal Y</td>
-<td align="left">Y component of the node&#39;s splitting plane normal</td>
-<td align="left">Unnormalized?</td>
-</tr>
-<tr>
-<td align="left"><code>0x08</code></td>
-<td align="left">4</td>
-<td align="left"><code>float32</code></td>
-<td align="left">BE</td>
-<td align="left">Plane Normal Z</td>
-<td align="left">Z component of the node&#39;s splitting plane normal</td>
-<td align="left">Unnormalized?</td>
-</tr>
-<tr>
-<td align="left"><code>0x0C</code></td>
-<td align="left">4</td>
-<td align="left"><code>float32</code></td>
-<td align="left">BE</td>
-<td align="left">Plane Distance</td>
-<td align="left">Distance D for the plane equation Ax+By+Cz=D</td>
-<td align="left">Exact definition/sign needs confirmation.</td>
-</tr>
-<tr>
-<td align="left"><code>0x10</code></td>
-<td align="left">4</td>
-<td align="left"><code>float32</code></td>
-<td align="left">BE</td>
-<td align="left">Unknown Float 5</td>
-<td align="left">Possibly BBox or Texture Projection Data</td>
-<td align="left">Purpose uncertain.</td>
-</tr>
-<tr>
-<td align="left"><code>0x14</code></td>
-<td align="left">4</td>
-<td align="left"><code>float32</code></td>
-<td align="left">BE</td>
-<td align="left">Unknown Float 6</td>
-<td align="left">Possibly BBox or Texture Projection Data</td>
-<td align="left">Purpose uncertain.</td>
-</tr>
-<tr>
-<td align="left"><code>0x18</code></td>
-<td align="left">4</td>
-<td align="left"><code>float32</code></td>
-<td align="left">BE</td>
-<td align="left">Unknown Float 7</td>
-<td align="left">Possibly BBox or Texture Projection Data</td>
-<td align="left">Purpose uncertain.</td>
-</tr>
-<tr>
-<td align="left"><code>0x1C</code></td>
-<td align="left">4</td>
-<td align="left"><code>float32</code></td>
-<td align="left">BE</td>
-<td align="left">Unknown Float 8</td>
-<td align="left">Possibly BBox or Texture Projection Data</td>
-<td align="left">Purpose uncertain.</td>
-</tr>
-<tr>
-<td align="left"><code>0x20</code></td>
-<td align="left">4</td>
-<td align="left"><code>int32</code></td>
-<td align="left">BE</td>
-<td align="left">Flags?</td>
-<td align="left">Integer flag field. Varies between nodes.</td>
-<td align="left">Stores leaf-specific data in leaf nodes. Purpose uncertain.</td>
-</tr>
-<tr>
-<td align="left"><code>0x24</code></td>
-<td align="left">4</td>
-<td align="left"><code>int32</code></td>
-<td align="left">BE</td>
-<td align="left">Child Front</td>
-<td align="left">Front child node reference</td>
-<td align="left">Positive: Offset in bytes from start of Lump 3. &lt;= 0: Leaf node indicator.</td>
-</tr>
-<tr>
-<td align="left"><code>0x28</code></td>
-<td align="left">4</td>
-<td align="left"><code>int32</code></td>
-<td align="left">BE</td>
-<td align="left">Child Back</td>
-<td align="left">Back child node reference</td>
-<td align="left">Positive: Offset in bytes from start of Lump 3. &lt;= 0: Leaf node indicator.</td>
-</tr>
-<tr>
-<td align="left"><code>0x2C</code></td>
-<td align="left">4</td>
-<td align="left"><code>int32</code></td>
-<td align="left">BE</td>
-<td align="left">Unknown Int 4</td>
-<td align="left">Unknown integer</td>
-<td align="left">Often 0 in internal nodes. Stores leaf-specific data in leaf nodes.</td>
-</tr>
-<tr>
-<td align="left"><code>0x30</code></td>
-<td align="left">4</td>
-<td align="left"><code>int32</code></td>
-<td align="left">BE</td>
-<td align="left">Unknown Int 5</td>
-<td align="left">Unknown integer</td>
-<td align="left">Often 65535 (<code>0xFFFF</code>) in internal nodes. Stores leaf-specific data in leaf nodes.</td>
-</tr>
-<tr>
-<td align="left"><code>0x34</code></td>
-<td align="left">4</td>
-<td align="left"><code>int32</code></td>
-<td align="left">BE</td>
-<td align="left">Unknown Int 6</td>
-<td align="left">Unknown integer</td>
-<td align="left">Often -1 (<code>0xFFFFFFFF</code>) in internal nodes. Stores leaf-specific data in leaf nodes.</td>
-</tr>
-<tr>
-<td align="left"><code>0x38</code></td>
-<td align="left">4</td>
-<td align="left"><code>int32</code></td>
-<td align="left">BE</td>
-<td align="left">Unknown Int 7</td>
-<td align="left">Unknown integer</td>
-<td align="left">Often -2147483648 (<code>0x80000000</code>) in internal nodes. Leaf data.</td>
-</tr>
-<tr>
-<td align="left"><code>0x3C</code></td>
-<td align="left">4</td>
-<td align="left"><code>int32</code></td>
-<td align="left">BE</td>
-<td align="left">Unknown Int 8</td>
-<td align="left">Unknown integer</td>
-<td align="left">Often 0 in internal nodes. Stores leaf-specific data in leaf nodes.</td>
-</tr>
-</tbody></table></div>
-<p><strong>Section: Trailing Data</strong></p>
-<ul>
-<li><strong>Location:</strong> Immediately following the last <code>BSPNode</code> in Lump 3.</li>
-<li><strong>Presence:</strong> Observed in some files (e.g., <code>zone01.bsp</code> has 16 extra bytes).</li>
-<li><strong>Purpose:</strong> Unknown.</li>
-</ul>
-<hr>
-<h2 id="data-types-reference">Data Types Reference</h2>
-<ul>
-<li><strong><code>float32</code>:</strong> 32-bit IEEE 754 floating-point number, Big-Endian byte order.</li>
-<li><strong><code>int32</code>:</strong> Signed 32-bit integer, Big-Endian byte order.</li>
-<li><strong><code>uint32</code>:</strong> Unsigned 32-bit integer, Big-Endian byte order.</li>
-<li><strong><code>byte[N]</code>:</strong> Fixed-size array of N bytes.</li>
-<li><strong><code>Leaf Node Data</code>:</strong> When <code>ChildFront</code> and <code>ChildBack</code> are ≤0, the node is a leaf. Negative values likely encode a leaf identifier. The fields <code>Flags?</code> and <code>Unknown Int 4-8</code> then store leaf-specific data (e.g., properties like solid, empty, water, trigger, references to geometry). Exact encoding TBD. A (0, 0) child pair indicates a different type of leaf.</li>
-</ul>
-<hr>
-<h2 id="checksums-integrity-checks">Checksums / Integrity Checks</h2>
-<ul>
-<li><strong>Type:</strong> None identified.</li>
-<li><strong>Location:</strong> N/A</li>
-<li><strong>Scope:</strong> N/A</li>
-<li><strong>Algorithm Details:</strong> N/A</li>
-</ul>
-<hr>
-<h2 id="known-variations-versions">Known Variations / Versions</h2>
-<ul>
-<li>The primary observed variation relates to the <code>Header.MetadataCount</code> field and the subsequent Variable Metadata Section.<ul>
-<li><strong>Count = 6</strong> (e.g., <code>zone01.bsp</code>): Metadata section contains 6 x 16-byte &#39;PE0&#39; blocks. Lump 3 starts at <code>0xD0</code>.</li>
-<li><strong>Count = 1</strong> (e.g., <code>zone13.bsp</code>): Metadata section contains different, smaller data. Lump 3 starts at <code>0x80</code>.</li>
-</ul>
-</li>
-<li><strong>How to Differentiate:</strong> Check the <code>uint32</code> value at offset <code>0x08</code>.</li>
-</ul>
-<hr>
-<h2 id="analysis-tools-methods">Analysis Tools &amp; Methods</h2>
-<ul>
-<li><strong>Tools Used:</strong> Hex Editor likely used for initial inspection and data extraction. Reverse engineering tools and custom scripts (e.g., Python with <code>struct</code> module) would be useful for further decoding.</li>
-<li><strong>Methodology:</strong> Comparison between different <code>.bsp</code> files (<code>zone01</code> vs <code>zone13</code>) to identify variable sections and fixed structures. Analysis of data patterns (floating point numbers, integers, offsets) to infer structure meaning.</li>
-</ul>
-<hr>
-<h2 id="open-questions-uncertainties">Open Questions / Uncertainties</h2>
-<ul>
-<li>Exact purpose and structure of the Lump Directory (<code>0x10</code>-<code>0x6F</code>).</li>
-<li>Exact purpose and structure of the Variable Metadata section (PE0 blocks / other data).</li>
-<li>Confirmation of plane normal normalization and exact definition of Plane Distance (Float 4).</li>
-<li>Purpose of BSP Node Floats 5-8 (BBox/Tex?).</li>
-<li>Meaning of BSP Node Int 1 (Flags?).</li>
-<li>Detailed encoding of leaf node data within BSP Node Ints 1, 4-8.</li>
-<li>Purpose of the 16 trailing bytes seen in <code>zone01.bsp</code>.</li>
-<li>Structure and content of other lumps presumably pointed to by the Lump Directory (Vertices, Faces, Textures, Collision, Entities, PVS data).</li>
-</ul>
-<hr>
-<h2 id="references">References</h2>
-<ul>
-<li>Analysis notes provided in the user prompt.</li>
-<li>Example files: <code>zone01.bsp</code>, <code>zone13.bsp</code> from The Simpsons Game.</li>
-<li>[Link to any existing partial documentation.]</li>
-<li>[Link to related file formats.]</li>
-<li>[Specific file examples used for analysis.]</li>
-<li>[Relevant code snippets or analysis scripts.]</li>
-</ul>
-<hr>
-<h2 id="document-history">Document history</h2>
-<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-<thead>
-<tr>
-<th align="left" scope="col">Version</th>
-<th align="left" scope="col">Date</th>
-<th align="left" scope="col">Author(s)</th>
-<th align="left" scope="col">Changes Made</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">0.1</td>
-<td align="left">2025-05-05</td>
-<td align="left">AI Assistant</td>
-<td align="left">Initial draft based on provided analysis.</td>
-</tr>
-<tr>
-<td align="left">0.9</td>
-<td align="left">2025-05-05</td>
-<td align="left">AI Assistant</td>
-<td align="left">Integrated provided analysis data into template structure. Added details.</td>
-</tr>
-</tbody></table></div>
-<h2 id="other">Other:</h2>
-<ul>
-<li><strong>Overall Purpose:</strong> The BSP tree structure defined in Lump 3 allows the game engine to efficiently determine visibility (PVS), perform collision detection, and organize level data by associating spatial regions (leaves) with properties and renderable geometry.</li>
-<li><strong>Missing Pieces (Likely in Other Lumps):</strong> The complete level representation requires additional data beyond the BSP structure itself, expected to be in other lumps referenced by the Lump Directory:<ul>
-<li>Vertex List (X, Y, Z coordinates)</li>
-<li>Face/Polygon List (Vertex indices, texture assignments, lighting info)</li>
-<li>Texture Information</li>
-<li>Collision Data (Specific collision meshes or properties)</li>
-<li>Entity Information (Spawn points, items, triggers, NPCs, etc.)</li>
-<li>Visibility Data (Precomputed Visibility Set - PVS, if used)</li>
-</ul>
-</li>
-</ul>
-
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Spatial partition resource (.bsp)</nav>
+        <h1>File Format Documentation: .bsp (The Simpsons Game)</h1>
+        <section class="format-summary" aria-label="Format summary">
+            <p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+            <p>Describes candidate level spatial partition structures and associated lumps.</p>
+            <dl>
+                <dt>Identification</dt>
+                <dd>Observed first word 0x0000000B and a lump directory beginning at 0x10.</dd>
+                <dt>Byte order / text</dt>
+                <dd>Big-endian fields in documented PS3 samples.</dd>
+                <dt>Documentation scope</dt>
+                <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+            </dl>
+        </section>
+        <nav class="page-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <ul>
+                <li><a href="#related-formats-2">Related formats</a></li>
+                <li><a href="#operation-support-2">Operation support</a></li>
+                <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#identification">Identification</a></li>
+                <li><a href="#global-properties">Global properties</a></li>
+                <li><a href="#detailed-structure">Detailed Structure</a></li>
+                <li><a href="#data-types-reference">Data Types Reference</a></li>
+                <li><a href="#checksums-integrity-checks">Checksums / Integrity Checks</a></li>
+                <li><a href="#known-variations-versions">Known Variations / Versions</a></li>
+                <li><a href="#analysis-tools-methods">Analysis Tools &amp; Methods</a></li>
+                <li><a href="#open-questions-uncertainties">Open Questions / Uncertainties</a></li>
+                <li><a href="#references">References</a></li>
+                <li><a href="#document-history">Document history</a></li>
+                <li><a href="#other">Other:</a></li>
+            </ul>
+        </nav>
+        <section id="related-formats">
+            <h2 id="related-formats-2">Related formats</h2>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                <table>
+                    <caption>Related formats and strength of the connection</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Related format</th>
+                            <th scope="col">Evidence</th>
+                            <th scope="col">Relationship and practical consequence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="graph.html">Navigation graph (.graph)</a></td>
+                            <td>Level context</td>
+                            <td>Spatial partitioning and navigation describe the same level space but have different node/edge models. No shared node numbering or coordinate transform is established.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="toc.html">Table-of-contents resources (.toc)</a></td>
+                            <td>Level context</td>
+                            <td>Spatial partition and occlusion/stream index data support level organization. TOC records are not demonstrated BSP node references.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
+        </section>
+        <section id="operation-support">
+            <h2 id="operation-support-2">Operation support</h2>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="evidence-limits">
+            <h2 id="evidence-and-limitations">Evidence and limitations</h2>
+            <p>Node/lump semantics and collision/visibility uses remain partly inferred. This is not a specification for an unrelated BSP family, and operation 8 does not import these files.</p>
+            <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+        </section>
+        <p><strong>Version:</strong> 0.9 <strong>Last Updated:</strong> 2025-05-05 <strong>Author(s):</strong> Contributor not recorded</p>
+        <hr>
+        <h2 id="overview">Overview</h2>
+        <ul>
+            <li><strong>Format Name:</strong> Custom Binary Space Partitioning (BSP) File</li>
+            <li><strong>Common File Extension(s):</strong> <code>.bsp</code></li>
+            <li><strong>Purpose/Domain:</strong> 3D Game Level Data. Stores the spatial partitioning structure (BSP tree) and potentially other related level geometry data for a zone within the game. Used for efficient visibility determination, collision detection, and organizing level data.</li>
+            <li><strong>Originating Application/System:</strong> The Simpsons Game (Likely using a customized RenderWare engine)</li>
+            <li><strong>Format Type:</strong> Binary</li>
+            <li><strong>General Structure:</strong> File Header, Lump Directory, Variable Metadata Section, Main BSP Node Data (Lump 3), potentially other data lumps (Vertices, Faces, Textures, etc.), optional trailing data.</li>
+        </ul>
+        <hr>
+        <h2 id="identification">Identification</h2>
+        <ul>
+            <li>
+                <strong>Magic Number(s) / Signature:</strong> <code>0x0000000B</code>
+                <ul>
+                    <li><strong>Offset:</strong> <code>0x00</code></li>
+                </ul>
+            </li>
+            <li>
+                <strong>Version Information:</strong> The magic number <code>0x0000000B</code> might indicate Version 11.
+                <ul>
+                    <li><strong>Location:</strong> Offset <code>0x00</code></li>
+                    <li><strong>Data Type:</strong> <code>uint32</code> (Big-Endian)</li>
+                </ul>
+            </li>
+        </ul>
+        <hr>
+        <h2 id="global-properties">Global properties</h2>
+        <ul>
+            <li><strong>Endianness:</strong> Big-Endian</li>
+            <li><strong>Character Encoding:</strong> N/A (Primarily non-text binary data)</li>
+            <li><strong>Default Alignment:</strong> Likely 4-byte alignment for node structure components (floats, ints), but overall alignment rules are not explicitly confirmed. BSP nodes are 64 bytes.</li>
+            <li><strong>Compression:</strong> None identified in the analyzed sections.</li>
+            <li><strong>Encryption:</strong> None identified in the analyzed sections.</li>
+        </ul>
+        <hr>
+        <h2 id="detailed-structure">Detailed Structure</h2>
+        <p><strong>Section: File Header</strong></p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th align="left" scope="col">Offset (Hex)</th>
+                        <th align="left" scope="col">Offset (Dec)</th>
+                        <th align="left" scope="col">Size (Bytes)</th>
+                        <th align="left" scope="col">Data Type</th>
+                        <th align="left" scope="col">Endianness</th>
+                        <th align="left" scope="col">Field Name</th>
+                        <th align="left" scope="col">Description</th>
+                        <th align="left" scope="col">Notes / Example Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td align="left"><code>0x00</code></td>
+                        <td align="left">0</td>
+                        <td align="left">4</td>
+                        <td align="left"><code>uint32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Magic/Version</td>
+                        <td align="left">File identifier, possibly format version</td>
+                        <td align="left"><code>0x0000000B</code> (Maybe Version 11)</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x04</code></td>
+                        <td align="left">4</td>
+                        <td align="left">4</td>
+                        <td align="left"><code>uint32?</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Unknown</td>
+                        <td align="left">Unknown purpose</td>
+                        <td align="left"></td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x08</code></td>
+                        <td align="left">8</td>
+                        <td align="left">4</td>
+                        <td align="left"><code>uint32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Metadata Count</td>
+                        <td align="left">Controls structure/count of subsequent metadata</td>
+                        <td align="left">Varies (6 in zone01, 1 in zone13)</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x0C</code></td>
+                        <td align="left">12</td>
+                        <td align="left">4</td>
+                        <td align="left"><code>uint32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Metadata Offset</td>
+                        <td align="left">Offset from start of file to Variable Metadata</td>
+                        <td align="left"><code>0x00000070</code> (Example from zone01)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p><strong>Section: Lump Directory</strong></p>
+        <ul>
+            <li><strong>Location:</strong> Starts at <code>0x10</code>, ends at <code>0x6F</code>.</li>
+            <li><strong>Description:</strong> Acts as a directory containing entries pointing to various data chunks (&quot;lumps&quot;) within the file. The exact structure is not fully decoded, but entries likely contain at least an offset and a size for each lump.</li>
+            <li><strong>Known Entry:</strong> The entry at index 3 (file offset <code>0x30</code>) points to the start (Offset) and size (Length) of the main BSP node data chunk (Lump 3). Other entries likely point to vertices, faces, textures, etc.</li>
+        </ul>
+        <p><strong>Section: Variable Metadata Section</strong></p>
+        <ul>
+            <li><strong>Location:</strong> Starts at the offset specified in <code>Header.MetadataOffset</code> (e.g., <code>0x70</code>).</li>
+            <li>
+                <strong>Structure:</strong> Varies depending on the value of <code>Header.MetadataCount</code>.
+                <ul>
+                    <li>If Count is 6 (e.g., zone01), this section contains 6 identical-looking 16-byte blocks marked with <code>PE0</code>. Total size 96 bytes (<code>0x60</code>).</li>
+                    <li>If Count is 1 (e.g., zone13), this section contains different data (example bytes: <code>C8 FD CE AB...</code>).</li>
+                </ul>
+            </li>
+            <li><strong>Purpose:</strong> Unknown, precedes the main BSP node data.</li>
+        </ul>
+        <p><strong>Section: Main BSP Node Data (Lump 3)</strong></p>
+        <ul>
+            <li><strong>Structure Name:</strong> <code>BSPNode</code></li>
+            <li><strong>Count:</strong> Determined by <code>LumpDirectory[3].Length / 64</code>.</li>
+            <li><strong>Location:</strong> Starts at offset <code>LumpDirectory[3].Offset</code> (e.g., <code>0xD0</code> in zone01, <code>0x80</code> in zone13).</li>
+            <li><strong>Total Size per Record:</strong> 64 bytes.</li>
+            <li><strong>Format:</strong> 8 Floats, 8 Integers (all Big-Endian).</li>
+        </ul>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th align="left" scope="col">Offset (Relative)</th>
+                        <th align="left" scope="col">Size (Bytes)</th>
+                        <th align="left" scope="col">Data Type</th>
+                        <th align="left" scope="col">Endianness</th>
+                        <th align="left" scope="col">Field Name</th>
+                        <th align="left" scope="col">Description</th>
+                        <th align="left" scope="col">Notes / Interpretation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td align="left"><code>0x00</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>float32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Plane Normal X</td>
+                        <td align="left">X component of the node&#39;s splitting plane normal</td>
+                        <td align="left">Unnormalized?</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x04</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>float32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Plane Normal Y</td>
+                        <td align="left">Y component of the node&#39;s splitting plane normal</td>
+                        <td align="left">Unnormalized?</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x08</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>float32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Plane Normal Z</td>
+                        <td align="left">Z component of the node&#39;s splitting plane normal</td>
+                        <td align="left">Unnormalized?</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x0C</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>float32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Plane Distance</td>
+                        <td align="left">Distance D for the plane equation Ax+By+Cz=D</td>
+                        <td align="left">Exact definition/sign needs confirmation.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x10</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>float32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Unknown Float 5</td>
+                        <td align="left">Possibly BBox or Texture Projection Data</td>
+                        <td align="left">Purpose uncertain.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x14</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>float32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Unknown Float 6</td>
+                        <td align="left">Possibly BBox or Texture Projection Data</td>
+                        <td align="left">Purpose uncertain.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x18</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>float32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Unknown Float 7</td>
+                        <td align="left">Possibly BBox or Texture Projection Data</td>
+                        <td align="left">Purpose uncertain.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x1C</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>float32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Unknown Float 8</td>
+                        <td align="left">Possibly BBox or Texture Projection Data</td>
+                        <td align="left">Purpose uncertain.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x20</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>int32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Flags?</td>
+                        <td align="left">Integer flag field. Varies between nodes.</td>
+                        <td align="left">Stores leaf-specific data in leaf nodes. Purpose uncertain.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x24</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>int32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Child Front</td>
+                        <td align="left">Front child node reference</td>
+                        <td align="left">Positive: Offset in bytes from start of Lump 3. &lt;= 0: Leaf node indicator.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x28</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>int32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Child Back</td>
+                        <td align="left">Back child node reference</td>
+                        <td align="left">Positive: Offset in bytes from start of Lump 3. &lt;= 0: Leaf node indicator.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x2C</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>int32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Unknown Int 4</td>
+                        <td align="left">Unknown integer</td>
+                        <td align="left">Often 0 in internal nodes. Stores leaf-specific data in leaf nodes.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x30</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>int32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Unknown Int 5</td>
+                        <td align="left">Unknown integer</td>
+                        <td align="left">Often 65535 (<code>0xFFFF</code>) in internal nodes. Stores leaf-specific data in leaf nodes.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x34</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>int32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Unknown Int 6</td>
+                        <td align="left">Unknown integer</td>
+                        <td align="left">Often -1 (<code>0xFFFFFFFF</code>) in internal nodes. Stores leaf-specific data in leaf nodes.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x38</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>int32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Unknown Int 7</td>
+                        <td align="left">Unknown integer</td>
+                        <td align="left">Often -2147483648 (<code>0x80000000</code>) in internal nodes. Leaf data.</td>
+                    </tr>
+                    <tr>
+                        <td align="left"><code>0x3C</code></td>
+                        <td align="left">4</td>
+                        <td align="left"><code>int32</code></td>
+                        <td align="left">BE</td>
+                        <td align="left">Unknown Int 8</td>
+                        <td align="left">Unknown integer</td>
+                        <td align="left">Often 0 in internal nodes. Stores leaf-specific data in leaf nodes.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p><strong>Section: Trailing Data</strong></p>
+        <ul>
+            <li><strong>Location:</strong> Immediately following the last <code>BSPNode</code> in Lump 3.</li>
+            <li><strong>Presence:</strong> Observed in some files (e.g., <code>zone01.bsp</code> has 16 extra bytes).</li>
+            <li><strong>Purpose:</strong> Unknown.</li>
+        </ul>
+        <hr>
+        <h2 id="data-types-reference">Data Types Reference</h2>
+        <ul>
+            <li><strong><code>float32</code>:</strong> 32-bit IEEE 754 floating-point number, Big-Endian byte order.</li>
+            <li><strong><code>int32</code>:</strong> Signed 32-bit integer, Big-Endian byte order.</li>
+            <li><strong><code>uint32</code>:</strong> Unsigned 32-bit integer, Big-Endian byte order.</li>
+            <li><strong><code>byte[N]</code>:</strong> Fixed-size array of N bytes.</li>
+            <li><strong><code>Leaf Node Data</code>:</strong> When <code>ChildFront</code> and <code>ChildBack</code> are ≤0, the node is a leaf. Negative values likely encode a leaf identifier. The fields <code>Flags?</code> and <code>Unknown Int 4-8</code> then store leaf-specific data (e.g., properties like solid, empty, water, trigger, references to geometry). Exact encoding TBD. A (0, 0) child pair indicates a different type of leaf.</li>
+        </ul>
+        <hr>
+        <h2 id="checksums-integrity-checks">Checksums / Integrity Checks</h2>
+        <ul>
+            <li><strong>Type:</strong> None identified.</li>
+            <li><strong>Location:</strong> N/A</li>
+            <li><strong>Scope:</strong> N/A</li>
+            <li><strong>Algorithm Details:</strong> N/A</li>
+        </ul>
+        <hr>
+        <h2 id="known-variations-versions">Known Variations / Versions</h2>
+        <ul>
+            <li>
+                The primary observed variation relates to the <code>Header.MetadataCount</code> field and the subsequent Variable Metadata Section.
+                <ul>
+                    <li><strong>Count = 6</strong> (e.g., <code>zone01.bsp</code>): Metadata section contains 6 x 16-byte &#39;PE0&#39; blocks. Lump 3 starts at <code>0xD0</code>.</li>
+                    <li><strong>Count = 1</strong> (e.g., <code>zone13.bsp</code>): Metadata section contains different, smaller data. Lump 3 starts at <code>0x80</code>.</li>
+                </ul>
+            </li>
+            <li><strong>How to Differentiate:</strong> Check the <code>uint32</code> value at offset <code>0x08</code>.</li>
+        </ul>
+        <hr>
+        <h2 id="analysis-tools-methods">Analysis Tools &amp; Methods</h2>
+        <ul>
+            <li><strong>Tools Used:</strong> Hex Editor likely used for initial inspection and data extraction. Reverse engineering tools and custom scripts (e.g., Python with <code>struct</code> module) would be useful for further decoding.</li>
+            <li><strong>Methodology:</strong> Comparison between different <code>.bsp</code> files (<code>zone01</code> vs <code>zone13</code>) to identify variable sections and fixed structures. Analysis of data patterns (floating point numbers, integers, offsets) to infer structure meaning.</li>
+        </ul>
+        <hr>
+        <h2 id="open-questions-uncertainties">Open Questions / Uncertainties</h2>
+        <ul>
+            <li>Exact purpose and structure of the Lump Directory (<code>0x10</code>-<code>0x6F</code>).</li>
+            <li>Exact purpose and structure of the Variable Metadata section (PE0 blocks / other data).</li>
+            <li>Confirmation of plane normal normalization and exact definition of Plane Distance (Float 4).</li>
+            <li>Purpose of BSP Node Floats 5-8 (BBox/Tex?).</li>
+            <li>Meaning of BSP Node Int 1 (Flags?).</li>
+            <li>Detailed encoding of leaf node data within BSP Node Ints 1, 4-8.</li>
+            <li>Purpose of the 16 trailing bytes seen in <code>zone01.bsp</code>.</li>
+            <li>Structure and content of other lumps presumably pointed to by the Lump Directory (Vertices, Faces, Textures, Collision, Entities, PVS data).</li>
+        </ul>
+        <hr>
+        <h2 id="references">References</h2>
+        <ul>
+            <li>Analysis notes provided in the user prompt.</li>
+            <li>Example files: <code>zone01.bsp</code>, <code>zone13.bsp</code> from The Simpsons Game.</li>
+            <li>[Link to any existing partial documentation.]</li>
+            <li>[Link to related file formats.]</li>
+            <li>[Specific file examples used for analysis.]</li>
+            <li>[Relevant code snippets or analysis scripts.]</li>
+        </ul>
+        <hr>
+        <h2 id="document-history">Document history</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th align="left" scope="col">Version</th>
+                        <th align="left" scope="col">Date</th>
+                        <th align="left" scope="col">Author(s)</th>
+                        <th align="left" scope="col">Changes Made</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td align="left">0.1</td>
+                        <td align="left">2025-05-05</td>
+                        <td align="left">AI Assistant</td>
+                        <td align="left">Initial draft based on provided analysis.</td>
+                    </tr>
+                    <tr>
+                        <td align="left">0.9</td>
+                        <td align="left">2025-05-05</td>
+                        <td align="left">AI Assistant</td>
+                        <td align="left">Integrated provided analysis data into template structure. Added details.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="other">Other:</h2>
+        <ul>
+            <li><strong>Overall Purpose:</strong> The BSP tree structure defined in Lump 3 allows the game engine to efficiently determine visibility (PVS), perform collision detection, and organize level data by associating spatial regions (leaves) with properties and renderable geometry.</li>
+            <li>
+                <strong>Missing Pieces (Likely in Other Lumps):</strong> The complete level representation requires additional data beyond the BSP structure itself, expected to be in other lumps referenced by the Lump Directory:
+                <ul>
+                    <li>Vertex List (X, Y, Z coordinates)</li>
+                    <li>Face/Polygon List (Vertex indices, texture assignments, lighting info)</li>
+                    <li>Texture Information</li>
+                    <li>Collision Data (Specific collision meshes or properties)</li>
+                    <li>Entity Information (Spawn points, items, triggers, NPCs, etc.)</li>
+                    <li>Visibility Data (Precomputed Visibility Set - PVS, if used)</li>
+                </ul>
+            </li>
+        </ul>
     </body>
 </html>

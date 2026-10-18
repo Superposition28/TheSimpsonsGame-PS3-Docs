@@ -1,838 +1,400 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>The Simpsons Game - Reversing Documentation</title>
-    <link rel="stylesheet" href="style/main.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
-<body>
-    <nav class="topbar">
-        <a class="brand" href="">Home</a>
-        <div class="topbar-links"><a href="#home-xbox360">Xbox 360</a>
-            <a href="javascript:history.back()">Back</a>
-            <a id="up-link">Up</a>
-        </div>
-    </nav>
-    <main class="pages">
-
-        <!-- PS3 -->
-
-        <section class="page home-page" id="home">
-            <div class="home-intro">
-                <h1>The Simpsons Game: format and asset reference</h1>
-                <p>Start with a workflow, then open a format page for byte layouts and evidence. Pipeline support
-                    describes registered code paths; research completeness and reconstructed runtime behavior are
-                    separate questions.</p>
-                <ul class="overview-links">
-                    <li><a href="#FormatAnalysis-relationships">Format relationships</a></li>
-                    <li><a href="#FormatAnalysis-pipeline">Operation pipeline</a></li>
-                    <li><a href="#FormatAnalysis">Format inventory</a></li>
-                    <li><a href="#USRDIR">Directory structure</a></li>
-                    <li><a href="#docs-guide">Documentation guide</a></li>
-                </ul>
-            </div>
-            <section class="format-coverage" aria-labelledby="format-coverage-title">
-                <div class="format-coverage-heading">
-                    <h2 id="format-coverage-title">Registered format coverage</h2>
-                    <p>Current output usability and conversion limits, including registered operations and the Godot GRAPH editor importer, compared with the implementation on
-                        2026-10-18. The same colours appear in the Documentation Map. These entries describe code paths,
-                        not a fresh end-to-end conversion run.</p>
+    <head>
+        <meta charset="utf-8">
+        <title>The Simpsons Game - Reversing Documentation</title>
+        <link rel="stylesheet" href="style/main.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <nav class="topbar">
+            <a class="brand" href="">Home</a>
+            <div class="topbar-links"><a href="#home-xbox360">Xbox 360</a> <a href="javascript:history.back()">Back</a> <a id="up-link">Up</a></div>
+        </nav>
+        <main class="pages">
+            <!-- PS3 -->
+            <section class="page home-page" id="home">
+                <div class="home-intro">
+                    <h1>The Simpsons Game: format and asset reference</h1>
+                    <p>Start with a workflow, then open a format page for byte layouts and evidence. Pipeline support describes registered code paths; research completeness and reconstructed runtime behavior are separate questions.</p>
+                    <ul class="overview-links">
+                        <li><a href="#FormatAnalysis-relationships">Format relationships</a></li>
+                        <li><a href="#FormatAnalysis-pipeline">Operation pipeline</a></li>
+                        <li><a href="#FormatAnalysis">Format inventory</a></li>
+                        <li><a href="#USRDIR">Directory structure</a></li>
+                        <li><a href="#docs-guide">Documentation guide</a></li>
+                    </ul>
                 </div>
-                <ul class="format-coverage-legend" id="conversion-status-legend" aria-label="Conversion status legend">
-                    <li><span class="coverage-icon coverage-green" role="img"
-                            aria-label="Usable output / source"></span>Usable output / source</li>
-                    <li><span class="coverage-icon coverage-yellow" role="img"
-                            aria-label="Partial / mixed / needs validation"></span>Partial / mixed / needs validation
-                    </li>
-                    <li><span class="coverage-icon coverage-blue" role="img"
-                            aria-label="Archive extraction only"></span>Archive extraction only</li>
-                    <li><span class="coverage-icon coverage-grey" role="img"
-                            aria-label="No registered converter"></span>No registered converter</li>
-                </ul>
-                <ul class="format-coverage-list">
-                    <li class="format-coverage-item" data-format-route="str" data-conversion-status="blue"><span
-                            class="coverage-icon coverage-blue" role="img" aria-label="Archive extraction"></span>
-                        <div><strong>STR → extracted resources</strong><span class="coverage-status">Archive extraction
-                                · Operation 1</span><span class="coverage-detail">Container extraction preserves
-                                payloads for their own format decoders.</span></div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="txd" data-conversion-status="green"><span
-                            class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
-                        <div><strong>TXD → PNG</strong><span class="coverage-status">Usable conversion · Operation
-                                3</span><span class="coverage-detail">Named images support model textures and
-                                bitmap-font atlases.</span></div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="preinstanced" data-conversion-status="yellow">
-                        <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span>
-                        <div><strong>Preinstanced → BLEND / GLB / FBX</strong><span class="coverage-status">Partial
-                                conversion · Operation 8</span><span class="coverage-detail">Geometry import and
-                                optional exports; texture/material associations remain partial.</span></div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="graph" data-conversion-status="yellow">
-                        <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial Godot import"></span>
-                        <div><strong>GRAPH → TSGNavGraph (.res)</strong><span class="coverage-status">Partial import · Godot editor plugin</span>
-                            <span class="coverage-detail">The enabled TSG Graph Importer reads GUID, nodes and edges for resource use and visualization. Edge boundaries are heuristic; no AStar3D or navigation mesh is generated. This is separate from operations.toml.</span></div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="lh2" data-conversion-status="yellow"><span
-                            class="coverage-icon coverage-yellow" role="img"
-                            aria-label="Conversion needs validation"></span>
-                        <div><strong>LH2 → CSV</strong><span class="coverage-status">Conversion needs validation ·
-                                Operation 9</span><span class="coverage-detail">Column export is registered; binary IDs
-                                and text encoding still need validation under the engine Lua host.</span></div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="inf" data-conversion-status="green"><span
-                            class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
-                        <div><strong>INF + PNG → FNT</strong><span class="coverage-status">Usable conversion · Operation
-                                15</span><span class="coverage-detail">Font metrics, glyph rectangles, surviving kerning
-                                and atlas references.</span></div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="tox" data-conversion-status="green"><span
-                            class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
-                        <div><strong>TOX + LH2 → SRT / VTT / CSV</strong><span class="coverage-status">Usable conversion
-                                · Operation 16</span><span class="coverage-detail">Four output languages; SS supplies
-                                labels. Movie companions match by stem and language.</span></div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="sbk" data-conversion-status="yellow"><span
-                            class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span>
-                        <div><strong>SBK → WAV</strong><span class="coverage-status">Partial conversion · Operation
-                                10</span><span class="coverage-detail">Bank audio is decoded, but exhaustive export of
-                                every subsong is not requested.</span></div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="exa-snu" data-conversion-status="green"><span
-                            class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
-                        <div><strong>SNU → WAV</strong><span class="coverage-status">Usable conversion · Operation
-                                11</span><span class="coverage-detail">Stream audio is decoded to Godot-compatible WAV
-                                output.</span></div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="mus" data-conversion-status="yellow"><span
-                            class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span>
-                        <div><strong>MUS → SNR / SNS → WAV segments</strong><span class="coverage-status">Partial
-                                conversion · Operation 12</span><span class="coverage-detail">Segments are usable
-                                separately; adaptive playback and MSB transition logic are not reconstructed.</span>
-                        </div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="vp6" data-conversion-status="green"><span
-                            class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
-                        <div><strong>VP6 → OGV</strong><span class="coverage-status">Usable conversion · Operation
-                                13</span><span class="coverage-detail">FFmpeg transcodes media; external subtitle
-                                generation is separate.</span></div>
-                    </li>
-                    <li class="format-coverage-item" data-format-route="other" data-conversion-status="grey"><span
-                            class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span>
-                        <div><strong>Other extracted resource families</strong><span class="coverage-status">No
-                                registered conversion · No dedicated conversion</span><span
-                                class="coverage-detail">Character, physics, scene, effect and audio-control formats have
-                                research notes but no dedicated registered conversion.</span></div>
-                    </li>
-                </ul>
-                <p><a href="#FormatAnalysis-pipeline">All 18 registered operations</a> · <a
-                        href="#FormatAnalysis-relationships">Relationships and shared data types</a> · <a
-                        href="review.md">Documentation audit</a></p>
+                <section class="format-coverage" aria-labelledby="format-coverage-title">
+                    <div class="format-coverage-heading">
+                        <h2 id="format-coverage-title">Registered format coverage</h2>
+                        <p>Current output usability and conversion limits, including registered operations and the Godot GRAPH editor importer, compared with the implementation on 2026-10-18. The same colours appear in the Documentation Map. These entries describe code paths, not a fresh end-to-end conversion run.</p>
+                    </div>
+                    <ul class="format-coverage-legend" id="conversion-status-legend" aria-label="Conversion status legend">
+                        <li><span class="coverage-icon coverage-green" role="img" aria-label="Usable output / source"></span>Usable output / source</li>
+                        <li><span class="coverage-icon coverage-yellow" role="img" aria-label="Partial / mixed / needs validation"></span>Partial / mixed / needs validation</li>
+                        <li><span class="coverage-icon coverage-blue" role="img" aria-label="Archive extraction only"></span>Archive extraction only</li>
+                        <li><span class="coverage-icon coverage-grey" role="img" aria-label="No registered converter"></span>No registered converter</li>
+                    </ul>
+                    <ul class="format-coverage-list">
+                        <li class="format-coverage-item" data-format-route="str" data-conversion-status="blue">
+                            <span class="coverage-icon coverage-blue" role="img" aria-label="Archive extraction"></span>
+                            <div><strong>STR → extracted resources</strong><span class="coverage-status">Archive extraction · Operation 1</span><span class="coverage-detail">Container extraction preserves payloads for their own format decoders.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="txd" data-conversion-status="green">
+                            <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
+                            <div><strong>TXD → PNG</strong><span class="coverage-status">Usable conversion · Operation 3</span><span class="coverage-detail">Named images support model textures and bitmap-font atlases.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="preinstanced" data-conversion-status="yellow">
+                            <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span>
+                            <div><strong>Preinstanced → BLEND / GLB / FBX</strong><span class="coverage-status">Partial conversion · Operation 8</span><span class="coverage-detail">Geometry import and optional exports; texture/material associations remain partial.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="graph" data-conversion-status="yellow">
+                            <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial Godot import"></span>
+                            <div><strong>GRAPH → TSGNavGraph (.res)</strong><span class="coverage-status">Partial import · Godot editor plugin</span><span class="coverage-detail">The enabled TSG Graph Importer reads GUID, nodes and edges for resource use and visualization. Edge boundaries are heuristic; no AStar3D or navigation mesh is generated. This is separate from operations.toml.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="lh2" data-conversion-status="yellow">
+                            <span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span>
+                            <div><strong>LH2 → CSV</strong><span class="coverage-status">Conversion needs validation · Operation 9</span><span class="coverage-detail">Column export is registered; binary IDs and text encoding still need validation under the engine Lua host.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="inf" data-conversion-status="green">
+                            <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
+                            <div><strong>INF + PNG → FNT</strong><span class="coverage-status">Usable conversion · Operation 15</span><span class="coverage-detail">Font metrics, glyph rectangles, surviving kerning and atlas references.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="tox" data-conversion-status="green">
+                            <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
+                            <div><strong>TOX + LH2 → SRT / VTT / CSV</strong><span class="coverage-status">Usable conversion · Operation 16</span><span class="coverage-detail">Four output languages; SS supplies labels. Movie companions match by stem and language.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="sbk" data-conversion-status="yellow">
+                            <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span>
+                            <div><strong>SBK → WAV</strong><span class="coverage-status">Partial conversion · Operation 10</span><span class="coverage-detail">Bank audio is decoded, but exhaustive export of every subsong is not requested.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="exa-snu" data-conversion-status="green">
+                            <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
+                            <div><strong>SNU → WAV</strong><span class="coverage-status">Usable conversion · Operation 11</span><span class="coverage-detail">Stream audio is decoded to Godot-compatible WAV output.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="mus" data-conversion-status="yellow">
+                            <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span>
+                            <div><strong>MUS → SNR / SNS → WAV segments</strong><span class="coverage-status">Partial conversion · Operation 12</span><span class="coverage-detail">Segments are usable separately; adaptive playback and MSB transition logic are not reconstructed.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="vp6" data-conversion-status="green">
+                            <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
+                            <div><strong>VP6 → OGV</strong><span class="coverage-status">Usable conversion · Operation 13</span><span class="coverage-detail">FFmpeg transcodes media; external subtitle generation is separate.</span></div>
+                        </li>
+                        <li class="format-coverage-item" data-format-route="other" data-conversion-status="grey">
+                            <span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span>
+                            <div><strong>Other extracted resource families</strong><span class="coverage-status">No registered conversion · No dedicated conversion</span><span class="coverage-detail">Character, physics, scene, effect and audio-control formats have research notes but no dedicated registered conversion.</span></div>
+                        </li>
+                    </ul>
+                    <p><a href="#FormatAnalysis-pipeline">All 18 registered operations</a> · <a href="#FormatAnalysis-relationships">Relationships and shared data types</a> · <a href="review.md">Documentation audit</a></p>
+                </section>
+                <nav class="documentation-tree" aria-labelledby="documentation-tree-title">
+                    <div class="documentation-tree-heading">
+                        <h2 id="documentation-tree-title">Documentation Map</h2>
+                        <p>Browse the game structure and format notes. Dots describe current usability/conversion support, not how complete the format research is. Each format link includes its status and limitations.</p>
+                    </div>
+                    <ul class="format-coverage-legend" aria-label="Conversion status legend">
+                        <li><span class="coverage-icon coverage-green" role="img" aria-label="Usable output / source"></span>Usable output / source</li>
+                        <li><span class="coverage-icon coverage-yellow" role="img" aria-label="Partial / mixed / needs validation"></span>Partial / mixed / needs validation</li>
+                        <li><span class="coverage-icon coverage-blue" role="img" aria-label="Archive extraction only"></span>Archive extraction only</li>
+                        <li><span class="coverage-icon coverage-grey" role="img" aria-label="No registered converter"></span>No registered converter</li>
+                    </ul>
+                    <ul class="documentation-tree-root">
+                        <li class="documentation-tree-section documentation-tree-section-game">
+                            <a class="documentation-tree-root-link" href="#PS3_GAME"><span class="documentation-tree-kicker">Game files</span><span class="documentation-tree-title">PS3_GAME</span></a>
+                            <ul class="documentation-tree-branch">
+                                <li><a class="documentation-tree-group-link format-status-link" data-conversion-status="green" href="#PS3_GAME-PARAM-SFO" title="Parsed metadata: initialization reads SFO; EU, US and demo TOML references are available. No dedicated conversion operation is registered."><span class="coverage-icon coverage-green" role="img" aria-label="Parsed metadata and readable TOML references"></span><span>PARAM.SFO (PS3 metadata)</span></a></li>
+                                <li>
+                                    <a class="documentation-tree-group-link" href="#USRDIR">USRDIR</a>
+                                    <ul class="documentation-tree-leaves">
+                                        <li><a href="#USRDIR-A1_Audio">A1_Audio</a></li>
+                                        <li><a href="#USRDIR-A1_Video">A1_Video</a></li>
+                                        <li><a href="#USRDIR-A2_Characters">A2_Characters</a></li>
+                                        <li><a href="#USRDIR-A2_Frontend">A2_Frontend</a></li>
+                                        <li><a href="#USRDIR-L01_LandOfChocolate">L01_LandOfChocolate</a></li>
+                                        <li><a href="#USRDIR-L02_BartmanBegins">L02_BartmanBegins</a></li>
+                                        <li><a href="#USRDIR-L03_HungryHungryHomer">L03_HungryHungryHomer</a></li>
+                                        <li><a href="#USRDIR-L04_TreeHugger">L04_TreeHugger</a></li>
+                                        <li><a href="#USRDIR-L05_MobRules">L05_MobRules</a></li>
+                                        <li><a href="#USRDIR-L06_EnterTheCheatrix">L06_EnterTheCheatrix</a></li>
+                                        <li><a href="#USRDIR-L07_DayOfTheDolphin">L07_DayOfTheDolphin</a></li>
+                                        <li><a href="#USRDIR-L08_TheColossalDonut">L08_TheColossalDonut</a></li>
+                                        <li><a href="#USRDIR-L09_Invasion">L09_Invasion</a></li>
+                                        <li><a href="#USRDIR-L10_BargainBin">L10_BargainBin</a></li>
+                                        <li><a href="#USRDIR-L11_NeverQuest">L11_NeverQuest</a></li>
+                                        <li><a href="#USRDIR-L12_GrandTheftScratchy">L12_GrandTheftScratchy</a></li>
+                                        <li><a href="#USRDIR-L13_MedalOfHomer">L13_MedalOfHomer</a></li>
+                                        <li><a href="#USRDIR-L14_BigSuperHappy">L14_BigSuperHappy</a></li>
+                                        <li><a href="#USRDIR-L15_Rhymes">L15_Rhymes</a></li>
+                                        <li><a href="#USRDIR-L16_MeetThyPlayer">L16_MeetThyPlayer</a></li>
+                                        <li><a href="#USRDIR-LHub-00_GameHub">LHub-00_GameHub</a></li>
+                                        <li><a href="#USRDIR-LHub-00_SprHub">LHub-00_SprHub</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="documentation-tree-section documentation-tree-section-formats">
+                            <a class="documentation-tree-root-link" href="#FormatAnalysis"><span class="documentation-tree-kicker">Reverse engineering</span><span class="documentation-tree-title">Format Analysis</span></a>
+                            <ul class="documentation-tree-branch">
+                                <li>
+                                    <span class="documentation-tree-group-link">Indexed formats</span>
+                                    <ul class="documentation-tree-leaves">
+                                        <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-bin" title="No registered conversion: Executable inventory only; no executable conversion is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.BIN</span></a></li>
+                                        <li><a class="format-status-link" data-conversion-status="green" href="#FormatAnalysis-lua" title="Usable source: Already readable Lua source; the original game API is not reconstructed."><span class="coverage-icon coverage-green" role="img" aria-label="Usable source"></span><span>.lua</span></a></li>
+                                        <li><a class="format-status-link" data-conversion-status="green" href="#FormatAnalysis-txt" title="Usable source: Root text/localetable.txt configuration, including PS3 and Xbox 360 variants."><span class="coverage-icon coverage-green" role="img" aria-label="Usable source"></span><span>.txt (Root locale configuration)</span></a></li>
+                                        <li class="documentation-tree-format-group">
+                                            <span class="documentation-tree-group-label">Audio files</span>
+                                            <ul class="documentation-tree-leaves">
+                                                <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-mus" title="Partial conversion: Operation 12 decodes WAV segments; MSB transitions and an adaptive score are not reconstructed."><span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span><span>.mus</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="green" href="#FormatAnalysis-exa-snu" title="Usable conversion: Operation 11 decodes SNU streams to Godot-compatible WAV output."><span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span><span>.exa.snu</span></a></li>
+                                            </ul>
+                                            <p class="documentation-tree-note">Related SBK and SMB resources are listed below under STR contents.</p>
+                                        </li>
+                                    </ul>
+                                    <ul class="documentation-tree-branch">
+                                        <li class="documentation-tree-format-group">
+                                            <a class="format-status-link" data-conversion-status="blue" href="#FormatAnalysis-str" title="Archive extraction: Operation 1 extracts resource payloads; each payload needs its own decoder."><span class="coverage-icon coverage-blue" role="img" aria-label="Archive extraction"></span><span>.STR (EA Stream File)</span></a>
+                                            <ul class="documentation-tree-leaves">
+                                                <li><a class="format-status-link" data-conversion-status="green" href="#FormatAnalysis-txt-embedded" title="Usable source: Text resources extracted from STR archives, including locale-reference tables."><span class="coverage-icon coverage-green" role="img" aria-label="Usable source"></span><span>.txt (STR-extracted text)</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="green" href="#FormatAnalysis-vp6" title="Usable conversion: Operation 13 transcodes VP6 media to OGV with FFmpeg; subtitles are separate."><span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span><span>.vp6</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-alb" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.alb</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-amb" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.amb</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-aub" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.aub</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-bsp" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.bsp</span></a></li>
+                                                <li class="documentation-tree-format-group">
+                                                    <a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-preinstanced" title="Partial conversion: Operation 8 exports geometry; texture and material assignments remain partial."><span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span><span>preinstanced</span></a>
+                                                    <ul class="documentation-tree-leaves">
+                                                        <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-dff" title="Partial conversion: Operation 8 exports geometry; texture and material assignments remain partial."><span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span><span>.dff (Preinstanced)</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-rws" title="Partial conversion: Operation 8 exports geometry; texture and material assignments remain partial."><span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span><span>.rws (Preinstanced)</span></a></li>
+                                                    </ul>
+                                                </li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-ctb" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.ctb</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="green" href="#FormatAnalysis-txd" title="Usable conversion: Operation 3 exports supported textures as PNG images."><span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span><span>.txd (Texture Dictionary)</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-graph" title="Partial Godot import: The enabled TSG Graph Importer saves GUID, nodes and edges as a TSGNavGraph .res resource. Edge detection is heuristic; it does not generate AStar3D or a navigation mesh."><span class="coverage-icon coverage-yellow" role="img" aria-label="Partial Godot import"></span><span>.graph (Navigation Graph)</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-lh2" title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span><span>.lh2 (Localization)</span></a></li>
+                                                <li class="documentation-tree-format-group">
+                                                    <a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-lh2-base" title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span><span>.LH2</span></a>
+                                                    <ul class="documentation-tree-leaves">
+                                                        <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-lh2-en" title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span><span>.en.LH2</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-lh2-es" title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span><span>.es.LH2</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-lh2-fr" title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span><span>.fr.LH2</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-lh2-it" title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span><span>.it.LH2</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-lh2-ss" title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span><span>.ss.LH2</span></a></li>
+                                                    </ul>
+                                                </li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-meta" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.meta.xml (MetaModel)</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-imb" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.imb</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-mib" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.mib</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-msb" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.msb</span></a></li>
+                                                <li class="documentation-tree-format-group">
+                                                    <a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-ps3" title="Mixed conversion support: This platform-suffix group includes convertible TOX files and resources without registered converters."><span class="coverage-icon coverage-yellow" role="img" aria-label="Mixed conversion support"></span><span>*.ps3 files</span></a>
+                                                    <ul class="documentation-tree-leaves">
+                                                        <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-acs" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.acs.PS3</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-bbn" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.bbn.PS3</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-bnk" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.bnk.PS3</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-hko" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.hko.PS3</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-hkt" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.hkt.PS3</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-rcb" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.rcb.PS3</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="green" href="#FormatAnalysis-tox" title="Usable conversion: Operation 16 produces SRT, VTT and CSV by resolving TOX timing IDs through LH2."><span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span><span>.tox.PS3</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-xml" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.xml.PS3</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-cec" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.cec.ps3 (Controller Config)</span></a></li>
+                                                    </ul>
+                                                </li>
+                                                <li class="documentation-tree-format-group">
+                                                    <span class="documentation-tree-group-label">Audio related files</span>
+                                                    <ul class="documentation-tree-leaves">
+                                                        <li><a class="format-status-link" data-conversion-status="yellow" href="#FormatAnalysis-sbk" title="Partial conversion: Operation 10 decodes bank audio; exhaustive subsong export is not requested."><span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span><span>.sbk (Sound Bank)</span></a></li>
+                                                        <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-smb" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.smb (Meta Bank)</span></a></li>
+                                                    </ul>
+                                                    <p class="documentation-tree-note">EXA/SNU and MUS audio formats are listed above.</p>
+                                                </li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-rcm-b" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.rcm_b</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-simgroup" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.dat (SimGroup)</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-shk" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.shk.PS3 (Shock Resource)</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-toc" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.toc</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-uix" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.uix</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-vfb" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>.vfb</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="grey" href="#FormatAnalysis-no-extension" title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span><span>No Extension: LightTOC (Lighting) and StreamSetConfig</span></a></li>
+                                                <li><a class="format-status-link" data-conversion-status="green" href="#FormatAnalysis-inf" title="Usable conversion: Operation 15 produces FNT descriptors using matching PNG font atlases."><span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span><span>.inf (Font Map)</span></a></li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
             </section>
-            <nav class="documentation-tree" aria-labelledby="documentation-tree-title">
-                <div class="documentation-tree-heading">
-                    <h2 id="documentation-tree-title">Documentation Map</h2>
-                    <p>Browse the game structure and format notes. Dots describe current usability/conversion support,
-                        not how complete the format research is. Each format link includes its status and limitations.
-                    </p>
-                </div>
-                <ul class="format-coverage-legend" aria-label="Conversion status legend">
-                    <li><span class="coverage-icon coverage-green" role="img"
-                            aria-label="Usable output / source"></span>Usable output / source</li>
-                    <li><span class="coverage-icon coverage-yellow" role="img"
-                            aria-label="Partial / mixed / needs validation"></span>Partial / mixed / needs validation
-                    </li>
-                    <li><span class="coverage-icon coverage-blue" role="img"
-                            aria-label="Archive extraction only"></span>Archive extraction only</li>
-                    <li><span class="coverage-icon coverage-grey" role="img"
-                            aria-label="No registered converter"></span>No registered converter</li>
-                </ul>
-                <ul class="documentation-tree-root">
-                    <li class="documentation-tree-section documentation-tree-section-game">
-                        <a class="documentation-tree-root-link" href="#PS3_GAME">
-                            <span class="documentation-tree-kicker">Game files</span>
-                            <span class="documentation-tree-title">PS3_GAME</span>
-                        </a>
-                        <ul class="documentation-tree-branch">
-<li><a class="documentation-tree-group-link format-status-link" data-conversion-status="green" href="#PS3_GAME-PARAM-SFO" title="Parsed metadata: initialization reads SFO; EU, US and demo TOML references are available. No dedicated conversion operation is registered."><span class="coverage-icon coverage-green" role="img" aria-label="Parsed metadata and readable TOML references"></span><span>PARAM.SFO (PS3 metadata)</span></a></li>
-
-                            <li>
-                                <a class="documentation-tree-group-link" href="#USRDIR">USRDIR</a>
-                                <ul class="documentation-tree-leaves">
-                                    <li>
-                                        <a href="#USRDIR-A1_Audio">A1_Audio</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-A1_Video">A1_Video</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-A2_Characters">A2_Characters</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-A2_Frontend">A2_Frontend</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L01_LandOfChocolate">L01_LandOfChocolate</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L02_BartmanBegins">L02_BartmanBegins</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L03_HungryHungryHomer">L03_HungryHungryHomer</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L04_TreeHugger">L04_TreeHugger</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L05_MobRules">L05_MobRules</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L06_EnterTheCheatrix">L06_EnterTheCheatrix</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L07_DayOfTheDolphin">L07_DayOfTheDolphin</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L08_TheColossalDonut">L08_TheColossalDonut</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L09_Invasion">L09_Invasion</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L10_BargainBin">L10_BargainBin</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L11_NeverQuest">L11_NeverQuest</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L12_GrandTheftScratchy">L12_GrandTheftScratchy</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L13_MedalOfHomer">L13_MedalOfHomer</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L14_BigSuperHappy">L14_BigSuperHappy</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L15_Rhymes">L15_Rhymes</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-L16_MeetThyPlayer">L16_MeetThyPlayer</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-LHub-00_GameHub">LHub-00_GameHub</a>
-                                    </li>
-                                    <li>
-                                        <a href="#USRDIR-LHub-00_SprHub">LHub-00_SprHub</a>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="documentation-tree-section documentation-tree-section-formats">
-                        <a class="documentation-tree-root-link" href="#FormatAnalysis"><span
-                                class="documentation-tree-kicker">Reverse engineering</span><span
-                                class="documentation-tree-title">Format Analysis</span></a>
-                        <ul class="documentation-tree-branch">
-                            <li><span class="documentation-tree-group-link">Indexed formats</span>
-                                <ul class="documentation-tree-leaves">
-                                    <li><a class="format-status-link" data-conversion-status="grey"
-                                            href="#FormatAnalysis-bin"
-                                            title="No registered conversion: Executable inventory only; no executable conversion is registered."><span
-                                                class="coverage-icon coverage-grey" role="img"
-                                                aria-label="No registered conversion"></span><span>.BIN</span></a></li>
-                                    <li><a class="format-status-link" data-conversion-status="green"
-                                            href="#FormatAnalysis-lua"
-                                            title="Usable source: Already readable Lua source; the original game API is not reconstructed."><span
-                                                class="coverage-icon coverage-green" role="img"
-                                                aria-label="Usable source"></span><span>.lua</span></a></li>
-                                    <li><a class="format-status-link" data-conversion-status="green"
-                                            href="#FormatAnalysis-txt"
-                                            title="Usable source: Root text/localetable.txt configuration, including PS3 and Xbox 360 variants."><span
-                                                class="coverage-icon coverage-green" role="img"
-                                                aria-label="Usable source"></span><span>.txt (Root locale configuration)</span></a></li>
-                                    <li class="documentation-tree-format-group"><span
-                                            class="documentation-tree-group-label">Audio files</span>
-                                        <ul class="documentation-tree-leaves">
-                                            <li><a class="format-status-link" data-conversion-status="yellow"
-                                                    href="#FormatAnalysis-mus"
-                                                    title="Partial conversion: Operation 12 decodes WAV segments; MSB transitions and an adaptive score are not reconstructed."><span
-                                                        class="coverage-icon coverage-yellow" role="img"
-                                                        aria-label="Partial conversion"></span><span>.mus</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="green"
-                                                    href="#FormatAnalysis-exa-snu"
-                                                    title="Usable conversion: Operation 11 decodes SNU streams to Godot-compatible WAV output."><span
-                                                        class="coverage-icon coverage-green" role="img"
-                                                        aria-label="Usable conversion"></span><span>.exa.snu</span></a>
-                                            </li>
-                                        </ul>
-                                        <p class="documentation-tree-note">Related SBK and SMB resources are listed
-                                            below under STR contents.</p>
-                                    </li>
-                                </ul>
-                                <ul class="documentation-tree-branch">
-                                    <li class="documentation-tree-format-group"><a class="format-status-link"
-                                            data-conversion-status="blue" href="#FormatAnalysis-str"
-                                            title="Archive extraction: Operation 1 extracts resource payloads; each payload needs its own decoder."><span
-                                                class="coverage-icon coverage-blue" role="img"
-                                                aria-label="Archive extraction"></span><span>.STR (EA Stream
-                                                File)</span></a>
-                                        <ul class="documentation-tree-leaves">
-                                            <li><a class="format-status-link" data-conversion-status="green"
-                                                    href="#FormatAnalysis-txt-embedded"
-                                                    title="Usable source: Text resources extracted from STR archives, including locale-reference tables."><span
-                                                        class="coverage-icon coverage-green" role="img"
-                                                        aria-label="Usable source"></span><span>.txt (STR-extracted text)</span></a></li>
-                                            <li><a class="format-status-link" data-conversion-status="green"
-                                                    href="#FormatAnalysis-vp6"
-                                                    title="Usable conversion: Operation 13 transcodes VP6 media to OGV with FFmpeg; subtitles are separate."><span
-                                                        class="coverage-icon coverage-green" role="img"
-                                                        aria-label="Usable conversion"></span><span>.vp6</span></a></li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-alb"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.alb</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-amb"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.amb</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-aub"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.aub</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-bsp"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.bsp</span></a>
-                                            </li>
-                                            <li class="documentation-tree-format-group"><a class="format-status-link"
-                                                    data-conversion-status="yellow" href="#FormatAnalysis-preinstanced"
-                                                    title="Partial conversion: Operation 8 exports geometry; texture and material assignments remain partial."><span
-                                                        class="coverage-icon coverage-yellow" role="img"
-                                                        aria-label="Partial conversion"></span><span>preinstanced</span></a>
-                                                <ul class="documentation-tree-leaves">
-                                                    <li><a class="format-status-link" data-conversion-status="yellow"
-                                                            href="#FormatAnalysis-dff"
-                                                            title="Partial conversion: Operation 8 exports geometry; texture and material assignments remain partial."><span
-                                                                class="coverage-icon coverage-yellow" role="img"
-                                                                aria-label="Partial conversion"></span><span>.dff
-                                                                (Preinstanced)</span></a></li>
-                                                    <li><a class="format-status-link" data-conversion-status="yellow"
-                                                            href="#FormatAnalysis-rws"
-                                                            title="Partial conversion: Operation 8 exports geometry; texture and material assignments remain partial."><span
-                                                                class="coverage-icon coverage-yellow" role="img"
-                                                                aria-label="Partial conversion"></span><span>.rws
-                                                                (Preinstanced)</span></a></li>
-                                                </ul>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-ctb"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.ctb</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="green"
-                                                    href="#FormatAnalysis-txd"
-                                                    title="Usable conversion: Operation 3 exports supported textures as PNG images."><span
-                                                        class="coverage-icon coverage-green" role="img"
-                                                        aria-label="Usable conversion"></span><span>.txd (Texture
-                                                        Dictionary)</span></a></li>
-                                            <li><a class="format-status-link" data-conversion-status="yellow"
-                                                    href="#FormatAnalysis-graph"
-                                                    title="Partial Godot import: The enabled TSG Graph Importer saves GUID, nodes and edges as a TSGNavGraph .res resource. Edge detection is heuristic; it does not generate AStar3D or a navigation mesh."><span
-                                                        class="coverage-icon coverage-yellow" role="img"
-                                                        aria-label="Partial Godot import"></span><span>.graph
-                                                        (Navigation Graph)</span></a></li>
-                                            <li><a class="format-status-link" data-conversion-status="yellow"
-                                                    href="#FormatAnalysis-lh2"
-                                                    title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span
-                                                        class="coverage-icon coverage-yellow" role="img"
-                                                        aria-label="Conversion needs validation"></span><span>.lh2
-                                                        (Localization)</span></a></li>
-                                            <li class="documentation-tree-format-group"><a class="format-status-link"
-                                                    data-conversion-status="yellow" href="#FormatAnalysis-lh2-base"
-                                                    title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span
-                                                        class="coverage-icon coverage-yellow" role="img"
-                                                        aria-label="Conversion needs validation"></span><span>.LH2</span></a>
-                                                <ul class="documentation-tree-leaves">
-                                                    <li><a class="format-status-link" data-conversion-status="yellow"
-                                                            href="#FormatAnalysis-lh2-en"
-                                                            title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span
-                                                                class="coverage-icon coverage-yellow" role="img"
-                                                                aria-label="Conversion needs validation"></span><span>.en.LH2</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="yellow"
-                                                            href="#FormatAnalysis-lh2-es"
-                                                            title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span
-                                                                class="coverage-icon coverage-yellow" role="img"
-                                                                aria-label="Conversion needs validation"></span><span>.es.LH2</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="yellow"
-                                                            href="#FormatAnalysis-lh2-fr"
-                                                            title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span
-                                                                class="coverage-icon coverage-yellow" role="img"
-                                                                aria-label="Conversion needs validation"></span><span>.fr.LH2</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="yellow"
-                                                            href="#FormatAnalysis-lh2-it"
-                                                            title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span
-                                                                class="coverage-icon coverage-yellow" role="img"
-                                                                aria-label="Conversion needs validation"></span><span>.it.LH2</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="yellow"
-                                                            href="#FormatAnalysis-lh2-ss"
-                                                            title="Conversion needs validation: Operation 9 exports CSV; binary ID and text-encoding fidelity still need engine-runtime validation. Operation 16 reads global tables separately."><span
-                                                                class="coverage-icon coverage-yellow" role="img"
-                                                                aria-label="Conversion needs validation"></span><span>.ss.LH2</span></a>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-meta"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.meta.xml
-                                                        (MetaModel)</span></a></li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-imb"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.imb</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-mib"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.mib</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-msb"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.msb</span></a>
-                                            </li>
-                                            <li class="documentation-tree-format-group"><a class="format-status-link"
-                                                    data-conversion-status="yellow" href="#FormatAnalysis-ps3"
-                                                    title="Mixed conversion support: This platform-suffix group includes convertible TOX files and resources without registered converters."><span
-                                                        class="coverage-icon coverage-yellow" role="img"
-                                                        aria-label="Mixed conversion support"></span><span>*.ps3
-                                                        files</span></a>
-                                                <ul class="documentation-tree-leaves">
-                                                    <li><a class="format-status-link" data-conversion-status="grey"
-                                                            href="#FormatAnalysis-acs"
-                                                            title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                                class="coverage-icon coverage-grey" role="img"
-                                                                aria-label="No registered conversion"></span><span>.acs.PS3</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="grey"
-                                                            href="#FormatAnalysis-bbn"
-                                                            title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                                class="coverage-icon coverage-grey" role="img"
-                                                                aria-label="No registered conversion"></span><span>.bbn.PS3</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="grey"
-                                                            href="#FormatAnalysis-bnk"
-                                                            title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                                class="coverage-icon coverage-grey" role="img"
-                                                                aria-label="No registered conversion"></span><span>.bnk.PS3</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="grey"
-                                                            href="#FormatAnalysis-hko"
-                                                            title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                                class="coverage-icon coverage-grey" role="img"
-                                                                aria-label="No registered conversion"></span><span>.hko.PS3</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="grey"
-                                                            href="#FormatAnalysis-hkt"
-                                                            title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                                class="coverage-icon coverage-grey" role="img"
-                                                                aria-label="No registered conversion"></span><span>.hkt.PS3</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="grey"
-                                                            href="#FormatAnalysis-rcb"
-                                                            title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                                class="coverage-icon coverage-grey" role="img"
-                                                                aria-label="No registered conversion"></span><span>.rcb.PS3</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="green"
-                                                            href="#FormatAnalysis-tox"
-                                                            title="Usable conversion: Operation 16 produces SRT, VTT and CSV by resolving TOX timing IDs through LH2."><span
-                                                                class="coverage-icon coverage-green" role="img"
-                                                                aria-label="Usable conversion"></span><span>.tox.PS3</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="grey"
-                                                            href="#FormatAnalysis-xml"
-                                                            title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                                class="coverage-icon coverage-grey" role="img"
-                                                                aria-label="No registered conversion"></span><span>.xml.PS3</span></a>
-                                                    </li>
-                                                    <li><a class="format-status-link" data-conversion-status="grey"
-                                                            href="#FormatAnalysis-cec"
-                                                            title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                                class="coverage-icon coverage-grey" role="img"
-                                                                aria-label="No registered conversion"></span><span>.cec.ps3
-                                                                (Controller Config)</span></a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="documentation-tree-format-group"><span
-                                                    class="documentation-tree-group-label">Audio related files</span>
-                                                <ul class="documentation-tree-leaves">
-                                                    <li><a class="format-status-link" data-conversion-status="yellow"
-                                                            href="#FormatAnalysis-sbk"
-                                                            title="Partial conversion: Operation 10 decodes bank audio; exhaustive subsong export is not requested."><span
-                                                                class="coverage-icon coverage-yellow" role="img"
-                                                                aria-label="Partial conversion"></span><span>.sbk (Sound
-                                                                Bank)</span></a></li>
-                                                    <li><a class="format-status-link" data-conversion-status="grey"
-                                                            href="#FormatAnalysis-smb"
-                                                            title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                                class="coverage-icon coverage-grey" role="img"
-                                                                aria-label="No registered conversion"></span><span>.smb
-                                                                (Meta Bank)</span></a></li>
-                                                </ul>
-                                                <p class="documentation-tree-note">EXA/SNU and MUS audio formats are
-                                                    listed above.</p>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-rcm-b"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.rcm_b</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-simgroup"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.dat
-                                                        (SimGroup)</span></a></li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-shk"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.shk.PS3
-                                                        (Shock Resource)</span></a></li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-toc"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.toc</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-uix"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.uix</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-vfb"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>.vfb</span></a>
-                                            </li>
-                                            <li><a class="format-status-link" data-conversion-status="grey"
-                                                    href="#FormatAnalysis-no-extension"
-                                                    title="No registered conversion: Research or inventory only; no dedicated converter is registered."><span
-                                                        class="coverage-icon coverage-grey" role="img"
-                                                        aria-label="No registered conversion"></span><span>No Extension:
-                                                        LightTOC (Lighting) and StreamSetConfig</span></a></li>
-                                            <li><a class="format-status-link" data-conversion-status="green"
-                                                    href="#FormatAnalysis-inf"
-                                                    title="Usable conversion: Operation 15 produces FNT descriptors using matching PNG font atlases."><span
-                                                        class="coverage-icon coverage-green" role="img"
-                                                        aria-label="Usable conversion"></span><span>.inf (Font
-                                                        Map)</span></a></li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </nav>
-        </section>
-
-        <section data-id="PS3_GAME">
-<iframe id="PS3_GAME-PARAM-SFO" class="page" src="./PS3_GAME/PARAM.SFO.html" loading="lazy" title="PS3 PARAM.SFO metadata"></iframe>
-            <iframe title="PS3_GAME" id="PS3_GAME" class="page" src="./PS3_GAME/index.html" frameborder="0"
-                loading="lazy"></iframe>
-            <section data-id="USRDIR">
-                <iframe title="USRDIR" id="USRDIR" class="page" src="./PS3_GAME/USRDIR/index.html" frameborder="0"
-                    loading="lazy"></iframe>
-                <iframe title="USRDIR-A1_Audio" id="USRDIR-A1_Audio" class="page"
-                    src="./PS3_GAME/USRDIR/A1_Audio/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-A1_Video" id="USRDIR-A1_Video" class="page"
-                    src="./PS3_GAME/USRDIR/A1_Video/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-A2_Characters" id="USRDIR-A2_Characters" class="page"
-                    src="./PS3_GAME/USRDIR/A2_Characters/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-A2_Frontend" id="USRDIR-A2_Frontend" class="page"
-                    src="./PS3_GAME/USRDIR/A2_Frontend/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L01_LandOfChocolate" id="USRDIR-L01_LandOfChocolate" class="page"
-                    src="./PS3_GAME/USRDIR/L01_LandOfChocolate/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L02_BartmanBegins" id="USRDIR-L02_BartmanBegins" class="page"
-                    src="./PS3_GAME/USRDIR/L02_BartmanBegins/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L03_HungryHungryHomer" id="USRDIR-L03_HungryHungryHomer" class="page"
-                    src="./PS3_GAME/USRDIR/L03_HungryHungryHomer/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L04_TreeHugger" id="USRDIR-L04_TreeHugger" class="page"
-                    src="./PS3_GAME/USRDIR/L04_TreeHugger/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L05_MobRules" id="USRDIR-L05_MobRules" class="page"
-                    src="./PS3_GAME/USRDIR/L05_MobRules/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L06_EnterTheCheatrix" id="USRDIR-L06_EnterTheCheatrix" class="page"
-                    src="./PS3_GAME/USRDIR/L06_EnterTheCheatrix/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L07_DayOfTheDolphin" id="USRDIR-L07_DayOfTheDolphin" class="page"
-                    src="./PS3_GAME/USRDIR/L07_DayOfTheDolphin/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L08_TheColossalDonut" id="USRDIR-L08_TheColossalDonut" class="page"
-                    src="./PS3_GAME/USRDIR/L08_TheColossalDonut/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L09_Invasion" id="USRDIR-L09_Invasion" class="page"
-                    src="./PS3_GAME/USRDIR/L09_Invasion/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L10_BargainBin" id="USRDIR-L10_BargainBin" class="page"
-                    src="./PS3_GAME/USRDIR/L10_BargainBin/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L11_NeverQuest" id="USRDIR-L11_NeverQuest" class="page"
-                    src="./PS3_GAME/USRDIR/L11_NeverQuest/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L12_GrandTheftScratchy" id="USRDIR-L12_GrandTheftScratchy" class="page"
-                    src="./PS3_GAME/USRDIR/L12_GrandTheftScratchy/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L13_MedalOfHomer" id="USRDIR-L13_MedalOfHomer" class="page"
-                    src="./PS3_GAME/USRDIR/L13_MedalOfHomer/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L14_BigSuperHappy" id="USRDIR-L14_BigSuperHappy" class="page"
-                    src="./PS3_GAME/USRDIR/L14_BigSuperHappy/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L15_Rhymes" id="USRDIR-L15_Rhymes" class="page"
-                    src="./PS3_GAME/USRDIR/L15_Rhymes/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-L16_MeetThyPlayer" id="USRDIR-L16_MeetThyPlayer" class="page"
-                    src="./PS3_GAME/USRDIR/L16_MeetThyPlayer/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-LHub-00_GameHub" id="USRDIR-LHub-00_GameHub" class="page"
-                    src="./PS3_GAME/USRDIR/LHub-00_GameHub/index.html" frameborder="0" loading="lazy"></iframe>
-                <iframe title="USRDIR-LHub-00_SprHub" id="USRDIR-LHub-00_SprHub" class="page"
-                    src="./PS3_GAME/USRDIR/LHub-00_SprHub/index.html" frameborder="0" loading="lazy"></iframe>
+            <section data-id="PS3_GAME">
+                <iframe id="PS3_GAME-PARAM-SFO" class="page" src="./PS3_GAME/PARAM.SFO.html" loading="lazy" title="PS3 PARAM.SFO metadata"></iframe>
+                <iframe title="PS3_GAME" id="PS3_GAME" class="page" src="./PS3_GAME/index.html" frameborder="0" loading="lazy"></iframe>
+                <section data-id="USRDIR">
+                    <iframe title="USRDIR" id="USRDIR" class="page" src="./PS3_GAME/USRDIR/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-A1_Audio" id="USRDIR-A1_Audio" class="page" src="./PS3_GAME/USRDIR/A1_Audio/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-A1_Video" id="USRDIR-A1_Video" class="page" src="./PS3_GAME/USRDIR/A1_Video/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-A2_Characters" id="USRDIR-A2_Characters" class="page" src="./PS3_GAME/USRDIR/A2_Characters/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-A2_Frontend" id="USRDIR-A2_Frontend" class="page" src="./PS3_GAME/USRDIR/A2_Frontend/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L01_LandOfChocolate" id="USRDIR-L01_LandOfChocolate" class="page" src="./PS3_GAME/USRDIR/L01_LandOfChocolate/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L02_BartmanBegins" id="USRDIR-L02_BartmanBegins" class="page" src="./PS3_GAME/USRDIR/L02_BartmanBegins/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L03_HungryHungryHomer" id="USRDIR-L03_HungryHungryHomer" class="page" src="./PS3_GAME/USRDIR/L03_HungryHungryHomer/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L04_TreeHugger" id="USRDIR-L04_TreeHugger" class="page" src="./PS3_GAME/USRDIR/L04_TreeHugger/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L05_MobRules" id="USRDIR-L05_MobRules" class="page" src="./PS3_GAME/USRDIR/L05_MobRules/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L06_EnterTheCheatrix" id="USRDIR-L06_EnterTheCheatrix" class="page" src="./PS3_GAME/USRDIR/L06_EnterTheCheatrix/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L07_DayOfTheDolphin" id="USRDIR-L07_DayOfTheDolphin" class="page" src="./PS3_GAME/USRDIR/L07_DayOfTheDolphin/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L08_TheColossalDonut" id="USRDIR-L08_TheColossalDonut" class="page" src="./PS3_GAME/USRDIR/L08_TheColossalDonut/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L09_Invasion" id="USRDIR-L09_Invasion" class="page" src="./PS3_GAME/USRDIR/L09_Invasion/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L10_BargainBin" id="USRDIR-L10_BargainBin" class="page" src="./PS3_GAME/USRDIR/L10_BargainBin/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L11_NeverQuest" id="USRDIR-L11_NeverQuest" class="page" src="./PS3_GAME/USRDIR/L11_NeverQuest/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L12_GrandTheftScratchy" id="USRDIR-L12_GrandTheftScratchy" class="page" src="./PS3_GAME/USRDIR/L12_GrandTheftScratchy/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L13_MedalOfHomer" id="USRDIR-L13_MedalOfHomer" class="page" src="./PS3_GAME/USRDIR/L13_MedalOfHomer/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L14_BigSuperHappy" id="USRDIR-L14_BigSuperHappy" class="page" src="./PS3_GAME/USRDIR/L14_BigSuperHappy/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L15_Rhymes" id="USRDIR-L15_Rhymes" class="page" src="./PS3_GAME/USRDIR/L15_Rhymes/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-L16_MeetThyPlayer" id="USRDIR-L16_MeetThyPlayer" class="page" src="./PS3_GAME/USRDIR/L16_MeetThyPlayer/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-LHub-00_GameHub" id="USRDIR-LHub-00_GameHub" class="page" src="./PS3_GAME/USRDIR/LHub-00_GameHub/index.html" frameborder="0" loading="lazy"></iframe>
+                    <iframe title="USRDIR-LHub-00_SprHub" id="USRDIR-LHub-00_SprHub" class="page" src="./PS3_GAME/USRDIR/LHub-00_SprHub/index.html" frameborder="0" loading="lazy"></iframe>
+                </section>
             </section>
-        </section>
-
-        <section data-id="FormatAnalysis">
-            <iframe id="FormatAnalysis-relationships" class="page" src="./PS3_GAME/FormatAnalysis/relationships.html"
-                loading="lazy" title="Format relationships"></iframe>
-            <iframe id="FormatAnalysis-pipeline" class="page" src="./PS3_GAME/FormatAnalysis/pipeline.html"
-                loading="lazy" title="Operation pipeline"></iframe>
-            <iframe title="FormatAnalysis" id="FormatAnalysis" class="page" src="./PS3_GAME/FormatAnalysis/index.html"
-                frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-bin" id="FormatAnalysis-bin" class="page"
-                src="./PS3_GAME/FormatAnalysis/BIN/index.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-lua" id="FormatAnalysis-lua" class="page"
-                src="./PS3_GAME/FormatAnalysis/LUA/index.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-mus" id="FormatAnalysis-mus" class="page"
-                src="./PS3_GAME/FormatAnalysis/MUS/index.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-exa-snu" id="FormatAnalysis-exa-snu" class="page"
-                src="./PS3_GAME/FormatAnalysis/EXA.SNU/index.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-str" id="FormatAnalysis-str" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/index.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-txt" id="FormatAnalysis-txt" class="page"
-                src="./PS3_GAME/FormatAnalysis/TXT/index.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="STR-extracted text resources" id="FormatAnalysis-txt-embedded" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/txt.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-vp6" id="FormatAnalysis-vp6" class="page"
-                src="./PS3_GAME/FormatAnalysis/VP6/index.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-alb" id="FormatAnalysis-alb" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/alb.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-amb" id="FormatAnalysis-amb" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/amb.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-aub" id="FormatAnalysis-aub" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/aub.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-bsp" id="FormatAnalysis-bsp" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/bsp.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-preinstanced" id="FormatAnalysis-preinstanced" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/preinstanced.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-dff" id="FormatAnalysis-dff" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/preinstanced.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-rws" id="FormatAnalysis-rws" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/preinstanced.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-ctb" id="FormatAnalysis-ctb" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ctb.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-txd" id="FormatAnalysis-txd" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/txd.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-graph" id="FormatAnalysis-graph" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/graph.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-lh2" id="FormatAnalysis-lh2" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/lh2.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-lh2-base" id="FormatAnalysis-lh2-base" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/lh2.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-lh2-en" id="FormatAnalysis-lh2-en" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/en.LH2.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-lh2-es" id="FormatAnalysis-lh2-es" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/es.LH2.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-lh2-fr" id="FormatAnalysis-lh2-fr" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/fr.LH2.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-lh2-it" id="FormatAnalysis-lh2-it" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/it.LH2.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-lh2-ss" id="FormatAnalysis-lh2-ss" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ss.LH2.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-meta" id="FormatAnalysis-meta" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/meta.xml.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-imb" id="FormatAnalysis-imb" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/imb.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-mib" id="FormatAnalysis-mib" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/mib.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-msb" id="FormatAnalysis-msb" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/msb.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-ps3" id="FormatAnalysis-ps3" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ps3.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-acs" id="FormatAnalysis-acs" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/acs.PS3.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-bbn" id="FormatAnalysis-bbn" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/bbn.PS3.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-bnk" id="FormatAnalysis-bnk" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/bnk.PS3.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-hko" id="FormatAnalysis-hko" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/hko.PS3.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-hkt" id="FormatAnalysis-hkt" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/hkt.PS3.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-rcb" id="FormatAnalysis-rcb" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/rcb.PS3.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-tox" id="FormatAnalysis-tox" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/tox.PS3.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-xml" id="FormatAnalysis-xml" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/xml.PS3.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-rcm-b" id="FormatAnalysis-rcm-b" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/rcm_b.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-sbk" id="FormatAnalysis-sbk" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/sbk.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-cec" id="FormatAnalysis-cec" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/cec.ps3.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-simgroup" id="FormatAnalysis-simgroup" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/simgroup.dat.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-shk" id="FormatAnalysis-shk" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/shk.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-smb" id="FormatAnalysis-smb" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/smb.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-toc" id="FormatAnalysis-toc" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/toc.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-uix" id="FormatAnalysis-uix" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/uix.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-vfb" id="FormatAnalysis-vfb" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/vfb.html" frameborder="0" loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-no-extension" id="FormatAnalysis-no-extension" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/NoExtension.html" frameborder="0"
-                loading="lazy"></iframe>
-            <iframe title="FormatAnalysis-inf" id="FormatAnalysis-inf" class="page"
-                src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/inf.html" frameborder="0" loading="lazy"></iframe>
-        </section>
-
-        <!-- Xbox 360 -->
-        <section class="page" id="home-xbox360">
-            <section class="format-coverage" aria-labelledby="xbox360-title">
-                <div class="format-coverage-heading">
-                    <h1 id="xbox360-title">Xbox 360 NTSC</h1>
-                    <p>Source inventory and linked format notes for the Xbox 360 NTSC files.</p>
-                </div>
-                <h2>Root Files</h2>
-                <ul>
-                    <li><code>x360-NTSC/x360-NTSC/default.xex</code></li>
-                    <li><code>x360-NTSC/x360-NTSC/simpsons_gameflow.lua</code></li>
-                    <li><code>x360-NTSC/x360-NTSC/simpsons_gameflow_helpers.lua</code></li>
-                    <li><code>x360-NTSC/x360-NTSC/simpsons_scores.lua</code></li>
-                </ul>
-                <h2>Source Folders</h2>
-                <ul>
-                    <li>audiostreams</li>
-                    <li>bargainbin</li>
-                    <li>bigsuperhappy</li>
-                    <li>brt</li>
-                    <li>cheater</li>
-                    <li>colossaldonut</li>
-                    <li>dayofthedolphins</li>
-                    <li>dayspringfieldstoodstill</li>
-                    <li>eighty_bites</li>
-                    <li>frontend</li>
-                    <li>gamehub</li>
-                    <li>grand_theft_scratchy</li>
-                    <li>loc</li>
-                    <li>medal_of_homer</li>
-                    <li>meetthyplayer</li>
-                    <li>mob_rules</li>
-                    <li>movies</li>
-                    <li>neverquest</li>
-                    <li>rhymes</li>
-                    <li>simpsons_chars</li>
-                    <li>spr_hub</li>
-                    <li>text</li>
-                    <li>tree_hugger</li>
-                </ul>
-                <h2>Documentation</h2>
-                <ul>
-                    <li><a href="./PS3_GAME/FormatAnalysis/index.html">Xbox 360 embedded format counts</a></li>
-                    <li><a href="./PS3_GAME/FormatAnalysis/LUA/index.html">Lua source comparison</a></li>
-                    <li><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/xbox/itxd.html">.itxd format
-                            analysis</a></li>
-                    <li><a href="./PS3_GAME/USRDIR/index.html">US version file summary</a></li>
-                </ul>
+            <section data-id="FormatAnalysis">
+                <iframe id="FormatAnalysis-relationships" class="page" src="./PS3_GAME/FormatAnalysis/relationships.html" loading="lazy" title="Format relationships"></iframe>
+                <iframe id="FormatAnalysis-pipeline" class="page" src="./PS3_GAME/FormatAnalysis/pipeline.html" loading="lazy" title="Operation pipeline"></iframe>
+                <iframe title="FormatAnalysis" id="FormatAnalysis" class="page" src="./PS3_GAME/FormatAnalysis/index.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-bin" id="FormatAnalysis-bin" class="page" src="./PS3_GAME/FormatAnalysis/BIN/index.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-lua" id="FormatAnalysis-lua" class="page" src="./PS3_GAME/FormatAnalysis/LUA/index.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-mus" id="FormatAnalysis-mus" class="page" src="./PS3_GAME/FormatAnalysis/MUS/index.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-exa-snu" id="FormatAnalysis-exa-snu" class="page" src="./PS3_GAME/FormatAnalysis/EXA.SNU/index.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-str" id="FormatAnalysis-str" class="page" src="./PS3_GAME/FormatAnalysis/STR/index.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-txt" id="FormatAnalysis-txt" class="page" src="./PS3_GAME/FormatAnalysis/TXT/index.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="STR-extracted text resources" id="FormatAnalysis-txt-embedded" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/txt.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-vp6" id="FormatAnalysis-vp6" class="page" src="./PS3_GAME/FormatAnalysis/VP6/index.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-alb" id="FormatAnalysis-alb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/alb.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-amb" id="FormatAnalysis-amb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/amb.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-aub" id="FormatAnalysis-aub" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/aub.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-bsp" id="FormatAnalysis-bsp" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/bsp.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-preinstanced" id="FormatAnalysis-preinstanced" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/preinstanced.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-dff" id="FormatAnalysis-dff" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/preinstanced.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-rws" id="FormatAnalysis-rws" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/preinstanced.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-ctb" id="FormatAnalysis-ctb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ctb.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-txd" id="FormatAnalysis-txd" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/txd.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-graph" id="FormatAnalysis-graph" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/graph.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-lh2" id="FormatAnalysis-lh2" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/lh2.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-lh2-base" id="FormatAnalysis-lh2-base" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/lh2.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-lh2-en" id="FormatAnalysis-lh2-en" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/en.LH2.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-lh2-es" id="FormatAnalysis-lh2-es" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/es.LH2.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-lh2-fr" id="FormatAnalysis-lh2-fr" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/fr.LH2.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-lh2-it" id="FormatAnalysis-lh2-it" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/it.LH2.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-lh2-ss" id="FormatAnalysis-lh2-ss" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ss.LH2.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-meta" id="FormatAnalysis-meta" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/meta.xml.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-imb" id="FormatAnalysis-imb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/imb.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-mib" id="FormatAnalysis-mib" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/mib.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-msb" id="FormatAnalysis-msb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/msb.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-ps3" id="FormatAnalysis-ps3" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/ps3.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-acs" id="FormatAnalysis-acs" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/acs.PS3.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-bbn" id="FormatAnalysis-bbn" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/bbn.PS3.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-bnk" id="FormatAnalysis-bnk" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/bnk.PS3.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-hko" id="FormatAnalysis-hko" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/hko.PS3.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-hkt" id="FormatAnalysis-hkt" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/hkt.PS3.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-rcb" id="FormatAnalysis-rcb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/rcb.PS3.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-tox" id="FormatAnalysis-tox" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/tox.PS3.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-xml" id="FormatAnalysis-xml" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/xml.PS3.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-rcm-b" id="FormatAnalysis-rcm-b" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/rcm_b.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-sbk" id="FormatAnalysis-sbk" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/sbk.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-cec" id="FormatAnalysis-cec" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/cec.ps3.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-simgroup" id="FormatAnalysis-simgroup" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/simgroup.dat.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-shk" id="FormatAnalysis-shk" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/shk.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-smb" id="FormatAnalysis-smb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/smb.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-toc" id="FormatAnalysis-toc" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/toc.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-uix" id="FormatAnalysis-uix" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/uix.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-vfb" id="FormatAnalysis-vfb" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/vfb.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-no-extension" id="FormatAnalysis-no-extension" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/NoExtension.html" frameborder="0" loading="lazy"></iframe>
+                <iframe title="FormatAnalysis-inf" id="FormatAnalysis-inf" class="page" src="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/inf.html" frameborder="0" loading="lazy"></iframe>
             </section>
-        </section>
-
-        <iframe id="docs-guide" class="page" src="./docs.html" loading="lazy" title="Documentation guide"></iframe>
-    </main>
-    <script>
-        // The shell uses hashes to route to iframe IDs and data-id sections.
-        (function () {
-            var upLink = document.getElementById("up-link");
-            // Normalize the current hash so it can be matched against an element ID.
-            function getCurrentId() {
-                var hash = window.location.hash || "";
-                return hash.replace(/^#/, "") || "";
-            }
-            // Resolve a route's structural parent. Section routes move up one
-            // data-id wrapper; iframe routes move up to their containing wrapper.
-            function findParentId(currentId) {
-                if (currentId === "home") {
-                    return "";
+            <!-- Xbox 360 -->
+            <section class="page" id="home-xbox360">
+                <section class="format-coverage" aria-labelledby="xbox360-title">
+                    <div class="format-coverage-heading">
+                        <h1 id="xbox360-title">Xbox 360 NTSC</h1>
+                        <p>Source inventory and linked format notes for the Xbox 360 NTSC files.</p>
+                    </div>
+                    <h2>Root Files</h2>
+                    <ul>
+                        <li><code>x360-NTSC/x360-NTSC/default.xex</code></li>
+                        <li><code>x360-NTSC/x360-NTSC/simpsons_gameflow.lua</code></li>
+                        <li><code>x360-NTSC/x360-NTSC/simpsons_gameflow_helpers.lua</code></li>
+                        <li><code>x360-NTSC/x360-NTSC/simpsons_scores.lua</code></li>
+                    </ul>
+                    <h2>Source Folders</h2>
+                    <ul>
+                        <li>audiostreams</li>
+                        <li>bargainbin</li>
+                        <li>bigsuperhappy</li>
+                        <li>brt</li>
+                        <li>cheater</li>
+                        <li>colossaldonut</li>
+                        <li>dayofthedolphins</li>
+                        <li>dayspringfieldstoodstill</li>
+                        <li>eighty_bites</li>
+                        <li>frontend</li>
+                        <li>gamehub</li>
+                        <li>grand_theft_scratchy</li>
+                        <li>loc</li>
+                        <li>medal_of_homer</li>
+                        <li>meetthyplayer</li>
+                        <li>mob_rules</li>
+                        <li>movies</li>
+                        <li>neverquest</li>
+                        <li>rhymes</li>
+                        <li>simpsons_chars</li>
+                        <li>spr_hub</li>
+                        <li>text</li>
+                        <li>tree_hugger</li>
+                    </ul>
+                    <h2>Documentation</h2>
+                    <ul>
+                        <li><a href="./PS3_GAME/FormatAnalysis/index.html">Xbox 360 embedded format counts</a></li>
+                        <li><a href="./PS3_GAME/FormatAnalysis/LUA/index.html">Lua source comparison</a></li>
+                        <li><a href="./PS3_GAME/FormatAnalysis/STR/imbedded-formats/xbox/itxd.html">.itxd format analysis</a></li>
+                        <li><a href="./PS3_GAME/USRDIR/index.html">US version file summary</a></li>
+                    </ul>
+                </section>
+            </section>
+            <iframe id="docs-guide" class="page" src="./docs.html" loading="lazy" title="Documentation guide"></iframe>
+        </main>
+        <script>
+            // The shell uses hashes to route to iframe IDs and data-id sections.
+            (function () {
+                var upLink = document.getElementById("up-link");
+                // Normalize the current hash so it can be matched against an element ID.
+                function getCurrentId() {
+                    var hash = window.location.hash || "";
+                    return hash.replace(/^#/, "") || "";
                 }
-                var currentSection = document.querySelector('[data-id="' + currentId + '"]');
-                var parentSection = null;
-                if (currentSection) {
-                    parentSection = currentSection.parentElement ? currentSection.parentElement.closest("[data-id]") : null;
-                } else {
-                    // Leaf pages are iframes with IDs, not data-id sections.
-                    var currentPage = document.getElementById(currentId);
-                    parentSection = currentPage ? currentPage.closest("[data-id]") : null;
+                // Resolve a route's structural parent. Section routes move up one
+                // data-id wrapper; iframe routes move up to their containing wrapper.
+                function findParentId(currentId) {
+                    if (currentId === "home") {
+                        return "";
+                    }
+                    var currentSection = document.querySelector('[data-id="' + currentId + '"]');
+                    var parentSection = null;
+                    if (currentSection) {
+                        parentSection = currentSection.parentElement ? currentSection.parentElement.closest("[data-id]") : null;
+                    } else {
+                        // Leaf pages are iframes with IDs, not data-id sections.
+                        var currentPage = document.getElementById(currentId);
+                        parentSection = currentPage ? currentPage.closest("[data-id]") : null;
+                    }
+                    return parentSection ? parentSection.getAttribute("data-id") : "";
                 }
-                return parentSection ? parentSection.getAttribute("data-id") : "";
-            }
-            // Update on load and after in-page navigation so Up always reflects
-            // the route currently selected by the URL hash.
-            function updateUpLink() {
-                var currentId = getCurrentId();
-                var parentId = findParentId(currentId);
-                upLink.setAttribute("href", "#" + parentId);
-            }
-            window.addEventListener("hashchange", updateUpLink);
-            updateUpLink();
-        })();
-    </script>
-</body>
-
+                // Update on load and after in-page navigation so Up always reflects
+                // the route currently selected by the URL hash.
+                function updateUpLink() {
+                    var currentId = getCurrentId();
+                    var parentId = findParentId(currentId);
+                    upLink.setAttribute("href", "#" + parentId);
+                }
+                window.addEventListener("hashchange", updateUpLink);
+                updateUpLink();
+            })();
+        </script>
+    </body>
 </html>

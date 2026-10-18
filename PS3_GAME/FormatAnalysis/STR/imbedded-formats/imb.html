@@ -1,278 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>.imb Format Documentation</title>
-    <link rel="stylesheet" href="../../../../style/main.css">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
-<body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Impact resource (.imb)</nav>
-
-
+    <head>
+        <meta charset="utf-8">
+        <title>.imb Format Documentation</title>
+        <link rel="stylesheet" href="../../../../style/main.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Impact resource (.imb)</nav>
         <div class="">
             <h1>.imb</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
-<p>Contains material/effect identifiers and candidate interaction tables.</p>
-<dl><dt>Identification</dt><dd>Observed 5B A0 8C AA magic, version 2, 28-byte header and four offsets.</dd><dt>Byte order / text</dt><dd>Big-endian integer interpretations.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#format-analysis-structure-breakdown">Format Analysis &amp; Structure Breakdown</a></li><li><a href="#data-blocks">Data Blocks</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="vfb.html">Effect bundle (.vfb)</a></td><td>Tentative</td><td>Material/effect clusters and VFX bundles suggest an impact-to-effect relationship; exact hashes and effect selection are not resolved.</td></tr><tr><td><a href="sbk.html">Sound bank (.sbk)</a></td><td>Tentative</td><td>Impact resources contain candidate effect/audio identifiers. A collision-material-to-bank-subsong mapping is not verified.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Material-interaction and effect-cluster roles are inferred from layout and context. No MurmurHash/Jenkins identification or numeric join to sound/VFX resources is demonstrated.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-
-            <p>Based on the hex dumps and offset calculations, the <code>.imb</code> (Impact Table) format is a
-                structured binary asset used by the engine to map collision events between physics materials to
-                specific visual and audio effects (particles, decals, sound banks).</p>
-            <p>File sizes range from <strong>816 bytes to 40.4 KB</strong> depending on the volume of materials and
-                interactions mapped within the level.</p>
-
+            <section class="format-summary" aria-label="Format summary">
+                <p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+                <p>Contains material/effect identifiers and candidate interaction tables.</p>
+                <dl>
+                    <dt>Identification</dt>
+                    <dd>Observed 5B A0 8C AA magic, version 2, 28-byte header and four offsets.</dd>
+                    <dt>Byte order / text</dt>
+                    <dd>Big-endian integer interpretations.</dd>
+                    <dt>Documentation scope</dt>
+                    <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+                </dl>
+            </section>
+            <nav class="page-toc" aria-label="On this page">
+                <strong>On this page</strong>
+                <ul>
+                    <li><a href="#related-formats-2">Related formats</a></li>
+                    <li><a href="#operation-support-2">Operation support</a></li>
+                    <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                    <li><a href="#format-analysis-structure-breakdown">Format Analysis &amp; Structure Breakdown</a></li>
+                    <li><a href="#data-blocks">Data Blocks</a></li>
+                </ul>
+            </nav>
+            <section id="related-formats">
+                <h2 id="related-formats-2">Related formats</h2>
+                <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                    <table>
+                        <caption>Related formats and strength of the connection</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Related format</th>
+                                <th scope="col">Evidence</th>
+                                <th scope="col">Relationship and practical consequence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><a href="vfb.html">Effect bundle (.vfb)</a></td>
+                                <td>Tentative</td>
+                                <td>Material/effect clusters and VFX bundles suggest an impact-to-effect relationship; exact hashes and effect selection are not resolved.</td>
+                            </tr>
+                            <tr>
+                                <td><a href="sbk.html">Sound bank (.sbk)</a></td>
+                                <td>Tentative</td>
+                                <td>Impact resources contain candidate effect/audio identifiers. A collision-material-to-bank-subsong mapping is not verified.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
+            </section>
+            <section id="operation-support">
+                <h2 id="operation-support-2">Operation support</h2>
+                <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+                <p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+            </section>
+            <section id="evidence-limits">
+                <h2 id="evidence-and-limitations">Evidence and limitations</h2>
+                <p>Material-interaction and effect-cluster roles are inferred from layout and context. No MurmurHash/Jenkins identification or numeric join to sound/VFX resources is demonstrated.</p>
+                <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+            </section>
+            <p>Based on the hex dumps and offset calculations, the <code>.imb</code> (Impact Table) format is a structured binary asset used by the engine to map collision events between physics materials to specific visual and audio effects (particles, decals, sound banks).</p>
+            <p>File sizes range from <strong>816 bytes to 40.4 KB</strong> depending on the volume of materials and interactions mapped within the level.</p>
             <h2 id="format-analysis-structure-breakdown">Format Analysis &amp; Structure Breakdown</h2>
-            <p>The file is composed of a <strong>28-byte Header</strong> followed by <strong>4 distinct Data
-                    Blocks</strong>.</p>
-
+            <p>The file is composed of a <strong>28-byte Header</strong> followed by <strong>4 distinct Data Blocks</strong>.</p>
             <h3>File Header (0x1C / 28 bytes)</h3>
-            <p>The header is consistent across all files and provides the counts and offset pointers for the 4 data
-                blocks. It is written in Big-Endian format.</p>
-
-            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table class="format-counts">
-                <thead>
-                    <tr>
-                        <th scope="col">Offset</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>0x00</td>
-                        <td>uint32</td>
-                        <td><strong>Magic Identifier:</strong> Always <code>5B A0 8C AA</code>.</td>
-                    </tr>
-                    <tr>
-                        <td>0x04</td>
-                        <td>uint16</td>
-                        <td><strong>Version / Endianness:</strong> Always <code>00 02</code>.</td>
-                    </tr>
-                    <tr>
-                        <td>0x06</td>
-                        <td>uint16</td>
-                        <td><strong>Material Count:</strong> The number of entries in the Material Hash Map (Block
-                            3). <em>(e.g., 0x00FB / 251 in spr_hub, 0x0002 / 2 in clobbergirl)</em></td>
-                    </tr>
-                    <tr>
-                        <td>0x08</td>
-                        <td>uint16</td>
-                        <td><strong>Unknown:</strong> Always <code>00 33</code>.</td>
-                    </tr>
-                    <tr>
-                        <td>0x0A</td>
-                        <td>uint16</td>
-                        <td><strong>Effect Count:</strong> The number of effect clusters in Block 2. <em>(e.g.,
-                                0x01A1 / 417 in spr_hub, 0x0005 / 5 in clobbergirl)</em></td>
-                    </tr>
-                    <tr>
-                        <td>0x0C</td>
-                        <td>uint32</td>
-                        <td><strong>Offset 1 (Interaction Grid):</strong> Pointer to the start of Block 1. Usually
-                            <code>0x0000001C</code>.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>0x10</td>
-                        <td>uint32</td>
-                        <td><strong>Offset 2 (Effect Hashes):</strong> Pointer to the start of Block 2.</td>
-                    </tr>
-                    <tr>
-                        <td>0x14</td>
-                        <td>uint32</td>
-                        <td><strong>Offset 3 (Material Hash Map):</strong> Pointer to the start of Block 3.</td>
-                    </tr>
-                    <tr>
-                        <td>0x18</td>
-                        <td>uint32</td>
-                        <td><strong>Offset 4 (Alias Map):</strong> Pointer to the start of Block 4.</td>
-                    </tr>
-                </tbody>
-            </table></div>
-
+            <p>The header is consistent across all files and provides the counts and offset pointers for the 4 data blocks. It is written in Big-Endian format.</p>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                <table class="format-counts">
+                    <thead>
+                        <tr>
+                            <th scope="col">Offset</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0x00</td>
+                            <td>uint32</td>
+                            <td><strong>Magic Identifier:</strong> Always <code>5B A0 8C AA</code>.</td>
+                        </tr>
+                        <tr>
+                            <td>0x04</td>
+                            <td>uint16</td>
+                            <td><strong>Version / Endianness:</strong> Always <code>00 02</code>.</td>
+                        </tr>
+                        <tr>
+                            <td>0x06</td>
+                            <td>uint16</td>
+                            <td><strong>Material Count:</strong> The number of entries in the Material Hash Map (Block 3). <em>(e.g., 0x00FB / 251 in spr_hub, 0x0002 / 2 in clobbergirl)</em></td>
+                        </tr>
+                        <tr>
+                            <td>0x08</td>
+                            <td>uint16</td>
+                            <td><strong>Unknown:</strong> Always <code>00 33</code>.</td>
+                        </tr>
+                        <tr>
+                            <td>0x0A</td>
+                            <td>uint16</td>
+                            <td><strong>Effect Count:</strong> The number of effect clusters in Block 2. <em>(e.g., 0x01A1 / 417 in spr_hub, 0x0005 / 5 in clobbergirl)</em></td>
+                        </tr>
+                        <tr>
+                            <td>0x0C</td>
+                            <td>uint32</td>
+                            <td><strong>Offset 1 (Interaction Grid):</strong> Pointer to the start of Block 1. Usually <code>0x0000001C</code>.</td>
+                        </tr>
+                        <tr>
+                            <td>0x10</td>
+                            <td>uint32</td>
+                            <td><strong>Offset 2 (Effect Hashes):</strong> Pointer to the start of Block 2.</td>
+                        </tr>
+                        <tr>
+                            <td>0x14</td>
+                            <td>uint32</td>
+                            <td><strong>Offset 3 (Material Hash Map):</strong> Pointer to the start of Block 3.</td>
+                        </tr>
+                        <tr>
+                            <td>0x18</td>
+                            <td>uint32</td>
+                            <td><strong>Offset 4 (Alias Map):</strong> Pointer to the start of Block 4.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             <h2 id="data-blocks">Data Blocks</h2>
-
             <h3>Block 1: Material Interaction Grid</h3>
             <ul>
                 <li><strong>Location:</strong> <code>Offset 1</code> to <code>Offset 2</code></li>
-                <li>An array of <code>uint16</code> indices. This acts as a lookup grid. When Material A collides
-                    with Material B, the engine likely looks up the intersection in this grid to retrieve a 16-bit
-                    integer. This integer is an index pointing to an effect cluster in <strong>Block 2</strong>.
-                </li>
+                <li>An array of <code>uint16</code> indices. This acts as a lookup grid. When Material A collides with Material B, the engine likely looks up the intersection in this grid to retrieve a 16-bit integer. This integer is an index pointing to an effect cluster in <strong>Block 2</strong>.</li>
             </ul>
-
             <h3>Block 2: Effect Hashes Array</h3>
             <ul>
                 <li><strong>Location:</strong> <code>Offset 2</code> to <code>Offset 3</code></li>
                 <li><strong>Total Size:</strong> <code>Effect Count * 32</code> bytes.</li>
-                <li>This block holds the actual visual and audio asset references. For each "Effect" (dictated by
-                    the Effect Count), there are exactly <strong>eight 32-bit hashes</strong> (8 * 4 = 32 bytes per
-                    cluster). These 32-bit values are candidate asset identifiers (the hash algorithm is not established) that resolve to particle systems, sound banks, or decals (e.g., light hit,
-                    heavy hit, footstep, scrape).</li>
-                <li><em>Verification: In <code>impact_table_spr_hub.imb</code>, Effect Count is 417. 417 * 32 =
-                        13344 bytes. <code>0x9840 - 0x6420 = 13344</code>. Perfect match.</em></li>
+                <li>This block holds the actual visual and audio asset references. For each "Effect" (dictated by the Effect Count), there are exactly <strong>eight 32-bit hashes</strong> (8 * 4 = 32 bytes per cluster). These 32-bit values are candidate asset identifiers (the hash algorithm is not established) that resolve to particle systems, sound banks, or decals (e.g., light hit, heavy hit, footstep, scrape).</li>
+                <li><em>Verification: In <code>impact_table_spr_hub.imb</code>, Effect Count is 417. 417 * 32 = 13344 bytes. <code>0x9840 - 0x6420 = 13344</code>. Perfect match.</em></li>
             </ul>
-
             <h3>Block 3: Material Hash Map</h3>
             <ul>
                 <li><strong>Location:</strong> <code>Offset 3</code> to <code>Offset 4</code></li>
                 <li><strong>Total Size:</strong> <code>Material Count * 8</code> bytes.</li>
-                <li>A dictionary pairing global Material ID hashes to their local index in the Interaction Grid
-                    (Block 1). Each entry is 8 bytes:
+                <li>
+                    A dictionary pairing global Material ID hashes to their local index in the Interaction Grid (Block 1). Each entry is 8 bytes:
                     <ul>
-                        <li><code>uint32</code>: Physics Material Hash (e.g., <code>0xA670B486</code> for
-                            Homer_Flesh, Concrete)</li>
+                        <li><code>uint32</code>: Physics Material Hash (e.g., <code>0xA670B486</code> for Homer_Flesh, Concrete)</li>
                         <li><code>uint32</code>: Local Matrix/Grid Index (e.g., <code>0x00000001</code>)</li>
                     </ul>
                 </li>
-                <li><em>Verification: In <code>impact_table_clobbergirl.imb</code>, Material Count is 2. 2 * 8 = 16
-                        bytes. <code>0x198 - 0x188 = 16</code>. Perfect match.</em></li>
+                <li><em>Verification: In <code>impact_table_clobbergirl.imb</code>, Material Count is 2. 2 * 8 = 16 bytes. <code>0x198 - 0x188 = 16</code>. Perfect match.</em></li>
             </ul>
-
             <h3>Block 4: Fallback / Alias Map</h3>
             <ul>
                 <li><strong>Location:</strong> <code>Offset 4</code> to End of File (EOF)</li>
-                <li>This block contains sequential pairs of <code>uint32</code> values. It acts as an inheritance or
-                    fallback mapping hierarchy (e.g., <code>Index 00000003</code> inherits from
-                    <code>Index 00000002</code>). This allows developers to assign specific behaviors to complex
-                    materials, but default them back to base materials (like mapping "Wet Dirt" back to standard
-                    "Dirt") without bloating the Interaction Grid.
-                </li>
+                <li>This block contains sequential pairs of <code>uint32</code> values. It acts as an inheritance or fallback mapping hierarchy (e.g., <code>Index 00000003</code> inherits from <code>Index 00000002</code>). This allows developers to assign specific behaviors to complex materials, but default them back to base materials (like mapping "Wet Dirt" back to standard "Dirt") without bloating the Interaction Grid.</li>
             </ul>
         </div>
-
         <div class="file-list-container">
             <h3>Discovered .imb Files (3.52KB - 40.4KB) - 20 Files</h3>
             <ul class="file-list-scroll">
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_global_str\build\PS3\pal_en\assets_rws\spr_hub\spr_hub\impact_table\impact_table_spr_hub.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_global_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_bsh.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules_global_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_mob_rules.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer_global_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_mtp.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_global_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_moh.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites_global_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_global_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_hug.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_global_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_dod.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_global_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_gts.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut_global_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_scd.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_global_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_cheater.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_global_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_rwc.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_global_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_global_str\build\PS3\pal_en\assets_rws\neverquest\neverquest\impact_table\impact_table_nvq.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill_global_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_dsss.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_global_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_gamehub.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_global_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_bin.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_global_str\build\PS3\pal_en\assets_rws\loc\loc\impact_table\impact_table_loc.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_boots.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_sneakers.imb
-                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_global_str\build\PS3\pal_en\assets_rws\spr_hub\spr_hub\impact_table\impact_table_spr_hub.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_global_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_bsh.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules_global_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_mob_rules.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer_global_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_mtp.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_global_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_moh.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites_global_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_global_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_hug.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_global_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_dod.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_global_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_gts.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut_global_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_scd.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_global_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_cheater.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_global_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_rwc.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_global_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_global_str\build\PS3\pal_en\assets_rws\neverquest\neverquest\impact_table\impact_table_nvq.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill_global_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_dsss.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_global_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_gamehub.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_global_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_bin.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_global_str\build\PS3\pal_en\assets_rws\loc\loc\impact_table\impact_table_loc.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_boots.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_sneakers.imb</li>
             </ul>
         </div>
-
         <div class="file-list-container">
             <h3>Discovered .imb Files (2.33KB) - 5 Files</h3>
             <ul class="file-list-scroll">
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_street_fighter.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_street_fighter.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_football_player.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_football_player.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_football_player.imb
-                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_street_fighter.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_street_fighter.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_football_player.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_football_player.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_football_player.imb</li>
             </ul>
         </div>
-
         <div class="file-list-container">
             <h3>Discovered .imb Files (1.64KB) - 11 Files</h3>
             <ul class="file-list-scroll">
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_brt_robo.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_brt_robo.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer\story_mode\zone02_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_brt_robo.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_brt_robo.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut\story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_brt_robo.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_brt_robo.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_brt_robo.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_brt_robo.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_brt_robo.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt_robo.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_bender.imb
-                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_brt_robo.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_brt_robo.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer\story_mode\zone02_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_brt_robo.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_brt_robo.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut\story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_brt_robo.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_brt_robo.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_brt_robo.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_brt_robo.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_brt_robo.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt_robo.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_bender.imb</li>
             </ul>
         </div>
-
         <div class="file-list-container">
             <h3>Discovered .imb Files (816 bytes) - 8 Files</h3>
             <ul class="file-list-scroll">
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_clobbergirl.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_clobbergirl.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_clobbergirl.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_clobbergirl.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_clobbergirl.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\challenge_mode\challenge_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb
-                </li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_clobbergirl.imb
-                </li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_clobbergirl.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_clobbergirl.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_clobbergirl.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_clobbergirl.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_clobbergirl.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\challenge_mode\challenge_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb</li>
+                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_clobbergirl.imb</li>
             </ul>
         </div>
-
-    <details class="research-appendix"><summary>Preserved sample hex dumps</summary><section class="bodyy">
-        <h1>.imb Files: Hex Dump Analysis</h1>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_global_str\build\PS3\pal_en\assets_rws\spr_hub\spr_hub\impact_table\impact_table_spr_hub.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 41392 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 FB 00 33 01 A1 00 00 00 1C  |[........3......|
+        <details class="research-appendix">
+            <summary>Preserved sample hex dumps</summary>
+            <section class="bodyy">
+                <h1>.imb Files: Hex Dump Analysis</h1>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_global_str\build\PS3\pal_en\assets_rws\spr_hub\spr_hub\impact_table\impact_table_spr_hub.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 41392 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 FB 00 33 01 A1 00 00 00 1C  |[........3......|
 00000010  00 00 64 20 00 00 98 40 00 00 A0 18 01 22 00 01  |..d ...@.....&quot;..|
 00000020  01 23 00 5F 00 01 01 22 00 01 00 01 00 01 00 01  |.#._...&quot;........|
 00000030  00 01 01 24 01 25 01 26 00 01 00 01 00 01 00 01  |...$.%.&amp;........|
@@ -2405,13 +2370,11 @@
 0000A180  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 0000A190  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 0000A1A0  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_global_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_bsh.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 38256 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 DD 00 33 01 A6 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_global_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_bsh.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 38256 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 DD 00 33 01 A6 00 00 00 1C  |[........3......|
 00000010  00 00 58 30 00 00 8C F0 00 00 93 D8 01 14 00 00  |..X0............|
 00000020  01 15 00 00 00 00 01 16 01 17 01 18 00 00 00 00  |................|
 00000030  00 00 00 00 01 19 01 1A 00 00 00 00 01 1B 00 00  |................|
@@ -3929,13 +3892,11 @@
 00009540  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00009550  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00009560  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules_global_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_mob_rules.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 37048 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 D0 00 33 01 AD 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules_global_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_mob_rules.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 37048 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 D0 00 33 01 AD 00 00 00 1C  |[........3......|
 00000010  00 00 53 00 00 00 88 A0 00 00 8F 20 01 22 00 00  |..S........ .&quot;..|
 00000020  01 23 00 00 00 00 01 22 00 00 00 00 00 00 00 00  |.#.....&quot;........|
 00000030  00 00 01 24 01 25 01 26 00 00 00 00 00 00 00 00  |...$.%.&amp;........|
@@ -5596,13 +5557,11 @@
 00009090  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 000090A0  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 000090B0  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer_global_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_mtp.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 35944 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 B8 00 33 01 DD 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer_global_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_mtp.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 35944 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 B8 00 33 01 DD 00 00 00 1C  |[........3......|
 00000010  00 00 49 70 00 00 85 10 00 00 8A D0 01 3E 00 00  |..Ip.........&gt;..|
 00000020  01 3F 01 40 00 00 01 41 01 42 01 43 01 44 00 00  |.?.@...A.B.C.D..|
 00000030  01 45 01 3E 01 46 01 47 00 00 00 00 00 00 00 00  |.E.&gt;.F.G........|
@@ -7154,13 +7113,11 @@
 00008C40  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00008C50  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00008C60  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_global_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_moh.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 35544 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 C0 00 33 01 B5 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_global_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_moh.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 35544 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 C0 00 33 01 B5 00 00 00 1C  |[........3......|
 00000010  00 00 4C A0 00 00 83 40 00 00 89 40 01 27 00 00  |..L....@...@.&#x27;..|
 00000020  00 8F 00 00 00 00 01 28 01 27 01 29 00 00 00 00  |.......(.&#x27;.)....|
 00000030  01 2A 01 2B 01 2C 01 2D 00 00 01 2E 01 2F 00 00  |.*.+.,.-...../..|
@@ -8654,13 +8611,11 @@
 00008AB0  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00008AC0  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00008AD0  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites_global_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 34256 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 D2 00 33 01 4F 00 00 00 1C  |[........3.O....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites_global_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 34256 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 D2 00 33 01 4F 00 00 00 1C  |[........3.O....|
 00000010  00 00 53 C8 00 00 7D A8 00 00 84 38 00 DF 00 00  |..S...}....8....|
 00000020  00 E0 00 00 00 00 00 E1 00 00 00 00 00 00 00 00  |................|
 00000030  00 00 00 DF 00 E2 00 E3 00 00 00 00 00 00 00 00  |................|
@@ -9951,13 +9906,11 @@
 000085A0  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 000085B0  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 000085C0  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_global_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_hug.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 33232 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 D2 00 33 01 2F 00 00 00 1C  |[........3./....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_global_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_hug.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 33232 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 D2 00 33 01 2F 00 00 00 1C  |[........3./....|
 00000010  00 00 53 C8 00 00 79 A8 00 00 80 38 00 9C 00 01  |..S...y....8....|
 00000020  00 9D 00 01 00 01 00 ED 00 9F 00 9C 00 01 00 01  |................|
 00000030  00 A0 00 EE 00 EF 00 F0 00 01 00 A2 00 A3 00 01  |................|
@@ -11272,13 +11225,11 @@
 000081A0  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 000081B0  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 000081C0  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_global_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_dod.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 31656 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 C8 00 33 01 20 00 00 00 1C  |[........3. ....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_global_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_dod.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 31656 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 C8 00 33 01 20 00 00 00 1C  |[........3. ....|
 00000010  00 00 4F D0 00 00 73 D0 00 00 7A 10 00 BE 00 00  |..O...s...z.....|
 00000020  00 BF 00 00 00 00 00 C0 00 00 00 00 00 00 00 00  |................|
 00000030  00 00 00 C1 00 C2 00 C3 00 00 00 C4 00 00 00 00  |................|
@@ -12513,13 +12464,11 @@
 00007B80  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00007B90  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00007BA0  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_global_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_gts.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 31584 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 D3 00 33 00 F8 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_global_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_gts.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 31584 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 D3 00 33 00 F8 00 00 00 1C  |[........3......|
 00000010  00 00 54 30 00 00 73 30 00 00 79 C8 00 B1 00 00  |..T0..s0..y.....|
 00000020  00 B2 00 00 00 00 00 B1 00 31 00 31 00 00 00 00  |.........1.1....|
 00000030  00 00 00 B1 00 B2 00 B2 00 00 00 00 00 32 00 00  |.............2..|
@@ -13821,13 +13770,11 @@
 00007B30  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00007B40  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00007B50  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut_global_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_scd.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 30776 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 C0 00 33 01 20 00 00 00 1C  |[........3. ....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut_global_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_scd.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 30776 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 C0 00 33 01 20 00 00 00 1C  |[........3. ....|
 00000010  00 00 4C A0 00 00 70 A0 00 00 76 A0 00 C0 00 01  |..L...p...v.....|
 00000020  00 C1 00 01 00 01 00 C0 00 C2 00 01 00 C3 00 01  |................|
 00000030  00 01 00 C4 00 C5 00 C6 00 01 00 01 00 C7 00 01  |................|
@@ -14916,13 +14863,11 @@
 00007810  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00007820  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00007830  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_global_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_cheater.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 30736 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 C4 00 33 01 11 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_global_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_cheater.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 30736 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 C4 00 33 01 11 00 00 00 1C  |[........3......|
 00000010  00 00 4E 38 00 00 70 58 00 00 76 78 00 BA 00 00  |..N8..pX..vx....|
 00000020  00 BB 00 00 00 00 00 BC 00 00 00 00 00 BC 00 00  |................|
 00000030  00 00 00 BC 00 BD 00 BA 00 00 00 BE 00 00 00 00  |................|
@@ -16145,13 +16090,11 @@
 000077E0  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 000077F0  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00007800  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_global_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_rwc.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 30624 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 B5 00 33 01 41 00 00 00 1C  |[........3.A....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_global_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_rwc.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 30624 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 B5 00 33 01 41 00 00 00 1C  |[........3.A....|
 00000010  00 00 48 40 00 00 70 60 00 00 76 08 00 E5 00 00  |..H@..p`..v.....|
 00000020  00 49 00 4A 00 00 00 E5 00 00 00 00 00 00 00 00  |.I.J............|
 00000030  00 4B 00 E6 00 E7 00 E8 00 00 00 E9 00 00 00 00  |.K..............|
@@ -17253,13 +17196,11 @@
 00007770  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00007780  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00007790  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_global_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 30208 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 BC 00 33 01 1C 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_global_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 30208 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 BC 00 33 01 1C 00 00 00 1C  |[........3......|
 00000010  00 00 4B 08 00 00 6E 88 00 00 74 68 00 BB 00 00  |..K...n...th....|
 00000020  00 BC 00 00 00 00 00 BD 00 00 00 00 00 00 00 00  |................|
 00000030  00 BE 00 BB 00 BF 00 C0 00 00 00 00 00 00 00 00  |................|
@@ -18363,13 +18304,11 @@
 000075D0  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 000075E0  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 000075F0  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_global_str\build\PS3\pal_en\assets_rws\neverquest\neverquest\impact_table\impact_table_nvq.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 29032 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 B6 00 33 01 0C 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_global_str\build\PS3\pal_en\assets_rws\neverquest\neverquest\impact_table\impact_table_nvq.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 29032 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 B6 00 33 01 0C 00 00 00 1C  |[........3......|
 00000010  00 00 48 A0 00 00 6A 20 00 00 6F D0 00 40 00 A4  |..H...j ..o..@..|
 00000020  00 00 00 00 00 30 00 A5 00 42 00 40 00 00 00 00  |.....0...B.@....|
 00000030  00 43 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |.C..............|
@@ -19396,13 +19335,11 @@
 00007140  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00007150  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00007160  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill_global_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_dsss.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 28872 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 B6 00 33 01 07 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill_global_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_dsss.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 28872 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 B6 00 33 01 07 00 00 00 1C  |[........3......|
 00000010  00 00 48 A0 00 00 69 80 00 00 6F 30 00 B7 00 00  |..H...i...o0....|
 00000020  00 6E 00 00 00 00 00 B7 00 00 00 00 00 B8 00 00  |.n..............|
 00000030  00 00 00 B9 00 BA 00 BB 00 00 00 BC 00 00 00 00  |................|
@@ -20437,13 +20374,11 @@
 000070A0  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 000070B0  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 000070C0  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_global_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_gamehub.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 25424 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 B4 00 33 00 A2 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_global_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_gamehub.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 25424 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 B4 00 33 00 A2 00 00 00 1C  |[........3......|
 00000010  00 00 47 D8 00 00 5C 18 00 00 61 B8 00 6D 00 00  |..G...\...a..m..|
 00000020  00 00 00 6E 00 00 00 6F 00 00 00 00 00 00 00 00  |...n...o........|
 00000030  00 70 00 00 00 00 00 71 00 00 00 00 00 00 00 00  |.p.....q........|
@@ -21209,13 +21144,11 @@
 00006320  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00006330  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00006340  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_global_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_bin.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 23360 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 B5 00 33 00 5E 00 00 00 1C  |[........3.^....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_global_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_bin.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 23360 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 B5 00 33 00 5E 00 00 00 1C  |[........3.^....|
 00000010  00 00 48 40 00 00 54 00 00 00 59 A8 00 3F 00 00  |..H@..T...Y..?..|
 00000020  00 00 00 00 00 00 00 40 00 00 00 00 00 00 00 00  |.......@........|
 00000030  00 00 00 00 00 3F 00 41 00 00 00 00 00 00 00 00  |.....?.A........|
@@ -21923,13 +21856,11 @@
 00005B10  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00005B20  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00005B30  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_global_str\build\PS3\pal_en\assets_rws\loc\loc\impact_table\impact_table_loc.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 23048 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 B1 00 33 00 62 00 00 00 1C  |[........3.b....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_global_str\build\PS3\pal_en\assets_rws\loc\loc\impact_table\impact_table_loc.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 23048 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 B1 00 33 00 62 00 00 00 1C  |[........3.b....|
 00000010  00 00 46 A8 00 00 52 E8 00 00 58 70 00 3A 00 00  |..F...R...Xp.:..|
 00000020  00 3B 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |.;..............|
 00000030  00 00 00 3C 00 00 00 00 00 3D 00 3A 00 00 00 00  |...&lt;.....=.:....|
@@ -22350,13 +22281,11 @@
 000059E0  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 000059F0  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00005A00  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_boots.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 3784 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 08 00 33 00 4D 00 00 00 1C  |[........3.M....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_boots.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 3784 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 08 00 33 00 4D 00 00 00 1C  |[........3.M....|
 00000010  00 00 03 50 00 00 0C F0 00 00 0D 30 00 39 00 01  |...P.......0.9..|
 00000020  00 01 00 3A 00 01 00 3B 00 3C 00 3D 00 01 00 01  |...:...;.&lt;.=....|
 00000030  00 01 00 39 00 3E 00 3F 00 40 00 01 00 01 00 01  |...9.&gt;.?.@......|
@@ -22605,13 +22534,11 @@
 00000EA0  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000EB0  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000EC0  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_sneakers.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 3608 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 44 00 00 00 1C  |[........3.D....|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_80b_npc_sneakers.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 3608 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 44 00 00 00 1C  |[........3.D....|
 00000010  00 00 03 B8 00 00 0C 38 00 00 0C 80 00 01 00 01  |.......8........|
 00000020  00 01 00 01 00 01 00 01 00 01 00 01 00 01 00 01  |................|
 *
@@ -22847,13 +22774,11 @@
 00000DF0  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000E00  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000E10  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_street_fighter.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 2392 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 10 00 33 00 06 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_street_fighter.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 2392 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 10 00 33 00 06 00 00 00 1C  |[........3......|
 00000010  00 00 06 80 00 00 07 40 00 00 07 C0 00 05 00 01  |.......@........|
 00000020  00 05 00 01 00 01 00 05 00 01 00 01 00 05 00 01  |................|
 00000030  00 01 00 05 00 05 00 05 00 01 00 05 00 01 00 01  |................|
@@ -23003,13 +22928,11 @@
 00000930  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000940  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000950  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_street_fighter.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 2392 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 10 00 33 00 06 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_street_fighter.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 2392 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 10 00 33 00 06 00 00 00 1C  |[........3......|
 00000010  00 00 06 80 00 00 07 40 00 00 07 C0 00 05 00 01  |.......@........|
 00000020  00 05 00 01 00 01 00 05 00 01 00 01 00 05 00 01  |................|
 00000030  00 01 00 05 00 05 00 05 00 01 00 05 00 01 00 01  |................|
@@ -23159,13 +23082,11 @@
 00000930  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000940  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000950  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_football_player.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 2392 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 10 00 33 00 06 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\build\PS3\pal_en\assets_rws\gamehub\gamehub\impact_table\impact_table_football_player.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 2392 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 10 00 33 00 06 00 00 00 1C  |[........3......|
 00000010  00 00 06 80 00 00 07 40 00 00 07 C0 00 04 00 01  |.......@........|
 00000020  00 04 00 01 00 01 00 04 00 01 00 01 00 04 00 01  |................|
 00000030  00 01 00 04 00 04 00 04 00 01 00 04 00 01 00 01  |................|
@@ -23315,13 +23236,11 @@
 00000930  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000940  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000950  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_football_player.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 2392 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 10 00 33 00 06 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin\Challenge_Mode\Challenge_Mode_Design_str\build\PS3\pal_en\assets_rws\bargainbin\bargainbin\impact_table\impact_table_football_player.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 2392 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 10 00 33 00 06 00 00 00 1C  |[........3......|
 00000010  00 00 06 80 00 00 07 40 00 00 07 C0 00 04 00 01  |.......@........|
 00000020  00 04 00 01 00 01 00 04 00 01 00 01 00 04 00 01  |................|
 00000030  00 01 00 04 00 04 00 04 00 01 00 04 00 01 00 01  |................|
@@ -23471,13 +23390,11 @@
 00000930  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000940  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000950  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_football_player.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 2392 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 10 00 33 00 06 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_football_player.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 2392 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 10 00 33 00 06 00 00 00 1C  |[........3......|
 00000010  00 00 06 80 00 00 07 40 00 00 07 C0 00 04 00 01  |.......@........|
 00000020  00 04 00 01 00 01 00 04 00 01 00 01 00 04 00 01  |................|
 00000030  00 01 00 04 00 04 00 04 00 01 00 04 00 01 00 01  |................|
@@ -23627,13 +23544,11 @@
 00000930  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000940  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000950  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_brt_robo.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_brt_robo.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 06 00 06  |................|
 00000020  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
 00000030  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
@@ -23737,13 +23652,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_brt_robo.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_brt_robo.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 06 00 06  |................|
 00000020  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
 00000030  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
@@ -23847,13 +23760,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer\story_mode\zone02_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_brt_robo.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer\story_mode\zone02_str\build\PS3\pal_en\assets_rws\medal_of_homer\medal_of_homer\impact_table\impact_table_brt_robo.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 06 00 06  |................|
 00000020  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
 00000030  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
@@ -23957,13 +23868,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_brt_robo.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayspringfieldstoodstill\dayspringfieldstoodstill\impact_table\impact_table_brt_robo.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 06 00 06  |................|
 00000020  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
 00000030  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
@@ -24067,13 +23976,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut\story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_brt_robo.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut\story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\colossaldonut\colossaldonut\impact_table\impact_table_brt_robo.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 06 00 06  |................|
 00000020  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
 00000030  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
@@ -24177,13 +24084,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_brt_robo.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_brt_robo.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 06 00 06  |................|
 00000020  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
 00000030  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
@@ -24287,13 +24192,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_brt_robo.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_brt_robo.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 06 00 06  |................|
 00000020  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
 00000030  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
@@ -24397,13 +24300,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_brt_robo.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_brt_robo.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 06 00 06  |................|
 00000020  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
 00000030  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
@@ -24507,13 +24408,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_brt_robo.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\eighty_bites\eighty_bites\impact_table\impact_table_brt_robo.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 06 00 06  |................|
 00000020  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
 00000030  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
@@ -24617,13 +24516,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt_robo.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\brt\brt\impact_table\impact_table_brt_robo.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 06 00 06  |................|
 00000020  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
 00000030  00 06 00 06 00 06 00 06 00 06 00 06 00 06 00 06  |................|
@@ -24727,13 +24624,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_bender.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1688 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\build\PS3\pal_en\assets_rws\rhymes\rhymes\impact_table\impact_table_bender.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 1688 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 09 00 33 00 08 00 00 00 1C  |[........3......|
 00000010  00 00 03 B8 00 00 04 B8 00 00 05 00 00 05 00 05  |................|
 00000020  00 05 00 05 00 05 00 05 00 05 00 05 00 05 00 05  |................|
 00000030  00 05 00 05 00 05 00 05 00 05 00 05 00 05 00 05  |................|
@@ -24837,13 +24732,11 @@
 00000670  00 00 00 68 00 00 00 2E 00 00 00 69 00 00 00 2F  |...h.......i.../|
 00000680  00 00 00 6A 00 00 00 30 00 00 00 6B 00 00 00 31  |...j...0...k...1|
 00000690  00 00 00 6C 00 00 00 32                          |...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_clobbergirl.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 816 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\meetthyplayer\meetthyplayer\impact_table\impact_table_clobbergirl.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 816 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
 00000010  00 00 00 E8 00 00 01 88 00 00 01 98 00 00 00 01  |................|
 00000020  00 01 00 01 00 01 00 00 00 01 00 00 00 01 00 00  |................|
 00000030  00 01 00 00 00 01 00 00 00 01 00 00 00 01 00 01  |................|
@@ -24894,13 +24787,11 @@
 00000300  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00000310  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00000320  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_clobbergirl.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 816 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_str\build\PS3\pal_en\assets_rws\bigsuperhappy\bigsuperhappy\impact_table\impact_table_clobbergirl.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 816 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
 00000010  00 00 00 E8 00 00 01 88 00 00 01 98 00 00 00 01  |................|
 00000020  00 01 00 01 00 01 00 00 00 01 00 00 00 01 00 00  |................|
 00000030  00 01 00 00 00 01 00 00 00 01 00 00 00 01 00 01  |................|
@@ -24951,13 +24842,11 @@
 00000300  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00000310  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00000320  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_clobbergirl.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 816 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\grand_theft_scratchy\grand_theft_scratchy\impact_table\impact_table_clobbergirl.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 816 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
 00000010  00 00 00 E8 00 00 01 88 00 00 01 98 00 00 00 01  |................|
 00000020  00 01 00 01 00 01 00 00 00 01 00 00 00 01 00 00  |................|
 00000030  00 01 00 00 00 01 00 00 00 01 00 00 00 01 00 01  |................|
@@ -25008,13 +24897,11 @@
 00000300  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00000310  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00000320  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_clobbergirl.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 816 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\dayofthedolphins\dayofthedolphins\impact_table\impact_table_clobbergirl.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 816 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
 00000010  00 00 00 E8 00 00 01 88 00 00 01 98 00 00 00 01  |................|
 00000020  00 01 00 01 00 01 00 00 00 01 00 00 00 01 00 00  |................|
 00000030  00 01 00 00 00 01 00 00 00 01 00 00 00 01 00 01  |................|
@@ -25065,13 +24952,11 @@
 00000300  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00000310  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00000320  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_clobbergirl.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 816 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets_rws\cheater\cheater\impact_table\impact_table_clobbergirl.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 816 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
 00000010  00 00 00 E8 00 00 01 88 00 00 01 98 00 00 00 01  |................|
 00000020  00 01 00 01 00 01 00 00 00 01 00 00 00 01 00 00  |................|
 00000030  00 01 00 00 00 01 00 00 00 01 00 00 00 01 00 01  |................|
@@ -25122,13 +25007,11 @@
 00000300  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00000310  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00000320  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 816 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\story_mode\story_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 816 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
 00000010  00 00 00 E8 00 00 01 88 00 00 01 98 00 00 00 01  |................|
 00000020  00 01 00 01 00 01 00 00 00 01 00 00 00 01 00 00  |................|
 00000030  00 01 00 00 00 01 00 00 00 01 00 00 00 01 00 01  |................|
@@ -25179,13 +25062,11 @@
 00000300  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00000310  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00000320  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\challenge_mode\challenge_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 816 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules\challenge_mode\challenge_mode_design_str\build\PS3\pal_en\assets_rws\mob_rules\mob_rules\impact_table\impact_table_clobbergirl.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 816 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
 00000010  00 00 00 E8 00 00 01 88 00 00 01 98 00 00 00 01  |................|
 00000020  00 01 00 01 00 01 00 00 00 01 00 00 00 01 00 00  |................|
 00000030  00 01 00 00 00 01 00 00 00 01 00 00 00 01 00 01  |................|
@@ -25236,13 +25117,11 @@
 00000300  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00000310  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00000320  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_clobbergirl.imb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 816 bytes</div>
-            <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
+                </div>
+                <div class="file-block">
+                    <div class="file-path"><strong>File:</strong> A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger\Story_mode\Story_mode_design_str\build\PS3\pal_en\assets_rws\tree_hugger\tree_hugger\impact_table\impact_table_clobbergirl.imb</div>
+                    <div class="file-size"><strong>Size:</strong> 816 bytes</div>
+                    <pre>00000000  5B A0 8C AA 00 02 00 02 00 33 00 05 00 00 00 1C  |[........3......|
 00000010  00 00 00 E8 00 00 01 88 00 00 01 98 00 00 00 01  |................|
 00000020  00 01 00 01 00 01 00 00 00 01 00 00 00 01 00 00  |................|
 00000030  00 01 00 00 00 01 00 00 00 01 00 00 00 01 00 01  |................|
@@ -25293,8 +25172,8 @@
 00000300  00 00 00 67 00 00 00 2D 00 00 00 68 00 00 00 2E  |...g...-...h....|
 00000310  00 00 00 69 00 00 00 2F 00 00 00 6A 00 00 00 30  |...i.../...j...0|
 00000320  00 00 00 6B 00 00 00 31 00 00 00 6C 00 00 00 32  |...k...1...l...2|</pre>
-        </div>
-    </section></details>
-</body>
-
+                </div>
+            </section>
+        </details>
+    </body>
 </html>

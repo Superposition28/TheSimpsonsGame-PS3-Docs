@@ -1,54 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>MUS Format Documentation</title>
-    <link rel="stylesheet" href="../../../style/main.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
-<body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>Segmented music (.mus)</nav>
-
-    <h1>Simpsons Game <code>.mus</code> Audio Format</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
-<p>Packages paired SNR metadata and SNS audio payloads for interactive music segments.</p>
-<dl><dt>Identification</dt><dd>The registered BMS skips the first four bytes, reads a byte count at 0x04 and a descriptor table at 0x28.</dd><dt>Byte order / text</dt><dd>Big-endian extraction fields; packed offsets use different scale units.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#high-level-analysis-header-notes">High-Level Analysis &amp; Header Notes</a></li><li><a href="#verified-archive-structure-what-we-know">Verified Archive Structure (What We Know)</a></li><li><a href="#platform-differences-ps3-vs-xbox-360">Platform Differences (PS3 vs. Xbox 360)</a></li><li><a href="#background-music-segment-playback-construction">Background Music Segment Playback &amp; Construction</a></li><li><a href="#quickbms-extraction-vgmstream-verification">QuickBMS Extraction &amp; vgmstream Verification</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../STR/imbedded-formats/msb.html">Interactive music metadata (.msb)</a></td><td>Observed</td><td>MSB samples name .mus containers and expose PFDx event/part symbols. Operation 12 extracts and decodes SNR/SNS segments without reading the MSB transition logic.</td></tr><tr><td><a href="../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td><td>Related payloads</td><td>Both workflows involve EA audio structures. MUS extraction produces paired SNR metadata and SNS payloads; these pairs are not interchangeable with a standalone SNU wrapper.</td></tr></tbody></table></div><p>See the <a href="../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../pipeline.html#op-12">Operation 12: Convert Music (.mus -&gt; .snr/.sns -&gt; .wav)</a>. Declared dependencies: <code>[10]</code>; <code>run-all = false</code>.</li></ul><p><a href="../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>Operation 12 decodes individual segments, then removes temporary SNR/SNS files. It does not interpret MSB transitions or assemble a complete adaptive soundtrack. Header-family interpretations in the research notes remain hypotheses.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-
-    <p><strong>File Extension:</strong> <code>.mus</code></p>
-    <p><strong>Origin:</strong> The Simpsons Game (PS3 &amp; Xbox 360 Versions), proprietary format from EA Redwood Shores.</p>
-    <p><strong>Purpose:</strong> Container archives for Interactive, Segmented, and Layered background music.</p>
-
-    <p><strong>Key Characteristics:</strong></p>
-    <ul>
-        <li><strong>Proprietary EA Format Container:</strong> Shared archive structure and stream inventory across both PS3 and Xbox 360.</li>
-        <li><strong>Two Subtypes:</strong> Identified by values in the header:
+    <head>
+        <meta charset="utf-8">
+        <title>MUS Format Documentation</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>Segmented music (.mus)</nav>
+        <h1>Simpsons Game <code>.mus</code> Audio Format</h1>
+        <section class="format-summary" aria-label="Format summary">
+            <p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
+            <p>Packages paired SNR metadata and SNS audio payloads for interactive music segments.</p>
+            <dl>
+                <dt>Identification</dt>
+                <dd>The registered BMS skips the first four bytes, reads a byte count at 0x04 and a descriptor table at 0x28.</dd>
+                <dt>Byte order / text</dt>
+                <dd>Big-endian extraction fields; packed offsets use different scale units.</dd>
+                <dt>Documentation scope</dt>
+                <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+            </dl>
+        </section>
+        <nav class="page-toc" aria-label="On this page">
+            <strong>On this page</strong>
             <ul>
-                <li><strong>Type 1:</strong> Header bytes <code>0x08-0x0B</code> = <code>0F 00 00 00</code> (15 LE), bytes <code>0x0C-0x0F</code> = <code>78 01 32 00</code>.</li>
-                <li><strong>Type 2:</strong> Header bytes <code>0x08-0x0B</code> = <code>0B 00 00 00</code> (11 LE), bytes <code>0x0C-0x0F</code> = <code>02 03 02 03</code>.</li>
+                <li><a href="#related-formats-2">Related formats</a></li>
+                <li><a href="#operation-support-2">Operation support</a></li>
+                <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                <li><a href="#high-level-analysis-header-notes">High-Level Analysis &amp; Header Notes</a></li>
+                <li><a href="#verified-archive-structure-what-we-know">Verified Archive Structure (What We Know)</a></li>
+                <li><a href="#platform-differences-ps3-vs-xbox-360">Platform Differences (PS3 vs. Xbox 360)</a></li>
+                <li><a href="#background-music-segment-playback-construction">Background Music Segment Playback &amp; Construction</a></li>
+                <li><a href="#quickbms-extraction-vgmstream-verification">QuickBMS Extraction &amp; vgmstream Verification</a></li>
             </ul>
-        </li>
-        <li><strong>Header and Table of Contents:</strong> Contains a per-file ID, a file details header, and structured Table of Contents entries indicating metadata (<code>.snr</code>) and audio stream payload (<code>.sns</code>) locations.</li>
-        <li><strong>Cross-Platform Extraction &amp; Decodability:</strong> Both PS3 and Xbox 360 archives unpack using the exact same QuickBMS script (<code>operations/mus.bms</code>) into paired <code>.snr</code> and <code>.sns</code> segments, and outputs from both platforms natively decode into <code>.wav</code> streams using <code>vgmstream</code>.</li>
-        <li><strong>Segmented Streaming Structure:</strong> The audio clips are split into contiguous short streams (often approx. 2-second segments) intended to be played consecutively to seamlessly assemble the full song.</li>
-    </ul>
-
-    <hr>
-
-    <h2 id="high-level-analysis-header-notes">High-Level Analysis &amp; Header Notes</h2>
-
-    <h3>File Name Meanings</h3>
-    <p>Using the <code>naming.md</code> document, we can map the directory's <code>.mus</code> files directly to the game's levels. These files contain the primary streaming background music tracks for each respective area:</p>
-    <pre><code>80b_mus.mus: Around the World in 80 Bites
+        </nav>
+        <section id="related-formats">
+            <h2 id="related-formats-2">Related formats</h2>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                <table>
+                    <caption>Related formats and strength of the connection</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Related format</th>
+                            <th scope="col">Evidence</th>
+                            <th scope="col">Relationship and practical consequence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="../STR/imbedded-formats/msb.html">Interactive music metadata (.msb)</a></td>
+                            <td>Observed</td>
+                            <td>MSB samples name .mus containers and expose PFDx event/part symbols. Operation 12 extracts and decodes SNR/SNS segments without reading the MSB transition logic.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td>
+                            <td>Related payloads</td>
+                            <td>Both workflows involve EA audio structures. MUS extraction produces paired SNR metadata and SNS payloads; these pairs are not interchangeable with a standalone SNU wrapper.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>See the <a href="../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
+        </section>
+        <section id="operation-support">
+            <h2 id="operation-support-2">Operation support</h2>
+            <ul>
+                <li><a href="../pipeline.html#op-12">Operation 12: Convert Music (.mus -&gt; .snr/.sns -&gt; .wav)</a>. Declared dependencies: <code>[10]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="evidence-limits">
+            <h2 id="evidence-and-limitations">Evidence and limitations</h2>
+            <p>Operation 12 decodes individual segments, then removes temporary SNR/SNS files. It does not interpret MSB transitions or assemble a complete adaptive soundtrack. Header-family interpretations in the research notes remain hypotheses.</p>
+            <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+        </section>
+        <p><strong>File Extension:</strong> <code>.mus</code></p>
+        <p><strong>Origin:</strong> The Simpsons Game (PS3 &amp; Xbox 360 Versions), proprietary format from EA Redwood Shores.</p>
+        <p><strong>Purpose:</strong> Container archives for Interactive, Segmented, and Layered background music.</p>
+        <p><strong>Key Characteristics:</strong></p>
+        <ul>
+            <li><strong>Proprietary EA Format Container:</strong> Shared archive structure and stream inventory across both PS3 and Xbox 360.</li>
+            <li>
+                <strong>Two Subtypes:</strong> Identified by values in the header:
+                <ul>
+                    <li><strong>Type 1:</strong> Header bytes <code>0x08-0x0B</code> = <code>0F 00 00 00</code> (15 LE), bytes <code>0x0C-0x0F</code> = <code>78 01 32 00</code>.</li>
+                    <li><strong>Type 2:</strong> Header bytes <code>0x08-0x0B</code> = <code>0B 00 00 00</code> (11 LE), bytes <code>0x0C-0x0F</code> = <code>02 03 02 03</code>.</li>
+                </ul>
+            </li>
+            <li><strong>Header and Table of Contents:</strong> Contains a per-file ID, a file details header, and structured Table of Contents entries indicating metadata (<code>.snr</code>) and audio stream payload (<code>.sns</code>) locations.</li>
+            <li><strong>Cross-Platform Extraction &amp; Decodability:</strong> Both PS3 and Xbox 360 archives unpack using the exact same QuickBMS script (<code>operations/mus.bms</code>) into paired <code>.snr</code> and <code>.sns</code> segments, and outputs from both platforms natively decode into <code>.wav</code> streams using <code>vgmstream</code>.</li>
+            <li><strong>Segmented Streaming Structure:</strong> The audio clips are split into contiguous short streams (often approx. 2-second segments) intended to be played consecutively to seamlessly assemble the full song.</li>
+        </ul>
+        <hr>
+        <h2 id="high-level-analysis-header-notes">High-Level Analysis &amp; Header Notes</h2>
+        <h3>File Name Meanings</h3>
+        <p>Using the <code>naming.md</code> document, we can map the directory's <code>.mus</code> files directly to the game's levels. These files contain the primary streaming background music tracks for each respective area:</p>
+        <pre><code>80b_mus.mus: Around the World in 80 Bites
 bin.mus: Bargain Bin
 brt_mus.mus: Bartman Begins
 bsh_mus.mus: Big Super Happy Fun Fun Game
@@ -65,298 +112,287 @@ rwc_mus.mus: Five Characters in Search of an Author
 spr_mus.mus: Springfield hub/house/interiors
 sss_mus.mus: Invasion of the Yokel-Snatchers (The Day Springfield Stood Still)
 treetemp.mus: Lisa the Tree Hugger</code></pre>
-
-    <h3>Discovery of Header Signatures</h3>
-    <p>Initial notes only documented two subtypes, but analysis across all files reveals four distinct signatures. Notice the pattern in the first byte of the signature sequence:</p>
-    <p><strong>The "Type 1" Family (Ends in <code>78 01 32 00</code>):</strong></p>
-    <pre><code>0F 00 00 00 78 01 32 00 (Known Type 1) - Found in brt_mus, hub_mus, loc_mus, mob_mus, mtp_mus, nvq_mus, rwc_mus, sss_mus.
+        <h3>Discovery of Header Signatures</h3>
+        <p>Initial notes only documented two subtypes, but analysis across all files reveals four distinct signatures. Notice the pattern in the first byte of the signature sequence:</p>
+        <p><strong>The "Type 1" Family (Ends in <code>78 01 32 00</code>):</strong></p>
+        <pre><code>0F 00 00 00 78 01 32 00 (Known Type 1) - Found in brt_mus, hub_mus, loc_mus, mob_mus, mtp_mus, nvq_mus, rwc_mus, sss_mus.
 0E 00 00 00 78 01 32 00 (Variant)      - Found in 80b_mus, gts_mus, menu_mus.</code></pre>
-    <p><strong>The "Type 2" Family (Ends in <code>02 03 02 03</code>):</strong></p>
-    <pre><code>0B 00 00 00 02 03 02 03 (Known Type 2) - Found in bsh_mus, spr_mus, treetemp.mus.
+        <p><strong>The "Type 2" Family (Ends in <code>02 03 02 03</code>):</strong></p>
+        <pre><code>0B 00 00 00 02 03 02 03 (Known Type 2) - Found in bsh_mus, spr_mus, treetemp.mus.
 0C 00 00 00 02 03 02 03 (Variant)      - Found in bin.mus, cheater.mus, moh_mus.</code></pre>
-    <p><strong>What this means:</strong> The first byte (<code>0x0F</code>/<code>0x0E</code> or <code>0x0B</code>/<code>0x0C</code>) is likely a flag or a format version number, while the last four bytes form observed signature groups. Their role as a codec identifier has not been demonstrated by the registered extraction script.</p>
-
-    <h3>Count byte and earlier header interpretation</h3>
-    <p>The <code>Unk/Size</code> variable at offset <code>0x04</code> returns values ranging from <code>6</code> (for <code>hub_mus.mus</code> and <code>gts_mus.mus</code>) up to <code>249</code> (for <code>nvq_mus.mus</code>).</p>
-    <p>Because these files are enormous (e.g., <code>nvq_mus.mus</code> is 188 MB but its integer is only 249), this integer is not a file size, byte offset, or total sample count. Since background music uses interactive stems (multiple segments/layers of music fading in and out based on gameplay), the earlier notes proposed a stream/cue count. The registered BMS actually reads one byte at 0x04 as its descriptor count; the meaning of surrounding bytes must be assessed separately.</p>
-
-    <h3>Candidate frame delimiters</h3>
-    <p>Scanning <code>hub_mus.mus</code> showed that the <code>0C 00 00 00</code> padding marker appears in 12.47% of the 64-byte chunks.</p>
-    <p><strong>What this means:</strong> If the marker was only used at the very end of the file, it would be 0.001%. Because it appears roughly 1 out of every 8 chunks (100 / 12.47 &approx; 8.01), this strongly supports the theory that this marker denotes the end of logical audio frames. An average audio frame in this format spans about 8 physical chunks (~512 bytes).</p>
-
-    <hr>
-
-    <h2 id="verified-archive-structure-what-we-know">Verified Archive Structure (What We Know)</h2>
-    <ul>
-        <li><strong>It is an Archive, Not a Flat Stream:</strong> <code>.mus</code> files are not single continuous audio tracks. They are containers holding multiple distinct audio segments (metadata and payload pairs). Treating them as a single raw stream results in corrupted static/noise.</li>
-        <li><strong>Big-Endian Table of Contents (TOC):</strong> The archive structure relies on a directory/TOC that begins at offset <code>0x28</code>. The total number of files/segments inside the archive is read as a single byte at offset <code>0x04</code> of the header.</li>
-        <li><strong>28-Byte Structured TOC Entries:</strong> Each entry in the TOC is <code>28 bytes</code> (<code>0x1C</code>) long and contains the following Big-Endian fields (as parsed in <code>operations/mus.bms</code> on both PS3 and Xbox 360):
-            <ul>
-                <li><code>0x00</code> (uint32): <strong>HASH</strong> (Sound-specific hash identifier)</li>
-                <li><code>0x04</code> (uint16): <strong>NUMBER</strong> (Segment stream index/sequence number)</li>
-                <li><code>0x06</code> (uint16): <strong>PADDING</strong> (Usually always 0)</li>
-                <li><code>0x08</code> (uint32): <strong>SNR_OFFSET_RAW</strong> (The packed pointer to the SNR header. Multiply by <code>0x10</code> to resolve the real file position)</li>
-                <li><code>0x0C</code> (uint32): <strong>SNS_OFFSET_RAW</strong> (The packed pointer to the SNS stream body. Multiply by <code>0x80</code> to resolve the real file position)</li>
-                <li><code>0x10</code> (uint32): <strong>SNR_SIZE</strong> (Exact size of the SNR metadata payload in bytes)</li>
-                <li><code>0x14</code> (uint32): <strong>SNS_SIZE</strong> (Exact size of the SNS stream payload in bytes)</li>
-                <li><code>0x18</code> (uint32): <strong>PADDING</strong> (Usually always 0)</li>
-            </ul>
-        </li>
-        <li><strong>Interactive Concat/Sequence Mechanics (~2-Second Snippets):</strong> The audio tracks are split into consecutively numbered contiguous segments. Each pair represents a short, approx. 2-second piece of background music (complying with EA's interactive music engine). The full song is constructed by programmatically stitching or playing these segments sequentially one after the other.</li>
-        <li><strong>EA SNR/SNS Container Behavior:</strong> The archive holds paired components: the <code>.snr</code> containing stream description metadata (codec byte, sample rate, channels) and the matching <code>.sns</code> containing the compressed audio payload.</li>
-        <li><strong>VGMStream Integration:</strong> Running <code>vgmstream</code> directly on the extracted <code>.snr</code> file from either PS3 or Xbox 360 decodes it cleanly into a standard <code>.wav</code> snippet using the <code>Electronic Arts SNR+SNS header</code> metadata layout.</li>
-    </ul>
-
-    <hr>
-
-    <h2 id="platform-differences-ps3-vs-xbox-360">Platform Differences (PS3 vs. Xbox 360)</h2>
-    <p>The <code>.mus</code> archives have the exact same container structure and stream inventory across platforms (for example, <code>bin.mus</code> contains 63 numbered <code>.snr</code>/<code>.sns</code> pairs on both PS3 and Xbox 360). The difference lies strictly in the audio codec used inside those stream pairs:</p>
-
-    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-        <caption>Comparison of embedded stream <code>bin__000</code> (from <code>bin.mus</code>) across platforms</caption>
-        <thead>
-            <tr>
-                <th scope="col">Property</th>
-                <th scope="col">PS3</th>
-                <th scope="col">Xbox 360</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>Codec</strong></td>
-                <td>EA-XAS 4-bit ADPCM v1</td>
-                <td>Xbox Media Audio 2 (XMA2)</td>
-            </tr>
-            <tr>
-                <td><strong>Header codec byte</strong></td>
-                <td><code>0x04</code></td>
-                <td><code>0x03</code></td>
-            </tr>
-            <tr>
-                <td><strong>Sample rate</strong></td>
-                <td>48 kHz</td>
-                <td>48 kHz</td>
-            </tr>
-            <tr>
-                <td><strong>Channels</strong></td>
-                <td>6</td>
-                <td>6</td>
-            </tr>
-            <tr>
-                <td><strong>Samples / duration</strong></td>
-                <td>153,594 / 3.200 s</td>
-                <td>153,594 / 3.200 s</td>
-            </tr>
-            <tr>
-                <td><strong>Bitrate</strong></td>
-                <td>1373 kb/s</td>
-                <td>799 kb/s</td>
-            </tr>
-            <tr>
-                <td><strong><code>.sns</code> payload size</strong></td>
-                <td>549,376 bytes</td>
-                <td>319,872 bytes</td>
-            </tr>
-        </tbody>
-    </table></div>
-
-    <ul>
-        <li><strong><code>DIFF_BY_PLATFORM</code> Expected:</strong> PS3 stores the music segments as <code>EA-XAS 4-bit ADPCM v1</code> (header codec byte <code>0x04</code>), while Xbox 360 stores the exact same timed multichannel segments as <code>XMA2</code> (header codec byte <code>0x03</code>).</li>
-        <li><strong>File Size Differences:</strong> The smaller Xbox 360 <code>.mus</code> file sizes result entirely from its lower-bitrate XMA2 encoding (e.g., 799 kb/s vs. 1373 kb/s), not missing music segments.</li>
-        <li><strong>Unified Pipeline Compatibility:</strong> Because the outer <code>.mus</code> TOC layout is identical, <code>operations/mus.bms</code> extracts both PS3 and Xbox 360 archives without modification, and <code>vgmstream</code> automatically detects the <code>.snr</code> codec byte (<code>0x04</code> or <code>0x03</code>) to decode both platforms' outputs to <code>.wav</code>.</li>
-    </ul>
-
-    <hr>
-
-    <h2 id="background-music-segment-playback-construction">Background Music Segment Playback &amp; Construction</h2>
-    <p>Because the tracks are split into numerous ~2-second snippets, reconstruction of a full playable soundtrack requires sequencing. The typical workflow used in the <code>mustest.ps1</code> test script details this behavior:</p>
-    <ol>
-        <li>Unpack the <code>.mus</code> file (PS3 or Xbox 360) with <code>operations/mus.bms</code> using QuickBMS to extract all numbered <code>.snr</code> and <code>.sns</code> chunks.</li>
-        <li>Invoke <code>vgmstream-cli</code> targeting each <code>.snr</code> file individually, exporting them to independent <code>.wav</code> files.</li>
-        <li>Clean up the intermediate raw <code>.snr</code> and <code>.sns</code> segments, leaving only the converted <code>.wav</code> files.</li>
-        <li>Stitch the resulting chunks sequentially (e.g., <code>[Filename]__000.wav</code>, then <code>[Filename]__001.wav</code>, and so on) in the engine or media pipeline to reconstruct the full playback.</li>
-    </ol>
-
-    <h3>Level-Specific Extraction Statistics</h3>
-    <p>A recursive duration scan using <code>ffprobe</code> across all converted WAV folders reveals the typical length properties of the sequential music segments:</p>
-
-    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>
-        <thead>
-            <tr>
-                <th scope="col">Folder (Level)</th>
-                <th scope="col">Source File</th>
-                <th scope="col">Files Count</th>
-                <th scope="col">Shortest</th>
-                <th scope="col">Longest</th>
-                <th scope="col">Mean</th>
-                <th scope="col">Median</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>A2_Menu</strong></td>
-                <td><code>menu_mus.mus</code></td>
-                <td>37</td>
-                <td>00:00:01.524</td>
-                <td>00:02:39.047</td>
-                <td>00:00:19.012</td>
-                <td>00:00:03.118</td>
-            </tr>
-            <tr>
-                <td><strong>L01_LandOfChocolate</strong></td>
-                <td><code>loc_mus.mus</code></td>
-                <td>50</td>
-                <td>00:00:01.819</td>
-                <td>00:01:29.256</td>
-                <td>00:00:08.340</td>
-                <td>00:00:02.815</td>
-            </tr>
-            <tr>
-                <td><strong>L02_BartmanBegins</strong></td>
-                <td><code>brt_mus.mus</code></td>
-                <td>137</td>
-                <td>00:00:00.632</td>
-                <td>00:00:16.923</td>
-                <td>00:00:03.679</td>
-                <td>00:00:03.475</td>
-            </tr>
-            <tr>
-                <td><strong>L03_HungryHungryHomer</strong></td>
-                <td><code>80b_mus.mus</code></td>
-                <td>174</td>
-                <td>00:00:01.889</td>
-                <td>00:02:03.419</td>
-                <td>00:00:03.045</td>
-                <td>00:00:02.113</td>
-            </tr>
-            <tr>
-                <td><strong>L04_TreeHugger</strong></td>
-                <td><code>treetemp.mus</code></td>
-                <td>242</td>
-                <td>00:00:00.582</td>
-                <td>00:00:26.827</td>
-                <td>00:00:03.557</td>
-                <td>00:00:03.432</td>
-            </tr>
-            <tr>
-                <td><strong>L05_MobRules</strong></td>
-                <td><code>mob_mus.mus</code></td>
-                <td>151</td>
-                <td>00:00:01.905</td>
-                <td>00:00:54.333</td>
-                <td>00:00:04.123</td>
-                <td>00:00:03.093</td>
-            </tr>
-            <tr>
-                <td><strong>L06_EnterTheCheatrix</strong></td>
-                <td><code>cheater.mus</code></td>
-                <td>72</td>
-                <td>00:00:01.305</td>
-                <td>00:00:36.688</td>
-                <td>00:00:07.082</td>
-                <td>00:00:06.163</td>
-            </tr>
-            <tr>
-                <td><strong>L09_Invasion</strong></td>
-                <td><code>sss_mus.mus</code></td>
-                <td>204</td>
-                <td>00:00:00.681</td>
-                <td>00:00:11.712</td>
-                <td>00:00:03.590</td>
-                <td>00:00:03.554</td>
-            </tr>
-            <tr>
-                <td><strong>L10_BargainBin</strong></td>
-                <td><code>bin.mus</code></td>
-                <td>63</td>
-                <td>00:00:00.193</td>
-                <td>00:00:06.409</td>
-                <td>00:00:02.541</td>
-                <td>00:00:02.800</td>
-            </tr>
-            <tr>
-                <td><strong>L11_NeverQuest</strong></td>
-                <td><code>nvq_mus.mus</code></td>
-                <td>249</td>
-                <td>00:00:02.156</td>
-                <td>00:02:29.361</td>
-                <td>00:00:04.408</td>
-                <td>00:00:04.064</td>
-            </tr>
-            <tr>
-                <td><strong>L12_GrandTheftScratchy</strong></td>
-                <td><code>gts_mus.mus</code></td>
-                <td>6</td>
-                <td>00:00:10.656</td>
-                <td>00:03:05.315</td>
-                <td>00:00:56.196</td>
-                <td>00:00:43.504</td>
-            </tr>
-            <tr>
-                <td><strong>L13_MedalOfHomer</strong></td>
-                <td><code>moh_mus.mus</code></td>
-                <td>40</td>
-                <td>00:00:01.062</td>
-                <td>00:03:22.133</td>
-                <td>00:00:28.644</td>
-                <td>00:00:13.936</td>
-            </tr>
-            <tr>
-                <td><strong>L14_BigSuperHappy</strong></td>
-                <td><code>bsh_mus.mus</code></td>
-                <td>160</td>
-                <td>00:00:00.253</td>
-                <td>00:00:15.739</td>
-                <td>00:00:04.277</td>
-                <td>00:00:03.936</td>
-            </tr>
-            <tr>
-                <td><strong>L15_Rhymes</strong></td>
-                <td><code>rwc_mus.mus</code></td>
-                <td>161</td>
-                <td>00:00:00.862</td>
-                <td>00:00:10.433</td>
-                <td>00:00:03.525</td>
-                <td>00:00:03.471</td>
-            </tr>
-            <tr>
-                <td><strong>L16_MeetThyPlayer</strong></td>
-                <td><code>mtp_mus.mus</code></td>
-                <td>212</td>
-                <td>00:00:00.576</td>
-                <td>00:01:00.999</td>
-                <td>00:00:04.690</td>
-                <td>00:00:03.431</td>
-            </tr>
-            <tr>
-                <td><strong>LHub-00_GameHub</strong></td>
-                <td><code>hub_mus.mus</code></td>
-                <td>6</td>
-                <td>00:00:06.853</td>
-                <td>00:02:01.000</td>
-                <td>00:00:35.515</td>
-                <td>00:00:21.142</td>
-            </tr>
-            <tr>
-                <td><strong>LHub-00_SprHub</strong></td>
-                <td><code>spr_mus.mus</code></td>
-                <td>93</td>
-                <td>00:00:01.524</td>
-                <td>00:01:53.632</td>
-                <td>00:00:19.280</td>
-                <td>00:00:03.828</td>
-            </tr>
-        </tbody>
-    </table></div>
-
-    <hr>
-
-    <h2 id="quickbms-extraction-vgmstream-verification">QuickBMS Extraction &amp; vgmstream Verification</h2>
-    <ul>
-        <li><strong>QuickBMS Extraction Works (PS3 &amp; Xbox 360):</strong> The module script <code>operations/mus.bms</code> successfully extracts each <code>.mus</code> archive on both platforms into paired <code>.snr</code> and <code>.sns</code> files.</li>
-        <li><strong>vgmstream Playback Works (PS3 &amp; Xbox 360):</strong> Running <code>vgmstream</code> on the extracted <code>.snr</code> files produces valid decoded <code>.wav</code> audio for both platforms, reporting <code>Electronic Arts EA-XAS 4-bit ADPCM v1</code> (<code>0x04</code>) on PS3 and <code>Xbox Media Audio 2</code> (<code>0x03</code>) on Xbox 360 with <code>Electronic Arts SNR+SNS header</code> metadata.</li>
-        <li><strong>Pipeline Status:</strong> Basic extraction and decoding are complete across both platforms; the extraction and conversion path is wired into the game module pipeline via <code>SetupMusicFiles.lua</code>.</li>
-    </ul>
-</body>
-
+        <p><strong>What this means:</strong> The first byte (<code>0x0F</code>/<code>0x0E</code> or <code>0x0B</code>/<code>0x0C</code>) is likely a flag or a format version number, while the last four bytes form observed signature groups. Their role as a codec identifier has not been demonstrated by the registered extraction script.</p>
+        <h3>Count byte and earlier header interpretation</h3>
+        <p>The <code>Unk/Size</code> variable at offset <code>0x04</code> returns values ranging from <code>6</code> (for <code>hub_mus.mus</code> and <code>gts_mus.mus</code>) up to <code>249</code> (for <code>nvq_mus.mus</code>).</p>
+        <p>Because these files are enormous (e.g., <code>nvq_mus.mus</code> is 188 MB but its integer is only 249), this integer is not a file size, byte offset, or total sample count. Since background music uses interactive stems (multiple segments/layers of music fading in and out based on gameplay), the earlier notes proposed a stream/cue count. The registered BMS actually reads one byte at 0x04 as its descriptor count; the meaning of surrounding bytes must be assessed separately.</p>
+        <h3>Candidate frame delimiters</h3>
+        <p>Scanning <code>hub_mus.mus</code> showed that the <code>0C 00 00 00</code> padding marker appears in 12.47% of the 64-byte chunks.</p>
+        <p><strong>What this means:</strong> If the marker was only used at the very end of the file, it would be 0.001%. Because it appears roughly 1 out of every 8 chunks (100 / 12.47 &approx; 8.01), this strongly supports the theory that this marker denotes the end of logical audio frames. An average audio frame in this format spans about 8 physical chunks (~512 bytes).</p>
+        <hr>
+        <h2 id="verified-archive-structure-what-we-know">Verified Archive Structure (What We Know)</h2>
+        <ul>
+            <li><strong>It is an Archive, Not a Flat Stream:</strong> <code>.mus</code> files are not single continuous audio tracks. They are containers holding multiple distinct audio segments (metadata and payload pairs). Treating them as a single raw stream results in corrupted static/noise.</li>
+            <li><strong>Big-Endian Table of Contents (TOC):</strong> The archive structure relies on a directory/TOC that begins at offset <code>0x28</code>. The total number of files/segments inside the archive is read as a single byte at offset <code>0x04</code> of the header.</li>
+            <li>
+                <strong>28-Byte Structured TOC Entries:</strong> Each entry in the TOC is <code>28 bytes</code> (<code>0x1C</code>) long and contains the following Big-Endian fields (as parsed in <code>operations/mus.bms</code> on both PS3 and Xbox 360):
+                <ul>
+                    <li><code>0x00</code> (uint32): <strong>HASH</strong> (Sound-specific hash identifier)</li>
+                    <li><code>0x04</code> (uint16): <strong>NUMBER</strong> (Segment stream index/sequence number)</li>
+                    <li><code>0x06</code> (uint16): <strong>PADDING</strong> (Usually always 0)</li>
+                    <li><code>0x08</code> (uint32): <strong>SNR_OFFSET_RAW</strong> (The packed pointer to the SNR header. Multiply by <code>0x10</code> to resolve the real file position)</li>
+                    <li><code>0x0C</code> (uint32): <strong>SNS_OFFSET_RAW</strong> (The packed pointer to the SNS stream body. Multiply by <code>0x80</code> to resolve the real file position)</li>
+                    <li><code>0x10</code> (uint32): <strong>SNR_SIZE</strong> (Exact size of the SNR metadata payload in bytes)</li>
+                    <li><code>0x14</code> (uint32): <strong>SNS_SIZE</strong> (Exact size of the SNS stream payload in bytes)</li>
+                    <li><code>0x18</code> (uint32): <strong>PADDING</strong> (Usually always 0)</li>
+                </ul>
+            </li>
+            <li><strong>Interactive Concat/Sequence Mechanics (~2-Second Snippets):</strong> The audio tracks are split into consecutively numbered contiguous segments. Each pair represents a short, approx. 2-second piece of background music (complying with EA's interactive music engine). The full song is constructed by programmatically stitching or playing these segments sequentially one after the other.</li>
+            <li><strong>EA SNR/SNS Container Behavior:</strong> The archive holds paired components: the <code>.snr</code> containing stream description metadata (codec byte, sample rate, channels) and the matching <code>.sns</code> containing the compressed audio payload.</li>
+            <li><strong>VGMStream Integration:</strong> Running <code>vgmstream</code> directly on the extracted <code>.snr</code> file from either PS3 or Xbox 360 decodes it cleanly into a standard <code>.wav</code> snippet using the <code>Electronic Arts SNR+SNS header</code> metadata layout.</li>
+        </ul>
+        <hr>
+        <h2 id="platform-differences-ps3-vs-xbox-360">Platform Differences (PS3 vs. Xbox 360)</h2>
+        <p>The <code>.mus</code> archives have the exact same container structure and stream inventory across platforms (for example, <code>bin.mus</code> contains 63 numbered <code>.snr</code>/<code>.sns</code> pairs on both PS3 and Xbox 360). The difference lies strictly in the audio codec used inside those stream pairs:</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>Comparison of embedded stream <code>bin__000</code> (from <code>bin.mus</code>) across platforms</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Property</th>
+                        <th scope="col">PS3</th>
+                        <th scope="col">Xbox 360</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Codec</strong></td>
+                        <td>EA-XAS 4-bit ADPCM v1</td>
+                        <td>Xbox Media Audio 2 (XMA2)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Header codec byte</strong></td>
+                        <td><code>0x04</code></td>
+                        <td><code>0x03</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sample rate</strong></td>
+                        <td>48 kHz</td>
+                        <td>48 kHz</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Channels</strong></td>
+                        <td>6</td>
+                        <td>6</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Samples / duration</strong></td>
+                        <td>153,594 / 3.200 s</td>
+                        <td>153,594 / 3.200 s</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bitrate</strong></td>
+                        <td>1373 kb/s</td>
+                        <td>799 kb/s</td>
+                    </tr>
+                    <tr>
+                        <td><strong><code>.sns</code> payload size</strong></td>
+                        <td>549,376 bytes</td>
+                        <td>319,872 bytes</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <ul>
+            <li><strong><code>DIFF_BY_PLATFORM</code> Expected:</strong> PS3 stores the music segments as <code>EA-XAS 4-bit ADPCM v1</code> (header codec byte <code>0x04</code>), while Xbox 360 stores the exact same timed multichannel segments as <code>XMA2</code> (header codec byte <code>0x03</code>).</li>
+            <li><strong>File Size Differences:</strong> The smaller Xbox 360 <code>.mus</code> file sizes result entirely from its lower-bitrate XMA2 encoding (e.g., 799 kb/s vs. 1373 kb/s), not missing music segments.</li>
+            <li><strong>Unified Pipeline Compatibility:</strong> Because the outer <code>.mus</code> TOC layout is identical, <code>operations/mus.bms</code> extracts both PS3 and Xbox 360 archives without modification, and <code>vgmstream</code> automatically detects the <code>.snr</code> codec byte (<code>0x04</code> or <code>0x03</code>) to decode both platforms' outputs to <code>.wav</code>.</li>
+        </ul>
+        <hr>
+        <h2 id="background-music-segment-playback-construction">Background Music Segment Playback &amp; Construction</h2>
+        <p>Because the tracks are split into numerous ~2-second snippets, reconstruction of a full playable soundtrack requires sequencing. The typical workflow used in the <code>mustest.ps1</code> test script details this behavior:</p>
+        <ol>
+            <li>Unpack the <code>.mus</code> file (PS3 or Xbox 360) with <code>operations/mus.bms</code> using QuickBMS to extract all numbered <code>.snr</code> and <code>.sns</code> chunks.</li>
+            <li>Invoke <code>vgmstream-cli</code> targeting each <code>.snr</code> file individually, exporting them to independent <code>.wav</code> files.</li>
+            <li>Clean up the intermediate raw <code>.snr</code> and <code>.sns</code> segments, leaving only the converted <code>.wav</code> files.</li>
+            <li>Stitch the resulting chunks sequentially (e.g., <code>[Filename]__000.wav</code>, then <code>[Filename]__001.wav</code>, and so on) in the engine or media pipeline to reconstruct the full playback.</li>
+        </ol>
+        <h3>Level-Specific Extraction Statistics</h3>
+        <p>A recursive duration scan using <code>ffprobe</code> across all converted WAV folders reveals the typical length properties of the sequential music segments:</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Folder (Level)</th>
+                        <th scope="col">Source File</th>
+                        <th scope="col">Files Count</th>
+                        <th scope="col">Shortest</th>
+                        <th scope="col">Longest</th>
+                        <th scope="col">Mean</th>
+                        <th scope="col">Median</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>A2_Menu</strong></td>
+                        <td><code>menu_mus.mus</code></td>
+                        <td>37</td>
+                        <td>00:00:01.524</td>
+                        <td>00:02:39.047</td>
+                        <td>00:00:19.012</td>
+                        <td>00:00:03.118</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L01_LandOfChocolate</strong></td>
+                        <td><code>loc_mus.mus</code></td>
+                        <td>50</td>
+                        <td>00:00:01.819</td>
+                        <td>00:01:29.256</td>
+                        <td>00:00:08.340</td>
+                        <td>00:00:02.815</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L02_BartmanBegins</strong></td>
+                        <td><code>brt_mus.mus</code></td>
+                        <td>137</td>
+                        <td>00:00:00.632</td>
+                        <td>00:00:16.923</td>
+                        <td>00:00:03.679</td>
+                        <td>00:00:03.475</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L03_HungryHungryHomer</strong></td>
+                        <td><code>80b_mus.mus</code></td>
+                        <td>174</td>
+                        <td>00:00:01.889</td>
+                        <td>00:02:03.419</td>
+                        <td>00:00:03.045</td>
+                        <td>00:00:02.113</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L04_TreeHugger</strong></td>
+                        <td><code>treetemp.mus</code></td>
+                        <td>242</td>
+                        <td>00:00:00.582</td>
+                        <td>00:00:26.827</td>
+                        <td>00:00:03.557</td>
+                        <td>00:00:03.432</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L05_MobRules</strong></td>
+                        <td><code>mob_mus.mus</code></td>
+                        <td>151</td>
+                        <td>00:00:01.905</td>
+                        <td>00:00:54.333</td>
+                        <td>00:00:04.123</td>
+                        <td>00:00:03.093</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L06_EnterTheCheatrix</strong></td>
+                        <td><code>cheater.mus</code></td>
+                        <td>72</td>
+                        <td>00:00:01.305</td>
+                        <td>00:00:36.688</td>
+                        <td>00:00:07.082</td>
+                        <td>00:00:06.163</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L09_Invasion</strong></td>
+                        <td><code>sss_mus.mus</code></td>
+                        <td>204</td>
+                        <td>00:00:00.681</td>
+                        <td>00:00:11.712</td>
+                        <td>00:00:03.590</td>
+                        <td>00:00:03.554</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L10_BargainBin</strong></td>
+                        <td><code>bin.mus</code></td>
+                        <td>63</td>
+                        <td>00:00:00.193</td>
+                        <td>00:00:06.409</td>
+                        <td>00:00:02.541</td>
+                        <td>00:00:02.800</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L11_NeverQuest</strong></td>
+                        <td><code>nvq_mus.mus</code></td>
+                        <td>249</td>
+                        <td>00:00:02.156</td>
+                        <td>00:02:29.361</td>
+                        <td>00:00:04.408</td>
+                        <td>00:00:04.064</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L12_GrandTheftScratchy</strong></td>
+                        <td><code>gts_mus.mus</code></td>
+                        <td>6</td>
+                        <td>00:00:10.656</td>
+                        <td>00:03:05.315</td>
+                        <td>00:00:56.196</td>
+                        <td>00:00:43.504</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L13_MedalOfHomer</strong></td>
+                        <td><code>moh_mus.mus</code></td>
+                        <td>40</td>
+                        <td>00:00:01.062</td>
+                        <td>00:03:22.133</td>
+                        <td>00:00:28.644</td>
+                        <td>00:00:13.936</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L14_BigSuperHappy</strong></td>
+                        <td><code>bsh_mus.mus</code></td>
+                        <td>160</td>
+                        <td>00:00:00.253</td>
+                        <td>00:00:15.739</td>
+                        <td>00:00:04.277</td>
+                        <td>00:00:03.936</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L15_Rhymes</strong></td>
+                        <td><code>rwc_mus.mus</code></td>
+                        <td>161</td>
+                        <td>00:00:00.862</td>
+                        <td>00:00:10.433</td>
+                        <td>00:00:03.525</td>
+                        <td>00:00:03.471</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L16_MeetThyPlayer</strong></td>
+                        <td><code>mtp_mus.mus</code></td>
+                        <td>212</td>
+                        <td>00:00:00.576</td>
+                        <td>00:01:00.999</td>
+                        <td>00:00:04.690</td>
+                        <td>00:00:03.431</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LHub-00_GameHub</strong></td>
+                        <td><code>hub_mus.mus</code></td>
+                        <td>6</td>
+                        <td>00:00:06.853</td>
+                        <td>00:02:01.000</td>
+                        <td>00:00:35.515</td>
+                        <td>00:00:21.142</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LHub-00_SprHub</strong></td>
+                        <td><code>spr_mus.mus</code></td>
+                        <td>93</td>
+                        <td>00:00:01.524</td>
+                        <td>00:01:53.632</td>
+                        <td>00:00:19.280</td>
+                        <td>00:00:03.828</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <hr>
+        <h2 id="quickbms-extraction-vgmstream-verification">QuickBMS Extraction &amp; vgmstream Verification</h2>
+        <ul>
+            <li><strong>QuickBMS Extraction Works (PS3 &amp; Xbox 360):</strong> The module script <code>operations/mus.bms</code> successfully extracts each <code>.mus</code> archive on both platforms into paired <code>.snr</code> and <code>.sns</code> files.</li>
+            <li><strong>vgmstream Playback Works (PS3 &amp; Xbox 360):</strong> Running <code>vgmstream</code> on the extracted <code>.snr</code> files produces valid decoded <code>.wav</code> audio for both platforms, reporting <code>Electronic Arts EA-XAS 4-bit ADPCM v1</code> (<code>0x04</code>) on PS3 and <code>Xbox Media Audio 2</code> (<code>0x03</code>) on Xbox 360 with <code>Electronic Arts SNR+SNS header</code> metadata.</li>
+            <li><strong>Pipeline Status:</strong> Basic extraction and decoding are complete across both platforms; the extraction and conversion path is wired into the game module pipeline via <code>SetupMusicFiles.lua</code>.</li>
+        </ul>
+    </body>
 </html>

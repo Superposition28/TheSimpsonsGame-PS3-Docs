@@ -1,84 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <title>.msb Format Documentation</title>
-    <link rel="stylesheet" href="../../../../style/main.css">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-
-<body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Interactive music metadata (.msb)</nav>
-
-
-    <div class="pages">
-        <div class="doc-overview" id="overview">
-            <h1>.msb</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
-<p>References MUS music containers and includes Pathfinder-related event/part metadata.</p>
-<dl><dt>Identification</dt><dd>PFDx observed at 0x50 in documented examples; embedded .mus names.</dd><dt>Byte order / text</dt><dd>Mixed/partly unresolved; do not apply a global endian assumption.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#format-structure-breakdown">Format Structure &amp; Breakdown</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="../../MUS/index.html">Segmented music (.mus)</a></td><td>Observed</td><td>MSB samples name .mus containers and expose PFDx event/part symbols. Operation 12 extracts and decodes SNR/SNS segments without reading the MSB transition logic.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The MUS linkage and readable symbols are observed. Transition/state-machine semantics are not implemented by operation 12, and the PFDx offset should be checked per file.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-
-            <p>Based on the provided hex dumps and file paths, the <code>.msb</code> format is an <strong>EA Pathfinder Interactive Music Data Bank</strong> used to govern dynamic audio routing and playback logic in titles like <em>The Simpsons Game</em>.</p>
-
-            <h2 id="format-structure-breakdown">Format Structure &amp; Breakdown</h2>
-            <ul>
-                <li><strong>File Linkage Header:</strong> The first <code>0x50</code> bytes act as a wrapper that directly references the paired audio stream file containing the actual music data. You can see the target filename encoded in plaintext right before the main data chunk (e.g., <code>menu_mus.mus</code>, <code>loc_mus.mus</code>, <code>brt_mus.mus</code>).</li>
-                <li><strong>Pathfinder Magic Number:</strong> At exact offset <code>0x50</code>, the chunk identifier <code>PFDx</code> appears, signaling the start of the Electronic Arts Pathfinder engine data.</li>
-                <li><strong>Binary Routing Logic:</strong> Directly following <code>PFDx</code> is the compiled state machine. This area contains arrays of sequential bytes (e.g., <code>01 02 01 07 01 0D</code>) and memory offsets that map out node transitions, branching paths, and playback conditions for the interactive music engine.</li>
-                <li><strong>Plaintext Metadata Trailer:</strong> The file concludes with a highly readable symbol table that acts as an index for the game engine to interface with the audio logic. This section is split into three distinct categories:
+    <head>
+        <meta charset="utf-8">
+        <title>.msb Format Documentation</title>
+        <link rel="stylesheet" href="../../../../style/main.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Interactive music metadata (.msb)</nav>
+        <div class="pages">
+            <div class="doc-overview" id="overview">
+                <h1>.msb</h1>
+                <section class="format-summary" aria-label="Format summary">
+                    <p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+                    <p>References MUS music containers and includes Pathfinder-related event/part metadata.</p>
+                    <dl>
+                        <dt>Identification</dt>
+                        <dd>PFDx observed at 0x50 in documented examples; embedded .mus names.</dd>
+                        <dt>Byte order / text</dt>
+                        <dd>Mixed/partly unresolved; do not apply a global endian assumption.</dd>
+                        <dt>Documentation scope</dt>
+                        <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+                    </dl>
+                </section>
+                <nav class="page-toc" aria-label="On this page">
+                    <strong>On this page</strong>
                     <ul>
-                        <li><strong>Events (<code>numevents</code>):</strong> Lists triggerable interactive cues (like <code>fe_start</code>, <code>stop</code>, <code>puzzle1</code>) mapped to their hashed integer IDs (e.g., <code>stop:22419055</code>).</li>
-                        <li><strong>Entry Nodes (<code>numparts</code>):</strong> Maps logical musical phases to exact entry points within the binary state machine (e.g., <code>menu1 entry node = 41</code> or <code>loc_hz entry node = 0</code>).</li>
-                        <li><strong>Definitions (<code>numdefines</code>):</strong> Sets core configuration constants. This includes the track's memory ID (<code>PATH_TRACK_menu_mus 0x11000001</code>), the expected byte rate for timing (<code>PATH_TRACK_BYTESPERSEC</code>), and global bitmasks for system broadcasts (e.g., <code>PATH_ALL_VOICES F0000000</code> and <code>PATH_INTENSITY 0</code>).</li>
+                        <li><a href="#related-formats-2">Related formats</a></li>
+                        <li><a href="#operation-support-2">Operation support</a></li>
+                        <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                        <li><a href="#format-structure-breakdown">Format Structure &amp; Breakdown</a></li>
                     </ul>
-                </li>
-            </ul>
-            <p>In short, the <code>.msb</code> file acts as the conductor's sheet music: it holds no actual audio itself, but rather feeds the game engine a list of triggers, a node-based roadmap of how the tracks should seamlessly loop and transition, and a direct pointer to the <code>.mus</code> file containing the audio payload.</p>
-        </div>
-
-        <div class="file-list-container" id="file-list">
-            <h3>Discovered .msb Files (19 Total)</h3>
-            <ul class="file-list-scroll">
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\audio\pathfinder\menu\menu_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_land_of_chocolate\loc_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_bartman\brt_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_eighty_bites\80b_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_treehugger\treetemp.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_mob_rules\mob_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_cheater\cheater.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_treehugger\treetemp.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_mob_rules\mob_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_springfield_stood_still\sss_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_bargain_bin\bargain_bin.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_neverquest\nvq_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_grand_theft_scratchy\gts_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_medal_of_homer\moh_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_big_super_happy\bsh_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_rhymes\rwc_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_meetthyplayer\mtp_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_gamehub\hub_mus.msb</li>
-                <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_global_str\build\PS3\pal_en\assets\shared\audio\pathfinder\springfield_hub\spr_mus.msb</li>
-            </ul>
-        </div>
-
-        <details class="research-appendix"><summary>Preserved sample hex dumps</summary><section class="bodyy" id="hex-analysis">
-            <h1>.msb Files: Hex Dump Analysis</h1>
-            <div class="file-block">
-                <div class="file-path"><strong>File:</strong>
-                    A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/shared/audio/pathfinder/menu/menu_mus.msb
-                </div>
-                <div class="file-size"><strong>Size:</strong> 4766 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                </nav>
+                <section id="related-formats">
+                    <h2 id="related-formats-2">Related formats</h2>
+                    <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                        <table>
+                            <caption>Related formats and strength of the connection</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Related format</th>
+                                    <th scope="col">Evidence</th>
+                                    <th scope="col">Relationship and practical consequence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><a href="../../MUS/index.html">Segmented music (.mus)</a></td>
+                                    <td>Observed</td>
+                                    <td>MSB samples name .mus containers and expose PFDx event/part symbols. Operation 12 extracts and decodes SNR/SNS segments without reading the MSB transition logic.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
+                </section>
+                <section id="operation-support">
+                    <h2 id="operation-support-2">Operation support</h2>
+                    <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+                    <p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+                </section>
+                <section id="evidence-limits">
+                    <h2 id="evidence-and-limitations">Evidence and limitations</h2>
+                    <p>The MUS linkage and readable symbols are observed. Transition/state-machine semantics are not implemented by operation 12, and the PFDx offset should be checked per file.</p>
+                    <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+                </section>
+                <p>Based on the provided hex dumps and file paths, the <code>.msb</code> format is an <strong>EA Pathfinder Interactive Music Data Bank</strong> used to govern dynamic audio routing and playback logic in titles like <em>The Simpsons Game</em>.</p>
+                <h2 id="format-structure-breakdown">Format Structure &amp; Breakdown</h2>
+                <ul>
+                    <li><strong>File Linkage Header:</strong> The first <code>0x50</code> bytes act as a wrapper that directly references the paired audio stream file containing the actual music data. You can see the target filename encoded in plaintext right before the main data chunk (e.g., <code>menu_mus.mus</code>, <code>loc_mus.mus</code>, <code>brt_mus.mus</code>).</li>
+                    <li><strong>Pathfinder Magic Number:</strong> At exact offset <code>0x50</code>, the chunk identifier <code>PFDx</code> appears, signaling the start of the Electronic Arts Pathfinder engine data.</li>
+                    <li><strong>Binary Routing Logic:</strong> Directly following <code>PFDx</code> is the compiled state machine. This area contains arrays of sequential bytes (e.g., <code>01 02 01 07 01 0D</code>) and memory offsets that map out node transitions, branching paths, and playback conditions for the interactive music engine.</li>
+                    <li>
+                        <strong>Plaintext Metadata Trailer:</strong> The file concludes with a highly readable symbol table that acts as an index for the game engine to interface with the audio logic. This section is split into three distinct categories:
+                        <ul>
+                            <li><strong>Events (<code>numevents</code>):</strong> Lists triggerable interactive cues (like <code>fe_start</code>, <code>stop</code>, <code>puzzle1</code>) mapped to their hashed integer IDs (e.g., <code>stop:22419055</code>).</li>
+                            <li><strong>Entry Nodes (<code>numparts</code>):</strong> Maps logical musical phases to exact entry points within the binary state machine (e.g., <code>menu1 entry node = 41</code> or <code>loc_hz entry node = 0</code>).</li>
+                            <li><strong>Definitions (<code>numdefines</code>):</strong> Sets core configuration constants. This includes the track's memory ID (<code>PATH_TRACK_menu_mus 0x11000001</code>), the expected byte rate for timing (<code>PATH_TRACK_BYTESPERSEC</code>), and global bitmasks for system broadcasts (e.g., <code>PATH_ALL_VOICES F0000000</code> and <code>PATH_INTENSITY 0</code>).</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p>In short, the <code>.msb</code> file acts as the conductor's sheet music: it holds no actual audio itself, but rather feeds the game engine a list of triggers, a node-based roadmap of how the tracks should seamlessly loop and transition, and a direct pointer to the <code>.mus</code> file containing the audio payload.</p>
+            </div>
+            <div class="file-list-container" id="file-list">
+                <h3>Discovered .msb Files (19 Total)</h3>
+                <ul class="file-list-scroll">
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\A2_Frontend\frontend_str\build\PS3\pal_en\assets\shared\audio\pathfinder\menu\menu_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L01_LandOfChocolate\loc_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_land_of_chocolate\loc_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L02_BartmanBegins\brt_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_bartman\brt_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L03_HungryHungryHomer\eighty_bites_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_eighty_bites\80b_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L04_TreeHugger\tree_hugger_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_treehugger\treetemp.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L05_MobRules\mob_rules_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_mob_rules\mob_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L06_EnterTheCheatrix\cheater_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_cheater\cheater.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L07_DayOfTheDolphin\dayofthedolphins_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_treehugger\treetemp.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L08_TheColossalDonut\colossaldonut_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_mob_rules\mob_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L09_Invasion\dayspringfieldstoodstill_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_springfield_stood_still\sss_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L10_BargainBin\bargainbin_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_bargain_bin\bargain_bin.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L11_NeverQuest\neverquest_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_neverquest\nvq_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L12_GrandTheftScratchy\grand_theft_scratchy_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_grand_theft_scratchy\gts_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L13_MedalOfHomer\medal_of_homer_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_medal_of_homer\moh_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L14_BigSuperHappy\bigsuperhappy_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_big_super_happy\bsh_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L15_Rhymes\rhymes_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_rhymes\rwc_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\L16_MeetThyPlayer\meetthyplayer_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_meetthyplayer\mtp_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_GameHub\gamehub_str\build\PS3\pal_en\assets\shared\audio\pathfinder\eps_gamehub\hub_mus.msb</li>
+                    <li>A:\RemakeEngine\Main\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\EU-Full-audio_reorg-isRenamed\LHub-00_SprHub\spr_hub_global_str\build\PS3\pal_en\assets\shared\audio\pathfinder\springfield_hub\spr_mus.msb</li>
+                </ul>
+            </div>
+            <details class="research-appendix">
+                <summary>Preserved sample hex dumps</summary>
+                <section class="bodyy" id="hex-analysis">
+                    <h1>.msb Files: Hex Dump Analysis</h1>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/A2_Frontend/frontend_str/build/PS3/pal_en/assets/shared/audio/pathfinder/menu/menu_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 4766 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 0F 00 00 00 00 00 38 07 17 78  |............8..x|
 00000030  6D 65 6E 75 5F 6D 75 73 2E 6D 75 73 00 00 00 00  |menu_mus.mus....|
@@ -376,13 +411,11 @@
 00001270  49 43 45 5F 30 20 31 31 30 30 30 30 30 30 0D 50  |ICE_0 11000000.P|
 00001280  41 54 48 5F 49 4E 54 45 4E 53 49 54 59 20 30 0D  |ATH_INTENSITY 0.|
 00001290  50 41 54 48 5F 52 41 4E 44 4F 4D 20 31 0D        |PATH_RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L01_LandOfChocolate/loc_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_land_of_chocolate/loc_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 2950 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L01_LandOfChocolate/loc_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_land_of_chocolate/loc_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 2950 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 08 40 00 00 00 00 38 07 17 78  |.......@....8..x|
 00000030  6C 6F 63 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |loc_mus.mus.....|
@@ -567,13 +600,11 @@
 00000B60  30 30 30 30 30 30 0D 50 41 54 48 5F 49 4E 54 45  |000000.PATH_INTE|
 00000B70  4E 53 49 54 59 20 30 0D 50 41 54 48 5F 52 41 4E  |NSITY 0.PATH_RAN|
 00000B80  44 4F 4D 20 31 0D                                |DOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L02_BartmanBegins/brt_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_bartman/brt_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 5866 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L02_BartmanBegins/brt_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_bartman/brt_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 5866 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 13 50 00 00 00 00 38 07 17 78  |.......P....8..x|
 00000030  62 72 74 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |brt_mus.mus.....|
@@ -940,13 +971,11 @@
 000016C0  30 20 31 31 30 30 30 30 30 30 0D 50 41 54 48 5F  |0 11000000.PATH_|
 000016D0  49 4E 54 45 4E 53 49 54 59 20 30 0D 50 41 54 48  |INTENSITY 0.PATH|
 000016E0  5F 52 41 4E 44 4F 4D 20 31 0D                    |_RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L03_HungryHungryHomer/eighty_bites_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_eighty_bites/80b_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 12527 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L03_HungryHungryHomer/eighty_bites_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_eighty_bites/80b_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 12527 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 2C 90 00 00 00 00 38 07 17 78  |......,.....8..x|
 00000030  38 30 62 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |80b_mus.mus.....|
@@ -1729,13 +1758,11 @@
 000030C0  4F 49 43 45 5F 30 20 31 31 30 30 30 30 30 30 0D  |OICE_0 11000000.|
 000030D0  50 41 54 48 5F 49 4E 54 45 4E 53 49 54 59 20 30  |PATH_INTENSITY 0|
 000030E0  0D 50 41 54 48 5F 52 41 4E 44 4F 4D 20 31 0D     |.PATH_RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L04_TreeHugger/tree_hugger_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_treehugger/treetemp.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 9475 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L04_TreeHugger/tree_hugger_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_treehugger/treetemp.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 9475 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 21 20 00 00 00 00 38 07 17 78  |......! ....8..x|
 00000030  74 72 65 65 74 65 6D 70 2E 6D 75 73 00 00 00 00  |treetemp.mus....|
@@ -2328,13 +2355,11 @@
 000024E0  30 30 30 0D 50 41 54 48 5F 49 4E 54 45 4E 53 49  |000.PATH_INTENSI|
 000024F0  54 59 20 30 0D 50 41 54 48 5F 52 41 4E 44 4F 4D  |TY 0.PATH_RANDOM|
 00002500  20 31 0D                                         | 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L05_MobRules/mob_rules_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_mob_rules/mob_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 12747 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L05_MobRules/mob_rules_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_mob_rules/mob_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 12747 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 2C A0 00 00 00 00 38 07 17 78  |......,.....8..x|
 00000030  6D 6F 62 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |mob_mus.mus.....|
@@ -3131,13 +3156,11 @@
 000031A0  5F 30 20 31 31 30 30 30 30 30 30 0D 50 41 54 48  |_0 11000000.PATH|
 000031B0  5F 49 4E 54 45 4E 53 49 54 59 20 30 0D 50 41 54  |_INTENSITY 0.PAT|
 000031C0  48 5F 52 41 4E 44 4F 4D 20 31 0D                 |H_RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L06_EnterTheCheatrix/cheater_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_cheater/cheater.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 3955 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L06_EnterTheCheatrix/cheater_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_cheater/cheater.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 3955 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 0C 90 00 00 00 00 38 07 17 78  |............8..x|
 00000030  63 68 65 61 74 65 72 2E 6D 75 73 00 00 00 00 00  |cheater.mus.....|
@@ -3385,13 +3408,11 @@
 00000F50  30 30 30 0D 50 41 54 48 5F 49 4E 54 45 4E 53 49  |000.PATH_INTENSI|
 00000F60  54 59 20 30 0D 50 41 54 48 5F 52 41 4E 44 4F 4D  |TY 0.PATH_RANDOM|
 00000F70  20 31 0D                                         | 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L07_DayOfTheDolphin/dayofthedolphins_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_treehugger/treetemp.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 9475 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L07_DayOfTheDolphin/dayofthedolphins_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_treehugger/treetemp.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 9475 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 21 20 00 00 00 00 38 07 17 78  |......! ....8..x|
 00000030  74 72 65 65 74 65 6D 70 2E 6D 75 73 00 00 00 00  |treetemp.mus....|
@@ -3984,13 +4005,11 @@
 000024E0  30 30 30 0D 50 41 54 48 5F 49 4E 54 45 4E 53 49  |000.PATH_INTENSI|
 000024F0  54 59 20 30 0D 50 41 54 48 5F 52 41 4E 44 4F 4D  |TY 0.PATH_RANDOM|
 00002500  20 31 0D                                         | 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L08_TheColossalDonut/colossaldonut_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_mob_rules/mob_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 12747 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L08_TheColossalDonut/colossaldonut_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_mob_rules/mob_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 12747 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 2C A0 00 00 00 00 38 07 17 78  |......,.....8..x|
 00000030  6D 6F 62 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |mob_mus.mus.....|
@@ -4787,13 +4806,11 @@
 000031A0  5F 30 20 31 31 30 30 30 30 30 30 0D 50 41 54 48  |_0 11000000.PATH|
 000031B0  5F 49 4E 54 45 4E 53 49 54 59 20 30 0D 50 41 54  |_INTENSITY 0.PAT|
 000031C0  48 5F 52 41 4E 44 4F 4D 20 31 0D                 |H_RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L09_Invasion/dayspringfieldstoodstill_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_springfield_stood_still/sss_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 7670 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L09_Invasion/dayspringfieldstoodstill_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_springfield_stood_still/sss_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 7670 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 1B 90 00 00 00 00 38 07 17 78  |............8..x|
 00000030  73 73 73 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |sss_mus.mus.....|
@@ -5273,13 +5290,11 @@
 00001DD0  30 30 30 30 30 30 0D 50 41 54 48 5F 49 4E 54 45  |000000.PATH_INTE|
 00001DE0  4E 53 49 54 59 20 30 0D 50 41 54 48 5F 52 41 4E  |NSITY 0.PATH_RAN|
 00001DF0  44 4F 4D 20 31 0D                                |DOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L10_BargainBin/bargainbin_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_bargain_bin/bargain_bin.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 3545 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L10_BargainBin/bargainbin_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_bargain_bin/bargain_bin.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 3545 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 0B D0 00 00 00 00 38 07 17 78  |............8..x|
 00000030  62 69 6E 2E 6D 75 73 00 00 00 00 00 00 00 00 00  |bin.mus.........|
@@ -5501,13 +5516,11 @@
 00000DB0  20 31 31 30 30 30 30 30 30 0D 50 41 54 48 5F 49  | 11000000.PATH_I|
 00000DC0  4E 54 45 4E 53 49 54 59 20 30 0D 50 41 54 48 5F  |NTENSITY 0.PATH_|
 00000DD0  52 41 4E 44 4F 4D 20 31 0D                       |RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L11_NeverQuest/neverquest_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_neverquest/nvq_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 9657 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L11_NeverQuest/neverquest_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_neverquest/nvq_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 9657 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 20 C0 00 00 00 00 38 07 17 78  |...... .....8..x|
 00000030  6E 76 71 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |nvq_mus.mus.....|
@@ -6111,13 +6124,11 @@
 00002590  20 31 31 30 30 30 30 30 30 0D 50 41 54 48 5F 49  | 11000000.PATH_I|
 000025A0  4E 54 45 4E 53 49 54 59 20 30 0D 50 41 54 48 5F  |NTENSITY 0.PATH_|
 000025B0  52 41 4E 44 4F 4D 20 31 0D                       |RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L12_GrandTheftScratchy/grand_theft_scratchy_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_grand_theft_scratchy/gts_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1261 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L12_GrandTheftScratchy/grand_theft_scratchy_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_grand_theft_scratchy/gts_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 1261 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 02 40 00 00 00 00 38 07 17 78  |.......@....8..x|
 00000030  67 74 73 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |gts_mus.mus.....|
@@ -6196,13 +6207,11 @@
 000004C0  43 45 5F 30 20 31 31 30 30 30 30 30 30 0D 50 41  |CE_0 11000000.PA|
 000004D0  54 48 5F 49 4E 54 45 4E 53 49 54 59 20 30 0D 50  |TH_INTENSITY 0.P|
 000004E0  41 54 48 5F 52 41 4E 44 4F 4D 20 31 0D           |ATH_RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L13_MedalOfHomer/medal_of_homer_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_medal_of_homer/moh_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 5695 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L13_MedalOfHomer/medal_of_homer_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_medal_of_homer/moh_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 5695 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 0E E0 00 00 00 00 38 07 17 78  |............8..x|
 00000030  6D 6F 68 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |moh_mus.mus.....|
@@ -6558,13 +6567,11 @@
 00001610  4F 49 43 45 5F 30 20 31 31 30 30 30 30 30 30 0D  |OICE_0 11000000.|
 00001620  50 41 54 48 5F 49 4E 54 45 4E 53 49 54 59 20 30  |PATH_INTENSITY 0|
 00001630  0D 50 41 54 48 5F 52 41 4E 44 4F 4D 20 31 0D     |.PATH_RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L14_BigSuperHappy/bigsuperhappy_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_big_super_happy/bsh_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 6931 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L14_BigSuperHappy/bigsuperhappy_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_big_super_happy/bsh_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 6931 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 17 00 00 00 00 00 38 07 17 78  |............8..x|
 00000030  62 73 68 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |bsh_mus.mus.....|
@@ -6998,13 +7005,11 @@
 00001AF0  30 30 30 0D 50 41 54 48 5F 49 4E 54 45 4E 53 49  |000.PATH_INTENSI|
 00001B00  54 59 20 30 0D 50 41 54 48 5F 52 41 4E 44 4F 4D  |TY 0.PATH_RANDOM|
 00001B10  20 31 0D                                         | 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L15_Rhymes/rhymes_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_rhymes/rwc_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 7558 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L15_Rhymes/rhymes_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_rhymes/rwc_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 7558 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 1A 60 00 00 00 00 38 07 17 78  |.......`....8..x|
 00000030  72 77 63 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |rwc_mus.mus.....|
@@ -7477,13 +7482,11 @@
 00001D60  30 30 30 30 30 30 0D 50 41 54 48 5F 49 4E 54 45  |000000.PATH_INTE|
 00001D70  4E 53 49 54 59 20 30 0D 50 41 54 48 5F 52 41 4E  |NSITY 0.PATH_RAN|
 00001D80  44 4F 4D 20 31 0D                                |DOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L16_MeetThyPlayer/meetthyplayer_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_meetthyplayer/mtp_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 8958 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/L16_MeetThyPlayer/meetthyplayer_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_meetthyplayer/mtp_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 8958 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 1E C0 00 00 00 00 38 07 17 78  |............8..x|
 00000030  6D 74 70 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |mtp_mus.mus.....|
@@ -8043,13 +8046,11 @@
 000022D0  49 43 45 5F 30 20 31 31 30 30 30 30 30 30 0D 50  |ICE_0 11000000.P|
 000022E0  41 54 48 5F 49 4E 54 45 4E 53 49 54 59 20 30 0D  |ATH_INTENSITY 0.|
 000022F0  50 41 54 48 5F 52 41 4E 44 4F 4D 20 31 0D        |PATH_RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/LHub-00_GameHub/gamehub_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_gamehub/hub_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 1374 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/LHub-00_GameHub/gamehub_str/build/PS3/pal_en/assets/shared/audio/pathfinder/eps_gamehub/hub_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 1374 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 03 30 00 00 00 00 38 07 17 78  |.......0....8..x|
 00000030  68 75 62 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |hub_mus.mus.....|
@@ -8135,13 +8136,11 @@
 00000530  49 43 45 5F 30 20 31 31 30 30 30 30 30 30 0D 50  |ICE_0 11000000.P|
 00000540  41 54 48 5F 49 4E 54 45 4E 53 49 54 59 20 30 0D  |ATH_INTENSITY 0.|
 00000550  50 41 54 48 5F 52 41 4E 44 4F 4D 20 31 0D        |PATH_RANDOM 1.|</pre>
-        </div>
-        <div class='file-block'>
-            <div class='file-path'><strong>File:</strong>
-                A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/LHub-00_SprHub/spr_hub_global_str/build/PS3/pal_en/assets/shared/audio/pathfinder/springfield_hub/spr_mus.msb
-            </div>
-            <div class='file-size'><strong>Size:</strong> 8983 bytes</div>
-            <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
+                    </div>
+                    <div class="file-block">
+                        <div class="file-path"><strong>File:</strong> A:/RemakeEngine/Main/EngineApps/Games/TheSimpsonsGame-PS3/GameFiles/EU-Full-audio_reorg-isRenamed/LHub-00_SprHub/spr_hub_global_str/build/PS3/pal_en/assets/shared/audio/pathfinder/springfield_hub/spr_mus.msb</div>
+                        <div class="file-size"><strong>Size:</strong> 8983 bytes</div>
+                        <pre>00000000  00 00 00 00 00 00 00 00 00 00 00 20 00 00 00 00  |........... ....|
 00000010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 00000020  00 00 00 05 00 00 1E 70 00 00 00 00 38 07 17 78  |.......p....8..x|
 00000030  73 70 72 5F 6D 75 73 2E 6D 75 73 00 00 00 00 00  |spr_mus.mus.....|
@@ -8703,9 +8702,9 @@
 000022F0  31 30 30 30 30 30 30 0D 50 41 54 48 5F 49 4E 54  |1000000.PATH_INT|
 00002300  45 4E 53 49 54 59 20 30 0D 50 41 54 48 5F 52 41  |ENSITY 0.PATH_RA|
 00002310  4E 44 4F 4D 20 31 0D                             |NDOM 1.|</pre>
+                    </div>
+                </section>
+            </details>
         </div>
-    </section></details>
-    </div>
-</body>
-
+    </body>
 </html>

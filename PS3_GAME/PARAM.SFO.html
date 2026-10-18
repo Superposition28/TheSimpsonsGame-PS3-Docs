@@ -1,246 +1,929 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PS3 metadata (PARAM.SFO)</title>
-    <link rel="stylesheet" href="../style/main.css">
-</head>
-<body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html" target="_top">Documentation</a><span>/</span><a href="index.html">PS3_GAME</a><span>/</span>PARAM.SFO</nav>
-<h1>PS3 metadata (PARAM.SFO)</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Parsed metadata and readable TOML references · PS3 EU / US / demo · 2026-10-18</p>
-<p>PARAM.SFO is a PSF key/value metadata file beside the PS3 game's USRDIR. It records title identity, display names, versions and platform flags. This page documents all three local PS3 copies and their binary layout; the demo package uses the same format at its own package root.</p>
-<dl><dt>Identification</dt><dd>Literal bytes 00 50 53 46 (NUL + PSF), observed version 0x00000101.</dd><dt>Byte order / text</dt><dd>Little-endian numeric fields; ASCII key names and UTF-8 string values in these files.</dd><dt>Coverage</dt><dd>All 38 entries decoded and compared with the three documentation-side TOML snapshots. Metadata parsing is used during module initialization; no dedicated conversion operation is registered.</dd></dl>
-</section>
-<nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#samples">PS3 copies and TOML references</a></li><li><a href="#layout">Binary layout and byte order</a></li><li><a href="#index-records">Index records, relative offsets and allocation</a></li><li><a href="#data-types">Value types and text encoding</a></li><li><a href="#variant-values">EU, US and demo values</a></li><li><a href="#flags">Resolution and audio-output flags</a></li><li><a href="#worked-example">Worked EU TITLE_ID record</a></li><li><a href="#parsing">Parsing and validation checklist</a></li><li><a href="#index-inventories">Per-copy index inventories</a></li><li><a href="#toml">What the TOML references preserve</a></li><li><a href="#related-formats">Related files and formats</a></li><li><a href="#operation-support">Operation support</a></li><li><a href="#evidence-limits">Evidence, identities and limitations</a></li></ul></nav>
-<section id="samples">
-<h2>PS3 copies and TOML references</h2>
-<div class="table-scroll" role="region" aria-label="All PARAM.SFO source files found in the current PS3 tree" tabindex="0">
-<table>
-<caption>All PARAM.SFO source files found in the current PS3 tree</caption>
-<thead><tr><th scope="col">Copy</th><th scope="col">Source location</th><th scope="col">Bytes</th><th scope="col">Entries</th><th scope="col">Readable values</th></tr></thead>
-<tbody>
-<tr><td>EU</td><td><code>Source/PS3/EU/1/PS3_GAME/PARAM.SFO</code></td><td>1,468</td><td>14</td><td><a href="EU.PARAM.SFO.toml">EU.PARAM.SFO.toml</a></td></tr>
-<tr><td>US</td><td><code>Source/PS3/US/1/PS3_GAME/PARAM.SFO</code></td><td>1,008</td><td>11</td><td><a href="US.PARAM.SFO.toml">US.PARAM.SFO.toml</a></td></tr>
-<tr><td>DEMO</td><td><code>Source/PS3/DEMO/1/NPEB90029/PARAM.SFO</code></td><td>1,192</td><td>13</td><td><a href="DEMO.PARAM.SFO.toml">DEMO.PARAM.SFO.toml</a></td></tr>
-</tbody>
-</table>
-</div><p>Each reference TOML was parsed and compared with its corresponding binary: all keys and decoded values match. The EU and US copies are under <code>PS3_GAME/</code>; the demo metadata is at the package root <code>NPEB90029/</code>, beside <code>USRDIR/</code>. This shared format page follows the PS3 metadata location rather than the extracted STR tree. These references cover the three local PS3 copies; Xbox 360 is outside this PARAM.SFO inventory.</p>
-</section>
-<section id="layout">
-<h2>Binary layout and byte order</h2>
-<p>PSF is an indexed key/value container. The file consists of a 20-byte header, a 16-byte index record for each entry, a NUL-terminated key-string table, optional alignment padding, and the value-data area. All numeric header/index fields and integer payloads described here use <strong>little-endian</strong> storage. The four magic bytes are a literal signature, not evidence of a mixed-endian header.</p><div class="table-scroll" role="region" aria-label="File header; offsets are zero-based and range ends are exclusive" tabindex="0">
-<table>
-<caption>File header; offsets are zero-based and range ends are exclusive</caption>
-<thead><tr><th scope="col">Offset</th><th scope="col">Size / type</th><th scope="col">Field</th><th scope="col">Meaning</th></tr></thead>
-<tbody>
-<tr><td>0x00</td><td>4 bytes</td><td>Magic</td><td><code>00 50 53 46</code> — NUL followed by PSF.</td></tr>
-<tr><td>0x04</td><td>uint32 LE</td><td>Version</td><td>Observed bytes <code>01 01 00 00</code> → <code>0x00000101</code>.</td></tr>
-<tr><td>0x08</td><td>uint32 LE</td><td>KeyTableStart</td><td>Absolute byte offset of the key-string area.</td></tr>
-<tr><td>0x0C</td><td>uint32 LE</td><td>DataTableStart</td><td>Absolute byte offset of the value-data area.</td></tr>
-<tr><td>0x10</td><td>uint32 LE</td><td>EntryCount</td><td>Number of 16-byte index records starting at 0x14.</td></tr>
-</tbody>
-</table>
-</div><div class="table-scroll" role="region" aria-label="Observed region boundaries; values include allocation padding" tabindex="0">
-<table>
-<caption>Observed region boundaries; values include allocation padding</caption>
-<thead><tr><th scope="col">Copy</th><th scope="col">Header</th><th scope="col">Index records</th><th scope="col">Keys / alignment padding</th><th scope="col">Value-data allocations</th></tr></thead>
-<tbody>
-<tr><td>EU</td><td><code>[0x00, 0x14)</code></td><td><code>[0x14, 0xF4)</code></td><td><code>[0xF4, 0x180)</code></td><td><code>[0x180, 0x5BC)</code></td></tr>
-<tr><td>US</td><td><code>[0x00, 0x14)</code></td><td><code>[0x14, 0xC4)</code></td><td><code>[0xC4, 0x134)</code></td><td><code>[0x134, 0x3F0)</code></td></tr>
-<tr><td>DEMO</td><td><code>[0x00, 0x14)</code></td><td><code>[0x14, 0xE4)</code></td><td><code>[0xE4, 0x168)</code></td><td><code>[0x168, 0x4A8)</code></td></tr>
-</tbody>
-</table>
-</div><div class="callout"><strong>Version correction:</strong> the inspected reference exporter reads the version word as big-endian, yielding <code>0x01010000</code> from these bytes. The actual PSF field is little-endian <code>0x00000101</code>. The exporter does not use that value or include it in its TOML output, so the matching exported key/value data does not validate its version interpretation.</div>
-<p>The numeric layout is also documented by <a href="https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Loader/PSF.cpp">RPCS3's PSF header/index implementation</a>. <code>APP_VER</code> and <code>VERSION</code> are separate string entries; neither is the binary header version.</p>
-</section>
-<section id="index-records">
-<h2>Index records, relative offsets and allocation</h2>
-<div class="table-scroll" role="region" aria-label="16-byte index record at 0x14 + i × 0x10" tabindex="0">
-<table>
-<caption>16-byte index record at 0x14 + i × 0x10</caption>
-<thead><tr><th scope="col">Relative offset</th><th scope="col">Type</th><th scope="col">Field</th><th scope="col">Interpretation</th></tr></thead>
-<tbody>
-<tr><td>+0x00</td><td>uint16 LE</td><td>KeyOffset</td><td>Relative to KeyTableStart; points to a NUL-terminated key name.</td></tr>
-<tr><td>+0x02</td><td>uint16 LE</td><td>DataFormat</td><td>Type tag; controls payload decoding.</td></tr>
-<tr><td>+0x04</td><td>uint32 LE</td><td>DataLength</td><td>Used byte length. Includes the string terminator for observed 0x0204 entries.</td></tr>
-<tr><td>+0x08</td><td>uint32 LE</td><td>DataMaxLength</td><td>Reserved byte capacity for this value, including any unused padding.</td></tr>
-<tr><td>+0x0C</td><td>uint32 LE</td><td>DataOffset</td><td>Relative to DataTableStart, not to this index record.</td></tr>
-</tbody>
-</table>
-</div><pre><code>index_pos = 0x14 + i * 0x10
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>PS3 metadata (PARAM.SFO)</title>
+        <link rel="stylesheet" href="../style/main.css">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html" target="_top">Documentation</a><span>/</span><a href="index.html">PS3_GAME</a><span>/</span>PARAM.SFO</nav>
+        <h1>PS3 metadata (PARAM.SFO)</h1>
+        <section class="format-summary" aria-label="Format summary">
+            <p class="eyebrow">Parsed metadata and readable TOML references · PS3 EU / US / demo · 2026-10-18</p>
+            <p>PARAM.SFO is a PSF key/value metadata file beside the PS3 game's USRDIR. It records title identity, display names, versions and platform flags. This page documents all three local PS3 copies and their binary layout; the demo package uses the same format at its own package root.</p>
+            <dl>
+                <dt>Identification</dt>
+                <dd>Literal bytes 00 50 53 46 (NUL + PSF), observed version 0x00000101.</dd>
+                <dt>Byte order / text</dt>
+                <dd>Little-endian numeric fields; ASCII key names and UTF-8 string values in these files.</dd>
+                <dt>Coverage</dt>
+                <dd>All 38 entries decoded and compared with the three documentation-side TOML snapshots. Metadata parsing is used during module initialization; no dedicated conversion operation is registered.</dd>
+            </dl>
+        </section>
+        <nav class="page-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <ul>
+                <li><a href="#samples">PS3 copies and TOML references</a></li>
+                <li><a href="#layout">Binary layout and byte order</a></li>
+                <li><a href="#index-records">Index records, relative offsets and allocation</a></li>
+                <li><a href="#data-types">Value types and text encoding</a></li>
+                <li><a href="#variant-values">EU, US and demo values</a></li>
+                <li><a href="#flags">Resolution and audio-output flags</a></li>
+                <li><a href="#worked-example">Worked EU TITLE_ID record</a></li>
+                <li><a href="#parsing">Parsing and validation checklist</a></li>
+                <li><a href="#index-inventories">Per-copy index inventories</a></li>
+                <li><a href="#toml">What the TOML references preserve</a></li>
+                <li><a href="#related-formats">Related files and formats</a></li>
+                <li><a href="#operation-support">Operation support</a></li>
+                <li><a href="#evidence-limits">Evidence, identities and limitations</a></li>
+            </ul>
+        </nav>
+        <section id="samples">
+            <h2>PS3 copies and TOML references</h2>
+            <div class="table-scroll" role="region" aria-label="All PARAM.SFO source files found in the current PS3 tree" tabindex="0">
+                <table>
+                    <caption>All PARAM.SFO source files found in the current PS3 tree</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Copy</th>
+                            <th scope="col">Source location</th>
+                            <th scope="col">Bytes</th>
+                            <th scope="col">Entries</th>
+                            <th scope="col">Readable values</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>EU</td>
+                            <td><code>Source/PS3/EU/1/PS3_GAME/PARAM.SFO</code></td>
+                            <td>1,468</td>
+                            <td>14</td>
+                            <td><a href="EU.PARAM.SFO.toml">EU.PARAM.SFO.toml</a></td>
+                        </tr>
+                        <tr>
+                            <td>US</td>
+                            <td><code>Source/PS3/US/1/PS3_GAME/PARAM.SFO</code></td>
+                            <td>1,008</td>
+                            <td>11</td>
+                            <td><a href="US.PARAM.SFO.toml">US.PARAM.SFO.toml</a></td>
+                        </tr>
+                        <tr>
+                            <td>DEMO</td>
+                            <td><code>Source/PS3/DEMO/1/NPEB90029/PARAM.SFO</code></td>
+                            <td>1,192</td>
+                            <td>13</td>
+                            <td><a href="DEMO.PARAM.SFO.toml">DEMO.PARAM.SFO.toml</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Each reference TOML was parsed and compared with its corresponding binary: all keys and decoded values match. The EU and US copies are under <code>PS3_GAME/</code>; the demo metadata is at the package root <code>NPEB90029/</code>, beside <code>USRDIR/</code>. This shared format page follows the PS3 metadata location rather than the extracted STR tree. These references cover the three local PS3 copies; Xbox 360 is outside this PARAM.SFO inventory.</p>
+        </section>
+        <section id="layout">
+            <h2>Binary layout and byte order</h2>
+            <p>PSF is an indexed key/value container. The file consists of a 20-byte header, a 16-byte index record for each entry, a NUL-terminated key-string table, optional alignment padding, and the value-data area. All numeric header/index fields and integer payloads described here use <strong>little-endian</strong> storage. The four magic bytes are a literal signature, not evidence of a mixed-endian header.</p>
+            <div class="table-scroll" role="region" aria-label="File header; offsets are zero-based and range ends are exclusive" tabindex="0">
+                <table>
+                    <caption>File header; offsets are zero-based and range ends are exclusive</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Offset</th>
+                            <th scope="col">Size / type</th>
+                            <th scope="col">Field</th>
+                            <th scope="col">Meaning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0x00</td>
+                            <td>4 bytes</td>
+                            <td>Magic</td>
+                            <td><code>00 50 53 46</code> — NUL followed by PSF.</td>
+                        </tr>
+                        <tr>
+                            <td>0x04</td>
+                            <td>uint32 LE</td>
+                            <td>Version</td>
+                            <td>Observed bytes <code>01 01 00 00</code> → <code>0x00000101</code>.</td>
+                        </tr>
+                        <tr>
+                            <td>0x08</td>
+                            <td>uint32 LE</td>
+                            <td>KeyTableStart</td>
+                            <td>Absolute byte offset of the key-string area.</td>
+                        </tr>
+                        <tr>
+                            <td>0x0C</td>
+                            <td>uint32 LE</td>
+                            <td>DataTableStart</td>
+                            <td>Absolute byte offset of the value-data area.</td>
+                        </tr>
+                        <tr>
+                            <td>0x10</td>
+                            <td>uint32 LE</td>
+                            <td>EntryCount</td>
+                            <td>Number of 16-byte index records starting at 0x14.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-scroll" role="region" aria-label="Observed region boundaries; values include allocation padding" tabindex="0">
+                <table>
+                    <caption>Observed region boundaries; values include allocation padding</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Copy</th>
+                            <th scope="col">Header</th>
+                            <th scope="col">Index records</th>
+                            <th scope="col">Keys / alignment padding</th>
+                            <th scope="col">Value-data allocations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>EU</td>
+                            <td><code>[0x00, 0x14)</code></td>
+                            <td><code>[0x14, 0xF4)</code></td>
+                            <td><code>[0xF4, 0x180)</code></td>
+                            <td><code>[0x180, 0x5BC)</code></td>
+                        </tr>
+                        <tr>
+                            <td>US</td>
+                            <td><code>[0x00, 0x14)</code></td>
+                            <td><code>[0x14, 0xC4)</code></td>
+                            <td><code>[0xC4, 0x134)</code></td>
+                            <td><code>[0x134, 0x3F0)</code></td>
+                        </tr>
+                        <tr>
+                            <td>DEMO</td>
+                            <td><code>[0x00, 0x14)</code></td>
+                            <td><code>[0x14, 0xE4)</code></td>
+                            <td><code>[0xE4, 0x168)</code></td>
+                            <td><code>[0x168, 0x4A8)</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="callout"><strong>Version correction:</strong> the inspected reference exporter reads the version word as big-endian, yielding <code>0x01010000</code> from these bytes. The actual PSF field is little-endian <code>0x00000101</code>. The exporter does not use that value or include it in its TOML output, so the matching exported key/value data does not validate its version interpretation.</div>
+            <p>The numeric layout is also documented by <a href="https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Loader/PSF.cpp">RPCS3's PSF header/index implementation</a>. <code>APP_VER</code> and <code>VERSION</code> are separate string entries; neither is the binary header version.</p>
+        </section>
+        <section id="index-records">
+            <h2>Index records, relative offsets and allocation</h2>
+            <div class="table-scroll" role="region" aria-label="16-byte index record at 0x14 + i × 0x10" tabindex="0">
+                <table>
+                    <caption>16-byte index record at 0x14 + i × 0x10</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Relative offset</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Field</th>
+                            <th scope="col">Interpretation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>+0x00</td>
+                            <td>uint16 LE</td>
+                            <td>KeyOffset</td>
+                            <td>Relative to KeyTableStart; points to a NUL-terminated key name.</td>
+                        </tr>
+                        <tr>
+                            <td>+0x02</td>
+                            <td>uint16 LE</td>
+                            <td>DataFormat</td>
+                            <td>Type tag; controls payload decoding.</td>
+                        </tr>
+                        <tr>
+                            <td>+0x04</td>
+                            <td>uint32 LE</td>
+                            <td>DataLength</td>
+                            <td>Used byte length. Includes the string terminator for observed 0x0204 entries.</td>
+                        </tr>
+                        <tr>
+                            <td>+0x08</td>
+                            <td>uint32 LE</td>
+                            <td>DataMaxLength</td>
+                            <td>Reserved byte capacity for this value, including any unused padding.</td>
+                        </tr>
+                        <tr>
+                            <td>+0x0C</td>
+                            <td>uint32 LE</td>
+                            <td>DataOffset</td>
+                            <td>Relative to DataTableStart, not to this index record.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <pre><code>index_pos = 0x14 + i * 0x10
 key_pos   = KeyTableStart  + KeyOffset
 value_pos = DataTableStart + DataOffset
 used      = file[value_pos : value_pos + DataLength]
 reserved  = file[value_pos : value_pos + DataMaxLength]</code></pre>
-<p>All observed value starts are aligned to four bytes, and unused allocation bytes are zero. The next value is located using its own index record; advancing by only the current used length skips the reserved capacity and is incorrect. Key names are ASCII in these samples. Text values use UTF-8, so byte length differs from character count when names contain <code>™</code>, <code>©</code> or <code>®</code>.</p>
-</section>
-<section id="data-types">
-<h2>Value types and text encoding</h2>
-<div class="table-scroll" role="region" aria-label="PSF type tags; the char-array form is not present in these three samples" tabindex="0">
-<table>
-<caption>PSF type tags; the char-array form is not present in these three samples</caption>
-<thead><tr><th scope="col">Type tag</th><th scope="col">Stored bytes</th><th scope="col">Payload</th><th scope="col">Coverage</th></tr></thead>
-<tbody>
-<tr><td><code>0x0204</code></td><td><code>04 02</code></td><td>NUL-terminated UTF-8 text; decode the used bytes and remove the terminator.</td><td>Observed for names, IDs, version strings, category and license.</td></tr>
-<tr><td><code>0x0404</code></td><td><code>04 04</code></td><td>Four-byte integer in little-endian order; preserving it as uint32 retains all bits.</td><td>Observed for flags, bootable status and parental level.</td></tr>
-<tr><td><code>0x0004</code></td><td><code>04 00</code></td><td>Length-delimited char array / opaque byte data, without an implied NUL terminator.</td><td>Supported by common readers; not exercised by these files. Preserve bytes unless the specific key establishes text semantics.</td></tr>
-</tbody>
-</table>
-</div><p>The reference exporter tries UTF-8 decoding for <code>0x0004</code> and uses a printability heuristic before falling back to a <code>RAW_HEX:</code> string. That marker is an export convention, not an on-disk PSF signature or a fourth PSF type. Unknown type tags should remain explicit rather than being silently reclassified as text. The small non-negative integer values here do not establish the intended signedness of every possible PSF key.</p>
-</section>
-<section id="variant-values">
-<h2>EU, US and demo values</h2>
-<div class="table-scroll" role="region" aria-label="Complete key union; absent entries are not equivalent to zero or an empty string" tabindex="0">
-<table>
-<caption>Complete key union; absent entries are not equivalent to zero or an empty string</caption>
-<thead><tr><th scope="col">Key</th><th scope="col">Type</th><th scope="col">EU</th><th scope="col">US</th><th scope="col">Demo</th><th scope="col">Role / interpretation</th></tr></thead>
-<tbody>
-<tr><td><code>APP_VER</code></td><td><code>0x0204</code></td><td><code>01.00</code></td><td><code>01.00</code></td><td><code>01.00</code></td><td>Application version string; distinct from the PSF header version.</td></tr>
-<tr><td><code>ATTRIBUTE</code></td><td><code>0x0404</code></td><td>Absent</td><td>Absent</td><td><code>0</code></td><td>Attribute flags; present with value zero in the demo only. Individual bits are not established by these samples.</td></tr>
-<tr><td><code>BOOTABLE</code></td><td><code>0x0404</code></td><td><code>1</code></td><td><code>1</code></td><td><code>1</code></td><td>Bootable-status metadata, set to 1 in all three files.</td></tr>
-<tr><td><code>CATEGORY</code></td><td><code>0x0204</code></td><td><code>DG</code></td><td><code>DG</code></td><td><code>HG</code></td><td>Stored category code: DG in the two full disc copies, HG in the installed demo copy. The code is not a universal is-demo boolean.</td></tr>
-<tr><td><code>LICENSE</code></td><td><code>0x0204</code></td><td>Same license text</td><td>Same license text</td><td>Same license text</td><td>Same license text in all three; 401 used UTF-8 bytes including NUL, reserved capacity 512. Read the linked TOMLs for the full text.</td></tr>
-<tr><td><code>PARENTAL_LEVEL</code></td><td><code>0x0404</code></td><td><code>5</code></td><td><code>5</code></td><td><code>5</code></td><td>Parental-level metadata, not the player age or an in-game difficulty value.</td></tr>
-<tr><td><code>PS3_SYSTEM_VER</code></td><td><code>0x0204</code></td><td><code>01.9300</code></td><td><code>01.9300</code></td><td><code>01.9000</code></td><td>Declared system-software version string; not evidence of the software version currently running on a console.</td></tr>
-<tr><td><code>RESOLUTION</code></td><td><code>0x0404</code></td><td><code>38</code></td><td><code>21</code></td><td><code>38</code></td><td>Video-mode metadata bitmask; decoded below.</td></tr>
-<tr><td><code>SOUND_FORMAT</code></td><td><code>0x0404</code></td><td><code>5</code></td><td><code>5</code></td><td><code>5</code></td><td>Audio-output metadata bitmask; decoded below.</td></tr>
-<tr><td><code>TITLE</code></td><td><code>0x0204</code></td><td><code>The Simpsons™ Game</code></td><td><code>The Simpsons™ Game</code></td><td><code>The Simpsons™ Game Demo</code></td><td>Default platform-facing title. These strings identify the game/demo, not an in-game text table.</td></tr>
-<tr><td><code>TITLE_01</code></td><td><code>0x0204</code></td><td>Absent</td><td>Absent</td><td><code>The Simpsons™ Game Demo</code></td><td>Localized-title slot present in the demo; its observed text is the English demo title.</td></tr>
-<tr><td><code>TITLE_02</code></td><td><code>0x0204</code></td><td><code>Les Simpson™ Le Jeu</code></td><td>Absent</td><td>Absent</td><td>Observed French display-title text in the EU copy.</td></tr>
-<tr><td><code>TITLE_03</code></td><td><code>0x0204</code></td><td><code>Los Simpson™ El Videojuego</code></td><td>Absent</td><td>Absent</td><td>Observed Spanish display-title text in the EU copy.</td></tr>
-<tr><td><code>TITLE_05</code></td><td><code>0x0204</code></td><td><code>I Simpson™ Il Videogioco</code></td><td>Absent</td><td>Absent</td><td>Observed Italian display-title text in the EU copy.</td></tr>
-<tr><td><code>TITLE_ID</code></td><td><code>0x0204</code></td><td><code>BLES00142</code></td><td><code>BLUS30065</code></td><td><code>NPEB90029</code></td><td>Platform title identifier used by module initialization for build classification.</td></tr>
-<tr><td><code>VERSION</code></td><td><code>0x0204</code></td><td><code>01.00</code></td><td><code>01.00</code></td><td><code>01.00</code></td><td>A separate version string entry. It happens to match APP_VER here; do not merge the two keys.</td></tr>
-</tbody>
-</table>
-</div><p>EU has three additional localized-title slots compared with US. The demo adds <code>ATTRIBUTE</code> and <code>TITLE_01</code>, changes the title/category/ID, and declares <code>01.9000</code> instead of <code>01.9300</code>. EU and demo use the same resolution mask, while US differs. All three share the same sound-format mask and license bytes. These differences describe the inspected files, not every PS3 release.</p>
-</section>
-<section id="flags">
-<h2>Resolution and audio-output flags</h2>
-<div class="table-scroll" role="region" aria-label="Decoded sample masks using RPCS3 PSF flag definitions" tabindex="0">
-<table>
-<caption>Decoded sample masks using RPCS3 PSF flag definitions</caption>
-<thead><tr><th scope="col">Entry / copy</th><th scope="col">Stored value</th><th scope="col">Set bits</th><th scope="col">Meaning of the declared flags</th></tr></thead>
-<tbody>
-<tr><td>RESOLUTION — EU / demo</td><td><code>38 = 0x26</code></td><td><code>0x02 | 0x04 | 0x20</code></td><td>576, 720 and 576 with 16:9 flag.</td></tr>
-<tr><td>RESOLUTION — US</td><td><code>21 = 0x15</code></td><td><code>0x01 | 0x04 | 0x10</code></td><td>480, 720 and 480 with 16:9 flag.</td></tr>
-<tr><td>SOUND_FORMAT — all</td><td><code>5 = 0x05</code></td><td><code>0x01 | 0x04</code></td><td>Linear PCM two-channel and Linear PCM 5.1 output flags.</td></tr>
-</tbody>
-</table>
-</div><p>Flag names follow <a href="https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Loader/PSF.h">RPCS3's resolution_flag and sound_format_flag definitions</a>. These values describe declared platform output support, not measured rendering resolution, playback results or the codec/channel layout of each SNU, SBK, MUS or VP6 asset. A mask is not a count of modes or channels.</p>
-</section>
-<section id="worked-example">
-<h2>Worked EU TITLE_ID record</h2>
-<p>EU <code>EntryCount = 14</code>, <code>KeyTableStart = 0xF4</code>, and <code>DataTableStart = 0x180</code>. The zero-based index record 12 starts at <code>0x14 + 12 × 0x10 = 0xD4</code>:</p>
-<pre><code>000000D4  79 00 04 02 0A 00 00 00 10 00 00 00 24 04 00 00</code></pre>
-<ul><li><code>KeyOffset = 0x79</code>, so the key string is at <code>0xF4 + 0x79 = 0x16D</code>: <code>TITLE_ID</code> followed by NUL.</li><li><code>DataFormat = 0x0204</code>, <code>DataLength = 10</code>, <code>DataMaxLength = 16</code>.</li><li><code>DataOffset = 0x424</code>, so the value begins at <code>0x180 + 0x424 = 0x5A4</code>.</li><li>The ten used bytes encode <code>BLES00142</code> plus NUL; six remaining allocated bytes are zero padding.</li></ul>
-<p>By contrast, EU <code>RESOLUTION</code> contains bytes <code>26 00 00 00</code> at <code>0x39C</code>: little-endian integer 38, rather than four text characters or a big-endian value.</p>
-</section>
-<section id="parsing">
-<h2>Parsing and validation checklist</h2>
-<ol><li>Require at least 20 bytes; verify literal magic <code>00 50 53 46</code> and decode the version as little-endian. Unsupported versions should be reported, not silently accepted.</li><li>Check that <code>0x14 + 16 × EntryCount</code> fits in the file. Check key/data table offsets and their order against the index end and actual file size.</li><li>For each record, bound the key pointer within the key area and require a terminating NUL before the data area. Preserve case and reject or explicitly report duplicate keys.</li><li>Check <code>DataLength &lt;= DataMaxLength</code> and that both used and allocated ranges fit in the file. Validate any overlap before treating allocations as independent.</li><li>Dispatch by the format tag. Require four used bytes for an integer; treat string lengths as byte counts and validate UTF-8 and termination. Keep unknown types as opaque bytes.</li><li>Distinguish absent keys, empty strings and zero-valued integers. Preserve the raw version, type, capacity, offsets and padding when byte-for-byte reconstruction matters.</li></ol>
-<p>All 38 index entries across these three files passed the structural range, text and allocation checks. No whole-file checksum field was identified in the PSF header/index inspected here. SHA-256 values below are external identity measurements, not embedded integrity records.</p>
-</section>
-<section id="index-inventories">
-<h2>Per-copy index inventories</h2>
-<details class="research-appendix"><summary>EU: 14 index records</summary>
-<div class="table-scroll" role="region" aria-label="EU index layout; key and data offsets are relative to their respective tables" tabindex="0">
-<table>
-<caption>EU index layout; key and data offsets are relative to their respective tables</caption>
-<thead><tr><th scope="col">Key</th><th scope="col">Key offset</th><th scope="col">Type</th><th scope="col">Used bytes</th><th scope="col">Capacity</th><th scope="col">Data offset</th><th scope="col">Absolute data position</th></tr></thead>
-<tbody>
-<tr><td><code>APP_VER</code></td><td><code>0x0</code></td><td><code>0x0204</code></td><td>6</td><td>8</td><td><code>0x0</code></td><td><code>0x180</code></td></tr>
-<tr><td><code>BOOTABLE</code></td><td><code>0x8</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x8</code></td><td><code>0x188</code></td></tr>
-<tr><td><code>CATEGORY</code></td><td><code>0x11</code></td><td><code>0x0204</code></td><td>3</td><td>4</td><td><code>0xC</code></td><td><code>0x18C</code></td></tr>
-<tr><td><code>LICENSE</code></td><td><code>0x1A</code></td><td><code>0x0204</code></td><td>401</td><td>512</td><td><code>0x10</code></td><td><code>0x190</code></td></tr>
-<tr><td><code>PARENTAL_LEVEL</code></td><td><code>0x22</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x210</code></td><td><code>0x390</code></td></tr>
-<tr><td><code>PS3_SYSTEM_VER</code></td><td><code>0x31</code></td><td><code>0x0204</code></td><td>8</td><td>8</td><td><code>0x214</code></td><td><code>0x394</code></td></tr>
-<tr><td><code>RESOLUTION</code></td><td><code>0x40</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x21C</code></td><td><code>0x39C</code></td></tr>
-<tr><td><code>SOUND_FORMAT</code></td><td><code>0x4B</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x220</code></td><td><code>0x3A0</code></td></tr>
-<tr><td><code>TITLE</code></td><td><code>0x58</code></td><td><code>0x0204</code></td><td>21</td><td>128</td><td><code>0x224</code></td><td><code>0x3A4</code></td></tr>
-<tr><td><code>TITLE_02</code></td><td><code>0x5E</code></td><td><code>0x0204</code></td><td>22</td><td>128</td><td><code>0x2A4</code></td><td><code>0x424</code></td></tr>
-<tr><td><code>TITLE_03</code></td><td><code>0x67</code></td><td><code>0x0204</code></td><td>29</td><td>128</td><td><code>0x324</code></td><td><code>0x4A4</code></td></tr>
-<tr><td><code>TITLE_05</code></td><td><code>0x70</code></td><td><code>0x0204</code></td><td>27</td><td>128</td><td><code>0x3A4</code></td><td><code>0x524</code></td></tr>
-<tr><td><code>TITLE_ID</code></td><td><code>0x79</code></td><td><code>0x0204</code></td><td>10</td><td>16</td><td><code>0x424</code></td><td><code>0x5A4</code></td></tr>
-<tr><td><code>VERSION</code></td><td><code>0x82</code></td><td><code>0x0204</code></td><td>6</td><td>8</td><td><code>0x434</code></td><td><code>0x5B4</code></td></tr>
-</tbody>
-</table>
-</div></details>
-<details class="research-appendix"><summary>US: 11 index records</summary>
-<div class="table-scroll" role="region" aria-label="US index layout; key and data offsets are relative to their respective tables" tabindex="0">
-<table>
-<caption>US index layout; key and data offsets are relative to their respective tables</caption>
-<thead><tr><th scope="col">Key</th><th scope="col">Key offset</th><th scope="col">Type</th><th scope="col">Used bytes</th><th scope="col">Capacity</th><th scope="col">Data offset</th><th scope="col">Absolute data position</th></tr></thead>
-<tbody>
-<tr><td><code>APP_VER</code></td><td><code>0x0</code></td><td><code>0x0204</code></td><td>6</td><td>8</td><td><code>0x0</code></td><td><code>0x134</code></td></tr>
-<tr><td><code>BOOTABLE</code></td><td><code>0x8</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x8</code></td><td><code>0x13C</code></td></tr>
-<tr><td><code>CATEGORY</code></td><td><code>0x11</code></td><td><code>0x0204</code></td><td>3</td><td>4</td><td><code>0xC</code></td><td><code>0x140</code></td></tr>
-<tr><td><code>LICENSE</code></td><td><code>0x1A</code></td><td><code>0x0204</code></td><td>401</td><td>512</td><td><code>0x10</code></td><td><code>0x144</code></td></tr>
-<tr><td><code>PARENTAL_LEVEL</code></td><td><code>0x22</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x210</code></td><td><code>0x344</code></td></tr>
-<tr><td><code>PS3_SYSTEM_VER</code></td><td><code>0x31</code></td><td><code>0x0204</code></td><td>8</td><td>8</td><td><code>0x214</code></td><td><code>0x348</code></td></tr>
-<tr><td><code>RESOLUTION</code></td><td><code>0x40</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x21C</code></td><td><code>0x350</code></td></tr>
-<tr><td><code>SOUND_FORMAT</code></td><td><code>0x4B</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x220</code></td><td><code>0x354</code></td></tr>
-<tr><td><code>TITLE</code></td><td><code>0x58</code></td><td><code>0x0204</code></td><td>21</td><td>128</td><td><code>0x224</code></td><td><code>0x358</code></td></tr>
-<tr><td><code>TITLE_ID</code></td><td><code>0x5E</code></td><td><code>0x0204</code></td><td>10</td><td>16</td><td><code>0x2A4</code></td><td><code>0x3D8</code></td></tr>
-<tr><td><code>VERSION</code></td><td><code>0x67</code></td><td><code>0x0204</code></td><td>6</td><td>8</td><td><code>0x2B4</code></td><td><code>0x3E8</code></td></tr>
-</tbody>
-</table>
-</div></details>
-<details class="research-appendix"><summary>DEMO: 13 index records</summary>
-<div class="table-scroll" role="region" aria-label="DEMO index layout; key and data offsets are relative to their respective tables" tabindex="0">
-<table>
-<caption>DEMO index layout; key and data offsets are relative to their respective tables</caption>
-<thead><tr><th scope="col">Key</th><th scope="col">Key offset</th><th scope="col">Type</th><th scope="col">Used bytes</th><th scope="col">Capacity</th><th scope="col">Data offset</th><th scope="col">Absolute data position</th></tr></thead>
-<tbody>
-<tr><td><code>APP_VER</code></td><td><code>0x0</code></td><td><code>0x0204</code></td><td>6</td><td>8</td><td><code>0x0</code></td><td><code>0x168</code></td></tr>
-<tr><td><code>ATTRIBUTE</code></td><td><code>0x8</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x8</code></td><td><code>0x170</code></td></tr>
-<tr><td><code>BOOTABLE</code></td><td><code>0x12</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0xC</code></td><td><code>0x174</code></td></tr>
-<tr><td><code>CATEGORY</code></td><td><code>0x1B</code></td><td><code>0x0204</code></td><td>3</td><td>4</td><td><code>0x10</code></td><td><code>0x178</code></td></tr>
-<tr><td><code>LICENSE</code></td><td><code>0x24</code></td><td><code>0x0204</code></td><td>401</td><td>512</td><td><code>0x14</code></td><td><code>0x17C</code></td></tr>
-<tr><td><code>PARENTAL_LEVEL</code></td><td><code>0x2C</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x214</code></td><td><code>0x37C</code></td></tr>
-<tr><td><code>PS3_SYSTEM_VER</code></td><td><code>0x3B</code></td><td><code>0x0204</code></td><td>8</td><td>8</td><td><code>0x218</code></td><td><code>0x380</code></td></tr>
-<tr><td><code>RESOLUTION</code></td><td><code>0x4A</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x220</code></td><td><code>0x388</code></td></tr>
-<tr><td><code>SOUND_FORMAT</code></td><td><code>0x55</code></td><td><code>0x0404</code></td><td>4</td><td>4</td><td><code>0x224</code></td><td><code>0x38C</code></td></tr>
-<tr><td><code>TITLE</code></td><td><code>0x62</code></td><td><code>0x0204</code></td><td>26</td><td>128</td><td><code>0x228</code></td><td><code>0x390</code></td></tr>
-<tr><td><code>TITLE_01</code></td><td><code>0x68</code></td><td><code>0x0204</code></td><td>26</td><td>128</td><td><code>0x2A8</code></td><td><code>0x410</code></td></tr>
-<tr><td><code>TITLE_ID</code></td><td><code>0x71</code></td><td><code>0x0204</code></td><td>10</td><td>16</td><td><code>0x328</code></td><td><code>0x490</code></td></tr>
-<tr><td><code>VERSION</code></td><td><code>0x7A</code></td><td><code>0x0204</code></td><td>6</td><td>8</td><td><code>0x338</code></td><td><code>0x4A0</code></td></tr>
-</tbody>
-</table>
-</div></details>
-
-</section>
-<section id="toml">
-<h2>What the TOML references preserve</h2>
-<p>The three linked TOMLs provide portable decoded key/value views and remain inside this documentation repository. Their string values preserve the observed UTF-8 text; integer entries become TOML integers. The referenced exporter was inspected to understand decoding behavior; it is not moved into the documentation repository, linked as a dependency, or required to read this page.</p>
-<p>The TOMLs omit the PSF header version, type tags, relative offsets, used lengths, capacities and padding. They are therefore not lossless binary replacements, and no reverse conversion or byte-identical rebuild is established. Exporter choices such as UTF-8 replacement decoding, printable-array heuristics and a RAW_HEX string can also lose type information. Matching these three valid samples does not prove that every malformed or unknown-type file is handled correctly.</p>
-</section>
-<section id="related-formats">
-<h2>Related files and formats</h2>
-<ul><li><a href="FormatAnalysis/BIN/index.html">EBOOT.BIN</a> is the executable in the same PS3 source tree. PARAM.SFO identifies the surrounding game/package; it does not decode executable functions or establish an internal reference graph.</li><li><a href="FormatAnalysis/TXT/index.html">localetable.txt</a> has a separate locale/configuration role. EU/US table identifiers match SFO TITLE_ID, but the demo locale table stores BLUS30065 while demo PARAM.SFO identifies NPEB90029. Preserve both observations rather than trusting the locale token as package identity.</li><li>The observed TITLE_XX entries are platform-facing display titles, distinct from LH2 localization strings, TOX subtitle timings and INF/TXD font assets. Matching language names do not establish shared IDs or pointers.</li></ul>
-</section>
-<section id="operation-support">
-<h2>Operation support</h2>
-<p>Initialization operation 0 reads PARAM.SFO through the module's existing metadata reader to help classify PS3 source builds and report title/version information. This is source validation, not an independently registered SFO-to-TOML conversion. The known IDs classify the EU and US full copies and the NPEB90029 demo; fallback title/category heuristics are implementation choices, not PSF format rules.</p>
-<p>The reference snapshots are readable as supplied. No new conversion operation is registered by this documentation, and no original PS3 executable analysis is required. See the <a href="FormatAnalysis/pipeline.html#op-0">initialization entry in the pipeline reference</a>.</p>
-</section>
-<section id="evidence-limits">
-<h2>Evidence, identities and limitations</h2>
-<div class="table-scroll" role="region" aria-label="SHA-256 of the three inspected binary files" tabindex="0">
-<table>
-<caption>SHA-256 of the three inspected binary files</caption>
-<thead><tr><th scope="col">Copy</th><th scope="col">SHA-256</th></tr></thead>
-<tbody>
-<tr><td>EU</td><td><code>f9dc3833ab6fe64633273bda228ec2ef81766b72b53dc0f0e2b9154f8b31c38f</code></td></tr>
-<tr><td>US</td><td><code>635cf120dd501715cf17798a5fb04004a7060f4ccdfb4080060e0287bb7c4cc3</code></td></tr>
-<tr><td>DEMO</td><td><code>d2b560ca361a0af214ced21bd946e2438d66bd84cb776f706b9f498f09bbffa3</code></td></tr>
-</tbody>
-</table>
-</div><p>On 2026-10-18, all PARAM.SFO files found under the local PS3 source tree were read directly. Their 14/11/13 entries respectively match the EU/US/demo TOMLs exactly. Header offsets, relative pointers, used/capacity ranges, four-byte data alignment, string termination and zero unused allocations were checked. Only 0x0204 and 0x0404 type tags occur in this corpus; 0x0004 is described from reader/reference behavior rather than a game sample.</p>
-<p>Binary layout and bitmask names were cross-checked with the linked RPCS3 primary sources. Metadata flags were not tested on a running PS3. These hashes identify local copies and were not compared with trusted retail hashes. No general writer, signature/authenticity verifier, complete category catalog or interpretation of ATTRIBUTE bits is established.</p>
-</section>
-</body>
+            <p>All observed value starts are aligned to four bytes, and unused allocation bytes are zero. The next value is located using its own index record; advancing by only the current used length skips the reserved capacity and is incorrect. Key names are ASCII in these samples. Text values use UTF-8, so byte length differs from character count when names contain <code>™</code>, <code>©</code> or <code>®</code>.</p>
+        </section>
+        <section id="data-types">
+            <h2>Value types and text encoding</h2>
+            <div class="table-scroll" role="region" aria-label="PSF type tags; the char-array form is not present in these three samples" tabindex="0">
+                <table>
+                    <caption>PSF type tags; the char-array form is not present in these three samples</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Type tag</th>
+                            <th scope="col">Stored bytes</th>
+                            <th scope="col">Payload</th>
+                            <th scope="col">Coverage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>0x0204</code></td>
+                            <td><code>04 02</code></td>
+                            <td>NUL-terminated UTF-8 text; decode the used bytes and remove the terminator.</td>
+                            <td>Observed for names, IDs, version strings, category and license.</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x0404</code></td>
+                            <td><code>04 04</code></td>
+                            <td>Four-byte integer in little-endian order; preserving it as uint32 retains all bits.</td>
+                            <td>Observed for flags, bootable status and parental level.</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x0004</code></td>
+                            <td><code>04 00</code></td>
+                            <td>Length-delimited char array / opaque byte data, without an implied NUL terminator.</td>
+                            <td>Supported by common readers; not exercised by these files. Preserve bytes unless the specific key establishes text semantics.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>The reference exporter tries UTF-8 decoding for <code>0x0004</code> and uses a printability heuristic before falling back to a <code>RAW_HEX:</code> string. That marker is an export convention, not an on-disk PSF signature or a fourth PSF type. Unknown type tags should remain explicit rather than being silently reclassified as text. The small non-negative integer values here do not establish the intended signedness of every possible PSF key.</p>
+        </section>
+        <section id="variant-values">
+            <h2>EU, US and demo values</h2>
+            <div class="table-scroll" role="region" aria-label="Complete key union; absent entries are not equivalent to zero or an empty string" tabindex="0">
+                <table>
+                    <caption>Complete key union; absent entries are not equivalent to zero or an empty string</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Key</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">EU</th>
+                            <th scope="col">US</th>
+                            <th scope="col">Demo</th>
+                            <th scope="col">Role / interpretation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>APP_VER</code></td>
+                            <td><code>0x0204</code></td>
+                            <td><code>01.00</code></td>
+                            <td><code>01.00</code></td>
+                            <td><code>01.00</code></td>
+                            <td>Application version string; distinct from the PSF header version.</td>
+                        </tr>
+                        <tr>
+                            <td><code>ATTRIBUTE</code></td>
+                            <td><code>0x0404</code></td>
+                            <td>Absent</td>
+                            <td>Absent</td>
+                            <td><code>0</code></td>
+                            <td>Attribute flags; present with value zero in the demo only. Individual bits are not established by these samples.</td>
+                        </tr>
+                        <tr>
+                            <td><code>BOOTABLE</code></td>
+                            <td><code>0x0404</code></td>
+                            <td><code>1</code></td>
+                            <td><code>1</code></td>
+                            <td><code>1</code></td>
+                            <td>Bootable-status metadata, set to 1 in all three files.</td>
+                        </tr>
+                        <tr>
+                            <td><code>CATEGORY</code></td>
+                            <td><code>0x0204</code></td>
+                            <td><code>DG</code></td>
+                            <td><code>DG</code></td>
+                            <td><code>HG</code></td>
+                            <td>Stored category code: DG in the two full disc copies, HG in the installed demo copy. The code is not a universal is-demo boolean.</td>
+                        </tr>
+                        <tr>
+                            <td><code>LICENSE</code></td>
+                            <td><code>0x0204</code></td>
+                            <td>Same license text</td>
+                            <td>Same license text</td>
+                            <td>Same license text</td>
+                            <td>Same license text in all three; 401 used UTF-8 bytes including NUL, reserved capacity 512. Read the linked TOMLs for the full text.</td>
+                        </tr>
+                        <tr>
+                            <td><code>PARENTAL_LEVEL</code></td>
+                            <td><code>0x0404</code></td>
+                            <td><code>5</code></td>
+                            <td><code>5</code></td>
+                            <td><code>5</code></td>
+                            <td>Parental-level metadata, not the player age or an in-game difficulty value.</td>
+                        </tr>
+                        <tr>
+                            <td><code>PS3_SYSTEM_VER</code></td>
+                            <td><code>0x0204</code></td>
+                            <td><code>01.9300</code></td>
+                            <td><code>01.9300</code></td>
+                            <td><code>01.9000</code></td>
+                            <td>Declared system-software version string; not evidence of the software version currently running on a console.</td>
+                        </tr>
+                        <tr>
+                            <td><code>RESOLUTION</code></td>
+                            <td><code>0x0404</code></td>
+                            <td><code>38</code></td>
+                            <td><code>21</code></td>
+                            <td><code>38</code></td>
+                            <td>Video-mode metadata bitmask; decoded below.</td>
+                        </tr>
+                        <tr>
+                            <td><code>SOUND_FORMAT</code></td>
+                            <td><code>0x0404</code></td>
+                            <td><code>5</code></td>
+                            <td><code>5</code></td>
+                            <td><code>5</code></td>
+                            <td>Audio-output metadata bitmask; decoded below.</td>
+                        </tr>
+                        <tr>
+                            <td><code>TITLE</code></td>
+                            <td><code>0x0204</code></td>
+                            <td><code>The Simpsons™ Game</code></td>
+                            <td><code>The Simpsons™ Game</code></td>
+                            <td><code>The Simpsons™ Game Demo</code></td>
+                            <td>Default platform-facing title. These strings identify the game/demo, not an in-game text table.</td>
+                        </tr>
+                        <tr>
+                            <td><code>TITLE_01</code></td>
+                            <td><code>0x0204</code></td>
+                            <td>Absent</td>
+                            <td>Absent</td>
+                            <td><code>The Simpsons™ Game Demo</code></td>
+                            <td>Localized-title slot present in the demo; its observed text is the English demo title.</td>
+                        </tr>
+                        <tr>
+                            <td><code>TITLE_02</code></td>
+                            <td><code>0x0204</code></td>
+                            <td><code>Les Simpson™ Le Jeu</code></td>
+                            <td>Absent</td>
+                            <td>Absent</td>
+                            <td>Observed French display-title text in the EU copy.</td>
+                        </tr>
+                        <tr>
+                            <td><code>TITLE_03</code></td>
+                            <td><code>0x0204</code></td>
+                            <td><code>Los Simpson™ El Videojuego</code></td>
+                            <td>Absent</td>
+                            <td>Absent</td>
+                            <td>Observed Spanish display-title text in the EU copy.</td>
+                        </tr>
+                        <tr>
+                            <td><code>TITLE_05</code></td>
+                            <td><code>0x0204</code></td>
+                            <td><code>I Simpson™ Il Videogioco</code></td>
+                            <td>Absent</td>
+                            <td>Absent</td>
+                            <td>Observed Italian display-title text in the EU copy.</td>
+                        </tr>
+                        <tr>
+                            <td><code>TITLE_ID</code></td>
+                            <td><code>0x0204</code></td>
+                            <td><code>BLES00142</code></td>
+                            <td><code>BLUS30065</code></td>
+                            <td><code>NPEB90029</code></td>
+                            <td>Platform title identifier used by module initialization for build classification.</td>
+                        </tr>
+                        <tr>
+                            <td><code>VERSION</code></td>
+                            <td><code>0x0204</code></td>
+                            <td><code>01.00</code></td>
+                            <td><code>01.00</code></td>
+                            <td><code>01.00</code></td>
+                            <td>A separate version string entry. It happens to match APP_VER here; do not merge the two keys.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>EU has three additional localized-title slots compared with US. The demo adds <code>ATTRIBUTE</code> and <code>TITLE_01</code>, changes the title/category/ID, and declares <code>01.9000</code> instead of <code>01.9300</code>. EU and demo use the same resolution mask, while US differs. All three share the same sound-format mask and license bytes. These differences describe the inspected files, not every PS3 release.</p>
+        </section>
+        <section id="flags">
+            <h2>Resolution and audio-output flags</h2>
+            <div class="table-scroll" role="region" aria-label="Decoded sample masks using RPCS3 PSF flag definitions" tabindex="0">
+                <table>
+                    <caption>Decoded sample masks using RPCS3 PSF flag definitions</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Entry / copy</th>
+                            <th scope="col">Stored value</th>
+                            <th scope="col">Set bits</th>
+                            <th scope="col">Meaning of the declared flags</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>RESOLUTION — EU / demo</td>
+                            <td><code>38 = 0x26</code></td>
+                            <td><code>0x02 | 0x04 | 0x20</code></td>
+                            <td>576, 720 and 576 with 16:9 flag.</td>
+                        </tr>
+                        <tr>
+                            <td>RESOLUTION — US</td>
+                            <td><code>21 = 0x15</code></td>
+                            <td><code>0x01 | 0x04 | 0x10</code></td>
+                            <td>480, 720 and 480 with 16:9 flag.</td>
+                        </tr>
+                        <tr>
+                            <td>SOUND_FORMAT — all</td>
+                            <td><code>5 = 0x05</code></td>
+                            <td><code>0x01 | 0x04</code></td>
+                            <td>Linear PCM two-channel and Linear PCM 5.1 output flags.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Flag names follow <a href="https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Loader/PSF.h">RPCS3's resolution_flag and sound_format_flag definitions</a>. These values describe declared platform output support, not measured rendering resolution, playback results or the codec/channel layout of each SNU, SBK, MUS or VP6 asset. A mask is not a count of modes or channels.</p>
+        </section>
+        <section id="worked-example">
+            <h2>Worked EU TITLE_ID record</h2>
+            <p>EU <code>EntryCount = 14</code>, <code>KeyTableStart = 0xF4</code>, and <code>DataTableStart = 0x180</code>. The zero-based index record 12 starts at <code>0x14 + 12 × 0x10 = 0xD4</code>:</p>
+            <pre><code>000000D4  79 00 04 02 0A 00 00 00 10 00 00 00 24 04 00 00</code></pre>
+            <ul>
+                <li><code>KeyOffset = 0x79</code>, so the key string is at <code>0xF4 + 0x79 = 0x16D</code>: <code>TITLE_ID</code> followed by NUL.</li>
+                <li><code>DataFormat = 0x0204</code>, <code>DataLength = 10</code>, <code>DataMaxLength = 16</code>.</li>
+                <li><code>DataOffset = 0x424</code>, so the value begins at <code>0x180 + 0x424 = 0x5A4</code>.</li>
+                <li>The ten used bytes encode <code>BLES00142</code> plus NUL; six remaining allocated bytes are zero padding.</li>
+            </ul>
+            <p>By contrast, EU <code>RESOLUTION</code> contains bytes <code>26 00 00 00</code> at <code>0x39C</code>: little-endian integer 38, rather than four text characters or a big-endian value.</p>
+        </section>
+        <section id="parsing">
+            <h2>Parsing and validation checklist</h2>
+            <ol>
+                <li>Require at least 20 bytes; verify literal magic <code>00 50 53 46</code> and decode the version as little-endian. Unsupported versions should be reported, not silently accepted.</li>
+                <li>Check that <code>0x14 + 16 × EntryCount</code> fits in the file. Check key/data table offsets and their order against the index end and actual file size.</li>
+                <li>For each record, bound the key pointer within the key area and require a terminating NUL before the data area. Preserve case and reject or explicitly report duplicate keys.</li>
+                <li>Check <code>DataLength &lt;= DataMaxLength</code> and that both used and allocated ranges fit in the file. Validate any overlap before treating allocations as independent.</li>
+                <li>Dispatch by the format tag. Require four used bytes for an integer; treat string lengths as byte counts and validate UTF-8 and termination. Keep unknown types as opaque bytes.</li>
+                <li>Distinguish absent keys, empty strings and zero-valued integers. Preserve the raw version, type, capacity, offsets and padding when byte-for-byte reconstruction matters.</li>
+            </ol>
+            <p>All 38 index entries across these three files passed the structural range, text and allocation checks. No whole-file checksum field was identified in the PSF header/index inspected here. SHA-256 values below are external identity measurements, not embedded integrity records.</p>
+        </section>
+        <section id="index-inventories">
+            <h2>Per-copy index inventories</h2>
+            <details class="research-appendix">
+                <summary>EU: 14 index records</summary>
+                <div class="table-scroll" role="region" aria-label="EU index layout; key and data offsets are relative to their respective tables" tabindex="0">
+                    <table>
+                        <caption>EU index layout; key and data offsets are relative to their respective tables</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Key</th>
+                                <th scope="col">Key offset</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Used bytes</th>
+                                <th scope="col">Capacity</th>
+                                <th scope="col">Data offset</th>
+                                <th scope="col">Absolute data position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>APP_VER</code></td>
+                                <td><code>0x0</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>6</td>
+                                <td>8</td>
+                                <td><code>0x0</code></td>
+                                <td><code>0x180</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>BOOTABLE</code></td>
+                                <td><code>0x8</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x8</code></td>
+                                <td><code>0x188</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>CATEGORY</code></td>
+                                <td><code>0x11</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>3</td>
+                                <td>4</td>
+                                <td><code>0xC</code></td>
+                                <td><code>0x18C</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>LICENSE</code></td>
+                                <td><code>0x1A</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>401</td>
+                                <td>512</td>
+                                <td><code>0x10</code></td>
+                                <td><code>0x190</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>PARENTAL_LEVEL</code></td>
+                                <td><code>0x22</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x210</code></td>
+                                <td><code>0x390</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>PS3_SYSTEM_VER</code></td>
+                                <td><code>0x31</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>8</td>
+                                <td>8</td>
+                                <td><code>0x214</code></td>
+                                <td><code>0x394</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>RESOLUTION</code></td>
+                                <td><code>0x40</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x21C</code></td>
+                                <td><code>0x39C</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>SOUND_FORMAT</code></td>
+                                <td><code>0x4B</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x220</code></td>
+                                <td><code>0x3A0</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TITLE</code></td>
+                                <td><code>0x58</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>21</td>
+                                <td>128</td>
+                                <td><code>0x224</code></td>
+                                <td><code>0x3A4</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TITLE_02</code></td>
+                                <td><code>0x5E</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>22</td>
+                                <td>128</td>
+                                <td><code>0x2A4</code></td>
+                                <td><code>0x424</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TITLE_03</code></td>
+                                <td><code>0x67</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>29</td>
+                                <td>128</td>
+                                <td><code>0x324</code></td>
+                                <td><code>0x4A4</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TITLE_05</code></td>
+                                <td><code>0x70</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>27</td>
+                                <td>128</td>
+                                <td><code>0x3A4</code></td>
+                                <td><code>0x524</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TITLE_ID</code></td>
+                                <td><code>0x79</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>10</td>
+                                <td>16</td>
+                                <td><code>0x424</code></td>
+                                <td><code>0x5A4</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>VERSION</code></td>
+                                <td><code>0x82</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>6</td>
+                                <td>8</td>
+                                <td><code>0x434</code></td>
+                                <td><code>0x5B4</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+            <details class="research-appendix">
+                <summary>US: 11 index records</summary>
+                <div class="table-scroll" role="region" aria-label="US index layout; key and data offsets are relative to their respective tables" tabindex="0">
+                    <table>
+                        <caption>US index layout; key and data offsets are relative to their respective tables</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Key</th>
+                                <th scope="col">Key offset</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Used bytes</th>
+                                <th scope="col">Capacity</th>
+                                <th scope="col">Data offset</th>
+                                <th scope="col">Absolute data position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>APP_VER</code></td>
+                                <td><code>0x0</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>6</td>
+                                <td>8</td>
+                                <td><code>0x0</code></td>
+                                <td><code>0x134</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>BOOTABLE</code></td>
+                                <td><code>0x8</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x8</code></td>
+                                <td><code>0x13C</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>CATEGORY</code></td>
+                                <td><code>0x11</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>3</td>
+                                <td>4</td>
+                                <td><code>0xC</code></td>
+                                <td><code>0x140</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>LICENSE</code></td>
+                                <td><code>0x1A</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>401</td>
+                                <td>512</td>
+                                <td><code>0x10</code></td>
+                                <td><code>0x144</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>PARENTAL_LEVEL</code></td>
+                                <td><code>0x22</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x210</code></td>
+                                <td><code>0x344</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>PS3_SYSTEM_VER</code></td>
+                                <td><code>0x31</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>8</td>
+                                <td>8</td>
+                                <td><code>0x214</code></td>
+                                <td><code>0x348</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>RESOLUTION</code></td>
+                                <td><code>0x40</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x21C</code></td>
+                                <td><code>0x350</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>SOUND_FORMAT</code></td>
+                                <td><code>0x4B</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x220</code></td>
+                                <td><code>0x354</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TITLE</code></td>
+                                <td><code>0x58</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>21</td>
+                                <td>128</td>
+                                <td><code>0x224</code></td>
+                                <td><code>0x358</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TITLE_ID</code></td>
+                                <td><code>0x5E</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>10</td>
+                                <td>16</td>
+                                <td><code>0x2A4</code></td>
+                                <td><code>0x3D8</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>VERSION</code></td>
+                                <td><code>0x67</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>6</td>
+                                <td>8</td>
+                                <td><code>0x2B4</code></td>
+                                <td><code>0x3E8</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+            <details class="research-appendix">
+                <summary>DEMO: 13 index records</summary>
+                <div class="table-scroll" role="region" aria-label="DEMO index layout; key and data offsets are relative to their respective tables" tabindex="0">
+                    <table>
+                        <caption>DEMO index layout; key and data offsets are relative to their respective tables</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Key</th>
+                                <th scope="col">Key offset</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Used bytes</th>
+                                <th scope="col">Capacity</th>
+                                <th scope="col">Data offset</th>
+                                <th scope="col">Absolute data position</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>APP_VER</code></td>
+                                <td><code>0x0</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>6</td>
+                                <td>8</td>
+                                <td><code>0x0</code></td>
+                                <td><code>0x168</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>ATTRIBUTE</code></td>
+                                <td><code>0x8</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x8</code></td>
+                                <td><code>0x170</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>BOOTABLE</code></td>
+                                <td><code>0x12</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0xC</code></td>
+                                <td><code>0x174</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>CATEGORY</code></td>
+                                <td><code>0x1B</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>3</td>
+                                <td>4</td>
+                                <td><code>0x10</code></td>
+                                <td><code>0x178</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>LICENSE</code></td>
+                                <td><code>0x24</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>401</td>
+                                <td>512</td>
+                                <td><code>0x14</code></td>
+                                <td><code>0x17C</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>PARENTAL_LEVEL</code></td>
+                                <td><code>0x2C</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x214</code></td>
+                                <td><code>0x37C</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>PS3_SYSTEM_VER</code></td>
+                                <td><code>0x3B</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>8</td>
+                                <td>8</td>
+                                <td><code>0x218</code></td>
+                                <td><code>0x380</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>RESOLUTION</code></td>
+                                <td><code>0x4A</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x220</code></td>
+                                <td><code>0x388</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>SOUND_FORMAT</code></td>
+                                <td><code>0x55</code></td>
+                                <td><code>0x0404</code></td>
+                                <td>4</td>
+                                <td>4</td>
+                                <td><code>0x224</code></td>
+                                <td><code>0x38C</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TITLE</code></td>
+                                <td><code>0x62</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>26</td>
+                                <td>128</td>
+                                <td><code>0x228</code></td>
+                                <td><code>0x390</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TITLE_01</code></td>
+                                <td><code>0x68</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>26</td>
+                                <td>128</td>
+                                <td><code>0x2A8</code></td>
+                                <td><code>0x410</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>TITLE_ID</code></td>
+                                <td><code>0x71</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>10</td>
+                                <td>16</td>
+                                <td><code>0x328</code></td>
+                                <td><code>0x490</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>VERSION</code></td>
+                                <td><code>0x7A</code></td>
+                                <td><code>0x0204</code></td>
+                                <td>6</td>
+                                <td>8</td>
+                                <td><code>0x338</code></td>
+                                <td><code>0x4A0</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </section>
+        <section id="toml">
+            <h2>What the TOML references preserve</h2>
+            <p>The three linked TOMLs provide portable decoded key/value views and remain inside this documentation repository. Their string values preserve the observed UTF-8 text; integer entries become TOML integers. The referenced exporter was inspected to understand decoding behavior; it is not moved into the documentation repository, linked as a dependency, or required to read this page.</p>
+            <p>The TOMLs omit the PSF header version, type tags, relative offsets, used lengths, capacities and padding. They are therefore not lossless binary replacements, and no reverse conversion or byte-identical rebuild is established. Exporter choices such as UTF-8 replacement decoding, printable-array heuristics and a RAW_HEX string can also lose type information. Matching these three valid samples does not prove that every malformed or unknown-type file is handled correctly.</p>
+        </section>
+        <section id="related-formats">
+            <h2>Related files and formats</h2>
+            <ul>
+                <li><a href="FormatAnalysis/BIN/index.html">EBOOT.BIN</a> is the executable in the same PS3 source tree. PARAM.SFO identifies the surrounding game/package; it does not decode executable functions or establish an internal reference graph.</li>
+                <li><a href="FormatAnalysis/TXT/index.html">localetable.txt</a> has a separate locale/configuration role. EU/US table identifiers match SFO TITLE_ID, but the demo locale table stores BLUS30065 while demo PARAM.SFO identifies NPEB90029. Preserve both observations rather than trusting the locale token as package identity.</li>
+                <li>The observed TITLE_XX entries are platform-facing display titles, distinct from LH2 localization strings, TOX subtitle timings and INF/TXD font assets. Matching language names do not establish shared IDs or pointers.</li>
+            </ul>
+        </section>
+        <section id="operation-support">
+            <h2>Operation support</h2>
+            <p>Initialization operation 0 reads PARAM.SFO through the module's existing metadata reader to help classify PS3 source builds and report title/version information. This is source validation, not an independently registered SFO-to-TOML conversion. The known IDs classify the EU and US full copies and the NPEB90029 demo; fallback title/category heuristics are implementation choices, not PSF format rules.</p>
+            <p>The reference snapshots are readable as supplied. No new conversion operation is registered by this documentation, and no original PS3 executable analysis is required. See the <a href="FormatAnalysis/pipeline.html#op-0">initialization entry in the pipeline reference</a>.</p>
+        </section>
+        <section id="evidence-limits">
+            <h2>Evidence, identities and limitations</h2>
+            <div class="table-scroll" role="region" aria-label="SHA-256 of the three inspected binary files" tabindex="0">
+                <table>
+                    <caption>SHA-256 of the three inspected binary files</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Copy</th>
+                            <th scope="col">SHA-256</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>EU</td>
+                            <td><code>f9dc3833ab6fe64633273bda228ec2ef81766b72b53dc0f0e2b9154f8b31c38f</code></td>
+                        </tr>
+                        <tr>
+                            <td>US</td>
+                            <td><code>635cf120dd501715cf17798a5fb04004a7060f4ccdfb4080060e0287bb7c4cc3</code></td>
+                        </tr>
+                        <tr>
+                            <td>DEMO</td>
+                            <td><code>d2b560ca361a0af214ced21bd946e2438d66bd84cb776f706b9f498f09bbffa3</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>On 2026-10-18, all PARAM.SFO files found under the local PS3 source tree were read directly. Their 14/11/13 entries respectively match the EU/US/demo TOMLs exactly. Header offsets, relative pointers, used/capacity ranges, four-byte data alignment, string termination and zero unused allocations were checked. Only 0x0204 and 0x0404 type tags occur in this corpus; 0x0004 is described from reader/reference behavior rather than a game sample.</p>
+            <p>Binary layout and bitmask names were cross-checked with the linked RPCS3 primary sources. Metadata flags were not tested on a running PS3. These hashes identify local copies and were not compared with trusted retail hashes. No general writer, signature/authenticity verifier, complete category catalog or interpretation of ATTRIBUTE bits is established.</p>
+        </section>
+    </body>
 </html>

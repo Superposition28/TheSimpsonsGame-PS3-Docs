@@ -1,30 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>French LH2 variant (.fr.LH2)</title>
-    <link rel="stylesheet" href="../../../../style/main.css">
-</head>
-<body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>French LH2 variant (.fr.LH2)</nav>
-
-<h1>French LH2 variant (<code>.fr.LH2</code>)</h1>
-<section class="format-summary" aria-label="Format summary">
-<p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
-<p>The french column of the shared LH2 localization family.</p>
-<dl><dt>Identification</dt><dd>2HCL; the binary layout is shared with the LH2 reference page.</dd><dt>Byte order / text</dt><dd>Big-endian integers; observed Windows-1252 strings.</dd><dt>Documentation scope</dt><dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd></dl>
-</section><nav class="page-toc" aria-label="On this page"><strong>On this page</strong><ul><li><a href="#related-formats-2">Related formats</a></li><li><a href="#operation-support-2">Operation support</a></li><li><a href="#evidence-and-limitations">Evidence and limitations</a></li><li><a href="#variant-identification">Variant identification</a></li><li><a href="#eu-flattened-inventory">EU flattened inventory</a></li></ul></nav>
-
-<section id="related-formats"><h2 id="related-formats-2">Related formats</h2><div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Related formats and strength of the connection</caption><thead><tr><th scope="col">Related format</th><th scope="col">Evidence</th><th scope="col">Relationship and practical consequence</th></tr></thead><tbody><tr><td><a href="lh2.html">Localization table (.LH2)</a></td><td>Same binary family</td><td>The suffix identifies a content variant; header, ID array and pointer matrix follow the shared LH2 layout.</td></tr><tr><td><a href="tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td><td>Implemented</td><td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td></tr><tr><td><a href="../../VP6/index.html">Movie container (.vp6)</a></td><td>Implemented via TOX</td><td>The fr language table resolves cue text for matching A1_Video/fr movies; the timing intervals come from TOX.</td></tr></tbody></table></div><p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p></section>
-<section id="operation-support"><h2 id="operation-support-2">Operation support</h2><ul><li><a href="../../pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li><li><a href="../../pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li></ul><p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p></section>
-<section id="evidence-limits"><h2 id="evidence-and-limitations">Evidence and limitations</h2><p>The inventory below was read from the local EU flattened dataset. It is not a universal regional inventory. File paths retain their normalization hashes; the six-hex suffix is not an LH2 StringID.</p>
-<p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p></section>
-
-
-<p>This variant uses the shared LH2 binary layout. Operation 16 uses the first table in the selected simpsons_global.fr.LH2 file for french subtitle text.</p>
-<h2 id="variant-identification">Variant identification</h2><p>Match the full <code>.fr.LH2</code> compound suffix, allowing the six-hex normalization hash before it. Do not confuse language suffixes with arbitrary unsuffixed LH2 tables; column meaning is a content-level property.</p>
-<h2 id="eu-flattened-inventory">EU flattened inventory</h2><p>20 matching files, read from <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed</code> on 2026-10-18. Counts below come from the LH2 header and byte length. Duplicate copies in different archives are listed separately.</p>
-<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>French LH2 files; paths relative to the EU flattened dataset</caption><thead><tr><th scope="col">File</th><th scope="col">Bytes</th><th scope="col">Entries</th><th scope="col">Tables</th></tr></thead><tbody><tr><td><code>A2_Characters/text/cd99d1beStrAssetsLocalization/simpsons_global_b758ff.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>A2_Frontend/text/cd99d1beStrAssetsLocalization/simpsons_global_684150.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L01_LandOfChocolate/text/cd99d1beStrAssetsLocalization/simpsons_global_5c11c1.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L02_BartmanBegins/text/cd99d1beStrAssetsLocalization/simpsons_global_d7b41c.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L03_HungryHungryHomer/text/cd99d1beStrAssetsLocalization/simpsons_global_a33c6f.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L04_TreeHugger/text/cd99d1beStrAssetsLocalization/simpsons_global_0c14da.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L05_MobRules/text/cd99d1beStrAssetsLocalization/simpsons_global_4417ad.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L06_EnterTheCheatrix/text/cd99d1beStrAssetsLocalization/simpsons_global_cba23b.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L07_DayOfTheDolphin/text/cd99d1beStrAssetsLocalization/simpsons_global_480a61.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L08_TheColossalDonut/text/cd99d1beStrAssetsLocalization/simpsons_global_98441d.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L09_Invasion/text/cd99d1beStrAssetsLocalization/simpsons_global_89c50b.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L10_BargainBin/text/cd99d1beStrAssetsLocalization/simpsons_global_e7668a.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L11_NeverQuest/text/cd99d1beStrAssetsLocalization/simpsons_global_536caf.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L12_GrandTheftScratchy/text/cd99d1beStrAssetsLocalization/simpsons_global_d81deb.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L13_MedalOfHomer/text/cd99d1beStrAssetsLocalization/simpsons_global_b1f8f0.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L14_BigSuperHappy/text/cd99d1beStrAssetsLocalization/simpsons_global_18d791.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L15_Rhymes/text/cd99d1beStrAssetsLocalization/simpsons_global_f67ffc.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>L16_MeetThyPlayer/text/cd99d1beStrAssetsLocalization/simpsons_global_6b362e.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>LHub-00_GameHub/text/cd99d1beStrAssetsLocalization/simpsons_global_9253f8.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr><tr><td><code>LHub-00_SprHub/text/cd99d1beStrAssetsLocalization/simpsons_global_279dc2.fr.LH2</code></td><td>157,788</td><td>3,352</td><td>1</td></tr></tbody></table></div>
-</body>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>French LH2 variant (.fr.LH2)</title>
+        <link rel="stylesheet" href="../../../../style/main.css">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>French LH2 variant (.fr.LH2)</nav>
+        <h1>French LH2 variant (<code>.fr.LH2</code>)</h1>
+        <section class="format-summary" aria-label="Format summary">
+            <p class="eyebrow">Conversion implemented · PS3 unless explicitly marked Xbox 360</p>
+            <p>The french column of the shared LH2 localization family.</p>
+            <dl>
+                <dt>Identification</dt>
+                <dd>2HCL; the binary layout is shared with the LH2 reference page.</dd>
+                <dt>Byte order / text</dt>
+                <dd>Big-endian integers; observed Windows-1252 strings.</dd>
+                <dt>Documentation scope</dt>
+                <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+            </dl>
+        </section>
+        <nav class="page-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <ul>
+                <li><a href="#related-formats-2">Related formats</a></li>
+                <li><a href="#operation-support-2">Operation support</a></li>
+                <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                <li><a href="#variant-identification">Variant identification</a></li>
+                <li><a href="#eu-flattened-inventory">EU flattened inventory</a></li>
+            </ul>
+        </nav>
+        <section id="related-formats">
+            <h2 id="related-formats-2">Related formats</h2>
+            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                <table>
+                    <caption>Related formats and strength of the connection</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Related format</th>
+                            <th scope="col">Evidence</th>
+                            <th scope="col">Relationship and practical consequence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="lh2.html">Localization table (.LH2)</a></td>
+                            <td>Same binary family</td>
+                            <td>The suffix identifies a content variant; header, ID array and pointer matrix follow the shared LH2 layout.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td>
+                            <td>Implemented</td>
+                            <td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="../../VP6/index.html">Movie container (.vp6)</a></td>
+                            <td>Implemented via TOX</td>
+                            <td>The fr language table resolves cue text for matching A1_Video/fr movies; the timing intervals come from TOX.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
+        </section>
+        <section id="operation-support">
+            <h2 id="operation-support-2">Operation support</h2>
+            <ul>
+                <li><a href="../../pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="evidence-limits">
+            <h2 id="evidence-and-limitations">Evidence and limitations</h2>
+            <p>The inventory below was read from the local EU flattened dataset. It is not a universal regional inventory. File paths retain their normalization hashes; the six-hex suffix is not an LH2 StringID.</p>
+            <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+        </section>
+        <p>This variant uses the shared LH2 binary layout. Operation 16 uses the first table in the selected simpsons_global.fr.LH2 file for french subtitle text.</p>
+        <h2 id="variant-identification">Variant identification</h2>
+        <p>Match the full <code>.fr.LH2</code> compound suffix, allowing the six-hex normalization hash before it. Do not confuse language suffixes with arbitrary unsuffixed LH2 tables; column meaning is a content-level property.</p>
+        <h2 id="eu-flattened-inventory">EU flattened inventory</h2>
+        <p>20 matching files, read from <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed</code> on 2026-10-18. Counts below come from the LH2 header and byte length. Duplicate copies in different archives are listed separately.</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>French LH2 files; paths relative to the EU flattened dataset</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">File</th>
+                        <th scope="col">Bytes</th>
+                        <th scope="col">Entries</th>
+                        <th scope="col">Tables</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>A2_Characters/text/cd99d1beStrAssetsLocalization/simpsons_global_b758ff.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>A2_Frontend/text/cd99d1beStrAssetsLocalization/simpsons_global_684150.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L01_LandOfChocolate/text/cd99d1beStrAssetsLocalization/simpsons_global_5c11c1.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L02_BartmanBegins/text/cd99d1beStrAssetsLocalization/simpsons_global_d7b41c.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L03_HungryHungryHomer/text/cd99d1beStrAssetsLocalization/simpsons_global_a33c6f.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L04_TreeHugger/text/cd99d1beStrAssetsLocalization/simpsons_global_0c14da.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L05_MobRules/text/cd99d1beStrAssetsLocalization/simpsons_global_4417ad.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L06_EnterTheCheatrix/text/cd99d1beStrAssetsLocalization/simpsons_global_cba23b.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L07_DayOfTheDolphin/text/cd99d1beStrAssetsLocalization/simpsons_global_480a61.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L08_TheColossalDonut/text/cd99d1beStrAssetsLocalization/simpsons_global_98441d.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L09_Invasion/text/cd99d1beStrAssetsLocalization/simpsons_global_89c50b.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L10_BargainBin/text/cd99d1beStrAssetsLocalization/simpsons_global_e7668a.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L11_NeverQuest/text/cd99d1beStrAssetsLocalization/simpsons_global_536caf.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L12_GrandTheftScratchy/text/cd99d1beStrAssetsLocalization/simpsons_global_d81deb.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L13_MedalOfHomer/text/cd99d1beStrAssetsLocalization/simpsons_global_b1f8f0.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L14_BigSuperHappy/text/cd99d1beStrAssetsLocalization/simpsons_global_18d791.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L15_Rhymes/text/cd99d1beStrAssetsLocalization/simpsons_global_f67ffc.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>L16_MeetThyPlayer/text/cd99d1beStrAssetsLocalization/simpsons_global_6b362e.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>LHub-00_GameHub/text/cd99d1beStrAssetsLocalization/simpsons_global_9253f8.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><code>LHub-00_SprHub/text/cd99d1beStrAssetsLocalization/simpsons_global_279dc2.fr.LH2</code></td>
+                        <td>157,788</td>
+                        <td>3,352</td>
+                        <td>1</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </body>
 </html>

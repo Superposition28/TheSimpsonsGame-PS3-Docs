@@ -1,254 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
-
-	<head>
-		<meta charset="utf-8">
-		<title>A1_Audio</title>
-		<link rel="stylesheet" href="../../../style/main.css">
-	    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-	<body class="doc-page">
-
-		<h1>A1_Audio</h1><p>This directory groups streamed audio and segmented music after source copying and audio reorganization. Operations 10, 11 and 12 decode SBK, SNU and MUS through separate paths. AudioMap.yaml is used by SetupAudioDir.lua for readable path organization; it does not decode binary audio-event graphs.</p><p>See <a href="../../FormatAnalysis/relationships.html#audio">audio relationships</a> for ALB/CTB/SMB metadata and <a href="../../FormatAnalysis/pipeline.html">pipeline coverage</a> for exact registered behavior.</p>
-
-		<p>the audio streams/A1_Audio contains these items in EU:</p>
-		<ul>
-			<li>EN: English</li>
-			<li>ES: Spanish</li>
-			<li>FR: French</li>
-			<li>IT: Italian</li>
-		</ul>
-
-		<p>Global: Ambient sounds</p>
-
-		<section aria-labelledby="audio-map-title">
-			<h2 id="audio-map-title">AudioMap Registry</h2>
-			<p><a href="./AudioMap.yaml">View AudioMap.yaml</a></p>
-			<p>The registry maps English dialogue and Global ambient resources to their original directory names, character or sound labels, game levels, and filename patterns.</p>
-			<ul>
-				<li>Character records cover playable characters, Springfield NPCs, enemies, and level-specific variants.</li>
-				<li>Dialogue entries record the source folder, output grouping, known character, level context, and matching <code>.exa.snu</code> filename patterns.</li>
-				<li>Cutscene and Global sections document named streams and ambient sound resources by level and location.</li>
-			</ul>
-
-			<h3>Pipeline Usage</h3>
-			<p>The <a href="https://raw.githubusercontent.com/Superposition28/TheSimpsonsGame-PS3/refs/heads/main/operations/SetupAudioDir.lua"><code>SetupAudioDir.lua</code></a> script loads this YAML during the <strong>Reorganize Audio Files</strong> operation. If the file is missing, cannot be parsed, or contains no usable <code>Dialogue</code> rules, the map-based rename phases are skipped.</p>
-			<ul>
-				<li><code>Dialogue</code> rules are applied in each detected <code>EN</code>, <code>ES</code>, <code>FR</code>, and <code>IT</code> folder.</li>
-				<li><code>CUTSCENE</code> rules are applied in the same language folders.</li>
-				<li><code>Global-Sound</code> rules are applied in <code>Global</code> without character subfolders.</li>
-			</ul>
-
-			<h3>Rename Rule Fields</h3>
-			<ul>
-				<li><code>OLD_DIR_NAME</code> identifies the source folder and <code>NEW_DIR_NAME</code> names its destination. A blank or <code>TBD</code> destination falls back to the source name with a trailing <code>_xxx_0</code> removed.</li>
-				<li>For Dialogue and CUTSCENE rules, a usable <code>CharacterName</code> creates a character subfolder when its <code>file_patterns.file_pattern</code> matches a file. Empty, <code>unknown</code>, <code>TBD</code>, and <code>TBA</code> names are not used as folder names.</li>
-				<li>In <code>file_pattern</code>, <code>#######</code> matches a seven-digit hexadecimal line identifier. The current Lua renamer does not use <code>file_regex</code> or <code>file_glob</code>.</li>
-			</ul>
-		</section>
-
-		<p>the es,fr,it folders contain the same files as en</p>
-
-		<p>the language folders contain .exa.snu audio files, each represent a charactors voice lines</p>
-
-		<p>the mus files are music container archives used for background music. the current extraction path unpacks each mus into paired .snr metadata files and .sns stream payloads, which vgmstream can decode as EA-XAS audio.</p>
-		<ul>
-			<li>80b_mus.mus</li>
-			<li>bin.mus</li>
-			<li>brt_mus.mus</li>
-			<li>bsh_mus.mus</li>
-			<li>cheater.mus</li>
-			<li>gts_mus.mus</li>
-			<li>hub_mus.mus</li>
-			<li>loc_mus.mus</li>
-			<li>menu_mus.mus</li>
-			<li>mob_mus.mus</li>
-			<li>moh_mus.mus</li>
-			<li>mtp_mus.mus</li>
-			<li>nvq_mus.mus</li>
-			<li>rwc_mus.mus</li>
-			<li>spr_mus.mus</li>
-			<li>sss_mus.mus</li>
-			<li>treetemp.mus</li>
-		</ul>
-
-		<p>the extracted pairs represent segmented music streams rather than a single flat audio file per mus archive.</p>
-
-		<h3>Music Folder Structure & Segment Extraction Statistics</h3>
-		<p>Extracted background music (located in the <code>A1_Audio/Music</code> directory structure) is packed into structured level segment directories. Statistics from a recursive scan using <code>ffprobe</code> outlines the files count and segment durations for each level:</p>
-
-		<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table border="1" cellpadding="5">
-			<thead>
-				<tr>
-					<th scope="col">Folder Name</th>
-					<th scope="col">Source Archive</th>
-					<th scope="col">Files Count</th>
-					<th scope="col">Shortest Segment</th>
-					<th scope="col">Longest Segment</th>
-					<th scope="col">Mean Segment</th>
-					<th scope="col">Median Segment</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td><strong>A2_Menu</strong></td>
-					<td>menu_mus.mus</td>
-					<td>37</td>
-					<td>00:00:01.524</td>
-					<td>00:02:39.047</td>
-					<td>00:00:19.012</td>
-					<td>00:00:03.118</td>
-				</tr>
-				<tr>
-					<td><strong>L01_LandOfChocolate</strong></td>
-					<td>loc_mus.mus</td>
-					<td>50</td>
-					<td>00:00:01.819</td>
-					<td>00:01:29.256</td>
-					<td>00:00:08.340</td>
-					<td>00:00:02.815</td>
-				</tr>
-				<tr>
-					<td><strong>L02_BartmanBegins</strong></td>
-					<td>brt_mus.mus</td>
-					<td>137</td>
-					<td>00:00:00.632</td>
-					<td>00:00:16.923</td>
-					<td>00:00:03.679</td>
-					<td>00:00:03.475</td>
-				</tr>
-				<tr>
-					<td><strong>L03_HungryHungryHomer</strong></td>
-					<td>80b_mus.mus</td>
-					<td>174</td>
-					<td>00:00:01.889</td>
-					<td>00:02:03.419</td>
-					<td>00:00:03.045</td>
-					<td>00:00:02.113</td>
-				</tr>
-				<tr>
-					<td><strong>L04_TreeHugger</strong></td>
-					<td>treetemp.mus</td>
-					<td>242</td>
-					<td>00:00:00.582</td>
-					<td>00:00:26.827</td>
-					<td>00:00:03.557</td>
-					<td>00:00:03.432</td>
-				</tr>
-				<tr>
-					<td><strong>L05_MobRules</strong></td>
-					<td>mob_mus.mus</td>
-					<td>151</td>
-					<td>00:00:01.905</td>
-					<td>00:00:54.333</td>
-					<td>00:00:04.123</td>
-					<td>00:00:03.093</td>
-				</tr>
-				<tr>
-					<td><strong>L06_EnterTheCheatrix</strong></td>
-					<td>cheater.mus</td>
-					<td>72</td>
-					<td>00:00:01.305</td>
-					<td>00:00:36.688</td>
-					<td>00:00:07.082</td>
-					<td>00:00:06.163</td>
-				</tr>
-				<tr>
-					<td><strong>L09_Invasion</strong></td>
-					<td>sss_mus.mus</td>
-					<td>204</td>
-					<td>00:00:00.681</td>
-					<td>00:00:11.712</td>
-					<td>00:00:03.590</td>
-					<td>00:00:03.554</td>
-				</tr>
-				<tr>
-					<td><strong>L10_BargainBin</strong></td>
-					<td>bin.mus</td>
-					<td>63</td>
-					<td>00:00:00.193</td>
-					<td>00:00:06.409</td>
-					<td>00:00:02.541</td>
-					<td>00:00:02.800</td>
-				</tr>
-				<tr>
-					<td><strong>L11_NeverQuest</strong></td>
-					<td>nvq_mus.mus</td>
-					<td>249</td>
-					<td>00:00:02.156</td>
-					<td>00:00:29.361</td>
-					<td>00:00:04.408</td>
-					<td>00:00:04.064</td>
-				</tr>
-				<tr>
-					<td><strong>L12_GrandTheftScratchy</strong></td>
-					<td>gts_mus.mus</td>
-					<td>6</td>
-					<td>00:00:10.656</td>
-					<td>00:03:05.315</td>
-					<td>00:00:56.196</td>
-					<td>00:00:43.504</td>
-				</tr>
-				<tr>
-					<td><strong>L13_MedalOfHomer</strong></td>
-					<td>moh_mus.mus</td>
-					<td>40</td>
-					<td>00:00:01.062</td>
-					<td>00:03:22.133</td>
-					<td>00:00:28.644</td>
-					<td>00:00:13.936</td>
-				</tr>
-				<tr>
-					<td><strong>L14_BigSuperHappy</strong></td>
-					<td>bsh_mus.mus</td>
-					<td>160</td>
-					<td>00:00:00.253</td>
-					<td>00:00:15.739</td>
-					<td>00:00:04.277</td>
-					<td>00:00:03.936</td>
-				</tr>
-				<tr>
-					<td><strong>L15_Rhymes</strong></td>
-					<td>rwc_mus.mus</td>
-					<td>161</td>
-					<td>00:00:00.862</td>
-					<td>00:00:10.433</td>
-					<td>00:00:03.525</td>
-					<td>00:00:03.471</td>
-				</tr>
-				<tr>
-					<td><strong>L16_MeetThyPlayer</strong></td>
-					<td>mtp_mus.mus</td>
-					<td>212</td>
-					<td>00:00:00.576</td>
-					<td>00:01:00.999</td>
-					<td>00:00:04.690</td>
-					<td>00:00:03.431</td>
-				</tr>
-				<tr>
-					<td><strong>LHub-00_GameHub</strong></td>
-					<td>hub_mus.mus</td>
-					<td>6</td>
-					<td>00:00:06.853</td>
-					<td>00:02:01.000</td>
-					<td>00:00:35.515</td>
-					<td>00:00:21.142</td>
-				</tr>
-				<tr>
-					<td><strong>LHub-00_SprHub</strong></td>
-					<td>spr_mus.mus</td>
-					<td>93</td>
-					<td>00:00:01.524</td>
-					<td>00:01:53.632</td>
-					<td>00:00:19.280</td>
-					<td>00:00:03.828</td>
-				</tr>
-			</tbody>
-		</table></div>
-
-		<p>the US version only has the EN and Global folders, and mus files</p>
-
-		<p>the EN and Global folders are actually created by me, normally the contents of those two folders would be in the root of the audio streams/A1_Audio directory, but I moved them to separate folders for better organization.</p>
-
+    <head>
+        <meta charset="utf-8">
+        <title>A1_Audio</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body class="doc-page">
+        <h1>A1_Audio</h1>
+        <p>This directory groups streamed audio and segmented music after source copying and audio reorganization. Operations 10, 11 and 12 decode SBK, SNU and MUS through separate paths. AudioMap.yaml is used by SetupAudioDir.lua for readable path organization; it does not decode binary audio-event graphs.</p>
+        <p>See <a href="../../FormatAnalysis/relationships.html#audio">audio relationships</a> for ALB/CTB/SMB metadata and <a href="../../FormatAnalysis/pipeline.html">pipeline coverage</a> for exact registered behavior.</p>
+        <p>the audio streams/A1_Audio contains these items in EU:</p>
+        <ul>
+            <li>EN: English</li>
+            <li>ES: Spanish</li>
+            <li>FR: French</li>
+            <li>IT: Italian</li>
+        </ul>
+        <p>Global: Ambient sounds</p>
+        <section aria-labelledby="audio-map-title">
+            <h2 id="audio-map-title">AudioMap Registry</h2>
+            <p><a href="./AudioMap.yaml">View AudioMap.yaml</a></p>
+            <p>The registry maps English dialogue and Global ambient resources to their original directory names, character or sound labels, game levels, and filename patterns.</p>
+            <ul>
+                <li>Character records cover playable characters, Springfield NPCs, enemies, and level-specific variants.</li>
+                <li>Dialogue entries record the source folder, output grouping, known character, level context, and matching <code>.exa.snu</code> filename patterns.</li>
+                <li>Cutscene and Global sections document named streams and ambient sound resources by level and location.</li>
+            </ul>
+            <h3>Pipeline Usage</h3>
+            <p>The <a href="https://raw.githubusercontent.com/Superposition28/TheSimpsonsGame-PS3/refs/heads/main/operations/SetupAudioDir.lua"><code>SetupAudioDir.lua</code></a> script loads this YAML during the <strong>Reorganize Audio Files</strong> operation. If the file is missing, cannot be parsed, or contains no usable <code>Dialogue</code> rules, the map-based rename phases are skipped.</p>
+            <ul>
+                <li><code>Dialogue</code> rules are applied in each detected <code>EN</code>, <code>ES</code>, <code>FR</code>, and <code>IT</code> folder.</li>
+                <li><code>CUTSCENE</code> rules are applied in the same language folders.</li>
+                <li><code>Global-Sound</code> rules are applied in <code>Global</code> without character subfolders.</li>
+            </ul>
+            <h3>Rename Rule Fields</h3>
+            <ul>
+                <li><code>OLD_DIR_NAME</code> identifies the source folder and <code>NEW_DIR_NAME</code> names its destination. A blank or <code>TBD</code> destination falls back to the source name with a trailing <code>_xxx_0</code> removed.</li>
+                <li>For Dialogue and CUTSCENE rules, a usable <code>CharacterName</code> creates a character subfolder when its <code>file_patterns.file_pattern</code> matches a file. Empty, <code>unknown</code>, <code>TBD</code>, and <code>TBA</code> names are not used as folder names.</li>
+                <li>In <code>file_pattern</code>, <code>#######</code> matches a seven-digit hexadecimal line identifier. The current Lua renamer does not use <code>file_regex</code> or <code>file_glob</code>.</li>
+            </ul>
+        </section>
+        <p>the es,fr,it folders contain the same files as en</p>
+        <p>the language folders contain .exa.snu audio files, each represent a charactors voice lines</p>
+        <p>the mus files are music container archives used for background music. the current extraction path unpacks each mus into paired .snr metadata files and .sns stream payloads, which vgmstream can decode as EA-XAS audio.</p>
+        <ul>
+            <li>80b_mus.mus</li>
+            <li>bin.mus</li>
+            <li>brt_mus.mus</li>
+            <li>bsh_mus.mus</li>
+            <li>cheater.mus</li>
+            <li>gts_mus.mus</li>
+            <li>hub_mus.mus</li>
+            <li>loc_mus.mus</li>
+            <li>menu_mus.mus</li>
+            <li>mob_mus.mus</li>
+            <li>moh_mus.mus</li>
+            <li>mtp_mus.mus</li>
+            <li>nvq_mus.mus</li>
+            <li>rwc_mus.mus</li>
+            <li>spr_mus.mus</li>
+            <li>sss_mus.mus</li>
+            <li>treetemp.mus</li>
+        </ul>
+        <p>the extracted pairs represent segmented music streams rather than a single flat audio file per mus archive.</p>
+        <h3>Music Folder Structure & Segment Extraction Statistics</h3>
+        <p>Extracted background music (located in the <code>A1_Audio/Music</code> directory structure) is packed into structured level segment directories. Statistics from a recursive scan using <code>ffprobe</code> outlines the files count and segment durations for each level:</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table border="1" cellpadding="5">
+                <thead>
+                    <tr>
+                        <th scope="col">Folder Name</th>
+                        <th scope="col">Source Archive</th>
+                        <th scope="col">Files Count</th>
+                        <th scope="col">Shortest Segment</th>
+                        <th scope="col">Longest Segment</th>
+                        <th scope="col">Mean Segment</th>
+                        <th scope="col">Median Segment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>A2_Menu</strong></td>
+                        <td>menu_mus.mus</td>
+                        <td>37</td>
+                        <td>00:00:01.524</td>
+                        <td>00:02:39.047</td>
+                        <td>00:00:19.012</td>
+                        <td>00:00:03.118</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L01_LandOfChocolate</strong></td>
+                        <td>loc_mus.mus</td>
+                        <td>50</td>
+                        <td>00:00:01.819</td>
+                        <td>00:01:29.256</td>
+                        <td>00:00:08.340</td>
+                        <td>00:00:02.815</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L02_BartmanBegins</strong></td>
+                        <td>brt_mus.mus</td>
+                        <td>137</td>
+                        <td>00:00:00.632</td>
+                        <td>00:00:16.923</td>
+                        <td>00:00:03.679</td>
+                        <td>00:00:03.475</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L03_HungryHungryHomer</strong></td>
+                        <td>80b_mus.mus</td>
+                        <td>174</td>
+                        <td>00:00:01.889</td>
+                        <td>00:02:03.419</td>
+                        <td>00:00:03.045</td>
+                        <td>00:00:02.113</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L04_TreeHugger</strong></td>
+                        <td>treetemp.mus</td>
+                        <td>242</td>
+                        <td>00:00:00.582</td>
+                        <td>00:00:26.827</td>
+                        <td>00:00:03.557</td>
+                        <td>00:00:03.432</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L05_MobRules</strong></td>
+                        <td>mob_mus.mus</td>
+                        <td>151</td>
+                        <td>00:00:01.905</td>
+                        <td>00:00:54.333</td>
+                        <td>00:00:04.123</td>
+                        <td>00:00:03.093</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L06_EnterTheCheatrix</strong></td>
+                        <td>cheater.mus</td>
+                        <td>72</td>
+                        <td>00:00:01.305</td>
+                        <td>00:00:36.688</td>
+                        <td>00:00:07.082</td>
+                        <td>00:00:06.163</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L09_Invasion</strong></td>
+                        <td>sss_mus.mus</td>
+                        <td>204</td>
+                        <td>00:00:00.681</td>
+                        <td>00:00:11.712</td>
+                        <td>00:00:03.590</td>
+                        <td>00:00:03.554</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L10_BargainBin</strong></td>
+                        <td>bin.mus</td>
+                        <td>63</td>
+                        <td>00:00:00.193</td>
+                        <td>00:00:06.409</td>
+                        <td>00:00:02.541</td>
+                        <td>00:00:02.800</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L11_NeverQuest</strong></td>
+                        <td>nvq_mus.mus</td>
+                        <td>249</td>
+                        <td>00:00:02.156</td>
+                        <td>00:00:29.361</td>
+                        <td>00:00:04.408</td>
+                        <td>00:00:04.064</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L12_GrandTheftScratchy</strong></td>
+                        <td>gts_mus.mus</td>
+                        <td>6</td>
+                        <td>00:00:10.656</td>
+                        <td>00:03:05.315</td>
+                        <td>00:00:56.196</td>
+                        <td>00:00:43.504</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L13_MedalOfHomer</strong></td>
+                        <td>moh_mus.mus</td>
+                        <td>40</td>
+                        <td>00:00:01.062</td>
+                        <td>00:03:22.133</td>
+                        <td>00:00:28.644</td>
+                        <td>00:00:13.936</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L14_BigSuperHappy</strong></td>
+                        <td>bsh_mus.mus</td>
+                        <td>160</td>
+                        <td>00:00:00.253</td>
+                        <td>00:00:15.739</td>
+                        <td>00:00:04.277</td>
+                        <td>00:00:03.936</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L15_Rhymes</strong></td>
+                        <td>rwc_mus.mus</td>
+                        <td>161</td>
+                        <td>00:00:00.862</td>
+                        <td>00:00:10.433</td>
+                        <td>00:00:03.525</td>
+                        <td>00:00:03.471</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L16_MeetThyPlayer</strong></td>
+                        <td>mtp_mus.mus</td>
+                        <td>212</td>
+                        <td>00:00:00.576</td>
+                        <td>00:01:00.999</td>
+                        <td>00:00:04.690</td>
+                        <td>00:00:03.431</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LHub-00_GameHub</strong></td>
+                        <td>hub_mus.mus</td>
+                        <td>6</td>
+                        <td>00:00:06.853</td>
+                        <td>00:02:01.000</td>
+                        <td>00:00:35.515</td>
+                        <td>00:00:21.142</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LHub-00_SprHub</strong></td>
+                        <td>spr_mus.mus</td>
+                        <td>93</td>
+                        <td>00:00:01.524</td>
+                        <td>00:01:53.632</td>
+                        <td>00:00:19.280</td>
+                        <td>00:00:03.828</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>the US version only has the EN and Global folders, and mus files</p>
+        <p>the EN and Global folders are actually created by me, normally the contents of those two folders would be in the root of the audio streams/A1_Audio directory, but I moved them to separate folders for better organization.</p>
     </body>
 </html>

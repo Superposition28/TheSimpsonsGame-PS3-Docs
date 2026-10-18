@@ -1,19 +1,18 @@
-
 <!DOCTYPE html>
 <html lang="en">
-
     <head>
         <meta charset="utf-8">
         <link rel="stylesheet" href="../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PS3_GAME disc layout</title></head>
+        <title>PS3_GAME disc layout</title>
+    </head>
     <body class="doc-page">
-
-        <h1>PS3_GAME disc layout</h1><p>The disc root contains platform metadata and presentation images alongside USRDIR, the main game-data directory. The observed EU and US lists below describe source-disc files, not the normalized remake output.</p>
-<p><a href="PARAM.SFO.html">PARAM.SFO metadata</a> documents the EU, US and demo identities, binary header/index format and TOML reference values. Metadata is read during initialization, independently of STR asset extraction.</p>
-<h2>Data flow through the module</h2><p>STR archives in USRDIR supply most resource payloads. Source movies and audiostreams are copied separately, then folders and filenames are reorganized into A1_Audio, A1_Video, character/frontend, level and hub groups. A flattened path is therefore a pipeline artifact, not necessarily the path shipped on disc.</p>
-<p><a href="USRDIR/index.html">USRDIR layout</a> explains the folder groups. The <a href="FormatAnalysis/relationships.html">relationship guide</a> connects media, localization, fonts, geometry and metadata; the <a href="FormatAnalysis/pipeline.html">operation reference</a> records how each output is produced.</p>
-
+        <h1>PS3_GAME disc layout</h1>
+        <p>The disc root contains platform metadata and presentation images alongside USRDIR, the main game-data directory. The observed EU and US lists below describe source-disc files, not the normalized remake output.</p>
+        <p><a href="PARAM.SFO.html">PARAM.SFO metadata</a> documents the EU, US and demo identities, binary header/index format and TOML reference values. Metadata is read during initialization, independently of STR asset extraction.</p>
+        <h2>Data flow through the module</h2>
+        <p>STR archives in USRDIR supply most resource payloads. Source movies and audiostreams are copied separately, then folders and filenames are reorganized into A1_Audio, A1_Video, character/frontend, level and hub groups. A flattened path is therefore a pipeline artifact, not necessarily the path shipped on disc.</p>
+        <p><a href="USRDIR/index.html">USRDIR layout</a> explains the folder groups. The <a href="FormatAnalysis/relationships.html">relationship guide</a> connects media, localization, fonts, geometry and metadata; the <a href="FormatAnalysis/pipeline.html">operation reference</a> records how each output is produced.</p>
         <h2>EU version</h2>
         <ul>
             <li><a href="../index.html#USRDIR" target="_top">USRDIR</a></li>
@@ -34,7 +33,6 @@
             <li>PIC2_12.PNG</li>
             <li>PS3LOGO.DAT</li>
         </ul>
-
         <h2>US version</h2>
         <ul>
             <li><a href="../index.html#USRDIR" target="_top">USRDIR</a></li>
@@ -45,7 +43,7 @@
             <li>PIC2.PNG</li>
             <li>PS3LOGO.DAT</li>
         </ul>
-
-<h2>Demo package metadata</h2><p>The inspected demo places <a href="PARAM.SFO.html">PARAM.SFO</a> at the <code>NPEB90029/</code> package root beside <code>USRDIR/</code>, rather than inside a directory named PS3_GAME. Its title ID is NPEB90029 and its category value is HG. The shared metadata page compares it with the full EU and US files.</p>
+        <h2>Demo package metadata</h2>
+        <p>The inspected demo places <a href="PARAM.SFO.html">PARAM.SFO</a> at the <code>NPEB90029/</code> package root beside <code>USRDIR/</code>, rather than inside a directory named PS3_GAME. Its title ID is NPEB90029 and its category value is HG. The shared metadata page compares it with the full EU and US files.</p>
     </body>
 </html>

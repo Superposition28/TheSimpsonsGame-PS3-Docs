@@ -1,45 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Relationships between game formats</title>
-    <link rel="stylesheet" href="../../style/main.css">
-</head>
-<body class="doc-page">
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../index.html">Documentation</a><span>/</span><a href="index.html">Format index</a></nav><h1>Relationships between game formats</h1>
-<p>An asset usually spans several files: one stores data, another names or times it, and another describes how it is used. The connections below distinguish implemented joins, observed names and contextual relationships. Each format page gives the detailed layout and the limits of its evidence.</p>
-<h2 id="media">Movies, localized text and fonts</h2>
-<pre class="relationship-flow">STR archive ──extract──&gt; TOX timing + LH2 localization + INF font data + TXD textures
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Relationships between game formats</title>
+        <link rel="stylesheet" href="../../style/main.css">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../index.html">Documentation</a><span>/</span><a href="index.html">Format index</a></nav>
+        <h1>Relationships between game formats</h1>
+        <p>An asset usually spans several files: one stores data, another names or times it, and another describes how it is used. The connections below distinguish implemented joins, observed names and contextual relationships. Each format page gives the detailed layout and the limits of its evidence.</p>
+        <h2 id="media">Movies, localized text and fonts</h2>
+        <pre class="relationship-flow">STR archive ──extract──&gt; TOX timing + LH2 localization + INF font data + TXD textures
 source movies ──copy──&gt; VP6 ──operation 13──&gt; OGV
 TOX StringID + LH2 StringID ──operation 16──&gt; SRT / VTT / multilingual CSV
 INF + TXD-derived PNG ──operation 15──&gt; FNT + atlas reference
 movie clock + timed text + a renderer/font ──&gt; displayed subtitles</pre>
-<p><a href="STR/imbedded-formats/tox.PS3.html">FMV subtitle timing (.tox.PS3)</a> supplies StringID, start time, duration and flags. <a href="STR/imbedded-formats/lh2.html">Localization table (.LH2)</a> supplies text keyed by the same ID. <a href="VP6/index.html">Movie container (.vp6)</a> supplies the movie timeline and media streams. <a href="STR/imbedded-formats/inf.html">Bitmap font descriptor (.inf)</a> supplies glyph metrics and atlas coordinates; <a href="STR/imbedded-formats/txd.html">Texture dictionary (.txd)</a> supplies the atlas pixels. Font resources are a rendering connection: no direct font pointer in TOX, LH2 or VP6 has been demonstrated.</p>
-<p>Operation 16 matches cleaned movie/timing stems and the movie's language directory. It joins numeric TOX/LH2 IDs, rather than guessing text from filenames. The observed global EN/ES/FR/IT tables provide translations; SS provides internal labels. Operation 9 exports LH2 independently. Subtitle generation does not require a font conversion, and video conversion does not generate or burn in captions.</p>
-<h2 id="audio">Dialogue, sound banks and mix metadata</h2>
-<p><a href="EXA.SNU/index.html">Streamed audio (.exa.snu)</a> contains streamed audio; <a href="STR/imbedded-formats/sbk.html">Sound bank (.sbk)</a> can contain multiple embedded subsongs. Operations 11 and 10 decode those input families separately. The common EA audio concepts do not establish that an SBK must refer to an external SNU.</p>
-<p><a href="STR/imbedded-formats/alb.html">Audio alias/library metadata (.alb)</a> and <a href="STR/imbedded-formats/ctb.html">Audio control metadata (.ctb)</a> have paired names and repeated identifiers in samples, supporting alias/event metadata roles. <a href="STR/imbedded-formats/smb.html">Stream metadata (.smb)</a> contains external <code>.exa</code> stream names. These observations are useful leads, but a full event-to-stream resolver, numeric ID mapping and every playback condition remain unimplemented. <a href="STR/imbedded-formats/mib.html">Mix metadata (.mib)</a> and <a href="STR/imbedded-formats/rcm_b.html">Character audio metadata (.rcm_b)</a> add mix/character-audio context; their exact joins are unresolved. <a href="STR/imbedded-formats/amb.html">AMB resource (.amb)</a> and <a href="STR/imbedded-formats/aub.html">AUB resource (.aub)</a> must be identified from their own bytes rather than treated as ALB variants.</p>
-<p>The <a href="../USRDIR/A1_Audio/index.html">audio directory page</a> describes the maintained AudioMap registry used for organization. AudioMap rename rules are pipeline metadata; they are not evidence of the binary ALB/CTB hash algorithm or a substitute for original audio-engine logic.</p>
-<h2 id="music">Interactive music</h2>
-<p><a href="STR/imbedded-formats/msb.html">Interactive music metadata (.msb)</a> samples name a <a href="MUS/index.html">MUS container</a> and expose Pathfinder event/part symbols. MUS holds descriptors for paired SNR metadata and SNS payloads. The registered BMS reads descriptors at <code>0x28</code>, scales the SNR offset by <code>0x10</code> and SNS offset by <code>0x80</code>, then extracts each pair. Operation 12 decodes segment WAVs. It does not evaluate the MSB state machine or reconstruct a complete adaptive score.</p>
-<h2 id="rendered-assets">Rendered assets, scenes and effects</h2>
-<p><a href="STR/imbedded-formats/preinstanced.html">Preinstanced models</a> geometry references texture names that the Blender workflow associates with <a href="STR/imbedded-formats/txd.html">TXD-derived PNGs</a>. Texture lookup depends on normalized path/map context and remains partial. <a href="STR/imbedded-formats/meta.xml.html">Compiled MetaModel (.meta.xml)</a> properties and <a href="STR/imbedded-formats/simgroup.dat.html">Simulation group (.dat)</a> instances provide additional object/scene concepts; operation 8 does not assemble those around the mesh.</p>
-<p><a href="STR/imbedded-formats/imb.html">Impact resource (.imb)</a> contains candidate material/effect clusters; <a href="STR/imbedded-formats/vfb.html">Effect bundle (.vfb)</a> contains named effect blocks and timing-like parameters. An impact-to-effect/audio join is plausible but the hash algorithms and target IDs are unresolved. Decoding geometry or a sound stream does not reconstruct an effect player.</p>
-<h2 id="characters">Character motion and collision</h2>
-<p><a href="STR/imbedded-formats/bbn.PS3.html">Bone bindings (.bbn.PS3)</a> joint names, <a href="STR/imbedded-formats/bnk.PS3.html">Animation bank (.bnk.PS3)</a> animation/state names, <a href="STR/imbedded-formats/cec.ps3.html">Controller event configuration (.cec.ps3)</a> events and <a href="STR/imbedded-formats/rcb.PS3.html">Character/controller resource (.rcb.PS3)</a> CCT-export resources describe complementary character-system data. Exact numeric joins and compressed animation decoding are not established. These animation banks are distinct from SBK audio banks.</p>
-<p><a href="STR/imbedded-formats/hkt.PS3.html">Havok collision resource (.hkt.PS3)</a> and <a href="STR/imbedded-formats/hko.PS3.html">Havok object resource (.hko.PS3)</a> carry Havok-associated physics data in the observed trees; <a href="STR/imbedded-formats/acs.PS3.html">Character collision resource (.acs.PS3)</a> occurs in character collision directories. Shared asset paths suggest associations with visual meshes and bone bindings. They do not prove a shared record format or universal static/animated distinction.</p>
-<h2 id="world-ui">World organization, sequences and interface</h2>
-<p><a href="STR/imbedded-formats/bsp.html">Spatial partition resource (.bsp)</a> spatial structures, <a href="STR/imbedded-formats/graph.html">Navigation graph (.graph)</a> navigation nodes and <a href="STR/imbedded-formats/toc.html">Table-of-contents resources (.toc)</a> streaming/occlusion indexes describe related level space with different data models. No shared node numbering or automatic coordinate transform is established. The <code>octc</code>/<code>occl</code> TOC family must be separated from generic stream TOCs and STR's own section directory.</p>
-<p><a href="STR/imbedded-formats/xml.PS3.html">Compiled sequence resource (.xml.PS3)</a> has observed <code>seqm</code>/<code>seqb</code> blocks, whereas binary MetaModel data uses a different layout despite its <code>.meta.xml</code> name. <a href="STR/imbedded-formats/shk.html">Shock resource (.shk.PS3)</a> command records may belong to sequencing logic, but no common opcode mapping is demonstrated. <a href="STR/imbedded-formats/uix.html">Compiled APT interface (.uix)</a> contains APT and UI resource/font-name strings; full module-to-font/texture resolution and UI execution remain separate work.</p>
-<h2 id="shared-conventions">Shared data conventions and common traps</h2>
-<div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table><caption>Conventions to preserve when following a reference</caption><thead><tr><th scope="col">Data</th><th scope="col">How to interpret it</th></tr></thead><tbody>
-<tr><td>32-bit IDs / hashes</td><td>Join only within a verified namespace. Lowercase SDBM is validated for the documented TOX dialogue labels; it is not a proven universal algorithm for material, bone, audio and object identifiers.</td></tr>
-<tr><td>Offsets</td><td>Record whether a value is file-absolute, section-relative, mesh-relative or scaled. LH2 pointers are absolute; MUS SNR/SNS offsets have different units. Never infer a pointer base from the integer width.</td></tr>
-<tr><td>Text and glyph codes</td><td>LH2 text uses observed Windows-1252 bytes; INF has custom character remaps and controller glyph aliases. Decoding text and selecting glyphs are separate operations.</td></tr>
-<tr><td>Byte order / floats</td><td>PS3 files are not uniformly big-endian. RenderWare framing, native texture fields and preinstanced model fields can differ. Preserve unknown words rather than assigning meanings from familiar float values alone.</td></tr>
-<tr><td>Timing / coordinates</td><td>TOX start/duration values are milliseconds. INF texture coordinates are 12.4 fixed-point pixels. VFX timing and world transforms need their own validation; do not transfer units between formats.</td></tr>
-<tr><td>Compound suffix / path UID</td><td>Use the complete suffix to distinguish .bnk.PS3, .tox.PS3 and .dff.PS3.preinstanced. A normalized six-hex filename suffix identifies path context; it is not automatically an embedded StringID.</td></tr>
-</tbody></table></div><p>See <a href="pipeline.html">the operation reference</a> for source links and exact registration. Cross-platform concepts can overlap while native layouts differ; compare <a href="STR/imbedded-formats/xbox/itxd.html">Xbox ITXD</a> with PS3 TXD before sharing a decoder.</p>
-</body>
+        <p><a href="STR/imbedded-formats/tox.PS3.html">FMV subtitle timing (.tox.PS3)</a> supplies StringID, start time, duration and flags. <a href="STR/imbedded-formats/lh2.html">Localization table (.LH2)</a> supplies text keyed by the same ID. <a href="VP6/index.html">Movie container (.vp6)</a> supplies the movie timeline and media streams. <a href="STR/imbedded-formats/inf.html">Bitmap font descriptor (.inf)</a> supplies glyph metrics and atlas coordinates; <a href="STR/imbedded-formats/txd.html">Texture dictionary (.txd)</a> supplies the atlas pixels. Font resources are a rendering connection: no direct font pointer in TOX, LH2 or VP6 has been demonstrated.</p>
+        <p>Operation 16 matches cleaned movie/timing stems and the movie's language directory. It joins numeric TOX/LH2 IDs, rather than guessing text from filenames. The observed global EN/ES/FR/IT tables provide translations; SS provides internal labels. Operation 9 exports LH2 independently. Subtitle generation does not require a font conversion, and video conversion does not generate or burn in captions.</p>
+        <h2 id="audio">Dialogue, sound banks and mix metadata</h2>
+        <p><a href="EXA.SNU/index.html">Streamed audio (.exa.snu)</a> contains streamed audio; <a href="STR/imbedded-formats/sbk.html">Sound bank (.sbk)</a> can contain multiple embedded subsongs. Operations 11 and 10 decode those input families separately. The common EA audio concepts do not establish that an SBK must refer to an external SNU.</p>
+        <p><a href="STR/imbedded-formats/alb.html">Audio alias/library metadata (.alb)</a> and <a href="STR/imbedded-formats/ctb.html">Audio control metadata (.ctb)</a> have paired names and repeated identifiers in samples, supporting alias/event metadata roles. <a href="STR/imbedded-formats/smb.html">Stream metadata (.smb)</a> contains external <code>.exa</code> stream names. These observations are useful leads, but a full event-to-stream resolver, numeric ID mapping and every playback condition remain unimplemented. <a href="STR/imbedded-formats/mib.html">Mix metadata (.mib)</a> and <a href="STR/imbedded-formats/rcm_b.html">Character audio metadata (.rcm_b)</a> add mix/character-audio context; their exact joins are unresolved. <a href="STR/imbedded-formats/amb.html">AMB resource (.amb)</a> and <a href="STR/imbedded-formats/aub.html">AUB resource (.aub)</a> must be identified from their own bytes rather than treated as ALB variants.</p>
+        <p>The <a href="../USRDIR/A1_Audio/index.html">audio directory page</a> describes the maintained AudioMap registry used for organization. AudioMap rename rules are pipeline metadata; they are not evidence of the binary ALB/CTB hash algorithm or a substitute for original audio-engine logic.</p>
+        <h2 id="music">Interactive music</h2>
+        <p><a href="STR/imbedded-formats/msb.html">Interactive music metadata (.msb)</a> samples name a <a href="MUS/index.html">MUS container</a> and expose Pathfinder event/part symbols. MUS holds descriptors for paired SNR metadata and SNS payloads. The registered BMS reads descriptors at <code>0x28</code>, scales the SNR offset by <code>0x10</code> and SNS offset by <code>0x80</code>, then extracts each pair. Operation 12 decodes segment WAVs. It does not evaluate the MSB state machine or reconstruct a complete adaptive score.</p>
+        <h2 id="rendered-assets">Rendered assets, scenes and effects</h2>
+        <p><a href="STR/imbedded-formats/preinstanced.html">Preinstanced models</a> geometry references texture names that the Blender workflow associates with <a href="STR/imbedded-formats/txd.html">TXD-derived PNGs</a>. Texture lookup depends on normalized path/map context and remains partial. <a href="STR/imbedded-formats/meta.xml.html">Compiled MetaModel (.meta.xml)</a> properties and <a href="STR/imbedded-formats/simgroup.dat.html">Simulation group (.dat)</a> instances provide additional object/scene concepts; operation 8 does not assemble those around the mesh.</p>
+        <p><a href="STR/imbedded-formats/imb.html">Impact resource (.imb)</a> contains candidate material/effect clusters; <a href="STR/imbedded-formats/vfb.html">Effect bundle (.vfb)</a> contains named effect blocks and timing-like parameters. An impact-to-effect/audio join is plausible but the hash algorithms and target IDs are unresolved. Decoding geometry or a sound stream does not reconstruct an effect player.</p>
+        <h2 id="characters">Character motion and collision</h2>
+        <p><a href="STR/imbedded-formats/bbn.PS3.html">Bone bindings (.bbn.PS3)</a> joint names, <a href="STR/imbedded-formats/bnk.PS3.html">Animation bank (.bnk.PS3)</a> animation/state names, <a href="STR/imbedded-formats/cec.ps3.html">Controller event configuration (.cec.ps3)</a> events and <a href="STR/imbedded-formats/rcb.PS3.html">Character/controller resource (.rcb.PS3)</a> CCT-export resources describe complementary character-system data. Exact numeric joins and compressed animation decoding are not established. These animation banks are distinct from SBK audio banks.</p>
+        <p><a href="STR/imbedded-formats/hkt.PS3.html">Havok collision resource (.hkt.PS3)</a> and <a href="STR/imbedded-formats/hko.PS3.html">Havok object resource (.hko.PS3)</a> carry Havok-associated physics data in the observed trees; <a href="STR/imbedded-formats/acs.PS3.html">Character collision resource (.acs.PS3)</a> occurs in character collision directories. Shared asset paths suggest associations with visual meshes and bone bindings. They do not prove a shared record format or universal static/animated distinction.</p>
+        <h2 id="world-ui">World organization, sequences and interface</h2>
+        <p><a href="STR/imbedded-formats/bsp.html">Spatial partition resource (.bsp)</a> spatial structures, <a href="STR/imbedded-formats/graph.html">Navigation graph (.graph)</a> navigation nodes and <a href="STR/imbedded-formats/toc.html">Table-of-contents resources (.toc)</a> streaming/occlusion indexes describe related level space with different data models. No shared node numbering or automatic coordinate transform is established. The <code>octc</code>/<code>occl</code> TOC family must be separated from generic stream TOCs and STR's own section directory.</p>
+        <p><a href="STR/imbedded-formats/xml.PS3.html">Compiled sequence resource (.xml.PS3)</a> has observed <code>seqm</code>/<code>seqb</code> blocks, whereas binary MetaModel data uses a different layout despite its <code>.meta.xml</code> name. <a href="STR/imbedded-formats/shk.html">Shock resource (.shk.PS3)</a> command records may belong to sequencing logic, but no common opcode mapping is demonstrated. <a href="STR/imbedded-formats/uix.html">Compiled APT interface (.uix)</a> contains APT and UI resource/font-name strings; full module-to-font/texture resolution and UI execution remain separate work.</p>
+        <h2 id="shared-conventions">Shared data conventions and common traps</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>Conventions to preserve when following a reference</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Data</th>
+                        <th scope="col">How to interpret it</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>32-bit IDs / hashes</td>
+                        <td>Join only within a verified namespace. Lowercase SDBM is validated for the documented TOX dialogue labels; it is not a proven universal algorithm for material, bone, audio and object identifiers.</td>
+                    </tr>
+                    <tr>
+                        <td>Offsets</td>
+                        <td>Record whether a value is file-absolute, section-relative, mesh-relative or scaled. LH2 pointers are absolute; MUS SNR/SNS offsets have different units. Never infer a pointer base from the integer width.</td>
+                    </tr>
+                    <tr>
+                        <td>Text and glyph codes</td>
+                        <td>LH2 text uses observed Windows-1252 bytes; INF has custom character remaps and controller glyph aliases. Decoding text and selecting glyphs are separate operations.</td>
+                    </tr>
+                    <tr>
+                        <td>Byte order / floats</td>
+                        <td>PS3 files are not uniformly big-endian. RenderWare framing, native texture fields and preinstanced model fields can differ. Preserve unknown words rather than assigning meanings from familiar float values alone.</td>
+                    </tr>
+                    <tr>
+                        <td>Timing / coordinates</td>
+                        <td>TOX start/duration values are milliseconds. INF texture coordinates are 12.4 fixed-point pixels. VFX timing and world transforms need their own validation; do not transfer units between formats.</td>
+                    </tr>
+                    <tr>
+                        <td>Compound suffix / path UID</td>
+                        <td>Use the complete suffix to distinguish .bnk.PS3, .tox.PS3 and .dff.PS3.preinstanced. A normalized six-hex filename suffix identifies path context; it is not automatically an embedded StringID.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>See <a href="pipeline.html">the operation reference</a> for source links and exact registration. Cross-platform concepts can overlap while native layouts differ; compare <a href="STR/imbedded-formats/xbox/itxd.html">Xbox ITXD</a> with PS3 TXD before sharing a decoder.</p>
+    </body>
 </html>
