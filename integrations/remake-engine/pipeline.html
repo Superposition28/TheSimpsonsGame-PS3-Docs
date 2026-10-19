@@ -16,6 +16,22 @@
         <p>From <code>A:/RemakeEngine/Main</code>, use the module name or module ID <code>1</code>. Replace <code>10</code> with the desired registered operation ID:</p>
         <pre><code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 10</code></pre>
         <p>The table lists declared dependencies exactly as stored, not a recommendation to run IDs in numeric order. The commented Godot generation entry (69) is not active. Conversion entries have <code>run-all=false</code>; do not assume the menu's run-all selection means every documented format was converted.</p>
+        <h2 id="str-unnamed">STR unnamed-output contract (2026-10-19)</h2>
+        <p>The <a href="../../PS3_GAME/FormatAnalysis/STR/index.html#unnamed-payloads">STR investigation</a> distinguishes unnamed SimGroup records from assets with an empty pathname. <code>operations/simpsons_str.bms</code> now uses the 12-byte outer envelope and little-endian body size to walk every record. It retains embedded asset paths and exact payload bytes, while assigning the following synthetic names inside each archive's output directory. The section index and record offset are zero-based; the offset is relative to the decompressed section, not the source file.</p>
+        <ul>
+            <li><code>simgroup_sNNN_oXXXXXXXX.dat</code>: complete <code>0x2207</code> body when <code>SimG</code> occurs at body <code>+8</code>. For US <code>loc/loc/zone06.str</code>, <code>simgroup_s003_o00000660.dat</code> contains 244 bytes; the old numeric DAT omitted four bytes and contained 240.</li>
+            <li><code>uie_sNNN_oXXXXXXXX.dat</code>: exact payload of an empty-path <code>0x1607</code> asset with metadata type <code>UIE</code>. Other empty-path asset types use <code>unnamed_asset_sNNN_oXXXXXXXX.dat</code>.</li>
+            <li><code>chunk_TTTT_sNNN_oXXXXXXXX.dat</code>: complete opaque body for an unparsed outer type, an unrecognized SimGroup signature, or a zero-header asset. The type is retained in the name; the body is not decoded or combined with later records.</li>
+            <li><code>__str_duplicates__/sNNN_oXXXXXXXX/&lt;embedded-path&gt;</code>: later assets with a repeated pathname (case-insensitive comparison). The first output keeps its embedded path. Drive colons in the duplicate path become underscores. In the US story sample, the second <code>StreamSetConfig</code> is preserved at <code>__str_duplicates__/s010_o0003e958/StreamSetConfig</code>.</li>
+        </ul>
+        <p>These names identify extractor output and do not claim recovered original filenames. Full SimGroup bodies use the pointer base expected by the inspected C# viewer; old numeric DATs need the <a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/simgroup.dat.html#header">documented four-byte base correction</a>. Unknown bodies remain opaque. Boundary/header mismatches print <code>ERROR:</code> and terminate the script; QuickBMS <code>CleanExit</code> does not guarantee a nonzero process exit code.</p>
+        <p>For a manual run from the game-module root, select one source archive and a separate output directory per archive:</p>
+        <pre><code>&amp; 'A:\RemakeEngine\Main\EngineApps\Tools\QuickBMS-0.12.0-win-x64\quickbms_4gb_files.exe' -o `
+  'operations\simpsons_str.bms' `
+  'Source\PS3\US\1\PS3_GAME\USRDIR\loc\loc\zone06.str' `
+  'reversing\TMP_STR\loc-zone06'</code></pre>
+        <p>Use a fresh output directory when migrating old numeric DATs: <code>-o</code> overwrites matching paths but does not remove obsolete numeric names. Reruns into the same updated destination were verified to retain identical names and hashes. QuickBMS <code>-K</code> or rename-on-collision choices can still create extra files.</p>
+        <p><code>python -B reversing/str_audit.py &lt;STR-file-or-root&gt; &lt;report.json&gt;</code> in the parent module independently decodes RefPack, validates record boundaries and records source/body/payload SHA-256 values. It does not extract assets. The audit was validated against all 490 inspected US STRs. <code>python -B reversing/test_str_extraction.py --quickbms &lt;exe&gt; --scratch &lt;directory&gt;</code> exercises generated raw/compressed archives, later records, unknown types, empty paths, repeated paths, malformed boundaries and stable reruns without game data. The saved <a href="../../PS3_GAME/FormatAnalysis/STR/unnamed-payload-evidence.json">evidence ledger</a> records the real-sample checks separately.</p>
         <h2 id="operations">Registered operations</h2>
         <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
             <table>
@@ -45,12 +61,12 @@
                         <th scope="row">1: Extract STR archives</th>
                         <td>Source .str archives → extracted payloads under GameFiles.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/simpsons_str.bms">operations/simpsons_str.bms</a></td>
                         <td><code>[0, -1]</code><br>run-all: <code>true</code></td>
-                        <td>Uses simpsons_str.bms (QuickBMS dk2/RefPack). Embedded suffixes are retained; extraction alone does not decode them.</td>
+                        <td>Uses simpsons_str.bms (QuickBMS dk2/RefPack). Embedded suffixes are retained; extraction alone does not decode them. The <a href="#str-unnamed">2026-10-19 unnamed-output update</a> preserves complete SimGroup bodies, later records and repeated asset paths.</td>
                     </tr>
-                    <tr id="op-2" data-operation="2" data-depends-on="0,1" data-run-all="true">
+                    <tr id="op-2" data-operation="2" data-depends-on="0" data-run-all="true">
                         <th scope="row">2: Copy source media</th>
                         <td>Copies source movies/ and audiostreams/ into the processed tree.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/CopySourceAudioVideo.lua">operations/CopySourceAudioVideo.lua</a></td>
-                        <td><code>[0, 1]</code><br>run-all: <code>true</code></td>
+                        <td><code>[0]</code><br>run-all: <code>true</code></td>
                         <td>Does not transcode audio or video. Success hooks set audio_state=audio_og and rename the dataset root.</td>
                     </tr>
                     <tr id="op-3" data-operation="3" data-depends-on="0,1,2" data-run-all="true">

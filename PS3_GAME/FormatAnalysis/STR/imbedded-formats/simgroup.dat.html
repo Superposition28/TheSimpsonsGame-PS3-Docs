@@ -2,28 +2,28 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>SimGroup Format Documentation</title>
+        <title>STR-generated DAT payloads: SimGroup and UIE</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="reference-source" content="ps3-eu-original">
+        <meta name="reference-source" content="ps3-eu-extracted">
         <meta name="path-namespace" content="legacy-mixed">
     </head>
     <body class="doc-page">
-        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Simulation group (.dat)</nav>
-        <h1>SimGroup (.dat)</h1>
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>STR-generated DAT payloads</nav>
+        <h1>SimGroup and other STR-generated .dat payloads</h1>
         <aside class="source-notice" aria-label="Source and path scope">
-            <p><strong>Source scope:</strong> PS3 EU is the reference baseline; retained cross-platform and release observations keep their stated scope. New extracted references use <code>ps3-eu-extracted</code>. Historical inventories and samples retain their recorded paths; unresolved mixed paths require reconciliation before use as canonical examples. See <a href="../../../../reference/sources.html#paths">roots and provenance</a>.</p>
+            <p><strong>Source scope:</strong> PS3 EU remains the reference baseline. The 2026-10-19 supplementary investigation examined original PS3 US STR bytes and individual QuickBMS extractions, plus an existing EU extraction snapshot locally labeled <code>1PS3-EU-Full-audio_reorg-isRenamed/</code>. That historical local label and its generated filenames are retained here; they are not original archive-member names. See <a href="../../../../reference/sources.html#paths">roots and provenance</a> and the <a href="../unnamed-payload-evidence.json">investigation evidence</a>.</p>
         </aside>
         <section class="format-summary" aria-label="Format summary">
-            <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>Contains grouped entity/instance entries and identifiers.</p>
+            <p class="eyebrow">Game format research · PS3 EU baseline with labeled PS3 US observations</p>
+            <p>SimGroup records define entity groups, behaviors and attributes. Numbered <code>.dat</code> outputs also include a separate UIE resource family.</p>
             <dl>
                 <dt>Identification</dt>
-                <dd>Header and entity entry layouts are described below; .dat is not a unique format identifier.</dd>
+                <dd>Use the containing STR record and payload bytes. <code>0x2207</code> bodies have <code>SimG</code> at <code>+0x08</code>; legacy dumps place it at <code>+0x04</code>. The generated <code>.dat</code> suffix alone identifies neither structure.</dd>
                 <dt>Byte order / text</dt>
-                <dd>Use the per-field tables.</dd>
+                <dd>SimGroup header words and entity references are big-endian. Inspected UIE entries use little-endian keys and GUID words. Attribute-mask byte order remains an attributed parser observation.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>Updated 2026-10-19 from source-byte audits, extraction comparisons and inspected viewer code. Record identification and extraction are better established than runtime semantics.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
@@ -32,13 +32,16 @@
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
-                <li><a href="#header">Header</a></li>
+                <li><a href="#generated-dat">Why numbered DAT files were generated</a></li>
+                <li><a href="#header">SimGroup header and offset bases</a></li>
                 <li><a href="#entity-entry">Entity Entry</a></li>
+                <li><a href="#attribute-packets">Attribute packets</a></li>
+                <li><a href="#uie">Separate UIE payloads</a></li>
             </ul>
         </nav>
         <section id="related-formats">
             <h2 id="related-formats-2">Related formats</h2>
-            <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <div class="table-scroll" role="region" aria-label="Related formats" tabindex="0">
                 <table>
                     <caption>Related formats and strength of the connection</caption>
                     <thead>
@@ -49,6 +52,11 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <tr>
+                            <td><a href="../index.html">STR container</a></td>
+                            <td>Source bytes and extraction</td>
+                            <td>The outer record type, body length and metadata distinguish a SimGroup body from a named resource with an empty path.</td>
+                        </tr>
                         <tr>
                             <td><a href="meta.xml.html">Compiled MetaModel (.meta.xml)</a></td>
                             <td>Scene context</td>
@@ -61,80 +69,253 @@
         </section>
         <section id="operation-support">
             <h2 id="operation-support-2">Tools and integrations</h2>
-            <p>Optional <a href="../../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-str-imbedded-formats-simgroup-dat-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
+            <p>The inspected <code>reversing/TSGFileViewer/Scripts/EAStreamFile.cs</code> recognizes <code>0x2207</code> and passes its complete body to <code>SimGroup.cs</code>. It skips interpretation of headerless <code>0x1607</code> payloads and leaves compact <code>0x2307</code> assets unimplemented. Its registered resource handlers contain no UIE handler.</p>
+            <p>Optional <a href="../../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-str-imbedded-formats-simgroup-dat-html">Remake Engine implementation notes</a> describe the extractor's generated naming and output contract. Those conventions are separate from original resource names and runtime behavior.</p>
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>Entity IDs and resource references must be matched against the correct level context. No scene-assembly operation is registered.</p>
-            <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+            <p>The supplementary audit of all 490 inspected US source STR files found 25,927 <code>0x1607</code> assets and 452 <code>0x2207</code> records. All 452 had <code>SimG</code> at body <code>+0x08</code>, version 1, two leading zero words and <code>ppEntPackets = 0x30</code>. Eighteen <code>0x1607</code> assets had an empty metadata path and resource type <code>UIE</code>. These counts describe this source set, not every release.</p>
+            <p>The existing EU snapshot contained 434 numbered DAT files: 416 beginning with <code>00 00 00 00 53 69 6D 47 00 00 00 01</code> and 18 distinct non-SimGroup payloads. Legacy dumps could concatenate later records, so 416 is a count of files beginning with a SimGroup, not a count of all simulation groups. Original EU archive membership is not inferred solely from renamed output folders.</p>
+            <p>The tables combine US source-byte observations with the field interpretation implemented by <code>SimGroup.cs</code>. Entity IDs and resource references require the correct level context. Unknown words, flag meanings, shared-data/dictionary semantics, attribute defaults and original runtime lookup rules remain unresolved. Offsets are zero-based; lengths are bytes.</p>
+            <p>Source paths, hashes, extraction comparisons and EU sample headers are retained in <a href="../unnamed-payload-evidence.json">unnamed-payload-evidence.json</a>. The reference remains readable without the local game files or viewer.</p>
         </section>
-        <p>Defines groups of entities, their behaviors, and attributes.</p>
-        <h2 id="header">Header</h2>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+        <h2 id="generated-dat">Why numbered DAT files were generated</h2>
+        <p>The legacy QuickBMS script passed an empty output name to <code>log</code> through two different routes. QuickBMS supplied a numbered <code>.dat</code> filename; the digits were extraction-generated and could change with extraction order or existing output files. Neither route establishes an unknown or corrupt payload.</p>
+        <div class="table-scroll" role="region" aria-label="Two routes to numbered DAT outputs" tabindex="0">
             <table>
                 <thead>
                     <tr>
-                        <th scope="col">Offset</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Description</th>
+                        <th scope="col">Source record</th>
+                        <th scope="col">Why the output name was empty</th>
+                        <th scope="col">Observed payload</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>0x08</td>
-                        <td>UInt32</td>
-                        <td>Magic</td>
-                        <td><code>0x53696D47</code> ("SimG").</td>
+                        <td><code>0x2207</code></td>
+                        <td>The script applied the <code>0x1607</code> metadata-header interpretation to another record type. The first body word was zero, so it selected the “no header” branch. This SimGroup record has no embedded asset pathname to extract.</td>
+                        <td>SimGroup body with its first four bytes removed, followed by any remaining records in the section.</td>
                     </tr>
                     <tr>
-                        <td>0x0C</td>
-                        <td>UInt32</td>
-                        <td>GUIDHash</td>
-                        <td>Hash of GUID.</td>
-                    </tr>
-                    <tr>
-                        <td>0x10</td>
-                        <td>UInt32</td>
-                        <td>EntityCount</td>
-                        <td>Number of entities in the group.</td>
+                        <td><code>0x1607</code>, type <code>UIE</code></td>
+                        <td>The metadata subheader existed, but its file-path string was empty. In the inspected US <code>loc/loc.str</code> sample the object name was <code>World</code>, the type was <code>UIE</code>, and <code>HeaderSize</code> was 72.</td>
+                        <td>A separate 60-byte payload of three 20-byte UIE entries. Its payload bytes were extracted correctly; the filename was synthetic.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <h2 id="entity-entry">Entity Entry</h2>
-        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+        <p><strong>Legacy boundary error:</strong> the zero-header branch used the entire remaining decompressed section as its length. It consumed later record envelopes and stopped extracting their contents separately. Manual extraction of US <code>PS3_GAME/USRDIR/loc/loc/Story_Mode/Story_Mode_Design.str</code> produced 225 outputs with the legacy script and 229 after record-boundary handling was corrected: four distinct SimGroup bodies and a later <code>0x1607</code> StreamSetConfig asset were recovered separately. The four SimGroup record starts in section 10 were <code>0x3820C</code>, <code>0x3EA08</code>, <code>0x40EE0</code> and <code>0x4DBC4</code>. These are decompressed-section offsets. The later StreamSetConfig had a duplicate metadata path; preserving both payloads also required collision handling.</p>
+        <p>The corrected extractor distinguishes these record families, retains each complete SimGroup body and uses its outer little-endian body length to continue at the next record. Synthetic names identify section/record position; they do not recover an original filename. The exact output naming contract is documented in the integration notes.</p>
+        <h2 id="header">SimGroup header and offset bases</h2>
+        <p>A <code>0x2207</code> record has the common 12-byte outer STR record envelope. Its little-endian length at record <code>+0x04</code> measures the body beginning at record <code>+0x0C</code>. The following table uses that body start as zero. The complete-body layout is the input expected by <code>SimGroup.cs</code>; the leading zero word is part of this body, not evidence of a <code>0x1607</code> asset subheader.</p>
+        <div class="table-scroll" role="region" aria-label="SimGroup complete-body and legacy offsets" tabindex="0">
             <table>
+                <caption>Header offsets in a complete body and a legacy BMS dump</caption>
                 <thead>
                     <tr>
+                        <th scope="col">Body offset</th>
+                        <th scope="col">Legacy DAT offset</th>
                         <th scope="col">Type</th>
                         <th scope="col">Name</th>
-                        <th scope="col">Description</th>
+                        <th scope="col">Observation / interpretation</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
+                        <td><code>0x00</code></td>
+                        <td>Omitted</td>
+                        <td>UInt32 BE</td>
+                        <td>Opaque word 0</td>
+                        <td>Zero in the inspected US records; meaning unassigned.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x04</code></td>
+                        <td><code>0x00</code></td>
+                        <td>UInt32 BE</td>
+                        <td>Opaque word 1</td>
+                        <td>Zero in the inspected US records; meaning unassigned.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x08</code></td>
+                        <td><code>0x04</code></td>
+                        <td>Byte[4]</td>
+                        <td>Magic</td>
+                        <td><code>53 69 6D 47</code>, ASCII <code>SimG</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x0C</code></td>
+                        <td><code>0x08</code></td>
+                        <td>UInt32 BE</td>
+                        <td>Version</td>
+                        <td>1 in the inspected samples.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x10</code></td>
+                        <td><code>0x0C</code></td>
+                        <td>UInt32 BE</td>
+                        <td>GUID32</td>
+                        <td>Group identifier used by the viewer. A filename-hash algorithm is not established; zero identifiers occur in the EU outputs.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x14</code></td>
+                        <td><code>0x10</code></td>
+                        <td>UInt32 BE</td>
+                        <td>Flags</td>
+                        <td>Read by the viewer; bit meanings are unresolved.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x18</code></td>
+                        <td><code>0x14</code></td>
+                        <td>UInt32 BE</td>
+                        <td>nEnts</td>
+                        <td>Number of entity packets followed by the viewer.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x1C</code></td>
+                        <td><code>0x18</code></td>
+                        <td>UInt32 BE</td>
+                        <td>nEntsDispatched</td>
+                        <td>Viewer field name; runtime meaning is unverified.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x20</code></td>
+                        <td><code>0x1C</code></td>
+                        <td>UInt32 BE</td>
+                        <td>SharedDataSize</td>
+                        <td>Viewer field name; the associated region and use require further analysis.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x24</code></td>
+                        <td><code>0x20</code></td>
+                        <td>UInt32 BE</td>
+                        <td>DictionarySize</td>
+                        <td>Viewer field name; dictionary semantics are unresolved.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x28</code></td>
+                        <td><code>0x24</code></td>
+                        <td>UInt32 BE</td>
+                        <td>ppEntPackets</td>
+                        <td>Body-absolute offset to a UInt32 BE containing the body-absolute entity-array offset. Value <code>0x30</code> in all 452 inspected US records.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p><strong>Pointer bases:</strong> read <code>pEntPackets = BE32(body[ppEntPackets])</code>, then start at <code>body[pEntPackets]</code>. In a legacy DAT, both stored absolute pointer values still use the complete-body base: access the pointer word at <code>ppEntPackets - 4</code> and the entity array at <code>pEntPackets - 4</code>. Field-relative references do not need that subtraction. A legacy file may also contain later record envelopes, so its total length is not a reliable first-body length.</p>
+        <p><strong>US zone06 example:</strong> source <code>ps3-us:PS3_GAME/USRDIR/loc/loc/zone06.str</code>, section 3, record offset <code>0x660</code>. Its complete body is 244 bytes; the corresponding legacy output was 240 bytes. <code>SimG</code> moves from legacy <code>+4</code> to complete-body <code>+8</code>, and the viewer's pointer base is preserved. The group identifier is <code>0x64AC1B75</code>, <code>nEnts = 1</code>, <code>ppEntPackets = 0x30</code> and <code>pEntPackets = 0xC0</code>.</p>
+        <details>
+            <summary>zone06 provenance hashes</summary>
+            <p>Original STR SHA-256: <code>3abb74529ea30a67cdc3c625292537511fc9cbe8a12f9234028fbda2ada4c09c</code>. Complete 244-byte body SHA-256: <code>49ba9e75b0b85845cc24aab29186b493a1b88fea705ab78a33afe6fc6297f6c7</code>. Legacy 240-byte dump SHA-256: <code>2c956de7ca48f931ebf37225bef94ff95e8253fa156b6b09c180f93cc826c553</code>.</p>
+        </details>
+        <h2 id="entity-entry">Entity Entry</h2>
+        <p>The following offsets are relative to one entity packet, after resolving the body-absolute entity-array pointer. Field names and traversal follow <code>SimGroup.cs</code>; the fixed opaque regions are retained without assigning runtime meanings.</p>
+        <div class="table-scroll" role="region" aria-label="Entity packet layout" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Packet offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Interpretation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>0x00</code></td>
+                        <td>Byte[16]</td>
+                        <td>Opaque prefix</td>
+                        <td>Skipped by the viewer.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x10</code></td>
+                        <td>UInt8</td>
+                        <td>nAttrHandlerFlags</td>
+                        <td>Attribute-handler flags; semantics unresolved.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x11</code></td>
                         <td>UInt8</td>
                         <td>SpawnMask</td>
-                        <td>Spawn configuration mask.</td>
+                        <td>The viewer activates the object when this equals 1. That condition is tool behavior, not a complete runtime spawn specification.</td>
                     </tr>
                     <tr>
-                        <td>Byte[16]</td>
-                        <td>GUID</td>
-                        <td>Entity GUID (looked up via GuidOffset in header).</td>
+                        <td><code>0x12</code></td>
+                        <td>UInt8</td>
+                        <td>nAttachedRes</td>
+                        <td>Count of attached-resource references.</td>
                     </tr>
                     <tr>
-                        <td>UInt32</td>
+                        <td><code>0x13</code></td>
+                        <td>UInt8</td>
+                        <td>nAttrPackets</td>
+                        <td>Count of attribute-packet references.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x14</code></td>
+                        <td>Byte[4]</td>
+                        <td>Opaque word</td>
+                        <td>Skipped by the viewer.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x18</code></td>
+                        <td>Int32 BE</td>
+                        <td>GUIDOffset</td>
+                        <td>Signed offset from this field's own address to a 16-byte entity GUID, read as four UInt32 BE words.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x1C</code></td>
+                        <td>UInt32 BE</td>
                         <td>BehaviorID</td>
-                        <td>Behavior identifier.</td>
+                        <td>Behavior identifier used by the viewer.</td>
                     </tr>
                     <tr>
-                        <td>Bitfield</td>
-                        <td>Attributes</td>
-                        <td>Bitfield defining which attributes are active. Attributes are 4-byte values (Int, Float, or Pointers).</td>
+                        <td><code>0x20</code></td>
+                        <td>Int32 BE[nAttachedRes]</td>
+                        <td>Attached-resource references</td>
+                        <td>Each signed reference is relative to its own four-byte field and targets a four-word GUID128.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x20 + 4*nAttachedRes</code></td>
+                        <td>Int32 BE[nAttrPackets]</td>
+                        <td>Attribute-packet references</td>
+                        <td>Each signed reference is relative to its own field and targets an attribute packet.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
+        <p>The viewer advances to the next entity packet at <code>packet_start + 0x20 + 4*(nAttachedRes + nAttrPackets)</code>. All 416 legacy EU files carrying <code>SimG</code> at <code>+4</code> could be traversed for their first body's entity GUIDs using this rule and the corrected absolute pointer base. This check did not enumerate additional SimGroups hidden later in those legacy files.</p>
+        <h2 id="attribute-packets">Attribute packets</h2>
+        <p>The viewer reads a UInt32 BE handler identifier at attribute-packet <code>+0</code> and a UInt16 BE attribute count at <code>+4</code>. It then reads a 16-bit mask, or a 32-bit mask when the count exceeds 16, and aligns the following slots to four bytes. <code>SimGroup.cs</code> uses the ordinary little-endian <code>BinaryReader.ReadUInt16/ReadUInt32</code> calls for this mask, unlike its surrounding big-endian reads. This is attributed implementation evidence; mask byte order and wider-count behavior need direct validation.</p>
+        <p>For each attribute index whose mask bit is clear, that parser retains one four-byte slot. Handler code interprets individual slots as integers, floats or signed field-relative references. It does not demonstrate that every stored slot is an integer, that set mask bits mean “active,” or that all handlers and default-value rules are understood.</p>
+        <h2 id="uie">Separate UIE payloads</h2>
+        <p><code>UIE</code> is an observed STR metadata resource-type string. No acronym expansion is established. These resources are embedded assets of type <code>0x1607</code>, not SimGroup <code>0x2207</code> bodies, and have no <code>SimG</code> signature in the inspected prefixes. They received numbered DAT names because their metadata path was empty.</p>
+        <p>The inspected US <code>ps3-us:PS3_GAME/USRDIR/loc/loc.str</code> asset occurs in section 6 at decompressed record offset <code>0x683D8</code>: object name <code>World</code>, resource type <code>UIE</code>, empty file path, 72-byte metadata subheader and 60-byte payload. The corrected extraction retains those same 60 payload bytes. The separate legacy EU <code>L01_LandOfChocolate/loc_str/00000020.dat</code> sample also contains three 20-byte entries; its historical output path alone does not verify original EU archive membership.</p>
+        <div class="table-scroll" role="region" aria-label="Observed UIE entry layout" tabindex="0">
+            <table>
+                <caption>Observed repeating 20-byte UIE entries</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Entry offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Observation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>0x00</code></td>
+                        <td>UInt32 LE</td>
+                        <td>Key. Keys are strictly ascending and unique within each of the 18 inspected EU payloads.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x04</code></td>
+                        <td>UInt32 LE[4]</td>
+                        <td>Four-word GUID value. Convert each word's byte order before comparing with a SimGroup GUID serialized as four UInt32 BE words.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>All 18 EU non-SimGroup payload sizes are multiples of 20, ranging from 40 to 6,160 bytes and totaling 1,125 entries. The first GUID word is constant within each payload and differs between levels. Comparing the four little-endian words against parsed first-body SimGroup entity GUIDs from the same extracted level matched 1,106 entries; comparing the raw 16 bytes matched none.</p>
+        <p>Every list includes key <code>0x0CC92646</code>. The viewer's lowercase SDBM implementation hashes its known label <code>ZoneWorld</code> to this value, and each of the 18 corresponding GUIDs matched a main-stream entity with behavior ID <code>0x0CC92646</code>. The other matched keys differ from their target entity behavior IDs, so the key is not generally a behavior/class identifier. A label-to-entity index is a supported hypothesis; the complete naming namespace and runtime lookup algorithm are unverified.</p>
+        <p>Key <code>0x4561376A</code> remains unmatched in all 18 lists; Bartman additionally has unmatched key <code>0xD1382DA6</code>. No label for either key was established. The comparison covered first-body entities in the available legacy DATs, which could contain additional concatenated records; it does not prove that these GUIDs are absent from the original game, refer to another resource family, or are created dynamically.</p>
     </body>
 </html>
