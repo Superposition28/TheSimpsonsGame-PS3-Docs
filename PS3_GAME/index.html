@@ -5,14 +5,16 @@
         <link rel="stylesheet" href="../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>PS3_GAME disc layout</title>
+        <meta name="reference-source" content="ps3-eu-original">
+        <meta name="path-namespace" content="original">
     </head>
     <body class="doc-page">
         <h1>PS3_GAME disc layout</h1>
         <p>The disc root contains platform metadata and presentation images alongside USRDIR, the main game-data directory. The observed EU and US lists below describe source-disc files, not the normalized remake output.</p>
-        <p><a href="PARAM.SFO.html">PARAM.SFO metadata</a> documents the EU, US and demo identities, binary header/index format and TOML reference values. Metadata is read during initialization, independently of STR asset extraction.</p>
-        <h2>Data flow through the module</h2>
-        <p>STR archives in USRDIR supply most resource payloads. Source movies and audiostreams are copied separately, then folders and filenames are reorganized into A1_Audio, A1_Video, character/frontend, level and hub groups. A flattened path is therefore a pipeline artifact, not necessarily the path shipped on disc.</p>
-        <p><a href="USRDIR/index.html">USRDIR layout</a> explains the folder groups. The <a href="FormatAnalysis/relationships.html">relationship guide</a> connects media, localization, fonts, geometry and metadata; the <a href="FormatAnalysis/pipeline.html">operation reference</a> records how each output is produced.</p>
+        <p><a href="PARAM.SFO.html">PARAM.SFO metadata</a> documents the EU, US and demo identities, binary header/index format and TOML reference values. This reference distinguishes platform metadata from the STR archives and other resources under USRDIR.</p>
+        <h2>Game files and extracted resources</h2>
+        <p>STR archives in USRDIR contain resource payloads. Movies and streamed audio can also exist outside those archives. Original paths below are relative to the directory containing PS3_GAME. The canonical extracted view uses readable group names whose mappings are documented separately.</p>
+        <p><a href="../reference/sources.html">Canonical sources and paths</a> · <a href="../reference/naming.html">Folder names and aliases</a> · <a href="USRDIR/index.html">USRDIR asset/use reference</a> · <a href="FormatAnalysis/relationships.html">Resource relationships</a></p>
         <h2>EU version</h2>
         <ul>
             <li><a href="../index.html#USRDIR" target="_top">USRDIR</a></li>

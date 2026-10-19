@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Remake Engine per-format implementation notes</title>
+        <link rel="stylesheet" href="../../style/main.css">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../index.html" target="_top">Documentation</a></nav>
+        <h1>Remake Engine per-format implementation notes</h1>
+        <p>These retained implementation notes describe Remake Engine code paths inspected in the previous documentation review. Format structure, game resource relationships and research confidence remain in the linked core references. Operation metadata is authoritative in <a href="pipeline.html">the integration pipeline</a>.</p>
+        <section id="format-ps3-game-formatanalysis-bin-index-html">
+            <h2>PS3 executable (EBOOT.BIN)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/BIN/index.html">Game format reference</a></p>
+            <p>No executable decoder, converter or reconstruction is registered in <code>operations.toml</code>. STR extraction, media conversion and normalization do not convert this executable. Operation 14 writes a separate launch manifest for the prebuilt Godot project; it does not translate EBOOT.BIN. See the <a href="../../PS3_GAME/FormatAnalysis/pipeline.html">operation pipeline</a>.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-exa-snu-index-html">
+            <h2>EXA.SNU Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/EXA.SNU/index.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-11">Operation 11: Convert Audio (.snu -&gt; .wav)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-lua-index-html">
+            <h2>Lua Source Files</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/LUA/index.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-mus-index-html">
+            <h2>MUS Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/MUS/index.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-12">Operation 12: Convert Music (.mus -&gt; .snr/.sns -&gt; .wav)</a>. Declared dependencies: <code>[10]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-acs-ps3-html">
+            <h2>ACS.PS3 Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/acs.PS3.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-alb-html">
+            <h2>ALB Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/alb.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-amb-html">
+            <h2>AMB Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/amb.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-aub-html">
+            <h2>AUB resource (.aub)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/aub.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-bbn-ps3-html">
+            <h2>BBN.PS3 Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/bbn.PS3.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-bnk-ps3-html">
+            <h2>BNK.PS3 Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/bnk.PS3.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-bsp-html">
+            <h2>BSP Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/bsp.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-cec-ps3-html">
+            <h2>Controller Event Config Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/cec.ps3.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-ctb-html">
+            <h2>CTB Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/ctb.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-en-lh2-html">
+            <h2>English LH2 variant (.en.LH2)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/en.LH2.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-es-lh2-html">
+            <h2>Spanish LH2 variant (.es.LH2)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/es.LH2.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-fr-lh2-html">
+            <h2>French LH2 variant (.fr.LH2)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/fr.LH2.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-graph-html">
+            <h2>GRAPH Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/graph.html">Game format reference</a></p>
+            <p>The Godot project enables <code>addons/tsg_graph_importer/plugin.cfg</code>. Its editor plugin registers <code>import_graph.gd</code> as <code>tsg.graph.importer</code>, visible as <strong>TSG NavGraph</strong>, for the <code>graph</code> extension. The importer saves <code>TSGNavGraph</code> as a binary <code>.res</code> resource at the editor-supplied import-cache path.</p>
+            <p>The resource exposes <code>guid: String</code>, <code>nodes: Array[Dictionary]</code> and <code>edges: Array[Dictionary]</code>. <code>NavGraphVisualizer</code> can consume it to draw nodes as crosses and edges as straight lines, with visibility/color controls. Importing does not construct an <code>AStar3D</code>, a navigation mesh or an original-game AI controller.</p>
+            <p>No GRAPH converter is registered in <code>operations.toml</code>; that does not mean import support is absent. Operation 1 extracts the source payload and operation 6 can normalize its path. The Godot editor import is a separate code path. See the <a href="../../PS3_GAME/FormatAnalysis/pipeline.html">operation pipeline</a> for the registered operations.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-hko-ps3-html">
+            <h2>HKO.PS3 Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/hko.PS3.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-hkt-ps3-html">
+            <h2>HKT.PS3 Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/hkt.PS3.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-imb-html">
+            <h2>.imb Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/imb.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-inf-html">
+            <h2>INF Format Documentation (.inf)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/inf.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-15">Operation 15: Convert Fonts (.inf -&gt; .fnt)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-it-lh2-html">
+            <h2>Italian LH2 variant (.it.LH2)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/it.LH2.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-lh2-html">
+            <h2>Localization table (.LH2)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/lh2.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-meta-xml-html">
+            <h2>MetaModel Binary Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/meta.xml.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-mib-html">
+            <h2>.mib Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/mib.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-msb-html">
+            <h2>.msb Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/msb.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-noextension-html">
+            <h2>Files Without Extension Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/NoExtension.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-preinstanced-html">
+            <h2>Preinstanced Asset Format (EARS_MESH) - Complete Implementation Guide</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/preinstanced.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-8">Operation 8: Convert Models (.preinstanced -&gt; .blend)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-ps3-html">
+            <h2>PS3 resource suffix family</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/ps3.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-rcb-ps3-html">
+            <h2>RCB.PS3 Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/rcb.PS3.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-rcm-b-html">
+            <h2>RCM_B Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/rcm_b.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-sbk-html">
+            <h2>.sbk Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/sbk.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-10">Operation 10: Convert Audio (.sbk -&gt; .wav)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-shk-html">
+            <h2>Shock Resource (.shk.PS3) Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/shk.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-simgroup-dat-html">
+            <h2>SimGroup Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/simgroup.dat.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-smb-html">
+            <h2>.smb Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/smb.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-ss-lh2-html">
+            <h2>Internal string labels LH2 variant (.ss.LH2)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/ss.LH2.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-toc-html">
+            <h2>TOC Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/toc.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-tox-ps3-html">
+            <h2>.tox.PS3 Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/tox.PS3.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-txd-html">
+            <h2>Texture Dictionary (.txd) - Complete Format Analysis</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/txd.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-3">Operation 3: Extract Textures (.txd -&gt; .png)</a>. Declared dependencies: <code>[2]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-txt-html">
+            <h2>TXT Embedded Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/txt.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-uix-html">
+            <h2>.uix Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/uix.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-vfb-html">
+            <h2>VFB Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/vfb.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-xbox-itxd-html">
+            <h2>Instanced Texture Dictionary (.itxd) - Complete Format Analysis</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/xbox/itxd.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-imbedded-formats-xml-ps3-html">
+            <h2>XML.PS3 Format Documentation</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/xml.PS3.html">Game format reference</a></p>
+            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-str-index-html">
+            <h2>.STR Archive Structure (EA Stream File)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/STR/index.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-1">Operation 1: Extract Archives (.STR)</a>. Declared dependencies: <code>[-1]</code>; <code>run-all = true</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-txt-index-html">
+            <h2>Locale configuration (localetable.txt)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/TXT/index.html">Game format reference</a></p>
+            <p>The file is readable directly; no conversion is required for inspection and no dedicated locale-configuration parser is registered in <code>operations.toml</code>. This source-disc file is not a payload produced by STR extraction. Operations 9 and 16 read LH2 resources, not this configuration. See the <a href="../../PS3_GAME/FormatAnalysis/pipeline.html">operation pipeline</a> for their actual inputs.</p>
+        </section>
+        <section id="format-ps3-game-formatanalysis-vp6-index-html">
+            <h2>Movie container (.vp6)</h2>
+            <p><a href="../../PS3_GAME/FormatAnalysis/VP6/index.html">Game format reference</a></p>
+            <ul>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-13">Operation 13: Convert Videos (.vp6 -&gt; .ogv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+            </ul>
+            <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+        </section>
+        <section id="format-ps3-game-param-sfo-html">
+            <h2>PS3 metadata (PARAM.SFO)</h2>
+            <p><a href="../../PS3_GAME/PARAM.SFO.html">Game format reference</a></p>
+            <p>Initialization operation 0 reads PARAM.SFO through the module's existing metadata reader to help classify PS3 source builds and report title/version information. This is source validation, not an independently registered SFO-to-TOML conversion. The known IDs classify the EU and US full copies and the NPEB90029 demo; fallback title/category heuristics are implementation choices, not PSF format rules.</p>
+            <p>The reference snapshots are readable as supplied. No new conversion operation is registered by this documentation, and no original PS3 executable analysis is required. See the <a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-0">initialization entry in the pipeline reference</a>.</p>
+        </section>
+    </body>
+</html>

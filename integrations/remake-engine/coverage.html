@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Remake Engine conversion coverage</title>
+        <link rel="stylesheet" href="../../style/main.css">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../index.html" target="_top">Documentation</a></nav>
+        <h1>Remake Engine conversion coverage</h1>
+        <p>These summaries describe Remake Engine implementation support as reviewed on 2026-10-18. They are not research-completeness ratings or guarantees about the original game. <a href="index.html">Integration overview</a> · <a href="pipeline.html">Operation details</a></p>
+        <section class="format-coverage" aria-labelledby="format-coverage-title">
+            <div class="format-coverage-heading">
+                <h2 id="format-coverage-title">Registered format coverage</h2>
+                <p>Current output usability and conversion limits, including registered operations and the Godot GRAPH editor importer, compared with the implementation on 2026-10-18. The same colours appear in the Documentation Map. These entries describe code paths, not a fresh end-to-end conversion run.</p>
+            </div>
+            <ul class="format-coverage-legend" id="conversion-status-legend" aria-label="Conversion status legend">
+                <li><span class="coverage-icon coverage-green" role="img" aria-label="Usable output / source"></span>Usable output / source</li>
+                <li><span class="coverage-icon coverage-yellow" role="img" aria-label="Partial / mixed / needs validation"></span>Partial / mixed / needs validation</li>
+                <li><span class="coverage-icon coverage-blue" role="img" aria-label="Archive extraction only"></span>Archive extraction only</li>
+                <li><span class="coverage-icon coverage-grey" role="img" aria-label="No registered converter"></span>No registered converter</li>
+            </ul>
+            <ul class="format-coverage-list">
+                <li class="format-coverage-item" data-format-route="str" data-conversion-status="blue">
+                    <span class="coverage-icon coverage-blue" role="img" aria-label="Archive extraction"></span>
+                    <div><strong>STR → extracted resources</strong><span class="coverage-status">Archive extraction · Operation 1</span><span class="coverage-detail">Container extraction preserves payloads for their own format decoders.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="txd" data-conversion-status="green">
+                    <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
+                    <div><strong>TXD → PNG</strong><span class="coverage-status">Usable conversion · Operation 3</span><span class="coverage-detail">Named images support model textures and bitmap-font atlases.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="preinstanced" data-conversion-status="yellow">
+                    <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span>
+                    <div><strong>Preinstanced → BLEND / GLB / FBX</strong><span class="coverage-status">Partial conversion · Operation 8</span><span class="coverage-detail">Geometry import and optional exports; texture/material associations remain partial.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="graph" data-conversion-status="yellow">
+                    <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial Godot import"></span>
+                    <div><strong>GRAPH → TSGNavGraph (.res)</strong><span class="coverage-status">Partial import · Godot editor plugin</span><span class="coverage-detail">The enabled TSG Graph Importer reads GUID, nodes and edges for resource use and visualization. Edge boundaries are heuristic; no AStar3D or navigation mesh is generated. This is separate from operations.toml.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="lh2" data-conversion-status="yellow">
+                    <span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span>
+                    <div><strong>LH2 → CSV</strong><span class="coverage-status">Conversion needs validation · Operation 9</span><span class="coverage-detail">Column export is registered; binary IDs and text encoding still need validation under the engine Lua host.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="inf" data-conversion-status="green">
+                    <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
+                    <div><strong>INF + PNG → FNT</strong><span class="coverage-status">Usable conversion · Operation 15</span><span class="coverage-detail">Font metrics, glyph rectangles, surviving kerning and atlas references.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="tox" data-conversion-status="green">
+                    <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
+                    <div><strong>TOX + LH2 → SRT / VTT / CSV</strong><span class="coverage-status">Usable conversion · Operation 16</span><span class="coverage-detail">Four output languages; SS supplies labels. Movie companions match by stem and language.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="sbk" data-conversion-status="yellow">
+                    <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span>
+                    <div><strong>SBK → WAV</strong><span class="coverage-status">Partial conversion · Operation 10</span><span class="coverage-detail">Bank audio is decoded, but exhaustive export of every subsong is not requested.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="exa-snu" data-conversion-status="green">
+                    <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
+                    <div><strong>SNU → WAV</strong><span class="coverage-status">Usable conversion · Operation 11</span><span class="coverage-detail">Stream audio is decoded to Godot-compatible WAV output.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="mus" data-conversion-status="yellow">
+                    <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial conversion"></span>
+                    <div><strong>MUS → SNR / SNS → WAV segments</strong><span class="coverage-status">Partial conversion · Operation 12</span><span class="coverage-detail">Segments are usable separately; adaptive playback and MSB transition logic are not reconstructed.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="vp6" data-conversion-status="green">
+                    <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
+                    <div><strong>VP6 → OGV</strong><span class="coverage-status">Usable conversion · Operation 13</span><span class="coverage-detail">FFmpeg transcodes media; external subtitle generation is separate.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="other" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="No registered conversion"></span>
+                    <div><strong>Other extracted resource families</strong><span class="coverage-status">No registered conversion · No dedicated conversion</span><span class="coverage-detail">Character, physics, scene, effect and audio-control formats have research notes but no dedicated registered conversion.</span></div>
+                </li>
+            </ul>
+            <p><a href="../../index.html#FormatAnalysis-pipeline">All 18 registered operations</a> · <a href="../../index.html#FormatAnalysis-relationships">Relationships and shared data types</a> · <a href="../../review.md">Documentation audit</a></p>
+        </section>
+        <section class="format-coverage" aria-labelledby="xbox360-format-coverage-title">
+            <div class="format-coverage-heading">
+                <h2 id="xbox360-format-coverage-title">Registered format coverage</h2>
+                <p>Xbox 360 support compared with the registered implementation on 2026-10-18. The layout matches the PS3 summary, but statuses apply to Xbox assets. Operation numbers below identify PS3 reference workflows; these entries are not a fresh conversion run.</p>
+            </div>
+            <ul class="format-coverage-legend" aria-label="Xbox 360 conversion status legend">
+                <li><span class="coverage-icon coverage-green" role="img" aria-label="Readable source"></span>Readable source</li>
+                <li><span class="coverage-icon coverage-yellow" role="img" aria-label="Partial / mixed / needs validation"></span>Partial / mixed / needs validation</li>
+                <li><span class="coverage-icon coverage-blue" role="img" aria-label="Archive extraction only"></span>Archive extraction only</li>
+                <li><span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>Xbox conversion not supported yet / no converter</li>
+            </ul>
+            <ul class="format-coverage-list">
+                <li class="format-coverage-item" data-format-route="xbox360-str" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>STR → extracted resources</strong><span class="coverage-status">Not supported yet · PS3 operation 1 is the reference</span><span class="coverage-detail">Recorded Xbox extraction inventories are research evidence; they do not establish support in the registered extraction stage.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-itxd" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>ITXD → PNG</strong><span class="coverage-status">Not supported yet · No registered ITXD decoder</span><span class="coverage-detail">Xbox Xenos texture layout differs from PS3 TXD. Operation 3 does not provide ITXD conversion.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-preinstanced" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>XEN preinstanced → BLEND / GLB / FBX</strong><span class="coverage-status">Not supported yet · PS3 operation 8 is the reference</span><span class="coverage-detail">Xbox .dff.XEN.preinstanced and .rws.XEN.preinstanced assets cannot inherit PS3 geometry or material support.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-graph" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>GRAPH → TSGNavGraph (.res)</strong><span class="coverage-status">Xbox support unvalidated · Godot editor plugin</span><span class="coverage-detail">The PS3 GRAPH importer is a format reference; Xbox binary compatibility and resource output are not established.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-lh2" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>LH2 → CSV</strong><span class="coverage-status">Not supported yet · PS3 operation 9 is the reference</span><span class="coverage-detail">The Xbox NTSC inventory includes base, English and StringIDs tables. PS3 localization export status does not validate these variants.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-inf" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>INF + texture atlas → FNT</strong><span class="coverage-status">Not supported yet · PS3 operation 15 is the reference</span><span class="coverage-detail">The PS3 font workflow depends on decoded atlas images; the Xbox ITXD texture stage has no registered decoder.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-tox" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>TOX.XEN + LH2 → SRT / VTT / CSV</strong><span class="coverage-status">Not supported yet · PS3 operation 16 is the reference</span><span class="coverage-detail">The .XEN subtitle timing variant needs platform-specific validation; PS3 subtitle output does not establish Xbox conversion support.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-sbk" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>SBK → WAV</strong><span class="coverage-status">Not supported yet · PS3 operation 10 is the reference</span><span class="coverage-detail">The shared sound-bank name does not establish compatible Xbox payloads or complete subsong decoding.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-exa-snu" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>SNU → WAV</strong><span class="coverage-status">Not supported yet · PS3 operation 11 is the reference</span><span class="coverage-detail">Xbox stream audio is inventoried, but the registered PS3 workflow does not establish Xbox codec and payload support.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-mus" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>MUS → SNR / SNS → WAV segments</strong><span class="coverage-status">Not supported yet · PS3 operation 12 is the reference</span><span class="coverage-detail">The PS3 segment workflow does not establish Xbox music decoding; adaptive playback also remains separate.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-vp6" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>VP6 → OGV</strong><span class="coverage-status">Not supported yet in the Xbox pipeline · PS3 operation 13 is the reference</span><span class="coverage-detail">A shared media format does not establish support for Xbox extraction, source paths and companion resources in the registered workflow.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-source" data-conversion-status="green">
+                    <span class="coverage-icon coverage-green" role="img" aria-label="Readable source"></span>
+                    <div><strong>Lua and text → readable source</strong><span class="coverage-status">Readable source · No binary conversion needed</span><span class="coverage-detail">Shared Lua comparisons and root locale notes cover Xbox variants; the original game runtime is not reconstructed.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="xbox360-other" data-conversion-status="grey">
+                    <span class="coverage-icon coverage-grey" role="img" aria-label="Xbox conversion not supported yet / no converter"></span>
+                    <div><strong>Other extracted resource families</strong><span class="coverage-status">No registered Xbox conversion</span><span class="coverage-detail">XEN resources and shared character, physics, scene, effect and audio-control families remain research references.</span></div>
+                </li>
+            </ul>
+            <p><a href="../../index.html#FormatAnalysis-pipeline">Registered operation reference</a> · <a href="../../index.html#FormatAnalysis-itxd">Xbox 360 ITXD research</a> · <a href="../../index.html#docs-guide">Platform documentation conventions</a></p>
+        </section>
+    </body>
+</html>

@@ -5,12 +5,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Locale configuration (localetable.txt)</title>
         <link rel="stylesheet" href="../../../style/main.css">
+        <meta name="reference-source" content="ps3-eu-original">
+        <meta name="path-namespace" content="legacy-mixed">
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>Locale configuration (localetable.txt)</nav>
         <h1>Locale configuration (localetable.txt)</h1>
+        <aside class="source-notice" aria-label="Source and path scope">
+            <p><strong>Source scope:</strong> PS3 EU is the reference baseline; retained cross-platform and release observations keep their stated scope. New extracted references use <code>ps3-eu-extracted</code>. Historical inventories and samples retain their recorded paths; unresolved mixed paths require reconciliation before use as canonical examples. See <a href="../../../reference/sources.html#paths">roots and provenance</a>.</p>
+        </aside>
         <section class="format-summary" aria-label="Format summary">
-            <p class="eyebrow">Usable text source · five PS3 / Xbox 360 samples · 2026-10-18</p>
+            <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
             <p>The line-based <code>text/localetable.txt</code> file describes locale entries for a particular build. Five supplied copies cover PS3 EU, PS3 demo, PS3 US, Xbox 360 EU and Xbox 360 US. Their locale lists and header tokens differ. The file is separate from binary LH2 string tables and locale-reference text files extracted from STR archives.</p>
             <dl>
                 <dt>Identification</dt>
@@ -31,7 +36,7 @@
                 <li><a href="#variant-contents">Exact variant contents</a></li>
                 <li><a href="#localization-context">Localization relationships</a></li>
                 <li><a href="#related-formats">Related formats</a></li>
-                <li><a href="#operation-support">Operation support</a></li>
+                <li><a href="#operation-support">Tools and integrations</a></li>
                 <li><a href="#evidence-limits">Evidence and limitations</a></li>
             </ul>
         </nav>
@@ -563,8 +568,8 @@ StringIDs
             <p><a href="../../PARAM.SFO.html">PARAM.SFO metadata</a> compares the authoritative PS3 title IDs with the locale-table identifiers, including the demo mismatch, and documents the separate binary metadata layout.</p>
         </section>
         <section id="operation-support">
-            <h2>Operation support</h2>
-            <p>The file is readable directly; no conversion is required for inspection and no dedicated locale-configuration parser is registered in <code>operations.toml</code>. This source-disc file is not a payload produced by STR extraction. Operations 9 and 16 read LH2 resources, not this configuration. See the <a href="../pipeline.html">operation pipeline</a> for their actual inputs.</p>
+            <h2 id="operation-support-2">Tools and integrations</h2>
+            <p>Optional <a href="../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-txt-index-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
         </section>
         <section id="evidence-limits">
             <h2>Evidence and limitations</h2>

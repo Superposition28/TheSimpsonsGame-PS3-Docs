@@ -5,17 +5,69 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>L01_LandOfChocolate</title>
         <link rel="stylesheet" href="../../../style/main.css">
+        <meta name="reference-source" content="ps3-eu-extracted">
+        <meta name="path-namespace" content="legacy-mixed">
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html">USRDIR</a></nav>
         <h1>L01_LandOfChocolate</h1>
-        <p>This is the normalized folder group for this level or hub. A file-by-file local inventory has not yet been written for this page. Original source names and flattened names can differ; retain the normalized path maps when matching assets.</p>
+        <aside class="source-notice">
+            <p><strong>Reference scope:</strong> PS3 EU asset/use analysis. New paths use <code>ps3-eu-extracted</code>. Retained inventories may contain Full and FullFlattened paths and generated outputs; those historical examples remain non-canonical until reconciled. <a href="../../../reference/sources.html#paths">Path roots and provenance</a>.</p>
+        </aside>
+        <p>This page scopes asset/use analysis to this extracted level or hub group. A complete resource inventory and the original archive/member provenance have not yet been documented. Source names, extracted names and flattened aliases must be distinguished when matching assets.</p>
         <h2>Resource roles to follow</h2>
         <p>Level archives can contain rendered geometry and textures, spatial/navigation data, object properties, collision and effects. Related audio, music and movie assets may live in shared media folders rather than beside a mesh. These are general workflow roles, not a claim that every format occurs in this particular group.</p>
         <ul>
             <li><a href="../../FormatAnalysis/relationships.html">How related formats fit together</a></li>
-            <li><a href="../../FormatAnalysis/pipeline.html">Registered extraction and conversion operations</a></li>
+            <li><a href="../../FormatAnalysis/pipeline.html">Optional Remake Engine operation reference</a></li>
             <li><a href="../../FormatAnalysis/index.html">Format reference and recorded inventory</a></li>
         </ul>
+        <section id="canonical-examples">
+            <h2>Canonical resource examples</h2>
+            <p>Representative paths checked in both datasets on 2026-10-19. This is a path-reference pilot, not a complete level inventory. Containing original STR archive/member identities remain unresolved here.</p>
+            <div class="table-scroll" role="region" aria-label="Reference table" tabindex="0">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Resource suffix</th>
+                            <th scope="col">Canonical path</th>
+                            <th scope="col">Alternate path</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>.graph</code></td>
+                            <td><code>ps3-eu-extracted:L01_LandOfChocolate/loc_str/build/PS3/pal_en/assets_rws/loc/loc/graph/{74C88925-83BF-46F9-8C83-ED252A44A1DC}.graph</code></td>
+                            <td><code>ps3-eu-flattened:L01_LandOfChocolate/locStr/assetsRws/graph/{74C88925-83BF-46F9-8C83-ED252A44A1DC}_a1ffc8.graph</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>.txd</code></td>
+                            <td><code>ps3-eu-extracted:L01_LandOfChocolate/loc_global_str/build/PS3/pal_en/assets_rws/loc/loc/texture_dictionary/loc_global.txd</code></td>
+                            <td><code>ps3-eu-flattened:L01_LandOfChocolate/locGlobalStr/assetsRws/txd/loc_global_3c6811.txd</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>.preinstanced</code></td>
+                            <td><code>ps3-eu-extracted:L01_LandOfChocolate/loc_str/build/PS3/pal_en/assets/props/eps_land_of_chocolate/loc_cakebreakaway/geo/export/loc_cakebreakaway_des/model1.rws.PS3.preinstanced</code></td>
+                            <td><code>ps3-eu-flattened:L01_LandOfChocolate/locStr/assets/props/epsLandOfChocolate/cakebreakawayGeo/exportCakebreakawayDes/model1_3bcb4a.rws.PS3.preinstanced</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>.LH2</code></td>
+                            <td><code>ps3-eu-extracted:L01_LandOfChocolate/loc_str/build/PS3/pal_en/assets_rws/loc/loc/{57F37DA3-7DA3-57F3-A37D-F357A37DF357}.LH2</code></td>
+                            <td><code>ps3-eu-flattened:L01_LandOfChocolate/locStr/assetsRws/{57F37DA3-7DA3-57F3-A37D-F357A37DF357}_d10731.LH2</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>.bsp</code></td>
+                            <td><code>ps3-eu-extracted:L01_LandOfChocolate/loc/zone01_str/build/PS3/pal_en/assets/environs/loc/loc/zone01/opt/zone01.bsp</code></td>
+                            <td><code>ps3-eu-flattened:L01_LandOfChocolate/loc/zone01str/assetsEnvirons/opt/zone01_853e08.bsp</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>.toc</code></td>
+                            <td><code>ps3-eu-extracted:L01_LandOfChocolate/loc_global_str/stream.toc</code></td>
+                            <td><code>ps3-eu-flattened:L01_LandOfChocolate/locGlobalStr/stream_977be2.toc</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </body>
 </html>

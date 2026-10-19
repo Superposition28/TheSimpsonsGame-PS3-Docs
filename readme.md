@@ -1,40 +1,42 @@
-# The Simpsons Game (PS3) - Reverse Engineering Documentation
+# The Simpsons Game — file formats and game-data reference
 
-This repository contains documentation for the reverse engineering efforts of *The Simpsons Game* (2007) for the PlayStation 3. This documentation is maintained as a submodule for the main [TheSimpsonsGame-PS3](https://github.com/Superposition28/TheSimpsonsGame-PS3) game module.
+An independent technical reference for *The Simpsons Game* (2007): binary formats, original file organization, extracted resources, asset relationships, and observed use. The inspected PS3 EU full release is the baseline. Other PS3 releases, the demo and Xbox 360 research are explicitly scoped additions.
 
-## Links
-- **Main Project:** [TheSimpsonsGame-PS3](https://github.com/Superposition28/TheSimpsonsGame-PS3)
-- **STR Viewer:** [TheSimpsonsGame-PS3-FileViewer](https://github.com/Superposition28/TheSimpsonsGame-PS3-FileViewer)
-- **Documentation Repo:** [TheSimpsonsGame-PS3-Docs](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs)
-- **Hosted Docs:** [Online Documentation](https://superposition28.github.io/TheSimpsonsGame-PS3-Docs/)
+The PS3 and Xbox 360 homepages retain Pipeline Format Coverage and coloured documentation maps. This is the explicit exception to project independence: the progress overview combines research knowledge with Remake Engine support, while keeping platform-specific limitations visible.
 
-## Content Structure
+## Start here
 
-- **[Format Analysis](PS3_GAME/FormatAnalysis/index.html)**: Format inventory and links to binary layouts, examples, operation support and evidence limits.
-- **[Format Relationships](PS3_GAME/FormatAnalysis/relationships.html)**: Connections between movie timing, localization, fonts, textures, audio, music, geometry and other resource families.
-- **[Operation Pipeline](PS3_GAME/FormatAnalysis/pipeline.html)**: All 18 registered operations, their declared dependencies, inputs, outputs and implementation limits.
-- **[PARAM.SFO](PS3_GAME/PARAM.SFO.html)**: PS3 EU, US and demo metadata, binary layout and linked TOML snapshots.
-- **[PS3_GAME](PS3_GAME/index.html)**: Documentation of the root files found on the game disc.
-- **[USRDIR](PS3_GAME/USRDIR/index.html)**: Detailed documentation of the game's data directory, including level-specific archives and assets.
-- **Level Docs**: Individual documentation for each game level (L01 through L16, and Hubs), folder structure based on flattened output from the [remake module](https://github.com/Superposition28/TheSimpsonsGame-PS3)
-- **[Documentation Guide](docs.html)**: Shared page conventions, navigation and maintenance.
-- **[Documentation Review](review.md)**: Audit findings, sample checks and remaining gaps.
+- [Canonical sources and path conventions](reference/sources.html): release identity, extracted roots, verified path pairs and evidence limits.
+- [Naming reference](reference/naming.html): original folders, extracted groups, display names and resource codes.
+- [Format analysis](PS3_GAME/FormatAnalysis/index.html): root formats and their extracted child formats.
+- [Game files and asset use](PS3_GAME/USRDIR/index.html): inventories, levels, characters, media and resource associations.
+- [Format relationships](PS3_GAME/FormatAnalysis/relationships.html): joins and shared data conventions.
+- [Documentation guide](docs.html): scope, structure, evidence and contribution conventions.
+- [Remake Engine integration](integrations/remake-engine/index.html): optional project-specific operations and output conventions.
 
-## Features
+## Sources and structure
 
-- **Format Independence**: Format analyses are kept separate from game-specific instances to allow for reusable documentation.
-- **Game Context**: Each instance of a format in the game files has localized documentation focusing on its specific purpose and role.
-- **Responsive Layout**: The documentation uses simple CSS for a clean, readable layout without the need for complex build tools.
+Original paths are rooted at the directory containing `PS3_GAME`. New extracted references use `PS3-EU-Full-audio_reorg-isRenamed`. `PS3-EU-FullFlattened-audio_reorg-isRenamed` remains an alternate view and the provenance of retained historical research. Both are processed datasets, not untouched disc trees. Legacy mixed inventories are labeled until reconciled; never silently reinterpret their paths.
 
-## Maintaining the documentation
+The format tree follows container origin: root-level extensions, then STR-extracted formats beneath STR. Matching platform variants share labeled sections; Xbox-only extensions live in an `xbox` subfolder at the corresponding location. The USRDIR tree follows major game-resource groups for asset/use analysis. Deeper folders are added when substantive analysis warrants them; exact resource paths belong in inventories even when the documentation tree is shallower.
 
-Open `index.html` directly, or serve this directory with `python -m http.server` for a local preview. All HTML pages share `style/main.css`; format pages use common summary, relationship, operation-support and evidence sections. Existing byte layouts and sample dumps remain on the relevant format pages, with long hex appendices collapsed.
+## Reading and maintaining
 
-Run `python tools/check_docs.py` with Python 3.11 or later. It requires no third-party packages and checks local links/anchors, page metadata, format coverage sections and reciprocal relationship links. In a game-module checkout, it also compares the documented operation IDs, dependencies, run-all settings and referenced scripts with `operations.toml`.
+Open `index.html` directly or serve this directory with `python -m http.server`. Published pages are committed static HTML using shared CSS. No JavaScript framework, package installation or site build is required.
 
-Conversion support means a code path is registered. It does not establish that every variant is decoded, every sound-bank subsong is exported, or the original runtime behavior is reconstructed. Preserve this distinction when updating coverage labels. The `.ss.LH2` global tables observed in the EU dataset contain internal labels; EN/ES/FR/IT supply the four subtitle output languages.
+Python 3.11+ maintenance commands, with no third-party dependencies:
 
+```text
+python -B tools/check_docs.py
+python -B tools/render_reference.py --check
+python -B tools/render_home.py --check
+python -B tools/check_docs.py --module-checks
+```
 
-## License
+The first command validates the standalone documentation. The last explicitly opts into checks against a parent module checkout. After editing source/naming JSON registries, run `python -B tools/render_reference.py`. Homepage coverage uses `reference/coverage.json`; run `python -B tools/render_home.py` to refresh its counts, lists and map colours. Commit the rendered HTML. These are authoring helpers, not a reader or hosting requirement.
 
-This documentation is part of the Remake Engine project and is intended for educational and reverse engineering purposes only.
+`AudioMap.yaml` remains at its existing path and schema because Remake Engine consumes it. Game associations and consumer rename behavior are documented separately. Preserve research attribution and distinguish observed bytes, inferred meanings, source-inspected tool behavior and original runtime behavior.
+
+The documentation is maintained in [TheSimpsonsGame-PS3-Docs](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs) and can also be checked out as a module submodule. [Remake Engine's game module](https://github.com/Superposition28/TheSimpsonsGame-PS3) and the [file viewer](https://github.com/Superposition28/TheSimpsonsGame-PS3-FileViewer) are related implementations.
+
+Existing attribution and historical research are retained. This scope change does not introduce a new license grant.

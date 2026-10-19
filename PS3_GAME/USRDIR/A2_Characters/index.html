@@ -5,11 +5,16 @@
         <title>A2_Characters (simpsons_chars) - Asset Overview</title>
         <link rel="stylesheet" href="../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="reference-source" content="ps3-eu-extracted">
+        <meta name="path-namespace" content="legacy-mixed">
     </head>
     <body class="doc-page">
         <div class="doc-overview">
             <h1>A2_Characters (<code>simpsons_chars</code>)</h1>
-            <p>Character archives contain multiple resource families: rendered geometry and textures, font resources shared by the game, and separate animation/controller/collision metadata. Operation 8 imports geometry; it does not reconstruct the character animation or physics system.</p>
+            <aside class="source-notice">
+                <p><strong>Reference scope:</strong> PS3 EU asset/use analysis. New paths use <code>ps3-eu-extracted</code>. Retained inventories may contain Full and FullFlattened paths and generated outputs; those historical examples remain non-canonical until reconciled. <a href="../../../reference/sources.html#paths">Path roots and provenance</a>.</p>
+            </aside>
+            <p>Character archives contain multiple resource families: rendered geometry and textures, font resources shared by the game, and separate animation/controller/collision metadata. Geometry decoding alone does not reconstruct the character animation or physics system.</p>
             <p>Shared INF fonts and TXD-derived atlases can render LH2 UI/dialogue text, including text resolved for movie subtitles. The <a href="../../FormatAnalysis/relationships.html#characters">character relationships</a> and <a href="../../FormatAnalysis/relationships.html#media">text/font workflow</a> distinguish these connections.</p>
             <p>Contains global character archives (<code>simpsonsCharsGlobalStr</code>) and shared UI/HUD typography assets used across character HUD overlays and in-game prompts.</p>
             <h2>Embedded Font Descriptors (<code>.inf</code>) &amp; Texture Atlases (<code>.png</code>)</h2>

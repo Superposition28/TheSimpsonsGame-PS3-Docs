@@ -6,6 +6,18 @@ body {
     padding: 20px;
 }
 
+.source-notice {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid #7aa2d6;
+    background: #181818;
+    line-height: 1.6;
+}
+
+.source-notice p {
+    margin: 0;
+}
+
 .format-counts {
     width: 100%;
     max-width: 720px;
@@ -226,6 +238,15 @@ a {
     margin-top: 5px;
 }
 
+.format-coverage-item > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.coverage-summary {
+    line-height: 1.6;
+}
+
 .format-coverage-item strong {
     display: block;
     color: #e6edf3;
@@ -275,6 +296,11 @@ a {
     grid-template-columns: 10px minmax(0, 1fr);
     align-items: start;
     gap: 8px;
+}
+
+/* Text-only links must not fall into the ten-pixel status-dot column. */
+.documentation-tree a.format-status-link:not(:has(.coverage-icon)) {
+    display: block;
 }
 
 .format-status-link .coverage-icon {

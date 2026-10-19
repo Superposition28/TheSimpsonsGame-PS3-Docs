@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-10-19",
+  "notes_sha256": "7994c1663068f416d331646d1bbd860196ef7a2d34637a2f4ae164ff9c362f81",
+  "rename_database_sha256": "32351ecca3fac48813f35e4d21a007b6a576f09968bbcfee22f78574f18a83e9",
+  "folders": [
+    {
+      "original": "audiostreams",
+      "extracted": "A1_Audio",
+      "display_name": "Streamed audio",
+      "code": "",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "movies",
+      "extracted": "A1_Video",
+      "display_name": "Movies",
+      "code": "",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "frontend",
+      "extracted": "A2_Frontend",
+      "display_name": "Frontend",
+      "code": "",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "simpsons_chars",
+      "extracted": "A2_Characters",
+      "display_name": "Characters",
+      "code": "",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "spr_hub",
+      "extracted": "LHub-00_SprHub",
+      "display_name": "Springfield Hub",
+      "code": "spr",
+      "aliases": [
+        "Springfield hub"
+      ],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "loc",
+      "extracted": "L01_LandOfChocolate",
+      "display_name": "The Land of Chocolate",
+      "code": "loc",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "brt",
+      "extracted": "L02_BartmanBegins",
+      "display_name": "Bartman Begins",
+      "code": "brt",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "eighty_bites",
+      "extracted": "L03_HungryHungryHomer",
+      "display_name": "Around the World in 80 Bites",
+      "code": "80b",
+      "aliases": [
+        "Hungry Hungry Homer"
+      ],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "tree_hugger",
+      "extracted": "L04_TreeHugger",
+      "display_name": "Lisa the Tree Hugger",
+      "code": "hug",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "mob_rules",
+      "extracted": "L05_MobRules",
+      "display_name": "Mob Rules",
+      "code": "mob",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "cheater",
+      "extracted": "L06_EnterTheCheatrix",
+      "display_name": "Enter the Cheatrix",
+      "code": "che",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "dayofthedolphins",
+      "extracted": "L07_DayOfTheDolphin",
+      "display_name": "The Day of the Dolphin",
+      "code": "dod",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "colossaldonut",
+      "extracted": "L08_TheColossalDonut",
+      "display_name": "Shadow of the Colossal Donut",
+      "code": "scd",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "dayspringfieldstoodstill",
+      "extracted": "L09_Invasion",
+      "display_name": "Invasion of the Yokel-Snatchers",
+      "code": "sss",
+      "aliases": [
+        "The Day Springfield Stood Still"
+      ],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "bargainbin",
+      "extracted": "L10_BargainBin",
+      "display_name": "Bargain Bin",
+      "code": "gamehub",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "gamehub",
+      "extracted": "LHub-00_GameHub",
+      "display_name": "Game Engine hub",
+      "code": "gamehub",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "neverquest",
+      "extracted": "L11_NeverQuest",
+      "display_name": "NeverQuest",
+      "code": "nvq",
+      "aliases": [
+        "dungeon / dung",
+        "shire / shir"
+      ],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "grand_theft_scratchy",
+      "extracted": "L12_GrandTheftScratchy",
+      "display_name": "Grand Theft Scratchy",
+      "code": "gts",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "medal_of_homer",
+      "extracted": "L13_MedalOfHomer",
+      "display_name": "Medal of Homer",
+      "code": "moh",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "bigsuperhappy",
+      "extracted": "L14_BigSuperHappy",
+      "display_name": "Big Super Happy Fun Fun Game",
+      "code": "bsh",
+      "aliases": [],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "rhymes",
+      "extracted": "L15_Rhymes",
+      "display_name": "Five Characters in Search of an Author",
+      "code": "rwc",
+      "aliases": [
+        "Rhymes"
+      ],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "meetthyplayer",
+      "extracted": "L16_MeetThyPlayer",
+      "display_name": "Game Over",
+      "code": "mtp",
+      "aliases": [
+        "Meet Thy Player"
+      ],
+      "scope": "PS3 EU baseline mapping"
+    },
+    {
+      "original": "demo_frontend",
+      "extracted": "A2_Frontend",
+      "display_name": "Demo frontend",
+      "code": "",
+      "aliases": [],
+      "scope": "PS3 demo"
+    },
+    {
+      "original": "demo_scd",
+      "extracted": "L08_TheColossalDonut",
+      "display_name": "Demo Shadow of the Colossal Donut",
+      "code": "scd",
+      "aliases": [],
+      "scope": "PS3 demo"
+    }
+  ],
+  "audio_prefixes": [
+    {
+      "prefix": "80b_",
+      "meaning": "Around the World in 80 Bites"
+    },
+    {
+      "prefix": "brt_",
+      "meaning": "Bartman Begins"
+    },
+    {
+      "prefix": "hug_",
+      "meaning": "Lisa the Tree Hugger"
+    },
+    {
+      "prefix": "mob_",
+      "meaning": "Mob Rules"
+    },
+    {
+      "prefix": "che_",
+      "meaning": "Enter the Cheatrix"
+    },
+    {
+      "prefix": "dod_",
+      "meaning": "The Day of the Dolphin"
+    },
+    {
+      "prefix": "moh_",
+      "meaning": "Medal of Homer"
+    },
+    {
+      "prefix": "bsh_",
+      "meaning": "Big Super Happy Fun Fun Game"
+    },
+    {
+      "prefix": "gts_",
+      "meaning": "Grand Theft Scratchy"
+    },
+    {
+      "prefix": "rwc_",
+      "meaning": "Five Characters in Search of an Author"
+    },
+    {
+      "prefix": "sss_",
+      "meaning": "Invasion of the Yokel-Snatchers (a.k.a. “The Day Springfield Stood Still”)"
+    },
+    {
+      "prefix": "spr_",
+      "meaning": "Springfield hub/house/interiors"
+    },
+    {
+      "prefix": "gamehub_",
+      "meaning": "Bargain Bin / Game Engine hub"
+    },
+    {
+      "prefix": "nvq_",
+      "meaning": "NeverQuest"
+    },
+    {
+      "prefix": "mtp_",
+      "meaning": "Meet Thy Player / Game Over (Heaven)"
+    }
+  ]
+}

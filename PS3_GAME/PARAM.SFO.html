@@ -5,12 +5,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>PS3 metadata (PARAM.SFO)</title>
         <link rel="stylesheet" href="../style/main.css">
+        <meta name="reference-source" content="ps3-eu-original">
+        <meta name="path-namespace" content="legacy-mixed">
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html" target="_top">Documentation</a><span>/</span><a href="index.html">PS3_GAME</a><span>/</span>PARAM.SFO</nav>
         <h1>PS3 metadata (PARAM.SFO)</h1>
+        <aside class="source-notice" aria-label="Source and path scope">
+            <p><strong>Source scope:</strong> PS3 EU is the reference baseline; retained cross-platform and release observations keep their stated scope. New extracted references use <code>ps3-eu-extracted</code>. Historical inventories and samples retain their recorded paths; unresolved mixed paths require reconciliation before use as canonical examples. See <a href="../reference/sources.html#paths">roots and provenance</a>.</p>
+        </aside>
         <section class="format-summary" aria-label="Format summary">
-            <p class="eyebrow">Parsed metadata and readable TOML references · PS3 EU / US / demo · 2026-10-18</p>
+            <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
             <p>PARAM.SFO is a PSF key/value metadata file beside the PS3 game's USRDIR. It records title identity, display names, versions and platform flags. This page documents all three local PS3 copies and their binary layout; the demo package uses the same format at its own package root.</p>
             <dl>
                 <dt>Identification</dt>
@@ -35,7 +40,7 @@
                 <li><a href="#index-inventories">Per-copy index inventories</a></li>
                 <li><a href="#toml">What the TOML references preserve</a></li>
                 <li><a href="#related-formats">Related files and formats</a></li>
-                <li><a href="#operation-support">Operation support</a></li>
+                <li><a href="#operation-support">Tools and integrations</a></li>
                 <li><a href="#evidence-limits">Evidence, identities and limitations</a></li>
             </ul>
         </nav>
@@ -891,9 +896,8 @@ reserved  = file[value_pos : value_pos + DataMaxLength]</code></pre>
             </ul>
         </section>
         <section id="operation-support">
-            <h2>Operation support</h2>
-            <p>Initialization operation 0 reads PARAM.SFO through the module's existing metadata reader to help classify PS3 source builds and report title/version information. This is source validation, not an independently registered SFO-to-TOML conversion. The known IDs classify the EU and US full copies and the NPEB90029 demo; fallback title/category heuristics are implementation choices, not PSF format rules.</p>
-            <p>The reference snapshots are readable as supplied. No new conversion operation is registered by this documentation, and no original PS3 executable analysis is required. See the <a href="FormatAnalysis/pipeline.html#op-0">initialization entry in the pipeline reference</a>.</p>
+            <h2 id="operation-support-2">Tools and integrations</h2>
+            <p>Optional <a href="../integrations/remake-engine/format-support.html#format-ps3-game-param-sfo-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
         </section>
         <section id="evidence-limits">
             <h2>Evidence, identities and limitations</h2>

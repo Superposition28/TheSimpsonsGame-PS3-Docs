@@ -5,11 +5,16 @@
         <title>A2_Frontend (frontend) - Asset Overview</title>
         <link rel="stylesheet" href="../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="reference-source" content="ps3-eu-extracted">
+        <meta name="path-namespace" content="legacy-mixed">
     </head>
     <body class="doc-page">
         <div class="doc-overview">
             <h1>A2_Frontend (<code>frontend</code>)</h1>
-            <p>Frontend resources combine interface modules, shared fonts/textures and menu-related assets. UIX font-name strings are observations; a complete UIX-to-INF resource resolver is not implemented. Operation 15 converts INF with a matching PNG atlas, while LH2 supplies localized strings.</p>
+            <aside class="source-notice">
+                <p><strong>Reference scope:</strong> PS3 EU asset/use analysis. New paths use <code>ps3-eu-extracted</code>. Retained inventories may contain Full and FullFlattened paths and generated outputs; those historical examples remain non-canonical until reconciled. <a href="../../../reference/sources.html#paths">Path roots and provenance</a>.</p>
+            </aside>
+            <p>Frontend resources combine interface modules, shared fonts/textures and menu-related assets. UIX font-name strings are observations; a complete UIX-to-INF resource resolver has not been established. INF describes glyph metrics and atlas coordinates, TXD holds texture data, and LH2 supplies localized strings.</p>
             <p>See <a href="../../FormatAnalysis/relationships.html#media">localized text and fonts</a> and <a href="../../FormatAnalysis/relationships.html#world-ui">interface resource relationships</a>. Converting an atlas or FNT alone does not reproduce the original menu behavior.</p>
             <p>Contains front-end menu archives (<code>frontendStr</code>, <code>frontendGlobalStr</code>), APT UIX layouts, texture dictionaries, and shared menu/subtitle typography.</p>
             <h2>Embedded Font Descriptors (<code>.inf</code>) &amp; Texture Atlases (<code>.png</code>)</h2>

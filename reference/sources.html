@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Canonical sources and path conventions</title>
+        <link rel="stylesheet" href="../style/main.css">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html" target="_top">Documentation</a></nav>
+        <h1>Canonical sources and path conventions</h1>
+        <p>The primary reference is the inspected PS3 EU full release. Extracted resources use the non-flattened Full view. Other releases and platforms supplement this baseline; differences must be attributed to their source.</p>
+        <h2 id="sources">Source identities and roots</h2>
+        <p>Paths use forward slashes and are relative to the named root, never a contributor's drive. Source identifiers describe the inspected local reference, not every build sold in that region.</p>
+        <div class="table-scroll" role="region" aria-label="Reference table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Source ID</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Root convention</th>
+                        <th scope="col">Scope</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>ps3-eu-original</code></td>
+                        <td>Canonical original source</td>
+                        <td><code>&lt;PS3-EU-disc-root&gt;/</code></td>
+                        <td>Inspected PS3 EU full release; PS3_GAME is beneath this root.</td>
+                    </tr>
+                    <tr>
+                        <td><code>ps3-eu-extracted</code></td>
+                        <td>Canonical extracted reference</td>
+                        <td><code>PS3-EU-Full-audio_reorg-isRenamed/</code></td>
+                        <td>STR extraction plus renamed base folders and reorganized audio; generated outputs require separate labeling.</td>
+                    </tr>
+                    <tr>
+                        <td><code>ps3-eu-flattened</code></td>
+                        <td>Alternate / historical extracted view</td>
+                        <td><code>PS3-EU-FullFlattened-audio_reorg-isRenamed/</code></td>
+                        <td>Additional path normalization and filename suffixes; retained historical measurements keep this provenance.</td>
+                    </tr>
+                    <tr>
+                        <td><code>ps3-us</code></td>
+                        <td>Supplementary</td>
+                        <td><code>&lt;PS3-US-source-root&gt;/</code></td>
+                        <td>Original and extracted roots must be stated per observation.</td>
+                    </tr>
+                    <tr>
+                        <td><code>ps3-demo</code></td>
+                        <td>Supplementary</td>
+                        <td><code>&lt;PS3-demo-package-root&gt;/</code></td>
+                        <td>NPEB90029 metadata reference; do not assume full-release layouts.</td>
+                    </tr>
+                    <tr>
+                        <td><code>xbox360</code></td>
+                        <td>Supplementary</td>
+                        <td><code>&lt;Xbox360-source-root&gt;/</code></td>
+                        <td>Specify EU/US/NTSC and release per observation; historical NTSC inventory identity is not fully established.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="identity">Baseline release and snapshot</h2>
+        <p>Title ID: <code>BLES00142</code>; APP_VER: <code>01.00</code>; VERSION: <code>01.00</code>. These values come from the inspected PARAM.SFO and the retained <a href="../PS3_GAME/EU.PARAM.SFO.toml">metadata transcription</a>.</p>
+        <p>PARAM.SFO SHA-256: <code>f9dc3833ab6fe64633273bda228ec2ef81766b72b53dc0f0e2b9154f8b31c38f</code>. This fingerprints the metadata file only; no complete disc/build checksum has been established.</p>
+        <p>Reference snapshot inspected on 2026-10-19. Full and FullFlattened already include base-folder renaming and audio reorganization. FullFlattened additionally collapses paths and can add six-hex filename suffixes. Neither is the original disc tree. Generated exports in either directory are not automatically original game resources.</p>
+        <h2 id="paths">Path conventions</h2>
+        <ul>
+            <li><code>ps3-eu-original:PS3_GAME/USRDIR/...</code> starts at the directory containing PS3_GAME.</li>
+            <li><code>ps3-eu-extracted:A2_Frontend/...</code> starts at PS3-EU-Full-audio_reorg-isRenamed.</li>
+            <li><code>ps3-eu-flattened:A2_Frontend/...</code> starts at PS3-EU-FullFlattened-audio_reorg-isRenamed.</li>
+            <li>A page or inventory must declare its source and path namespace. Historical mixed inventories are explicitly marked as awaiting path-level reconciliation; they must not be interpreted as canonical paths.</li>
+            <li>New examples use the canonical extracted namespace. Retained flattened measurements keep their original provenance until checked against Full. Display names and aliases are described in <a href="naming.html">the naming reference</a>.</li>
+        </ul>
+        <h2 id="provenance">Resource provenance and evidence</h2>
+        <p>Identify important samples by source release, original containing archive, archive member or extraction identifier, canonical extracted path, and optional flattened alias. Record unknown archive membership as unresolved. Do not infer original membership from a renamed folder alone.</p>
+        <p>The local normalizer map contains 55,998 rows. Its original_path field is relative to the already reorganized Full dataset, not the original disc. Its new_path field is relative to FullFlattened. The map includes copied resources and generated files; its row count is not a source-file inventory.</p>
+        <p>Mapping SHA-256: <code>d44122fc72a5990852e3cbee5046c371942abaf182f1f42b20603ded33412599</code>. Local map location: <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed/normalized_map.json</code>. The docs do not require this local checkout to render or validate their core structure.</p>
+        <h2 id="verified-pairs">Verified path pairs</h2>
+        <p>The following representative pairs existed and had identical SHA-256 values on the snapshot date. This verifies only these pairs, not every mapped resource or archive origin.</p>
+        <div class="table-scroll" role="region" aria-label="Reference table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Family</th>
+                        <th scope="col">Canonical extracted path</th>
+                        <th scope="col">Flattened alias</th>
+                        <th scope="col">SHA-256 of both files</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Font</td>
+                        <td><code>A2_Characters/simpsons_chars_global_str/build/PS3/pal_en/assets/shared/fonts/buttons.inf</code></td>
+                        <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsShared/fonts/buttons_37bb42.inf</code></td>
+                        <td><code>911f56166cf43733be994c766eeb935676568230956f07db0b1e286a638382c3</code></td>
+                    </tr>
+                    <tr>
+                        <td>Subtitle timing</td>
+                        <td><code>A2_Frontend/frontend_str/build/PS3/pal_en/assets/movies/tox/80b_igc01.tox.PS3</code></td>
+                        <td><code>A2_Frontend/frontendStr/assets/moviesTox/80b_igc01_8cd0c6.tox.PS3</code></td>
+                        <td><code>afd77ff8dcd2ccea9c1976b0222000f8ef8e2be2977e47db3c2e5011a3b5ee2e</code></td>
+                    </tr>
+                    <tr>
+                        <td>Localization</td>
+                        <td><code>A2_Characters/simpsons_chars_global_str/build/PS3/pal_en/assets_rws/simpsons_chars/simpsons_chars/{664CEB2C-EB2C-664C-2CEB-4C662CEB4C66}.LH2</code></td>
+                        <td><code>A2_Characters/simpsonsCharsGlobalStr/assetsRws/{664CEB2C-EB2C-664C-2CEB-4C662CEB4C66}_f917a2.LH2</code></td>
+                        <td><code>8d5e3993d2bdaf2aed83090e1a5d81a9614155cc5e46b46010fb0f04a3af5d52</code></td>
+                    </tr>
+                    <tr>
+                        <td>Navigation</td>
+                        <td><code>L01_LandOfChocolate/loc_str/build/PS3/pal_en/assets_rws/loc/loc/graph/{74C88925-83BF-46F9-8C83-ED252A44A1DC}.graph</code></td>
+                        <td><code>L01_LandOfChocolate/locStr/assetsRws/graph/{74C88925-83BF-46F9-8C83-ED252A44A1DC}_a1ffc8.graph</code></td>
+                        <td><code>3d0fcb4a04f2025af84cb9ca1edd7a62115903146f7aad44f9f31948ba7fa4fe</code></td>
+                    </tr>
+                    <tr>
+                        <td>Texture</td>
+                        <td><code>A2_Characters/GlobalFolder/chars/bart_bc0_grp0_ss1_h0_str/build/PS3/pal_en/assets_rws/simpsons_chars/simpsons_chars/texture_dictionary/GlobalFolder/chars/bart_bc0_grp0_ss1_h0.txd</code></td>
+                        <td><code>A2_Characters/globalFolder/chars/bartBc0grp0ss1h0str/assetsRws/txdChars/bart_bc0_grp0_ss1_h0_f83742.txd</code></td>
+                        <td><code>a36b4e83c93477adb43013c213beda9cecb1b90870a5fb42f6bf5301d5df6d07</code></td>
+                    </tr>
+                    <tr>
+                        <td>Video</td>
+                        <td><code>A1_Video/en/80b_igc01.vp6</code></td>
+                        <td><code>A1_Video/en/80b_igc01_cf26e3.vp6</code></td>
+                        <td><code>db44f88d10795c1b1b1d190074f6d60d31820f89b9011a8e71b00a59cbe28d4f</code></td>
+                    </tr>
+                    <tr>
+                        <td>Music</td>
+                        <td><code>A1_Audio/80b_mus.mus</code></td>
+                        <td><code>A1_Audio/80b_mus.mus</code></td>
+                        <td><code>5470e89a8387e5a380c6f3a05378a5e6a8d781970133853e2000edef2475dc81</code></td>
+                    </tr>
+                    <tr>
+                        <td>Dialogue</td>
+                        <td><code>A1_Audio/EN/8bit-bart_simpson/Bart Simpson (8-bit)/d_brt8_xxx_00033c4.exa.snu</code></td>
+                        <td><code>A1_Audio/EN/8bit-bart_simpson/Bart Simpson (8-bit)/d_brt8_xxx_00033c4.exa.snu</code></td>
+                        <td><code>f12fd4d43aa7c85baf4f25e582a7efecd57c524f2d7e3805c8ba32ade0e88393</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="supplementary">Supplementary observations</h2>
+        <p>PS3 US, PS3 demo and Xbox 360 observations must state platform, region, release identity when known, and path root. Historical Xbox NTSC inventories retain that label; they are not silently relabeled as the local Xbox EU set. Matching extensions can share a page with labeled variant sections. Xbox-only extensions remain in an xbox subfolder at the corresponding container location.</p>
+        <h2 id="migration">Historical research and migration</h2>
+        <p>Existing byte layouts, measurements and sample dumps are retained. Source notices distinguish legacy mixed paths from new canonical references. Unresolved paths, archive membership and whole-build identity remain research tasks, not assumed equivalences. Tool behavior is supporting evidence and must be distinguished from observed original-game behavior.</p>
+        <p>Machine-readable source: <a href="sources.json">sources.json</a>. Regenerate this page with <code>python tools/render_reference.py</code>; normal reading and hosting require no generation step.</p>
+    </body>
+</html>

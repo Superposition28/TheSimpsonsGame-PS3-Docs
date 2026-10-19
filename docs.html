@@ -2,67 +2,50 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>The Simpsons Game - Documentation Site Guide</title>
-        <link rel="stylesheet" href="style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Documentation guide</title>
+        <link rel="stylesheet" href="style/main.css">
     </head>
     <body class="doc-page">
-        <h1>Documentation Site Guide</h1>
-        <p>This page describes the structure and maintenance conventions for the static reverse-engineering documentation site.</p>
-        <h2>Site Shell</h2>
-        <p><a href="./index.html">index.html</a> is the documentation shell. It provides the shared top bar, home page, coverage summary, documentation map, hash navigation, and embedded content pages.</p>
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="index.html" target="_top">Documentation</a></nav>
+        <h1>Documentation guide</h1>
+        <p>This site is a game and file-format reference usable by independent parsers, viewers, extraction tools and game projects. The PS3 EU full release is the canonical baseline; other releases and platforms add explicitly attributed observations.</p>
+        <h2 id="sources">Canonical sources and paths</h2>
+        <p>Read <a href="reference/sources.html">source identities and path conventions</a> before adding file references. New extracted paths use PS3-EU-Full-audio_reorg-isRenamed. FullFlattened is an alternate namespace, not an interchangeable root. Preserve the provenance of historical measurements. State the original archive and member where verified; mark missing provenance unresolved.</p>
+        <p><a href="reference/naming.html">The naming reference</a> separates source folders, extracted names, internal codes and display names. Supplementary PS3 US, demo and Xbox observations must identify their source and cannot silently redefine the EU baseline.</p>
+        <h2 id="trees">Two complementary trees</h2>
+        <h3>Format analysis</h3>
+        <p>Keep root-level extensions beneath FormatAnalysis. Formats extracted from STR remain beneath STR/imbedded-formats. Follow the same container-origin principle for other embedded resources. Functional topic indexes may cross-link without relocating specifications.</p>
+        <p>When a variant uses the same extension, add a clearly labeled platform/release section to the existing page. An Xbox-only extension gets its own file in an xbox subfolder at the corresponding location. Similar names do not establish compatible layouts.</p>
+        <h3>Game files and asset/use analysis</h3>
+        <p>USRDIR follows the major resource groups where most game data lives. It documents inventories, characters, levels, audio, movies, resource associations and implementation guidance. Link a concrete asset to its format specification and link specifications back to meaningful examples.</p>
+        <p>Keep current major folders. Mirror deeper source directories when they carry enough distinct analysis to justify a page; otherwise use relative-path inventories within the nearest useful page. This initial policy leaves the final mirroring depth open. Every page states its dataset and directory scope; a documentation path is not itself a game path.</p>
+        <h2 id="format-pages">Format-page contract</h2>
         <ul>
-            <li>Each documented destination is loaded in an iframe with a stable <code>id</code>.</li>
-            <li>Navigation uses URL hashes such as <code>#USRDIR-A1_Audio</code>; CSS displays the iframe whose ID matches the current hash.</li>
-            <li>Subpages contain only their page content. Shared navigation stays in the shell, so it can be updated without editing every document.</li>
-            <li>Pages are static HTML and require no build tooling or server.</li>
+            <li>Purpose and role in the game.</li>
+            <li>Identification, platform/release scope, byte order and encoding.</li>
+            <li>Known layouts, alignment, pointer bases, units and parsing constraints.</li>
+            <li>Related resources with the actual join and its evidence.</li>
+            <li>Examples, unknowns, conflicting interpretations and sample provenance.</li>
+            <li>Optional links to tools and project integrations.</li>
         </ul>
-        <h2>Hierarchy and Up Navigation</h2>
-        <p>The document tree follows the normalized PS3 game layout. Section containers use <code>data-id</code>, while leaf documents use iframe IDs.</p>
-        <ul>
-            <li><code>PS3_GAME</code> contains <code>USRDIR</code>.</li>
-            <li><code>USRDIR</code> contains the audio, video, character, frontend, level, and hub pages.</li>
-            <li><code>FormatAnalysis</code> contains the format notes and their linked format pages.</li>
-            <li>The Up button resolves a section route to its parent <code>data-id</code> container, or a leaf iframe route to its nearest containing section. For example, <code>#USRDIR-A1_Audio</code> resolves upward to <code>#USRDIR</code>.</li>
-            <li>Top-level routes resolve to the empty hash, which returns to the home page.</li>
-        </ul>
-        <h2>Content Organization</h2>
-        <p>The site has two complementary documentation segments. EU files are the main reference set; equivalent US content may omit some files.</p>
-        <h3>GameFiles Analysis</h3>
-        <p>The game-file analysis tree mirrors the normalized PS3 game layout. Its pages document specific files and directories in their in-game context.</p>
-        <ul>
-            <li><code>PS3_GAME/USRDIR</code> documents the game-data tree, its level-specific resources, and their purpose in the game.</li>
-            <li><code>A1_Audio</code> documents <code>.exa.snu</code> dialogue and ambient audio plus <code>.mus</code> containers.</li>
-            <li><code>A1_Video</code> documents <code>.vp6</code> video assets.</li>
-        </ul>
-        <h3>Format Analysis</h3>
-        <p><code>PS3_GAME/FormatAnalysis</code> documents file formats themselves: their structure, metadata, observed variants, extraction paths, and known use. Its folder layout follows where each format originates.</p>
-        <ul>
-            <li>Place documentation relative to the source file location. For example, <a href="PS3_GAME/PARAM.SFO.html">PS3_GAME/PARAM.SFO.html</a> documents platform metadata beside the root overview. Existing USRDIR-format notes remain indexed under <code>FormatAnalysis</code>.</li>
-            <li>Most embedded formats originate from extracted <code>.STR</code> archives, so their pages live under <code>FormatAnalysis/STR/imbedded-formats</code>.</li>
-            <li>This keeps container-level <code>.STR</code> notes together with the formats extracted from those containers.</li>
-        </ul>
-        <h3>Xbox 360 documentation alongside PS3</h3>
-        <p>These docs are built around the PS3 version, including the literal documentation file tree, which mirrors the normalized PS3 layout. Xbox 360 documentation may exist alongside PS3 documentation, but the documentation tree always follows the PS3 layout, never the Xbox 360 source-directory layout.</p>
-        <ul>
-            <li>Place separate Xbox 360 documents in a subfolder named <code>xbox</code> at the closest appropriate location within the PS3 documentation tree.</li>
-            <li>For formats extracted from STR archives that exist only in the Xbox 360 version, use <code>reversing/docs/PS3_GAME/FormatAnalysis/STR/imbedded-formats/xbox/</code>. Keep those pages inside that subfolder rather than directly in <code>reversing/docs/PS3_GAME/FormatAnalysis/STR/imbedded-formats/</code>. For example, <a href="PS3_GAME/FormatAnalysis/STR/imbedded-formats/xbox/itxd.html">Xbox 360 .itxd</a> lives there.</li>
-            <li>When differences between the PS3 and Xbox 360 variants are small enough to explain clearly together, document them in the existing PS3 page and label the Xbox 360 differences. A separate Xbox page is unnecessary in that case; the <a href="PS3_GAME/FormatAnalysis/TXT/index.html">root locale configuration</a> is one shared reference.</li>
-        </ul>
-        <p>The <a href="index.html#home-xbox360" target="_top">Xbox 360 home page</a> uses the same coverage and documentation-map layout as the PS3 home page, with Xbox-specific support labels. Many format variants are not cross-compatible and are not yet supported by the conversion stages. Initialization can set up Xbox 360 source files, but downstream extraction and conversion currently target PS3. A shared format name, a PS3 reference link, or an Xbox research page does not establish Xbox conversion support.</p>
-        <h2>Format-page conventions</h2>
-        <p>Use the shared stylesheet and viewport metadata. Every format page should state purpose, identification, byte order/text encoding, relationships, registered operation support and evidence limits, then preserve the detailed field layout, examples and unresolved questions. Use scrollable table wrappers and collapsible sample-dump appendices.</p>
-        <p>Cross-links must explain the join: shared numeric ID, embedded filename, cleaned movie stem, same binary family, or contextual association. Distinguish implemented/observed links from tentative ones. Do not infer hash algorithms, direct dependencies or runtime behavior solely from a directory name. Binary parsing examples must be marked as illustrative when no converter is registered.</p>
-        <p><a href="PS3_GAME/FormatAnalysis/relationships.html">Format relationships</a> gives the shared data conventions; <a href="PS3_GAME/FormatAnalysis/pipeline.html">the operation reference</a> records IDs, dependencies and outputs. Byte-level details belong on format pages; directory overviews should stay focused on navigation and resource roles.</p>
-        <h2>Validation and maintenance</h2>
-        <p>Run <code>python tools/check_docs.py</code> from this documentation directory. It checks local targets, anchors, shell routes, stylesheet/viewport coverage, format coverage sections and reciprocal relationship links. When the module checkout is present it also compares documented operation IDs/dependencies and local operation-script references with the manifest. Review representative format pages and overview pages at desktop and narrow widths after CSS changes.</p>
-        <p>Keep proprietary source-file paths as text rather than links outside the hosted site. Source links to module operation code may point to the separate module repository. Historical notes in <code>oldMDonly/</code> are retained research, not automatically the latest specification.</p>
-        <h2>Adding a Page</h2>
+        <p>Separate structural knowledge, semantic confidence, sample scope and implementation support. Do not call a format complete because one converter exports it. Source-inspected importer behavior is attributed evidence, not a substitute for validating original bytes or runtime semantics. Illustrative parsers are labeled even when a converter exists elsewhere.</p>
+        <h2 id="integrations">Project-specific material</h2>
+        <p><a href="integrations/remake-engine/index.html">Remake Engine integration</a> owns operation IDs, dependencies, normalization rules, generated outputs and editor-specific usage. Core pages can cite implementations without making those tools a prerequisite. AudioMap remains in the audio analysis tree with its existing consumer contract.</p>
+        <p>The PS3 and Xbox 360 homepages are an explicit exception: Pipeline Format Coverage combines format research progress and Remake Engine implementation progress. Keep the older coverage-list and coloured Documentation Map layout on both platforms. Green means usable output or readable source; yellow means partial implementation or validation pending; blue means analysis only; orange means research TODO or inventory only; grey means no verified platform support. These are progress labels, not percentages of complete format understanding.</p>
+        <h2 id="shell">Static shell and compatibility</h2>
+        <p>index.html is the shared shell. Hash links select lazy iframes. Existing routes and anchors are retained, including the former pipeline URL, which is now a compatibility entry to the integration reference. The Up link uses data-id containers and iframe IDs to find a parent route. Content pages also open directly.</p>
+        <p><code>reference/coverage.json</code> owns homepage status labels, evidence notes and platform-specific colours. The tracked counts, coverage lists and map dots are committed HTML generated by <code>python -B tools/render_home.py</code>. Run it after changing the registry; <code>--check</code> detects stale output. The site works directly from a file URL without loading JSON at runtime. Research/source scope links remain below the main coverage and map panels.</p>
+        <h2 id="maintenance">Validation and maintenance</h2>
+        <p>Run <code>python -B tools/check_docs.py</code> for standalone validation. Run <code>python -B tools/check_docs.py --module-checks</code> for optional comparisons with operations.toml and script paths in a module checkout. The core checks never require proprietary game data or the parent project.</p>
+        <p>Sources and naming pages are generated from committed JSON using <code>python -B tools/render_reference.py</code>; <code>--check</code> detects stale output. Use shared CSS, viewport metadata, scrollable tables and collapsed sample appendices. Preserve preformatted research content and attribution. Review changed layouts at desktop and narrow widths.</p>
+        <h2 id="adding">Adding a page</h2>
         <ol>
-            <li>Create the content-only HTML page in the appropriate directory of the PS3-based tree. Use an <code>xbox</code> subfolder for separate Xbox 360 documentation, or update the shared PS3 page when the variant differences are minimal.</li>
-            <li>Add an iframe with a unique ID and matching source path to <code>index.html</code>.</li>
-            <li>Add a matching hash link to the appropriate PS3 or Xbox 360 home-page documentation map, with a platform-specific support label.</li>
-            <li>When the new page belongs under a new branch, wrap the related iframes in a section with a <code>data-id</code> so Up navigation has a parent route.</li>
+            <li>Choose the format-origin tree or USRDIR asset/use tree.</li>
+            <li>Declare source and path scope; separate observations from assumptions.</li>
+            <li>Add the content page and reciprocal relationships where relevant.</li>
+            <li>Add a unique iframe route and links in the appropriate documentation map. New structural branches get a data-id wrapper for Up navigation.</li>
+            <li>Run the checker, review the rendered page and preserve old URLs when replacing existing material.</li>
         </ol>
     </body>
 </html>

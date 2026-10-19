@@ -1,0 +1,785 @@
+{
+  "schema_version": 1,
+  "reviewed": "2026-10-19",
+  "platforms": {
+    "ps3": {
+      "name": "PS3"
+    },
+    "xbox360": {
+      "name": "Xbox 360"
+    }
+  },
+  "legend": {
+    "green": {
+      "label": "Usable output / readable source",
+      "short": "usable / readable"
+    },
+    "yellow": {
+      "label": "Partial implementation / needs validation",
+      "short": "partial"
+    },
+    "blue": {
+      "label": "Analysis only",
+      "short": "analysis only"
+    },
+    "orange": {
+      "label": "Research TODO / inventory only",
+      "short": "research TODO"
+    },
+    "grey": {
+      "label": "No verified platform support",
+      "short": "unverified"
+    }
+  },
+  "formats": [
+    {
+      "route": "FormatAnalysis-str",
+      "label": ".STR",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "green",
+          "status": "Container extraction · Operation 1",
+          "detail": "Container extraction preserves payloads for their own format decoders."
+        },
+        "xbox360": {
+          "colour": "blue",
+          "status": "Xbox extraction observations",
+          "label": ".STR",
+          "detail": "Historical Xbox extraction inventories exist. They do not establish support in the registered PS3 pipeline."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-txd",
+      "label": ".txd",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "green",
+          "status": "Usable conversion · Operation 3",
+          "detail": "Named images support model textures and bitmap-font atlases."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-itxd",
+      "label": ".itxd",
+      "aliases": [],
+      "platforms": {
+        "xbox360": {
+          "colour": "blue",
+          "status": "Xbox texture layout analyzed",
+          "label": ".itxd",
+          "detail": "Xbox-specific dictionary layout and Xenos untiling are documented. Research pseudocode is not a verified registered decoder."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-preinstanced",
+      "label": ".preinstanced",
+      "aliases": [
+        "FormatAnalysis-dff",
+        "FormatAnalysis-rws"
+      ],
+      "platforms": {
+        "ps3": {
+          "colour": "yellow",
+          "status": "Partial conversion · Operation 8",
+          "detail": "Geometry import and optional exports; texture/material associations remain partial."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".preinstanced",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-lh2",
+      "label": ".lh2",
+      "aliases": [
+        "FormatAnalysis-lh2-base",
+        "FormatAnalysis-lh2-en",
+        "FormatAnalysis-lh2-es",
+        "FormatAnalysis-lh2-fr",
+        "FormatAnalysis-lh2-it",
+        "FormatAnalysis-lh2-ss"
+      ],
+      "platforms": {
+        "ps3": {
+          "colour": "yellow",
+          "status": "Conversion needs validation · Operation 9",
+          "detail": "Column export is registered; binary IDs and text encoding still need validation under the engine Lua host."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".lh2",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-exa-snu",
+      "label": ".EXA.SNU",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "green",
+          "status": "Usable conversion · Operation 11",
+          "detail": "Stream audio is decoded to Godot-compatible WAV output."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".EXA.SNU",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-mus",
+      "label": ".MUS",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "yellow",
+          "status": "Partial conversion · Operation 12",
+          "detail": "Segments are usable separately; adaptive playback and MSB transition logic are not reconstructed."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".MUS",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-vp6",
+      "label": ".VP6",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "green",
+          "status": "Usable conversion · Operation 13",
+          "detail": "FFmpeg transcodes media; external subtitle generation is separate."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".VP6",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-graph",
+      "label": ".graph",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "yellow",
+          "status": "Partial import · Godot editor plugin",
+          "detail": "The enabled TSG Graph Importer reads GUID, nodes and edges for resource use and visualization. Edge boundaries are heuristic; no AStar3D or navigation mesh is generated. This is separate from operations.toml."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".graph",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-inf",
+      "label": ".inf",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "green",
+          "status": "Usable conversion · Operation 15",
+          "detail": "Font metrics, glyph rectangles, surviving kerning and atlas references."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".inf",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-tox",
+      "label": ".tox.PS3",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "green",
+          "status": "Usable conversion · Operation 16",
+          "detail": "Four output languages; SS supplies labels. Movie companions match by stem and language."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".tox.XEN",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-sbk",
+      "label": ".sbk",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "yellow",
+          "status": "Partial conversion · Operation 10",
+          "detail": "Bank audio is decoded, but exhaustive export of every subsong is not requested."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".sbk",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-bin",
+      "label": ".BIN",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "orange",
+          "status": "Research TODO / inventory only",
+          "detail": "Signature, digest and release metadata are recorded. Executable structure and code behavior have not been analyzed here."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".xex (PS3 executable reference)",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-lua",
+      "label": ".LUA",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "green",
+          "status": "Readable source / checked layout",
+          "detail": "Original Lua source is readable. The game API and original runtime behavior are not thereby implemented by a remake."
+        },
+        "xbox360": {
+          "colour": "green",
+          "status": "Readable original source",
+          "label": ".LUA",
+          "detail": "Xbox scripts are listed alongside the PS3 source inventory. Game API and runtime behavior remain separate from readable source."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-acs",
+      "label": ".acs.PS3",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "The expanded name and sphere/capsule interpretation are hypotheses. No field-by-field bone-binding join or collision importer has been established."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".acs.XEN",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-alb",
+      "label": ".alb",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "The ALB/CTB pairing is supported by shared names and IDs in samples. A complete event-to-stream resolver is not registered; unidentified fields and record variations need further validation."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".alb",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-amb",
+      "label": ".amb",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "The name expansion and precise runtime role remain tentative. Audio and interaction contexts must be distinguished per sample; neither a universal AMB schema nor an event resolver is implemented in the operation pipeline."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".amb",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-aub",
+      "label": ".aub",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "orange",
+          "status": "Research TODO / inventory only",
+          "detail": "Inventory and research scope only; the prior ALB/CTB description was not an AUB byte-layout specification."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".aub",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-bbn",
+      "label": ".bbn.PS3",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Binding-table and shared-skeleton interpretations are based on the player_default sample. Animation/IK uses and cross-file numeric joins have not been validated by a registered importer."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".bbn.XEN",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-bnk",
+      "label": ".bnk.PS3",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Clip compression, transitions and bindings are not completely decoded. This animation-bank suffix is distinct from the .sbk audio-bank suffix; operation 8 does not decode BNK animation."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".bnk.XEN",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-bsp",
+      "label": ".bsp",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Node/lump semantics and collision/visibility uses remain partly inferred. This is not a specification for an unrelated BSP family, and operation 8 does not import these files."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".bsp",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-cec",
+      "label": ".cec.ps3",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "No dedicated controller-event converter is registered. A contextual relationship with character animation does not establish event-to-clip IDs."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".cec.XEN",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-ctb",
+      "label": ".ctb",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Control-flow interpretations are tentative. Shared names/IDs do not establish every field or a complete playback graph. No CTB decoder is registered."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".ctb",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-hko",
+      "label": ".hko.PS3",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Static/animated usage patterns are observations, not a universal suffix rule. Complete Havok object/fixup reconstruction is not registered."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".hko.XEN",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-hkt",
+      "label": ".hkt.PS3",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Observed mesh/shape names support a collision role. Descriptive strings alone do not establish every header, fixup or runtime behavior. No Havok conversion is registered."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".hkt.XEN",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-imb",
+      "label": ".imb",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Material-interaction and effect-cluster roles are inferred from layout and context. No MurmurHash/Jenkins identification or numeric join to sound/VFX resources is demonstrated."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".imb",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-meta",
+      "label": ".meta.xml",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Section layouts are documented, but complete runtime object reconstruction and cross-resource resolution are not registered operations."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".meta.xml",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-mib",
+      "label": ".mib",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Bus IDs, parameter meanings, variable record lengths and hash algorithms are not fully verified. The parser sketch below is illustrative, not a registered Deno or Lua operation."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".mib",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-msb",
+      "label": ".msb",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "The MUS linkage and readable symbols are observed. Transition/state-machine semantics are not implemented by operation 12, and the PFDx offset should be checked per file."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".msb",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-no-extension",
+      "label": "Extensionless: LightTOC / StreamSetConfig",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Hex dumps establish observed bytes only. Do not assign a schema, decoder or role solely because a file has no extension."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": "Extensionless: LightTOC / StreamSetConfig",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-rcb",
+      "label": ".rcb.PS3",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "orange",
+          "status": "Research TODO / inventory only",
+          "detail": "Paths and size variation are recorded. Controller logic, resource bindings and animation joins remain unresolved."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".rcb.XEN",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-rcm-b",
+      "label": ".rcm_b",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Directory context supports an audio association. No verified mapping from these records to SBK, SMB or SNU events is available."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".rcm_b",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-shk",
+      "label": ".shk",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Command semantics and target-object resolution are incomplete. No Shock interpreter is registered."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".shk",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-simgroup",
+      "label": ".dat (SimGroup)",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Entity IDs and resource references must be matched against the correct level context. No scene-assembly operation is registered."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".dat (SimGroup)",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-smb",
+      "label": ".smb",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "The stream-name strings are observed. Specific attenuation meanings, hash algorithms and a universal 96-byte record stride remain interpretations until validated across the corpus. No registered SMB-to-SNU resolver exists."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".smb",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-toc",
+      "label": ".toc",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "The two documented families must be identified separately. Offset targets and visibility-volume meanings remain partly inferred; TOC is not the STR section descriptor table itself."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".toc",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-txt-embedded",
+      "label": ".txt",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "The observed locale table is one text use case, not a schema for all .txt files. No general text conversion is registered."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".txt",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-uix",
+      "label": ".uix",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "APT and ActionScript-like strings are observed. They do not prove Scaleform middleware, a complete Flash runtime or an executable UI reconstruction. Font names can suggest associations but need explicit resource matching."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".uix",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-vfb",
+      "label": ".vfb",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "Field names such as duration, intensity and fade are provisional until runtime correlation. No effect player or VFB converter is registered."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".vfb",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-xml",
+      "label": ".xml.PS3",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "blue",
+          "status": "Analysis only",
+          "detail": "The overall schema, timing semantics and cross-asset joins remain hypotheses. A shared .xml substring does not imply the MetaModel binary layout."
+        },
+        "xbox360": {
+          "colour": "grey",
+          "status": "Xbox support unverified",
+          "label": ".xml.XEN",
+          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-txt",
+      "label": ".TXT",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "green",
+          "status": "Readable source / checked layout",
+          "detail": "All five supplied PS3/Xbox locale tables were compared; headers, ASCII records and regional differences are documented."
+        },
+        "xbox360": {
+          "colour": "green",
+          "status": "Xbox locale records checked",
+          "label": ".TXT",
+          "detail": "Xbox EU and US localetable.txt copies were compared with PS3 variants; headers and locale records are documented."
+        }
+      }
+    },
+    {
+      "route": "PS3_GAME-PARAM-SFO",
+      "label": "PARAM.SFO",
+      "aliases": [],
+      "platforms": {
+        "ps3": {
+          "colour": "green",
+          "status": "Readable source / checked layout",
+          "detail": "EU, US and demo metadata and binary layouts are documented. Metadata identity does not fingerprint the complete game build."
+        }
+      }
+    }
+  ]
+}

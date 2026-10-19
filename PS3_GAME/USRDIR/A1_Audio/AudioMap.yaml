@@ -568,7 +568,7 @@
     -   OLD_DIR_NAME: fe_xxx_0
         NEW_DIR_NAME: museum_voice_female
         files:
-        -   CharacterName: unknown
+        -   CharacterName: unnamedWoman
             group: 
             Level: Bartman begins
             Note: female voice 'and woman'
@@ -812,12 +812,18 @@
                 file_glob: d_lwis_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: iv_xxx_0
-        NEW_DIR_NAME: TBD
+        NEW_DIR_NAME: diorama_dr_nick_riviera
         files:
-        -   CharacterName: TBD
-            group: 
-            Level: TBD
-            Note: two lines, not a character, some kind of disembodied announcer, saying 'fire in the hole' and 'cover your ears', likely from medal_of_homer
+        -   CharacterName: Civil War Diorama Cannon Voice
+            group: Museum Exhibit Voices
+            Level: Bartman Begins
+            Note: >
+                Unidentified voice associated with the Civil War
+                cannon diorama in the Springfield museum.
+                Lines include "Fire in the hole!" and
+                "Cover your ears!".
+                The dciv prefix may mean Diorama Civil War.
+                Speaker identity is unverified.
             file_patterns:
                 file_pattern: d_dciv_xxx_#######.exa.snu
                 file_regex: ^d_dciv_xxx_[0-9a-fA-F]{7}\.exa\.snu$
@@ -842,24 +848,24 @@
                 file_glob: d_askn_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: l1_xxx_0
-        NEW_DIR_NAME: diorama_voice1
+        NEW_DIR_NAME: diorama_voice
         files:
-        -   CharacterName: unknown
+        -   CharacterName: voice1
             group: 
             Level: Bartman Begins
-            Note: single voice line for diorama "go on get, we dont like yours kind"
+            Note: single voice line for diorama "go on get, we dont like yours kind", this is a diorama voice from the civil war exhibit in the Springfield museum.
             file_patterns:
                 file_pattern: d_dyl1_xxx_#######.exa.snu
                 file_regex: ^d_dyl1_xxx_[0-9a-fA-F]{7}\.exa\.snu$
                 file_glob: d_dyl1_xxx_[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f].exa.snu
 
     -   OLD_DIR_NAME: l2_xxx_0
-        NEW_DIR_NAME: diorama_voice2
+        NEW_DIR_NAME: diorama_voice
         files:
-        -   CharacterName: unknown
+        -   CharacterName: voice2
             group: 
             Level: Bartman Begins
-            Note: single voice line for diorama "get off my dadgum diorama injun's"
+            Note: single voice line for diorama "get off my dadgum diorama injun's", this is a diorama voice from the civil war exhibit in the Springfield museum.
             file_patterns:
                 file_pattern: d_dyl2_xxx_#######.exa.snu
                 file_regex: ^d_dyl2_xxx_[0-9a-fA-F]{7}\.exa\.snu$

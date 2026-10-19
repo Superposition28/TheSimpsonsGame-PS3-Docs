@@ -1,4 +1,36 @@
-# Documentation review — 2026-10-18
+# Documentation migration — 2026-10-19
+
+The site now presents the game and its file formats as an independent reference. The container-origin format tree and USRDIR asset/use tree remain in place. Remake Engine operation metadata and detailed implementation support have dedicated integration pages. The PS3 and Xbox 360 homepages retain Pipeline Format Coverage as the explicit exception, combining research and project progress. Former pipeline URLs and existing navigation destinations are retained.
+
+## Homepage coverage restoration
+
+The older vertical progress list and coloured Documentation Map are again the first two panels on each platform homepage, side by side on wide screens and stacked on narrow screens. The five colours distinguish usable/readable output, partial implementation, analysis only, research TODO and unverified platform support. Counts refer to grouped tracked references, not a percentage of all game data understood. Xbox research and support are assessed independently of PS3 conversion support.
+
+`reference/coverage.json` owns the per-platform progress entries. `tools/render_home.py` refreshes committed static panels, counts and map dots together, and the core checker detects stale output. Source/naming guidance remains below the main panels. The local `old.index.htm` comparison file is preserved unchanged; its obsolete converter paths and unsupported completeness claims were not restored.
+
+The broken map layout came from removing status dots while retaining a ten-pixel grid column. Dots are restored and text-only map links now have a defensive layout rule. Browser discovery again returned no available surface, and opening the in-app browser reported it unavailable; visual verification remains outstanding.
+
+## Reference foundation
+
+- PS3 EU full release BLES00142, APP_VER/VERSION 01.00 is the baseline. The reference records the inspected PARAM.SFO SHA-256, not an unverified whole-disc identity.
+- `PS3-EU-Full-audio_reorg-isRenamed` is the canonical extracted namespace. FullFlattened is an alternate and historical view. Both are processed derivatives.
+- Source and naming registries live inside the documentation repository and render to committed static HTML using a dependency-free Python helper. Reading and hosting require no build.
+- Eight representative Full/FullFlattened file pairs were checked byte-for-byte using SHA-256. Six additional level-pilot pairs were also checked. These checks do not establish equivalence of all 55,998 normalizer-map entries.
+- Naming mappings were compared with the current SQLite rename table. Historical naming notes are retained as an attributed snapshot; inferred meanings remain research observations.
+- Movie inventory filenames were reconciled to Full through the map. A level page contains qualified canonical path examples. Existing mixed inventories elsewhere are explicitly labeled pending reconciliation.
+- AudioMap.yaml remains byte-for-byte unchanged at its existing path and schema. Its research role and consumer contract are documented separately.
+
+## Validation and remaining work
+
+The core checker runs without a parent checkout; `--module-checks` explicitly enables operation-manifest and implementation-path comparisons. The deployment workflow now runs standalone validation before publishing. Generated reference freshness and source/path metadata are part of core validation.
+
+This migration establishes the reference foundation and changes the site focus. It does not complete resource inventories, reconstruct missing original archive/member provenance, identify every release build, or independently validate every retained parser interpretation. Detailed byte layouts and preformatted sample research are preserved. Historical mixed paths need page-by-page reconciliation against the canonical dataset; whole-build identity and unsupported semantic claims remain unresolved. The final depth of the USRDIR documentation tree remains open, with major groups retained and deeper pages added when substantive analysis warrants them.
+
+Browser review was attempted, but the native computer-use helper was unavailable and browser discovery returned no available surfaces. Desktop and narrow-width visual verification remains outstanding.
+
+---
+
+# Documentation review — 2026-10-18 (historical)
 
 The HTML documentation was compared with the module's `operations.toml`, the Lua/BMS entry points under `operations/`, the Blender importer, and the engine TXD export entry point. The review covers documentation and structural sample checks; it did not rerun the extraction/conversion pipeline or validate original game runtime behavior.
 

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Remake Engine integration</title>
+        <link rel="stylesheet" href="../../style/main.css">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../index.html" target="_top">Documentation</a></nav>
+        <h1>Remake Engine integration</h1>
+        <p>This section documents one project that consumes the game reference. Operation IDs, generated outputs, directory transformations and editor resources describe Remake Engine behavior. They do not define the original game's file formats.</p>
+        <ul>
+            <li><a href="coverage.html">Conversion coverage summaries</a></li>
+            <li><a href="pipeline.html">Operation pipeline and conversion coverage</a></li>
+            <li><a href="format-support.html">Per-format implementation notes</a></li>
+            <li><a href="../../reference/sources.html">Canonical sources and path conventions</a></li>
+            <li><a href="../../reference/naming.html">Original and extracted folder names</a></li>
+        </ul>
+        <h2 id="normalization">Extraction and normalization conventions</h2>
+        <p>Full is the documentation's canonical extracted view. FullFlattened is an alternate view produced by additional directory normalization. Base-folder renaming and audio reorganization already occur before flattening. The normalizer's original_path refers to Full, not the disc. Preserve original archive/member identity separately when available.</p>
+        <p>Flattening can remove build/platform segments, collapse directories, rename texture_dictionary, and append six-hex path-derived suffixes. These suffixes are processing identifiers, not automatically embedded game IDs. The local normalizer JSON maps connect the two extracted views.</p>
+        <h2 id="audio-map">AudioMap consumer contract</h2>
+        <p>The registry remains at <a href="../../PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml">PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml</a> with its existing schema. The module reads this path directly; moving or changing it requires a coordinated consumer migration.</p>
+        <p>SetupAudioDir.lua uses Dialogue, CUTSCENE and Global-Sound sections for organization. Missing, unparseable or unusable Dialogue rules skip map-based renaming. Dialogue and CUTSCENE rules apply to detected EN/ES/FR/IT folders; Global-Sound applies under Global without character subfolders.</p>
+        <p>OLD_DIR_NAME selects a source directory. NEW_DIR_NAME names the destination; blank or TBD falls back to the source name with a trailing _xxx_0 removed. Usable CharacterName values can create character subfolders. file_pattern uses ####### for a seven-digit hexadecimal line identifier. The current consumer does not use file_regex or file_glob.</p>
+        <p>These are consumer rules. Character, level and stream associations remain research data; rename destinations are not proof of original paths, runtime event mappings or hash algorithms.</p>
+        <h2 id="evidence">Implementation evidence</h2>
+        <p>Source-inspected parsers are evidence of what a tool reads. Converter fallbacks, discarded fields, generated outputs and editor resource classes must remain attributed to that tool. They are not recovered original-game behavior.</p>
+        <p>Module repository: <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3">TheSimpsonsGame-PS3</a>. The core reference can be read and checked without that checkout.</p>
+    </body>
+</html>

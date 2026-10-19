@@ -5,12 +5,17 @@
         <link rel="stylesheet" href="../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>.STR Archive Structure (EA Stream File)</title>
+        <meta name="reference-source" content="ps3-eu-original">
+        <meta name="path-namespace" content="legacy-mixed">
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>STR archive</nav>
         <h1>.STR Archive Structure (EA Stream File)</h1>
+        <aside class="source-notice" aria-label="Source and path scope">
+            <p><strong>Source scope:</strong> PS3 EU is the reference baseline; retained cross-platform and release observations keep their stated scope. New extracted references use <code>ps3-eu-extracted</code>. Historical inventories and samples retain their recorded paths; unresolved mixed paths require reconciliation before use as canonical examples. See <a href="../../../reference/sources.html#paths">roots and provenance</a>.</p>
+        </aside>
         <section class="format-summary" aria-label="Format summary">
-            <p class="eyebrow">Extraction implemented · PS3 unless explicitly marked Xbox 360</p>
+            <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
             <p>Packages level, character and shared resources for extraction.</p>
             <dl>
                 <dt>Identification</dt>
@@ -18,14 +23,14 @@
                 <dt>Byte order / text</dt>
                 <dd>Big-endian archive fields; payload formats vary.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
             <strong>On this page</strong>
             <ul>
                 <li><a href="#related-formats-2">Related formats</a></li>
-                <li><a href="#operation-support-2">Operation support</a></li>
+                <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
                 <li><a href="#parsing-algorithm-overview">Parsing Algorithm Overview</a></li>
                 <li><a href="#file-header-structure">File Header Structure</a></li>
@@ -89,16 +94,13 @@
             <p>See the <a href="../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
         </section>
         <section id="operation-support">
-            <h2 id="operation-support-2">Operation support</h2>
-            <ul>
-                <li><a href="../pipeline.html#op-1">Operation 1: Extract Archives (.STR)</a>. Declared dependencies: <code>[-1]</code>; <code>run-all = true</code>.</li>
-            </ul>
-            <p><a href="../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+            <h2 id="operation-support-2">Tools and integrations</h2>
+            <p>Optional <a href="../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-str-index-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
             <p>The registered QuickBMS script is the extraction reference. Decompression and asset extraction do not imply that every extracted payload is decoded.</p>
-            <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+            <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
         <p><strong>Version:</strong> 1.0<br><strong>Last Updated:</strong> 2026-10-02<br><strong>Author(s):</strong> samarixum</p>
         <p>The <code>.str</code> file is EA's streaming container format used by the RenderWare engine on PS3/Xbox 360. It contains a metadata header, a section-descriptor array, and aligned section payloads. In this repository, <code>operations/simpsons_str.bms</code> is the practical extraction reference: it uses QuickBMS <code>comtype dk2</code> for EA RefPack sections and parses embedded records sequentially.</p>

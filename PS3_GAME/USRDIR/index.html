@@ -5,14 +5,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>PS3 Game USRDIR Contents</title>
         <link rel="stylesheet" href="../../style/main.css">
+        <meta name="reference-source" content="ps3-eu-original">
+        <meta name="path-namespace" content="mixed-explicit">
     </head>
     <body class="doc-page">
-        <h1>USRDIR source and normalized layouts</h1>
-        <p>USRDIR is the source game's data directory. The first list retains disc folder names; the organization list uses the readable groups created by the module. These two views describe different stages of the same assets.</p>
-        <h2>Extraction and normalization</h2>
-        <p>Operation 1 extracts STR payloads. Operation 2 copies movies and audiostreams that already exist outside those archives. Operation 4 renames base folders, operation 5 reorganizes audio using available AudioMap rules, and operation 6 writes a flattened dataset plus JSON path maps. Normalization removes build/platform path segments and adds path-derived filename UIDs; it does not change binary format semantics.</p>
-        <p>Keep the source/normalized map when following references: a rendered asset can span model geometry, textures, MetaModel properties, collision and effect files. A movie can span a video file, TOX timings and global LH2 text; fonts and atlases are a separate rendering input.</p>
-        <p><a href="../FormatAnalysis/relationships.html">Format relationships</a> · <a href="../FormatAnalysis/pipeline.html">Operation pipeline</a> · <a href="../FormatAnalysis/index.html">Format inventory</a></p>
+        <h1>USRDIR: game files and asset use</h1>
+        <p>Most game data, whether archived or directly accessible, belongs under USRDIR. This tree documents concrete resources, inventories, characters, levels and their use. Binary layouts belong in the complementary format-analysis tree.</p>
+        <aside class="source-notice">
+            <p><strong>Source and paths:</strong> PS3 EU is the baseline. Main Files lists original USRDIR names; Folder Organization lists the readable groups in <code>ps3-eu-extracted</code>. They are different namespaces. See <a href="../../reference/sources.html">source conventions</a> and <a href="../../reference/naming.html">verified folder mappings</a>.</p>
+        </aside>
+        <p>Major documentation groups follow the extracted reference. Deeper folders receive pages when substantive analysis warrants them; otherwise exact paths are recorded in inventories within the nearest useful page. Documentation depth is not a claim about the depth of the game tree.</p>
+        <p><a href="../FormatAnalysis/index.html">Format specifications</a> · <a href="../FormatAnalysis/relationships.html">Resource relationships</a> · <a href="../../integrations/remake-engine/index.html">Optional Remake Engine integration</a></p>
         <div class="section">
             <h2>Main Files</h2>
             <ul>

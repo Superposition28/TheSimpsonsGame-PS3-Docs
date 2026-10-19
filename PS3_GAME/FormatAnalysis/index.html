@@ -7,12 +7,13 @@
         <meta content="width=device-width, initial-scale=1" name="viewport">
     </head>
     <body class="doc-page">
-        <h1>Format Analysis</h1>
+        <h1>File format analysis</h1>
         <section class="doc-overview">
-            <p>This index separates source-disc formats from resources extracted out of STR archives. The counts below are recorded reference inventories, not a fresh scan of every region; grouped totals include their indented child rows and must not be added to them.</p>
+            <p>This tree follows format origin: source-level formats first, then resources extracted from containers such as STR. The counts below are recorded reference inventories, not a fresh scan of every region; grouped totals include their indented child rows and must not be added to them.</p>
             <ul class="overview-links">
                 <li><a href="relationships.html">Format relationships</a></li>
-                <li><a href="pipeline.html">Operations and conversion coverage</a></li>
+                <li><a href="../../reference/sources.html">Canonical sources and path conventions</a></li>
+                <li><a href="../../reference/naming.html">Names and aliases</a></li>
                 <li><a href="../USRDIR/index.html">Source and normalized directory layout</a></li>
             </ul>
             <h2>How the files fit together</h2>
@@ -23,6 +24,9 @@
             </ul>
             <p><code>.PS3</code> and <code>.XEN</code> are platform suffixes. A shared word such as bank, table, graph or XML does not establish a common binary layout. Unknown descriptions below are explicitly marked; use each format's evidence section before implementing a parser.</p>
         </section>
+        <aside class="source-notice">
+            <p><strong>Inventory scope:</strong> PS3 EU is the baseline. Historical source and extracted counts below have not been rescanned during this migration; Xbox inventories retain their stated platform scope. Extracted Full and FullFlattened paths are separate namespaces. See <a href="../../reference/sources.html">reference sources</a>.</p>
+        </aside>
         <p>Entry point for file format notes and reverse-engineering writeups. <a href="../PARAM.SFO.html">PARAM.SFO platform metadata</a> is documented at its PS3_GAME root location, separately from the USRDIR and extracted-resource counts below.</p>
         <h2>Source files</h2>
         <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">

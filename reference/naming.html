@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Game folders, names and aliases</title>
+        <link rel="stylesheet" href="../style/main.css">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../index.html" target="_top">Documentation</a></nav>
+        <h1>Game folders, names and aliases</h1>
+        <p>This reference distinguishes original source-folder names, readable extracted groups, internal resource codes and game-facing names. The documentation keeps its two trees: container-based format analysis and USRDIR asset/use analysis.</p>
+        <p>Folder mappings were compared with the module's rename_mappings SQLite table on 2026-10-19. Titles, codes and aliases were transcribed from the existing naming notes; they are research labels, not proof of a runtime lookup or a complete filename rule. Empty codes mean unrecorded, not absent.</p>
+        <div class="table-scroll" role="region" aria-label="Reference table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Original USRDIR folder</th>
+                        <th scope="col">Extracted group</th>
+                        <th scope="col">Display name</th>
+                        <th scope="col">Recorded code</th>
+                        <th scope="col">Aliases / scope</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>audiostreams</code></td>
+                        <td><code>A1_Audio</code></td>
+                        <td>Streamed audio</td>
+                        <td>Unrecorded</td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>movies</code></td>
+                        <td><code>A1_Video</code></td>
+                        <td>Movies</td>
+                        <td>Unrecorded</td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>frontend</code></td>
+                        <td><code>A2_Frontend</code></td>
+                        <td>Frontend</td>
+                        <td>Unrecorded</td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>simpsons_chars</code></td>
+                        <td><code>A2_Characters</code></td>
+                        <td>Characters</td>
+                        <td>Unrecorded</td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>spr_hub</code></td>
+                        <td><code>LHub-00_SprHub</code></td>
+                        <td>Springfield Hub</td>
+                        <td><code>spr</code></td>
+                        <td>Springfield hub — PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>loc</code></td>
+                        <td><code>L01_LandOfChocolate</code></td>
+                        <td>The Land of Chocolate</td>
+                        <td><code>loc</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>brt</code></td>
+                        <td><code>L02_BartmanBegins</code></td>
+                        <td>Bartman Begins</td>
+                        <td><code>brt</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>eighty_bites</code></td>
+                        <td><code>L03_HungryHungryHomer</code></td>
+                        <td>Around the World in 80 Bites</td>
+                        <td><code>80b</code></td>
+                        <td>Hungry Hungry Homer — PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>tree_hugger</code></td>
+                        <td><code>L04_TreeHugger</code></td>
+                        <td>Lisa the Tree Hugger</td>
+                        <td><code>hug</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>mob_rules</code></td>
+                        <td><code>L05_MobRules</code></td>
+                        <td>Mob Rules</td>
+                        <td><code>mob</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>cheater</code></td>
+                        <td><code>L06_EnterTheCheatrix</code></td>
+                        <td>Enter the Cheatrix</td>
+                        <td><code>che</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>dayofthedolphins</code></td>
+                        <td><code>L07_DayOfTheDolphin</code></td>
+                        <td>The Day of the Dolphin</td>
+                        <td><code>dod</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>colossaldonut</code></td>
+                        <td><code>L08_TheColossalDonut</code></td>
+                        <td>Shadow of the Colossal Donut</td>
+                        <td><code>scd</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>dayspringfieldstoodstill</code></td>
+                        <td><code>L09_Invasion</code></td>
+                        <td>Invasion of the Yokel-Snatchers</td>
+                        <td><code>sss</code></td>
+                        <td>The Day Springfield Stood Still — PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>bargainbin</code></td>
+                        <td><code>L10_BargainBin</code></td>
+                        <td>Bargain Bin</td>
+                        <td><code>gamehub</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>gamehub</code></td>
+                        <td><code>LHub-00_GameHub</code></td>
+                        <td>Game Engine hub</td>
+                        <td><code>gamehub</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>neverquest</code></td>
+                        <td><code>L11_NeverQuest</code></td>
+                        <td>NeverQuest</td>
+                        <td><code>nvq</code></td>
+                        <td>dungeon / dung; shire / shir — PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>grand_theft_scratchy</code></td>
+                        <td><code>L12_GrandTheftScratchy</code></td>
+                        <td>Grand Theft Scratchy</td>
+                        <td><code>gts</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>medal_of_homer</code></td>
+                        <td><code>L13_MedalOfHomer</code></td>
+                        <td>Medal of Homer</td>
+                        <td><code>moh</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>bigsuperhappy</code></td>
+                        <td><code>L14_BigSuperHappy</code></td>
+                        <td>Big Super Happy Fun Fun Game</td>
+                        <td><code>bsh</code></td>
+                        <td>— PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>rhymes</code></td>
+                        <td><code>L15_Rhymes</code></td>
+                        <td>Five Characters in Search of an Author</td>
+                        <td><code>rwc</code></td>
+                        <td>Rhymes — PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>meetthyplayer</code></td>
+                        <td><code>L16_MeetThyPlayer</code></td>
+                        <td>Game Over</td>
+                        <td><code>mtp</code></td>
+                        <td>Meet Thy Player — PS3 EU baseline mapping</td>
+                    </tr>
+                    <tr>
+                        <td><code>demo_frontend</code></td>
+                        <td><code>A2_Frontend</code></td>
+                        <td>Demo frontend</td>
+                        <td>Unrecorded</td>
+                        <td>— PS3 demo</td>
+                    </tr>
+                    <tr>
+                        <td><code>demo_scd</code></td>
+                        <td><code>L08_TheColossalDonut</code></td>
+                        <td>Demo Shadow of the Colossal Donut</td>
+                        <td><code>scd</code></td>
+                        <td>— PS3 demo</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="audio">Audio prefixes and meanings</h2>
+        <p>Prefix associations come from the naming notes and AudioMap patterns. They are contextual evidence; they do not establish binary event IDs or a complete event-to-stream resolver. Original folder names and extracted destination names must remain distinguishable.</p>
+        <div class="table-scroll" role="region" aria-label="Reference table" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Prefix</th>
+                        <th scope="col">Recorded association</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>80b_</code></td>
+                        <td>Around the World in 80 Bites</td>
+                    </tr>
+                    <tr>
+                        <td><code>brt_</code></td>
+                        <td>Bartman Begins</td>
+                    </tr>
+                    <tr>
+                        <td><code>hug_</code></td>
+                        <td>Lisa the Tree Hugger</td>
+                    </tr>
+                    <tr>
+                        <td><code>mob_</code></td>
+                        <td>Mob Rules</td>
+                    </tr>
+                    <tr>
+                        <td><code>che_</code></td>
+                        <td>Enter the Cheatrix</td>
+                    </tr>
+                    <tr>
+                        <td><code>dod_</code></td>
+                        <td>The Day of the Dolphin</td>
+                    </tr>
+                    <tr>
+                        <td><code>moh_</code></td>
+                        <td>Medal of Homer</td>
+                    </tr>
+                    <tr>
+                        <td><code>bsh_</code></td>
+                        <td>Big Super Happy Fun Fun Game</td>
+                    </tr>
+                    <tr>
+                        <td><code>gts_</code></td>
+                        <td>Grand Theft Scratchy</td>
+                    </tr>
+                    <tr>
+                        <td><code>rwc_</code></td>
+                        <td>Five Characters in Search of an Author</td>
+                    </tr>
+                    <tr>
+                        <td><code>sss_</code></td>
+                        <td>Invasion of the Yokel-Snatchers (a.k.a. “The Day Springfield Stood Still”)</td>
+                    </tr>
+                    <tr>
+                        <td><code>spr_</code></td>
+                        <td>Springfield hub/house/interiors</td>
+                    </tr>
+                    <tr>
+                        <td><code>gamehub_</code></td>
+                        <td>Bargain Bin / Game Engine hub</td>
+                    </tr>
+                    <tr>
+                        <td><code>nvq_</code></td>
+                        <td>NeverQuest</td>
+                    </tr>
+                    <tr>
+                        <td><code>mtp_</code></td>
+                        <td>Meet Thy Player / Game Over (Heaven)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="ownership">Ownership and consumers</h2>
+        <p><a href="naming.json">naming.json</a> owns this documentation snapshot. An attributed <a href="naming-notes.md">historical notes snapshot</a> preserves the original observations and uncertain associations. Original notes remain in the parent checkout at <code>reversing/data/naming.md</code>; executable rename rules remain in <code>config/RenameMap.db</code>. Changes to those sources need an explicit reconciliation, not an automatic overwrite of research conclusions.</p>
+        <p><a href="../PS3_GAME/USRDIR/A1_Audio/AudioMap.yaml">AudioMap.yaml</a> remains the maintained audio registry at its existing path and schema. Its game associations and rename instructions are documented separately from the <a href="../integrations/remake-engine/index.html#audio-map">Remake Engine consumer contract</a>.</p>
+        <p>Use <a href="sources.html">source and path conventions</a> for actual file references. Regenerate this page with <code>python tools/render_reference.py</code>.</p>
+    </body>
+</html>

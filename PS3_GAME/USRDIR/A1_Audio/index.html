@@ -5,11 +5,16 @@
         <title>A1_Audio</title>
         <link rel="stylesheet" href="../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="reference-source" content="ps3-eu-extracted">
+        <meta name="path-namespace" content="legacy-mixed">
     </head>
     <body class="doc-page">
-        <h1>A1_Audio</h1>
-        <p>This directory groups streamed audio and segmented music after source copying and audio reorganization. Operations 10, 11 and 12 decode SBK, SNU and MUS through separate paths. AudioMap.yaml is used by SetupAudioDir.lua for readable path organization; it does not decode binary audio-event graphs.</p>
-        <p>See <a href="../../FormatAnalysis/relationships.html#audio">audio relationships</a> for ALB/CTB/SMB metadata and <a href="../../FormatAnalysis/pipeline.html">pipeline coverage</a> for exact registered behavior.</p>
+        <h1>A1_Audio: audio resources and associations</h1>
+        <aside class="source-notice">
+            <p><strong>Reference scope:</strong> PS3 EU asset/use analysis. New paths use <code>ps3-eu-extracted</code>. Retained inventories may contain Full and FullFlattened paths and generated outputs; those historical examples remain non-canonical until reconciled. <a href="../../../reference/sources.html#paths">Path roots and provenance</a>.</p>
+        </aside>
+        <p>A1_Audio is the canonical extracted group for streamed dialogue, ambient resources and music. Its original source group is audiostreams. EN/ES/FR/IT and Global organization in this dataset includes processing conventions; verify original paths separately.</p>
+        <p>See <a href="../../FormatAnalysis/relationships.html#audio">audio relationships</a> for ALB/CTB/SMB metadata and <a href="../../../reference/naming.html#audio">audio naming associations</a>. Tool-specific processing belongs in the optional <a href="../../../integrations/remake-engine/index.html">Remake Engine integration</a>.</p>
         <p>the audio streams/A1_Audio contains these items in EU:</p>
         <ul>
             <li>EN: English</li>
@@ -27,21 +32,10 @@
                 <li>Dialogue entries record the source folder, output grouping, known character, level context, and matching <code>.exa.snu</code> filename patterns.</li>
                 <li>Cutscene and Global sections document named streams and ambient sound resources by level and location.</li>
             </ul>
-            <h3>Pipeline Usage</h3>
-            <p>The <a href="https://raw.githubusercontent.com/Superposition28/TheSimpsonsGame-PS3/refs/heads/main/operations/SetupAudioDir.lua"><code>SetupAudioDir.lua</code></a> script loads this YAML during the <strong>Reorganize Audio Files</strong> operation. If the file is missing, cannot be parsed, or contains no usable <code>Dialogue</code> rules, the map-based rename phases are skipped.</p>
-            <ul>
-                <li><code>Dialogue</code> rules are applied in each detected <code>EN</code>, <code>ES</code>, <code>FR</code>, and <code>IT</code> folder.</li>
-                <li><code>CUTSCENE</code> rules are applied in the same language folders.</li>
-                <li><code>Global-Sound</code> rules are applied in <code>Global</code> without character subfolders.</li>
-            </ul>
-            <h3>Rename Rule Fields</h3>
-            <ul>
-                <li><code>OLD_DIR_NAME</code> identifies the source folder and <code>NEW_DIR_NAME</code> names its destination. A blank or <code>TBD</code> destination falls back to the source name with a trailing <code>_xxx_0</code> removed.</li>
-                <li>For Dialogue and CUTSCENE rules, a usable <code>CharacterName</code> creates a character subfolder when its <code>file_patterns.file_pattern</code> matches a file. Empty, <code>unknown</code>, <code>TBD</code>, and <code>TBA</code> names are not used as folder names.</li>
-                <li>In <code>file_pattern</code>, <code>#######</code> matches a seven-digit hexadecimal line identifier. The current Lua renamer does not use <code>file_regex</code> or <code>file_glob</code>.</li>
-            </ul>
+            <h3>Consumer contract</h3>
+            <p>AudioMap.yaml remains at this path with its existing schema. Its character, level and stream associations serve the game reference. Destination names and rename instructions serve consumers. The <a href="../../../integrations/remake-engine/index.html#audio-map">Remake Engine consumer contract</a> records how SetupAudioDir.lua interprets those fields.</p>
         </section>
-        <p>the es,fr,it folders contain the same files as en</p>
+        <p>The reference includes EN/ES/FR/IT language groups. Exact cross-language inventory parity has not been established in this migration.</p>
         <p>the language folders contain .exa.snu audio files, each represent a charactors voice lines</p>
         <p>the mus files are music container archives used for background music. the current extraction path unpacks each mus into paired .snr metadata files and .sns stream payloads, which vgmstream can decode as EA-XAS audio.</p>
         <ul>
@@ -65,7 +59,7 @@
         </ul>
         <p>the extracted pairs represent segmented music streams rather than a single flat audio file per mus archive.</p>
         <h3>Music Folder Structure & Segment Extraction Statistics</h3>
-        <p>Extracted background music (located in the <code>A1_Audio/Music</code> directory structure) is packed into structured level segment directories. Statistics from a recursive scan using <code>ffprobe</code> outlines the files count and segment durations for each level:</p>
+        <p>Extracted background music (located in the <code>A1_Audio/Music</code> directory structure) is packed into structured level segment directories. These retained ffprobe measurements describe generated audio outputs, not original MUS record counts or original source paths. Their exact generation snapshot has not been re-established:</p>
         <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
             <table border="1" cellpadding="5">
                 <thead>

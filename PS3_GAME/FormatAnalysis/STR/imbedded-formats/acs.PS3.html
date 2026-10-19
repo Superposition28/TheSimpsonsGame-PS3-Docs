@@ -5,12 +5,17 @@
         <title>ACS.PS3 Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="reference-source" content="ps3-eu-original">
+        <meta name="path-namespace" content="legacy-mixed">
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Character collision resource (.acs.PS3)</nav>
         <h1>ACS.PS3 Format Documentation</h1>
+        <aside class="source-notice" aria-label="Source and path scope">
+            <p><strong>Source scope:</strong> PS3 EU is the reference baseline; retained cross-platform and release observations keep their stated scope. New extracted references use <code>ps3-eu-extracted</code>. Historical inventories and samples retain their recorded paths; unresolved mixed paths require reconciliation before use as canonical examples. See <a href="../../../../reference/sources.html#paths">roots and provenance</a>.</p>
+        </aside>
         <section class="format-summary" aria-label="Format summary">
-            <p class="eyebrow">Analysis only · PS3 unless explicitly marked Xbox 360</p>
+            <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
             <p>Occurs beside character collision resources and contains candidate primitive/bone-related data.</p>
             <dl>
                 <dt>Identification</dt>
@@ -18,14 +23,14 @@
                 <dt>Byte order / text</dt>
                 <dd>Big-endian float interpretations in samples; record schema unresolved.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Code and existing research compared on 2026-10-18. Conversion coverage and binary-format certainty are separate.</dd>
+                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
             <strong>On this page</strong>
             <ul>
                 <li><a href="#related-formats-2">Related formats</a></li>
-                <li><a href="#operation-support-2">Operation support</a></li>
+                <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
             </ul>
         </nav>
@@ -58,14 +63,13 @@
             <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
         </section>
         <section id="operation-support">
-            <h2 id="operation-support-2">Operation support</h2>
-            <p>No dedicated decoder or conversion for this suffix is registered in <code>operations.toml</code>. For an STR payload, operation 1 extracts bytes and operation 6 can normalize its path; those steps do not interpret the resource. External viewers, research pseudocode and optional engine/editor extensions are separate from registered operation coverage.</p>
-            <p><a href="../../pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
+            <h2 id="operation-support-2">Tools and integrations</h2>
+            <p>Optional <a href="../../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-str-imbedded-formats-acs-ps3-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
             <p>The expanded name and sphere/capsule interpretation are hypotheses. No field-by-field bone-binding join or collision importer has been established.</p>
-            <p>Operation coverage is grounded in <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">the module manifest</a> and its referenced implementations. Detailed field tables and retained samples below/above are the existing research evidence; labels such as tentative, observed and context must not be read as a complete runtime implementation. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+            <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
         <p>A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\marge.acs.PS3 A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\char_collision_spheres.hko.PS3</p>
         <h3>Format: <strong>ACS</strong> — per-character <strong>A</strong>rticulated <strong>C</strong>ollision <strong>S</strong>hapes (PS3)</h3>
