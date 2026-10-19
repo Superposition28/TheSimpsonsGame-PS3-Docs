@@ -26,14 +26,14 @@
         <section aria-labelledby="audio-map-title">
             <h2 id="audio-map-title">AudioMap Registry</h2>
             <p><a href="./AudioMap.yaml">View AudioMap.yaml</a></p>
-            <p>The registry maps English dialogue and Global ambient resources to their original directory names, character or sound labels, game levels, and filename patterns.</p>
+            <p>The V2 registry records 242 assets and 144 speaker identities, with original directory names, character or sound labels, game usage and filename patterns. Its <a href="AudioMap.schema.json">JSON Schema</a> defines the maintained data contract.</p>
             <ul>
                 <li>Character records cover playable characters, Springfield NPCs, enemies, and level-specific variants.</li>
-                <li>Dialogue entries record the source folder, output grouping, known character, level context, and matching <code>.exa.snu</code> filename patterns.</li>
-                <li>Cutscene and Global sections document named streams and ambient sound resources by level and location.</li>
+                <li>Dialogue assets reference stable speaker IDs and keep speaker type, variants and uncertain identity separate from game usage.</li>
+                <li>Each asset declares dialogue, cutscene, ambience, sound effect, music or unknown classification, source scope and matching <code>.exa.snu</code> patterns. Unknown usage is distinct from an explicitly empty usage list.</li>
             </ul>
             <h3>Consumer contract</h3>
-            <p>AudioMap.yaml remains at this path with its existing schema. Its character, level and stream associations serve the game reference. Destination names and rename instructions serve consumers. The <a href="../../../integrations/remake-engine/index.html#audio-map">Remake Engine consumer contract</a> records how SetupAudioDir.lua interprets those fields.</p>
+            <p>AudioMap.yaml remains at this path using <code>schema_version: 2</code>. Historical fields and unconsumed metadata are retained under legacy records; the original <a href="AudioMap.v1.yaml">V1 snapshot</a> remains available as research history. Its character, level and stream associations serve the game reference. The <a href="../../../integrations/remake-engine/index.html#audio-map">Remake Engine consumer contract</a> records V2 output paths and execution behavior.</p>
         </section>
         <p>The reference includes EN/ES/FR/IT language groups. Exact cross-language inventory parity has not been established in this migration.</p>
         <p>the language folders contain .exa.snu audio files, each represent a charactors voice lines</p>

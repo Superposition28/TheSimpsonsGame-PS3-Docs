@@ -57,7 +57,7 @@
       "platforms": {
         "ps3": {
           "colour": "green",
-          "status": "Usable conversion · Operation 3",
+          "status": "Usable conversion · Operation 5",
           "detail": "Named images support model textures and bitmap-font atlases."
         }
       }
@@ -85,7 +85,7 @@
       "platforms": {
         "ps3": {
           "colour": "yellow",
-          "status": "Partial conversion · Operation 8",
+          "status": "Partial conversion · Operation 7",
           "detail": "Geometry import and optional exports; texture/material associations remain partial."
         },
         "xbox360": {
@@ -110,7 +110,7 @@
       "platforms": {
         "ps3": {
           "colour": "yellow",
-          "status": "Conversion needs validation · Operation 9",
+          "status": "Conversion needs validation · Operation 8",
           "detail": "Column export is registered; binary IDs and text encoding still need validation under the engine Lua host."
         },
         "xbox360": {
@@ -128,7 +128,7 @@
       "platforms": {
         "ps3": {
           "colour": "green",
-          "status": "Usable conversion · Operation 11",
+          "status": "Usable conversion · Operation 12",
           "detail": "Stream audio is decoded to Godot-compatible WAV output."
         },
         "xbox360": {
@@ -146,7 +146,7 @@
       "platforms": {
         "ps3": {
           "colour": "yellow",
-          "status": "Partial conversion · Operation 12",
+          "status": "Partial conversion · Operation 13",
           "detail": "Segments are usable separately; adaptive playback and MSB transition logic are not reconstructed."
         },
         "xbox360": {
@@ -164,7 +164,7 @@
       "platforms": {
         "ps3": {
           "colour": "green",
-          "status": "Usable conversion · Operation 13",
+          "status": "Usable conversion · Operation 14",
           "detail": "FFmpeg transcodes media; external subtitle generation is separate."
         },
         "xbox360": {
@@ -200,7 +200,7 @@
       "platforms": {
         "ps3": {
           "colour": "green",
-          "status": "Usable conversion · Operation 15",
+          "status": "Usable conversion · Operation 9",
           "detail": "Font metrics, glyph rectangles, surviving kerning and atlas references."
         },
         "xbox360": {
@@ -218,7 +218,7 @@
       "platforms": {
         "ps3": {
           "colour": "green",
-          "status": "Usable conversion · Operation 16",
+          "status": "Usable conversion · Operation 10",
           "detail": "Four output languages; SS supplies labels. Movie companions match by stem and language."
         },
         "xbox360": {
@@ -236,7 +236,7 @@
       "platforms": {
         "ps3": {
           "colour": "yellow",
-          "status": "Partial conversion · Operation 10",
+          "status": "Partial conversion · Operation 11",
           "detail": "Bank audio is decoded, but exhaustive export of every subsong is not requested."
         },
         "xbox360": {
@@ -381,7 +381,7 @@
         "ps3": {
           "colour": "blue",
           "status": "Analysis only",
-          "detail": "Clip compression, transitions and bindings are not completely decoded. This animation-bank suffix is distinct from the .sbk audio-bank suffix; operation 8 does not decode BNK animation."
+          "detail": "Clip compression, transitions and bindings are not completely decoded. This animation-bank suffix is distinct from the .sbk audio-bank suffix; operation 7 does not decode BNK animation."
         },
         "xbox360": {
           "colour": "grey",
@@ -399,7 +399,7 @@
         "ps3": {
           "colour": "blue",
           "status": "Analysis only",
-          "detail": "Node/lump semantics and collision/visibility uses remain partly inferred. This is not a specification for an unrelated BSP family, and operation 8 does not import these files."
+          "detail": "Node/lump semantics and collision/visibility uses remain partly inferred. This is not a specification for an unrelated BSP family, and operation 7 does not import these files."
         },
         "xbox360": {
           "colour": "grey",
@@ -543,7 +543,7 @@
         "ps3": {
           "colour": "blue",
           "status": "Analysis only",
-          "detail": "The MUS linkage and readable symbols are observed. Transition/state-machine semantics are not implemented by operation 12, and the PFDx offset should be checked per file."
+          "detail": "The MUS linkage and readable symbols are observed. Transition/state-machine semantics are not implemented by operation 13, and the PFDx offset should be checked per file."
         },
         "xbox360": {
           "colour": "grey",

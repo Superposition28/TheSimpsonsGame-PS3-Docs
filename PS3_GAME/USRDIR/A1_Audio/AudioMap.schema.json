@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "The Simpsons Game AudioMap V2",
+  "type": "object",
+  "required": ["schema_version", "locations", "speakers", "assets"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 2, "type": "integer"},
+    "locations": {
+      "type": "object", "required": ["hubs", "levels"], "additionalProperties": false,
+      "properties": {
+        "hubs": {"$ref": "#/$defs/locations"},
+        "levels": {"$ref": "#/$defs/locations"}
+      }
+    },
+    "speakers": {
+      "type": "object", "propertyNames": {"$ref": "#/$defs/id"},
+      "additionalProperties": {"$ref": "#/$defs/speaker"}
+    },
+    "assets": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/asset"}},
+    "provenance": {"type": "object"},
+    "legacy": {"type": "object"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"},
+    "text": {"type": "string", "minLength": 1},
+    "ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+    "locations": {
+      "type": "object", "propertyNames": {"$ref": "#/$defs/id"},
+      "additionalProperties": {
+        "type": "object", "required": ["folder", "display_name"], "additionalProperties": false,
+        "properties": {
+          "folder": {"$ref": "#/$defs/text"}, "display_name": {"$ref": "#/$defs/text"},
+          "original_directory": {"$ref": "#/$defs/text"}, "code": {"type": "string"},
+          "aliases": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}}
+        }
+      }
+    },
+    "speaker": {
+      "type": "object", "required": ["display_name", "speaker_type", "groups", "review_status"],
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {"$ref": "#/$defs/text"},
+        "speaker_type": {"enum": ["named_character", "unnamed_character", "unidentified_voice", "announcer", "narrator", "crowd", "unknown"]},
+        "groups": {"$ref": "#/$defs/ids"},
+        "review_status": {"enum": ["inherited", "provisional", "verified"]},
+        "character_id": {"$ref": "#/$defs/id"}, "variant": {"$ref": "#/$defs/id"}
+      },
+      "dependentRequired": {"variant": ["character_id"]}
+    },
+    "usage": {
+      "type": "object", "required": ["world_hub", "hubs", "levels"], "additionalProperties": false,
+      "properties": {
+        "world_hub": {"type": ["boolean", "null"]},
+        "hubs": {"anyOf": [{"$ref": "#/$defs/ids"}, {"type": "null"}]},
+        "levels": {"anyOf": [{"$ref": "#/$defs/ids"}, {"type": "null"}]},
+        "unresolved": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}}
+      }
+    },
+    "asset": {
+      "type": "object", "required": ["id", "audio_type", "source", "usage"], "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "audio_type": {"enum": ["dialogue", "cutscene", "ambience", "sound_effect", "music", "unknown"]},
+        "speaker_id": {"$ref": "#/$defs/id"},
+        "source": {
+          "type": "object", "required": ["scope", "original_directory", "file_patterns"], "additionalProperties": false,
+          "properties": {
+            "scope": {"enum": ["localized", "global"]},
+            "original_directory": {"$ref": "#/$defs/text"},
+            "file_patterns": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/text"}},
+            "legacy_directories": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}}
+          }
+        },
+        "usage": {"$ref": "#/$defs/usage"},
+        "area": {"$ref": "#/$defs/id"}, "category": {"$ref": "#/$defs/id"},
+        "notes": {"$ref": "#/$defs/text"}, "nickname": {"$ref": "#/$defs/text"},
+        "legacy": {"type": "object"}
+      },
+      "allOf": [{
+        "if": {"properties": {"audio_type": {"const": "dialogue"}}},
+        "then": {"required": ["speaker_id"]},
+        "else": {"not": {"required": ["speaker_id"]}}
+      }]
+    }
+  }
+}

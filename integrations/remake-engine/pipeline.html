@@ -10,12 +10,12 @@
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../index.html">Documentation</a><span>/</span><a href="../../PS3_GAME/FormatAnalysis/index.html">Format index</a></nav>
         <h1>Remake Engine operation pipeline</h1>
         <p>This is optional project integration documentation. For the game itself, start with <a href="../../reference/sources.html">canonical sources</a>, <a href="../../PS3_GAME/FormatAnalysis/index.html">file formats</a> and <a href="../../PS3_GAME/USRDIR/index.html">asset/use analysis</a>.</p>
-        <p>The registered pipeline separates extraction, file organization, conversion and launch configuration. This reference was compared with <code>operations.toml</code> and its Lua/BMS implementations on 2026-10-18. Engine handlers are identified from the manifest; a registered conversion is not evidence that every field or runtime behavior is understood.</p>
+        <p>The registered pipeline separates extraction, file organization, conversion and launch configuration. This reference was compared with <code>operations.toml</code> and its Lua/BMS implementations on 2026-10-19. Engine handlers are identified from the manifest; a registered conversion is not evidence that every field or runtime behavior is understood.</p>
         <p>Start with the <a href="../../PS3_GAME/FormatAnalysis/relationships.html">format relationship guide</a> to follow connected assets. Format pages contain byte layouts and file-specific limitations; this page records how the module uses them.</p>
         <h2 id="invocation">Running an operation</h2>
-        <p>From <code>A:/RemakeEngine/Main</code>, use the module name or module ID <code>1</code>. Replace <code>16</code> with the desired registered operation ID:</p>
-        <pre><code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 16</code></pre>
-        <p>The table lists declared dependencies exactly as stored, not a recommendation to run IDs in numeric order. IDs 7 and 69 are not active operations. Conversion entries have <code>run-all=false</code>; do not assume the menu's run-all selection means every documented format was converted.</p>
+        <p>From <code>A:/RemakeEngine/Main</code>, use the module name or module ID <code>1</code>. Replace <code>10</code> with the desired registered operation ID:</p>
+        <pre><code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 10</code></pre>
+        <p>The table lists declared dependencies exactly as stored, not a recommendation to run IDs in numeric order. The commented Godot generation entry (69) is not active. Conversion entries have <code>run-all=false</code>; do not assume the menu's run-all selection means every documented format was converted.</p>
         <h2 id="operations">Registered operations</h2>
         <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
             <table>
@@ -41,94 +41,94 @@
                         <td><code>[0]</code><br>run-all: <code>true</code></td>
                         <td>Tool availability is distinct from file-format coverage.</td>
                     </tr>
-                    <tr id="op-1" data-operation="1" data-depends-on="-1" data-run-all="true">
+                    <tr id="op-1" data-operation="1" data-depends-on="0,-1" data-run-all="true">
                         <th scope="row">1: Extract STR archives</th>
                         <td>Source .str archives → extracted payloads under GameFiles.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/simpsons_str.bms">operations/simpsons_str.bms</a></td>
-                        <td><code>[-1]</code><br>run-all: <code>true</code></td>
+                        <td><code>[0, -1]</code><br>run-all: <code>true</code></td>
                         <td>Uses simpsons_str.bms (QuickBMS dk2/RefPack). Embedded suffixes are retained; extraction alone does not decode them.</td>
                     </tr>
-                    <tr id="op-2" data-operation="2" data-depends-on="1" data-run-all="true">
+                    <tr id="op-2" data-operation="2" data-depends-on="0,1" data-run-all="true">
                         <th scope="row">2: Copy source media</th>
                         <td>Copies source movies/ and audiostreams/ into the processed tree.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/CopySourceAudioVideo.lua">operations/CopySourceAudioVideo.lua</a></td>
-                        <td><code>[1]</code><br>run-all: <code>true</code></td>
+                        <td><code>[0, 1]</code><br>run-all: <code>true</code></td>
                         <td>Does not transcode audio or video. Success hooks set audio_state=audio_og and rename the dataset root.</td>
                     </tr>
-                    <tr id="op-3" data-operation="3" data-depends-on="2" data-run-all="false">
-                        <th scope="row">3: Extract texture images</th>
-                        <td>.txd → .png through engine format-extract, format=txd.<br><code>format-extract</code> (engine handler)</td>
-                        <td><code>[2]</code><br>run-all: <code>false</code></td>
-                        <td>Provides model textures and font atlases. This is engine code, not an operations-folder Lua decoder; ITXD is not the registered format.</td>
-                    </tr>
-                    <tr id="op-4" data-operation="4" data-depends-on="3" data-run-all="true">
-                        <th scope="row">4: Rename base folders</th>
+                    <tr id="op-3" data-operation="3" data-depends-on="0,1,2" data-run-all="true">
+                        <th scope="row">3: Rename base folders</th>
                         <td>Uses config/RenameMap.db to rename extracted base directories.<br><code>rename-folders</code> (engine handler)</td>
-                        <td><code>[3]</code><br>run-all: <code>true</code></td>
+                        <td><code>[0, 1, 2]</code><br>run-all: <code>true</code></td>
                         <td>Success hooks set isRenamed=isRenamed and rename the dataset root. This is path organization, not resource decoding.</td>
                     </tr>
-                    <tr id="op-5" data-operation="5" data-depends-on="4" data-run-all="true">
-                        <th scope="row">5: Reorganize audio</th>
-                        <td>Rearranges the audio tree and applies available AudioMap.yaml rename rules.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/SetupAudioDir.lua">operations/SetupAudioDir.lua</a></td>
-                        <td><code>[4]</code><br>run-all: <code>true</code></td>
-                        <td>Uses the maintained registry under this documentation tree; missing/unparseable rules are logged and skipped. Hooks set audio_state=audio_reorg.</td>
+                    <tr id="op-4" data-operation="4" data-depends-on="0,1,2,3" data-run-all="true">
+                        <th scope="row">4: Reorganize audio</th>
+                        <td>Validates AudioMap V2 and automatically plans verified sorting of the generated audio tree.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/SetupAudioDir.lua">operations/SetupAudioDir.lua</a></td>
+                        <td><code>[0, 1, 2, 3]</code><br>run-all: <code>true</code></td>
+                        <td>Requires V2; unmatched audio, collisions or changed files stop execution. Verified copies and journals support resume. Hooks set audio_state=audio_reorg.</td>
                     </tr>
-                    <tr id="op-6" data-operation="6" data-depends-on="5" data-run-all="true">
+                    <tr id="op-5" data-operation="5" data-depends-on="0,1,3" data-run-all="false">
+                        <th scope="row">5: Extract texture images</th>
+                        <td>.txd → .png through engine format-extract, format=txd.<br><code>format-extract</code> (engine handler)</td>
+                        <td><code>[0, 1, 3]</code><br>run-all: <code>false</code></td>
+                        <td>Provides model textures and font atlases. This is engine code, not an operations-folder Lua decoder; ITXD is not the registered format.</td>
+                    </tr>
+                    <tr id="op-6" data-operation="6" data-depends-on="0,1,3" data-run-all="true">
                         <th scope="row">6: Normalize directories</th>
                         <td>Copies to a flattened dataset; writes normalized_map.json, per-folder maps and normalized_map_summary.json.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/DirectoryNormalizer/run.lua">operations/DirectoryNormalizer/run.lua</a></td>
-                        <td><code>[5]</code><br>run-all: <code>true</code></td>
+                        <td><code>[0, 1, 3]</code><br>run-all: <code>true</code></td>
                         <td>Removes build/platform path segments and normalizes names/UIDs. Copy-only paths in the manifest include A1_Audio and audiostreams. The Type placeholder becomes FullFlattened.</td>
                     </tr>
-                    <tr id="op-8" data-operation="8" data-depends-on="6" data-run-all="false">
-                        <th scope="row">8: Convert model geometry</th>
+                    <tr id="op-7" data-operation="7" data-depends-on="0,-1,1,3,5,6" data-run-all="false">
+                        <th scope="row">7: Convert model geometry</th>
                         <td>.preinstanced → .blend; optional GLB/FBX export, with GLB selected by default.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/Blender/run.lua">operations/Blender/run.lua</a></td>
-                        <td><code>[6]</code><br>run-all: <code>false</code></td>
+                        <td><code>[0, -1, 1, 3, 5, 6]</code><br>run-all: <code>false</code></td>
                         <td>Uses Blender and normalized maps for texture resolution. Materials remain partial; this does not decode BNK animation, Havok collision or scene logic.</td>
                     </tr>
-                    <tr id="op-9" data-operation="9" data-depends-on="6" data-run-all="false">
-                        <th scope="row">9: Export localization</th>
+                    <tr id="op-8" data-operation="8" data-depends-on="6" data-run-all="false">
+                        <th scope="row">8: Export localization</th>
                         <td>.LH2 → original.LH2.csv beside each input.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/lh2_to_csv.lua">operations/lh2_to_csv.lua</a></td>
                         <td><code>[6]</code><br>run-all: <code>false</code></td>
                         <td>Exports IDs and text columns. For multiple columns it labels the final column String Label. No movie timing is created. The binary reader uses string.byte rather than the newer converters' string.unicode approach; runtime ID fidelity needs a separate check.</td>
                     </tr>
-                    <tr id="op-15" data-operation="15" data-depends-on="6" data-run-all="false">
-                        <th scope="row">15: Convert bitmap fonts</th>
+                    <tr id="op-9" data-operation="9" data-depends-on="6" data-run-all="false">
+                        <th scope="row">9: Convert bitmap fonts</th>
                         <td>.inf + matching .png → .fnt beside the source INF by default.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/inf_to_fnt.Fonts.lua">operations/inf_to_fnt.Fonts.lua</a></td>
                         <td><code>[6]</code><br>run-all: <code>false</code></td>
                         <td>Matches cleaned atlas names, preferring the same archive; validates PNG bounds and glyph rectangles. Optional --copy-png, --output-dir and --no-unicode-aliases are Lua entry-point options. It does not read LH2.</td>
                     </tr>
-                    <tr id="op-16" data-operation="16" data-depends-on="6" data-run-all="false">
-                        <th scope="row">16: Export FMV subtitles</th>
+                    <tr id="op-10" data-operation="10" data-depends-on="6" data-run-all="false">
+                        <th scope="row">10: Export FMV subtitles</th>
                         <td>.tox.PS3 + global .LH2 → multilingual .csv and per-language .srt/.vtt.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/tox_to_srt.Subtitles.lua">operations/tox_to_srt.Subtitles.lua</a></td>
                         <td><code>[6]</code><br>run-all: <code>false</code></td>
                         <td>Reads original LH2 directly, outputs EN/ES/FR/IT and uses SS for labels. Matches VP6/OGV stems in A1_Video by language; duplicate paired destinations are written once. No font conversion or video transcode is performed.</td>
                     </tr>
-                    <tr id="op-10" data-operation="10" data-depends-on="6" data-run-all="false">
-                        <th scope="row">10: Decode sound banks</th>
+                    <tr id="op-11" data-operation="11" data-depends-on="-1,6" data-run-all="false">
+                        <th scope="row">11: Decode sound banks</th>
                         <td>.sbk → .wav through engine format-convert and vgmstream.<br><code>format-convert</code> (engine handler)</td>
-                        <td><code>[6]</code><br>run-all: <code>false</code></td>
+                        <td><code>[-1, 6]</code><br>run-all: <code>false</code></td>
                         <td>Requests --godot-compatible and --replace. The manifest does not request every bank subsong; a decoded default stream is not a complete event bank.</td>
                     </tr>
-                    <tr id="op-11" data-operation="11" data-depends-on="6" data-run-all="false">
-                        <th scope="row">11: Decode streamed audio</th>
+                    <tr id="op-12" data-operation="12" data-depends-on="-1,6" data-run-all="false">
+                        <th scope="row">12: Decode streamed audio</th>
                         <td>.snu (including .exa.snu) → .wav through vgmstream.<br><code>format-convert</code> (engine handler)</td>
-                        <td><code>[6]</code><br>run-all: <code>false</code></td>
+                        <td><code>[-1, 6]</code><br>run-all: <code>false</code></td>
                         <td>Requests Godot-compatible output; channel handling may involve FFmpeg. Metadata/control resources are not converted into playback logic.</td>
                     </tr>
-                    <tr id="op-12" data-operation="12" data-depends-on="10" data-run-all="false">
-                        <th scope="row">12: Extract and decode music segments</th>
+                    <tr id="op-13" data-operation="13" data-depends-on="-1,2" data-run-all="false">
+                        <th scope="row">13: Extract and decode music segments</th>
                         <td>.mus → temporary .snr/.sns pairs → .wav under the selected audio root/Music/&lt;friendly level&gt;/.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/SetupMusicFiles.lua">operations/SetupMusicFiles.lua</a></td>
-                        <td><code>[10]</code><br>run-all: <code>false</code></td>
+                        <td><code>[-1, 2]</code><br>run-all: <code>false</code></td>
                         <td>SetupMusicFiles.lua invokes mus.bms and decodes each SNR through vgmstream. The script removes intermediate SNR/SNS files after the extraction branch, including when a segment decode fails. It does not assemble MSB transitions.</td>
                     </tr>
-                    <tr id="op-13" data-operation="13" data-depends-on="6" data-run-all="false">
-                        <th scope="row">13: Convert movies</th>
+                    <tr id="op-14" data-operation="14" data-depends-on="-1,6" data-run-all="false">
+                        <th scope="row">14: Convert movies</th>
                         <td>.vp6 → .ogv through FFmpeg.<br><code>format-convert</code> (engine handler)</td>
-                        <td><code>[6]</code><br>run-all: <code>false</code></td>
+                        <td><code>[-1, 6]</code><br>run-all: <code>false</code></td>
                         <td>Video/audio transcode only. No TOX/LH2 subtitle resolution, font selection or burn-in is requested.</td>
                     </tr>
-                    <tr id="op-14" data-operation="14" data-depends-on="8,9,11,12" data-run-all="false">
-                        <th scope="row">14: Generate launch manifest</th>
+                    <tr id="op-15" data-operation="15" data-depends-on="7,8,10,11" data-run-all="false">
+                        <th scope="row">15: Generate launch manifest</th>
                         <td>Writes a static game.toml pointing to the prebuilt Godot project.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/generate-game-toml.lua">operations/generate-game-toml.lua</a></td>
-                        <td><code>[8, 9, 11, 12]</code><br>run-all: <code>false</code></td>
+                        <td><code>[7, 8, 10, 11]</code><br>run-all: <code>false</code></td>
                         <td>Despite its declared conversion dependencies, generate-game-toml.lua does not scan converted files, build an asset registry or package a new game.</td>
                     </tr>
                     <tr id="op-6677" data-operation="6677" data-depends-on="" data-run-all="false">
@@ -142,14 +142,14 @@
         </div>
         <h2 id="practical-inputs">Practical input relationships</h2>
         <ul>
-            <li><strong>Fonts:</strong> operation 15 needs the extracted PNG atlas as well as INF. Operation 3 produces PNGs; operation 6 supplies normalized context. The final dependency chain is not a substitute for checking that the matching atlas exists.</li>
-            <li><strong>Subtitles:</strong> operation 16 needs original global LH2 tables and TOX timing files. Operation 9 CSVs are not inputs. Movie pairing works with existing VP6 or OGV, so operation 13 is not a declared prerequisite. Missing translations are omitted from SRT/VTT while timing records remain in CSV.</li>
-            <li><strong>Music:</strong> operation 12 declares operation 10 as its dependency, although MUS extraction uses a different input family from SBK decoding. The script chooses an audio root and scans immediate .mus children, not an arbitrary recursive music graph.</li>
+            <li><strong>Fonts:</strong> operation 9 needs the extracted PNG atlas as well as INF. Operation 5 produces PNGs; operation 6 supplies normalized context. The final dependency chain is not a substitute for checking that the matching atlas exists.</li>
+            <li><strong>Subtitles:</strong> operation 10 needs original global LH2 tables and TOX timing files. Operation 8 CSVs are not inputs. Movie pairing works with existing VP6 or OGV, so operation 14 is not a declared prerequisite. Missing translations are omitted from SRT/VTT while timing records remain in CSV.</li>
+            <li><strong>Music:</strong> operation 13 declares operation 11 as its dependency, although MUS extraction uses a different input family from SBK decoding. The script chooses an audio root and scans immediate .mus children, not an arbitrary recursive music graph.</li>
             <li><strong>Models:</strong> normalized maps and PNG textures help resolve assets. Geometry conversion does not imply reconstructed physics, animation, effects, object properties or gameplay.</li>
         </ul>
         <h2 id="output-contracts">Output naming and retained metadata</h2>
-        <p>Operation 15 keeps the INF stem in the FNT filename and writes a relative atlas reference unless copying is requested. Operation 16 writes <code>timing.tox.PS3.csv</code> plus <code>timing_stem.en.srt</code>/<code>.vtt</code> (and ES/FR/IT equivalents) for non-empty timing tables. For a movie under <code>A1_Video/en/</code>, the paired companion uses the movie's exact stem. A six-hex path suffix is removed for matching, while output filenames retain the original stems.</p>
-        <p>Operation 16 defaults to writing beside each timing input. <code>--no-video-pairing</code> disables movie companions; selecting <code>--output-dir</code> also suppresses companion writes. <code>--include-speaker</code> adds label-derived speaker text. Empty timing files get CSV only. Missing-language outputs can contain no translated cues; that is not a recovered translation.</p>
+        <p>Operation 9 keeps the INF stem in the FNT filename and writes a relative atlas reference unless copying is requested. Operation 10 writes <code>timing.tox.PS3.csv</code> plus <code>timing_stem.en.srt</code>/<code>.vtt</code> (and ES/FR/IT equivalents) for non-empty timing tables. For a movie under <code>A1_Video/en/</code>, the paired companion uses the movie's exact stem. A six-hex path suffix is removed for matching, while output filenames retain the original stems.</p>
+        <p>Operation 10 defaults to writing beside each timing input. <code>--no-video-pairing</code> disables movie companions; selecting <code>--output-dir</code> also suppresses companion writes. <code>--include-speaker</code> adds label-derived speaker text. Empty timing files get CSV only. Missing-language outputs can contain no translated cues; that is not a recovered translation.</p>
         <h2 id="scope">Research and platform scope</h2>
         <p>ALB/CTB, SMB/MIB/MSB, character controllers, Havok resources, BSP/GRAPH, MetaModel, Shock and UIX have research pages but no dedicated registered conversion. Source scripts, editor extensions and illustrative parsers must be identified separately. PS3 and Xbox 360 may share asset concepts while differing in texture tiling, codecs and binary layouts.</p>
         <p>Source of operation IDs, dependencies and prompts: <a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations.toml">operations.toml</a>. Entry-point links above point to the game module repository; the documentation repository can be hosted separately without local operation scripts.</p>

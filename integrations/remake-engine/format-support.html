@@ -13,13 +13,13 @@
         <section id="format-ps3-game-formatanalysis-bin-index-html">
             <h2>PS3 executable (EBOOT.BIN)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/BIN/index.html">Game format reference</a></p>
-            <p>No executable decoder, converter or reconstruction is registered in <code>operations.toml</code>. STR extraction, media conversion and normalization do not convert this executable. Operation 14 writes a separate launch manifest for the prebuilt Godot project; it does not translate EBOOT.BIN. See the <a href="../../PS3_GAME/FormatAnalysis/pipeline.html">operation pipeline</a>.</p>
+            <p>No executable decoder, converter or reconstruction is registered in <code>operations.toml</code>. STR extraction, media conversion and normalization do not convert this executable. Operation 15 writes a separate launch manifest for the prebuilt Godot project; it does not translate EBOOT.BIN. See the <a href="../../PS3_GAME/FormatAnalysis/pipeline.html">operation pipeline</a>.</p>
         </section>
         <section id="format-ps3-game-formatanalysis-exa-snu-index-html">
             <h2>EXA.SNU Format Documentation</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/EXA.SNU/index.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-11">Operation 11: Convert Audio (.snu -&gt; .wav)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-12">Operation 12: Convert Audio (.snu -&gt; .wav)</a>. Declared dependencies: <code>[-1, 6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -33,7 +33,7 @@
             <h2>MUS Format Documentation</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/MUS/index.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-12">Operation 12: Convert Music (.mus -&gt; .snr/.sns -&gt; .wav)</a>. Declared dependencies: <code>[10]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-13">Operation 13: Convert Music (.mus -&gt; .snr/.sns -&gt; .wav)</a>. Declared dependencies: <code>[-1, 2]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -95,8 +95,8 @@
             <h2>English LH2 variant (.en.LH2)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/en.LH2.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-8">Operation 8: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-10">Operation 10: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -104,8 +104,8 @@
             <h2>Spanish LH2 variant (.es.LH2)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/es.LH2.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-8">Operation 8: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-10">Operation 10: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -113,8 +113,8 @@
             <h2>French LH2 variant (.fr.LH2)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/fr.LH2.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-8">Operation 8: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-10">Operation 10: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -147,7 +147,7 @@
             <h2>INF Format Documentation (.inf)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/inf.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-15">Operation 15: Convert Fonts (.inf -&gt; .fnt)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Convert Fonts (.inf -&gt; .fnt)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -155,8 +155,8 @@
             <h2>Italian LH2 variant (.it.LH2)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/it.LH2.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-8">Operation 8: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-10">Operation 10: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -164,8 +164,8 @@
             <h2>Localization table (.LH2)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/lh2.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-8">Operation 8: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-10">Operation 10: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -197,7 +197,7 @@
             <h2>Preinstanced Asset Format (EARS_MESH) - Complete Implementation Guide</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/preinstanced.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-8">Operation 8: Convert Models (.preinstanced -&gt; .blend)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-7">Operation 7: Convert Models (.preinstanced -&gt; .blend)</a>. Declared dependencies: <code>[0, -1, 1, 3, 5, 6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -223,7 +223,7 @@
             <h2>.sbk Format Documentation</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/sbk.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-10">Operation 10: Convert Audio (.sbk -&gt; .wav)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-11">Operation 11: Convert Audio (.sbk -&gt; .wav)</a>. Declared dependencies: <code>[-1, 6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -249,8 +249,8 @@
             <h2>Internal string labels LH2 variant (.ss.LH2)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/ss.LH2.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-9">Operation 9: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-8">Operation 8: Extract Dialogue/Subtitles (.lh2 -&gt; .csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-10">Operation 10: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -264,7 +264,7 @@
             <h2>.tox.PS3 Format Documentation</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/tox.PS3.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-16">Operation 16: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-10">Operation 10: Convert FMV Subtitles (.tox.PS3 -&gt; .srt/.vtt/.csv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -272,7 +272,7 @@
             <h2>Texture Dictionary (.txd) - Complete Format Analysis</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/imbedded-formats/txd.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-3">Operation 3: Extract Textures (.txd -&gt; .png)</a>. Declared dependencies: <code>[2]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-5">Operation 5: Extract Textures (.txd -&gt; .png)</a>. Declared dependencies: <code>[0, 1, 3]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
@@ -310,20 +310,20 @@
             <h2>.STR Archive Structure (EA Stream File)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/STR/index.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-1">Operation 1: Extract Archives (.STR)</a>. Declared dependencies: <code>[-1]</code>; <code>run-all = true</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-1">Operation 1: Extract Archives (.STR)</a>. Declared dependencies: <code>[0, -1]</code>; <code>run-all = true</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>
         <section id="format-ps3-game-formatanalysis-txt-index-html">
             <h2>Locale configuration (localetable.txt)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/TXT/index.html">Game format reference</a></p>
-            <p>The file is readable directly; no conversion is required for inspection and no dedicated locale-configuration parser is registered in <code>operations.toml</code>. This source-disc file is not a payload produced by STR extraction. Operations 9 and 16 read LH2 resources, not this configuration. See the <a href="../../PS3_GAME/FormatAnalysis/pipeline.html">operation pipeline</a> for their actual inputs.</p>
+            <p>The file is readable directly; no conversion is required for inspection and no dedicated locale-configuration parser is registered in <code>operations.toml</code>. This source-disc file is not a payload produced by STR extraction. Operations 8 and 10 read LH2 resources, not this configuration. See the <a href="../../PS3_GAME/FormatAnalysis/pipeline.html">operation pipeline</a> for their actual inputs.</p>
         </section>
         <section id="format-ps3-game-formatanalysis-vp6-index-html">
             <h2>Movie container (.vp6)</h2>
             <p><a href="../../PS3_GAME/FormatAnalysis/VP6/index.html">Game format reference</a></p>
             <ul>
-                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-13">Operation 13: Convert Videos (.vp6 -&gt; .ogv)</a>. Declared dependencies: <code>[6]</code>; <code>run-all = false</code>.</li>
+                <li><a href="../../PS3_GAME/FormatAnalysis/pipeline.html#op-14">Operation 14: Convert Videos (.vp6 -&gt; .ogv)</a>. Declared dependencies: <code>[-1, 6]</code>; <code>run-all = false</code>.</li>
             </ul>
             <p><a href="../../PS3_GAME/FormatAnalysis/pipeline.html">Pipeline reference</a> records the exact inputs, outputs and limitations. Dependencies in the manifest do not automatically prove that every practical input has been produced.</p>
         </section>

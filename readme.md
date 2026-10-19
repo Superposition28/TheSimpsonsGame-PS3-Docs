@@ -35,7 +35,7 @@ python -B tools/check_docs.py --module-checks
 
 The first command validates the standalone documentation. The last explicitly opts into checks against a parent module checkout. After editing source/naming JSON registries, run `python -B tools/render_reference.py`. Homepage coverage uses `reference/coverage.json`; run `python -B tools/render_home.py` to refresh its counts, lists and map colours. Commit the rendered HTML. These are authoring helpers, not a reader or hosting requirement.
 
-`AudioMap.yaml` remains at its existing path and schema because Remake Engine consumes it. Game associations and consumer rename behavior are documented separately. Preserve research attribution and distinguish observed bytes, inferred meanings, source-inspected tool behavior and original runtime behavior.
+`AudioMap.yaml` remains at its established path and now uses V2, with a JSON Schema alongside it. Remake Engine's consumer was migrated together with the registry. Game associations and consumer output conventions are documented separately. Preserve research attribution and distinguish observed bytes, inferred meanings, source-inspected tool behavior and original runtime behavior.
 
 The documentation is maintained in [TheSimpsonsGame-PS3-Docs](https://github.com/Superposition28/TheSimpsonsGame-PS3-Docs) and can also be checked out as a module submodule. [Remake Engine's game module](https://github.com/Superposition28/TheSimpsonsGame-PS3) and the [file viewer](https://github.com/Superposition28/TheSimpsonsGame-PS3-FileViewer) are related implementations.
 
