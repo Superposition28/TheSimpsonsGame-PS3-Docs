@@ -77,9 +77,9 @@
                     </tr>
                     <tr id="op-4" data-operation="4" data-depends-on="0,1,2,3" data-run-all="true">
                         <th scope="row">4: Reorganize audio</th>
-                        <td>Validates AudioMap V2 and automatically plans verified sorting of the generated audio tree.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/SetupAudioDir.lua">operations/SetupAudioDir.lua</a></td>
+                        <td>Stages English/global banks, then sorts streams with AudioMap V2.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/Audio/SetupAudioDir.lua">operations/Audio/SetupAudioDir.lua</a></td>
                         <td><code>[0, 1, 2, 3]</code><br>run-all: <code>true</code></td>
-                        <td>Requires V2; unmatched audio, collisions or changed files stop execution. Verified copies and journals support resume. Hooks set audio_state=audio_reorg.</td>
+                        <td>Uses one metadata scan and no-overwrite moves with live progress. Retains unmatched files and collisions, continues other streams, and removes empty directories. Hooks set audio_state=audio_reorg and accept an already-renamed dataset on repeat runs.</td>
                     </tr>
                     <tr id="op-5" data-operation="5" data-depends-on="0,1,3" data-run-all="false">
                         <th scope="row">5: Extract texture images</th>
@@ -131,7 +131,7 @@
                     </tr>
                     <tr id="op-13" data-operation="13" data-depends-on="-1,2" data-run-all="false">
                         <th scope="row">13: Extract and decode music segments</th>
-                        <td>.mus → temporary .snr/.sns pairs → .wav under the selected audio root/Music/&lt;friendly level&gt;/.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/SetupMusicFiles.lua">operations/SetupMusicFiles.lua</a></td>
+                        <td>.mus → temporary .snr/.sns pairs → .wav under the selected audio root/Music/&lt;friendly level&gt;/.<br><a href="https://github.com/Superposition28/TheSimpsonsGame-PS3/blob/main/operations/Audio/SetupMusicFiles.lua">operations/Audio/SetupMusicFiles.lua</a></td>
                         <td><code>[-1, 2]</code><br>run-all: <code>false</code></td>
                         <td>SetupMusicFiles.lua invokes mus.bms and decodes each SNR through vgmstream. The script removes intermediate SNR/SNS files after the extraction branch, including when a segment decode fails. It does not assemble MSB transitions.</td>
                     </tr>
