@@ -5,8 +5,8 @@
         <title>HKT.PS3 Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="reference-source" content="ps3-eu-original">
-        <meta name="path-namespace" content="legacy-mixed">
+        <meta name="reference-source" content="ps3-eu-extracted">
+        <meta name="path-namespace" content="mixed-explicit">
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Havok collision resource (.hkt.PS3)</nav>
@@ -16,25 +16,216 @@
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>Contains collision/physics data alongside rendered meshes in the observed asset trees.</p>
+            <p>Hkx-wrapped Havok 4 packfiles containing collision triangle meshes, MOPP acceleration data and some convex or box shapes. The inspected collision-directory set includes level collision; a collision file need not correspond to one visual model.</p>
             <dl>
                 <dt>Identification</dt>
-                <dd>Hkx and Havok-4.1.0-r1 strings, with __classnames__, __data__ and __types__ labels in samples.</dd>
+                <dd>16-byte Hkx wrapper; Havok magic at file +0x10, packfile version 4 and Havok-4.1.0-r1 content version.</dd>
                 <dt>Byte order / text</dt>
-                <dd>PS3 fields and Havok layout metadata must be interpreted together.</dd>
+                <dd>Big-endian 32-bit integers/floats and 4-byte pointers for the inspected layout; names are null-terminated ASCII.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>2026-10-22: all 112 HKT paths in the supplied collision-directory list, 107 distinct SHA-256 values; every mapped Full/FullFlattened pair matched byte-for-byte.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
             <strong>On this page</strong>
             <ul>
+                <li><a href="#collision-audit-2026-10-22">2026 collision investigation</a></li>
+                <li><a href="#packfile-layout">Wrapper, sections and fixups</a></li>
+                <li><a href="#mesh-layout">Collision mesh and shape layouts</a></li>
+                <li><a href="#extraction-guidance">Extraction guidance and unknowns</a></li>
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
                 <li><a href="#what-it-s-for">What it&#39;s for</a></li>
             </ul>
         </nav>
+        <h2 id="collision-audit-2026-10-22">2026 collision investigation</h2>
+        <p><strong>Observed scope:</strong> the user's 401-path list selects files beneath directories literally named <code>collision</code> in <code>ps3-eu-flattened</code>. Its 112 HKT files range from 2,592 to 2,341,728 bytes. The current entire flattened dataset has 878 HKT paths, including 766 outside those directories; the following counts describe the selected list, not every HKT or every model collider. The normalizer map resolved every selected HKT to <code>ps3-eu-extracted</code>, with identical bytes in both views.</p>
+        <p>Reproducible static evidence: <a href="../../../../tools/inspect_havok_collision.py">inspect_havok_collision.py</a> and its <a href="../../../../research/2026-10-22-havok-collision.json">retained report</a>. The report records canonical paths, aliases, sizes, SHA-256 values, section boundaries, fixup counts, instantiated classes and bounded mesh validation. Class-name strings alone are not counted as instantiated objects: counts below come from virtual fixup records.</p>
+        <div class="table-scroll" role="region" aria-label="Instantiated collision classes" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Class</th>
+                        <th scope="col">Instances across 112 paths</th>
+                        <th scope="col">Observed role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>EAPhysicsSystem</code></td>
+                        <td>112</td>
+                        <td>Root object at data-section offset zero.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkRigidBody</code></td>
+                        <td>8,128</td>
+                        <td>Named body with a shape reference.</td>
+                    </tr>
+                    <tr>
+                        <td><code>EAStorageMeshShape</code>, <code>hkMoppBvTreeShape</code>, <code>hkMoppCode</code></td>
+                        <td>8,054 each</td>
+                        <td>Each MOPP tree points to a mesh and code object.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkConvexVerticesShape</code></td>
+                        <td>53</td>
+                        <td>Four-lane vertex and plane arrays.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkBoxShape</code></td>
+                        <td>21</td>
+                        <td>Box primitives.</td>
+                    </tr>
+                    <tr>
+                        <td><code>EAMaterial</code></td>
+                        <td>8,580</td>
+                        <td>Referenced by per-triangle pointer arrays.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>The 8,054 meshes contain 371,687 vertices and 565,089 triangles, counting duplicate files per listed path. All inspected vertex coordinates are finite, all vertex fourth components are zero, all triangle indices lie within their mesh's vertex count, and each triangle has one material-pointer slot resolving to an <code>EAMaterial</code> object. These checks establish recoverable geometry, not original-game collision response.</p>
+        <h2 id="packfile-layout">Wrapper, sections and fixups</h2>
+        <p>All 112 selected HKT files and all 25 selected <a href="hko.PS3.html">HKO files</a> share this header. Unless a table says otherwise, offsets here are file-relative, fields are big-endian and ends are exclusive. <code>H = 0x10</code> is the Havok packfile base: section <code>absoluteDataStart</code> values are absolute relative to H, not the beginning of the wrapped file.</p>
+        <div class="table-scroll" role="region" aria-label="Hkx and Havok header" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">File offset</th>
+                        <th scope="col">Bytes / type</th>
+                        <th scope="col">Meaning / observed value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>0x00</code></td>
+                        <td>16 bytes</td>
+                        <td><code>48 6b 78 10 09 00 00 00 00 00 00 00 00 00 00 00</code>; Hkx wrapper, remaining semantics unresolved.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x10</code></td>
+                        <td>UInt32 × 2</td>
+                        <td>Havok magic <code>0x57e0e057</code>, <code>0x10c0c010</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x18</code>, <code>0x1c</code></td>
+                        <td>UInt32 each</td>
+                        <td>User tag 0; packfile version 4.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x20</code></td>
+                        <td>4 bytes</td>
+                        <td>Layout rules <code>04 00 01 01</code>: 4-byte pointers, big-endian, reuse-padding and empty-base optimization flags set.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x24</code></td>
+                        <td>UInt32</td>
+                        <td>3 sections.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x28</code>–<code>0x37</code></td>
+                        <td>UInt32 × 4</td>
+                        <td>Contents section 1, contents offset 0; contents-class-name section 0, string offset <code>0xd0</code> (<code>EAPhysicsSystem</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x38</code></td>
+                        <td>16 bytes</td>
+                        <td><code>Havok-4.1.0-r1\0</code> and fill; content version, distinct from packfile version 4.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x48</code></td>
+                        <td>8 bytes</td>
+                        <td><code>ff</code> fill.</td>
+                    </tr>
+                    <tr>
+                        <td><code>0x50</code></td>
+                        <td>3 × 48 bytes</td>
+                        <td>Section descriptors: <code>__classnames__</code>, <code>__data__</code>, <code>__types__</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>Each section descriptor has a 19-byte null-terminated tag and one fill byte, then seven UInt32 fields at descriptor <code>+0x14</code>: <code>absoluteDataStart</code>, <code>localFixupsOffset</code>, <code>globalFixupsOffset</code>, <code>virtualFixupsOffset</code>, <code>exportsOffset</code>, <code>importsOffset</code>, <code>endOffset</code>. The latter six are relative to that section's data start <code>B = H + absoluteDataStart</code>. Validate their monotonic order and <code>B + endOffset ≤ file size</code>. In this set <code>__types__</code> is empty at EOF, while exports/imports have zero length.</p>
+        <p>Class-name records contain a UInt32 signature, byte <code>09</code>, then a null-terminated ASCII name; <code>ff</code> fills the aligned tail. A virtual fixup refers to the string offset within the class-name section, not the preceding signature. The empty <code>__types__</code> section means the files do not supply full member reflection layouts.</p>
+        <ul>
+            <li><strong>Local fixup:</strong> 8 bytes, <code>(sourceOffset, targetOffset)</code>. Both offsets are relative to the current section's B.</li>
+            <li><strong>Global fixup:</strong> 12 bytes, <code>(sourceOffset, targetSectionIndex, targetOffset)</code>. Follow the named section; “global” does not mean another file. All inspected object pointers target the data section.</li>
+            <li><strong>Virtual fixup:</strong> 12 bytes, <code>(objectOffset, classNameSectionIndex, classNameStringOffset)</code>. These identify object classes; they are not triangle or pointer arrays.</li>
+            <li>Fixup regions end at the next declared boundary; their alignment tails are <code>ff</code>. Stop before padding, including partial final records. Stored pointer slots are zero in these files: follow fixups rather than reading zero as a valid file offset.</li>
+        </ul>
+        <h2 id="mesh-layout">Collision mesh and shape layouts</h2>
+        <p>The following are validated offsets within the inspected 32-bit PS3 class layout, relative to each object O. Array pointer slots resolve through the fixup tables. An <code>hkArray</code>-like triple is pointer, UInt32 count, UInt32 capacity/flags; observed capacity words commonly include <code>0xc0000000</code>. Preserve those flags separately from the element count.</p>
+        <div class="table-scroll" role="region" aria-label="Collision class fields" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Class / O-relative field</th>
+                        <th scope="col">Observed interpretation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>hkRigidBody +0x10</code>, <code>+0x1c</code></td>
+                        <td>Name-string pointer; shape pointer. A tree shape can then point to a mesh.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkRigidBody +0xb0</code>–<code>+0xef</code></td>
+                        <td>16 floats arranged as three padded basis vectors and a padded position vector; candidate authored transform. Runtime/world and bone-space interpretation still needs validation.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkMoppBvTreeShape +0x10</code>, <code>+0x14</code></td>
+                        <td>Child <code>EAStorageMeshShape</code> pointer and <code>hkMoppCode</code> pointer.</td>
+                    </tr>
+                    <tr>
+                        <td><code>EAStorageMeshShape +0x14</code>, <code>+0x18</code></td>
+                        <td>Vertex pointer and count. Each vertex is four Float32 values (16-byte stride); XYZ coordinates, W observed zero.</td>
+                    </tr>
+                    <tr>
+                        <td><code>EAStorageMeshShape +0x20</code>, <code>+0x24</code></td>
+                        <td>Triangle pointer and count. Each triangle is three UInt32 vertex indices (12-byte stride), not a four-word record or strip.</td>
+                    </tr>
+                    <tr>
+                        <td><code>EAStorageMeshShape +0x38</code></td>
+                        <td>Float32 value consistent with a convex margin (first example <code>0.01</code>); exact query semantics unverified.</td>
+                    </tr>
+                    <tr>
+                        <td><code>EAStorageMeshShape +0x40</code>–<code>+0xbf</code></td>
+                        <td>Eight padded XYZ vectors, consistent with expanded bounding-box corners. These are not the mesh vertex array.</td>
+                    </tr>
+                    <tr>
+                        <td><code>EAStorageMeshShape +0xc0</code>, <code>+0xc4</code></td>
+                        <td>Per-triangle material-pointer array and count. Each 4-byte slot resolves through a global fixup to an <code>EAMaterial</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkBoxShape +0x0c</code>, <code>+0x10</code></td>
+                        <td>Float32 convex radius and padded XYZ half-extents. Preserve the margin separately; scaling dimensions by <code>1 + radius</code> is an older viewer approximation.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkConvexVerticesShape +0x0c</code>, <code>+0x10</code>, <code>+0x20</code></td>
+                        <td>Convex radius, AABB half-extents vector and AABB center vector.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkConvexVerticesShape +0x30</code>, <code>+0x34</code>, <code>+0x3c</code></td>
+                        <td>Four-lane vector-array pointer, group count and real vertex count. Each 48-byte group stores XXXX, YYYY, ZZZZ; trim padding lanes to the real count.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkConvexVerticesShape +0x40</code>, <code>+0x44</code></td>
+                        <td>Plane-array pointer and count; each plane is four Float32 values. Hull triangulation/query semantics were not reconstructed.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>In all 8,054 inspected meshes, vertices begin at <code>O + 0xd0</code> and triangles immediately follow the vertex array, matching the older viewer's fixed skip. Following fixups is still the safer format rule: it validates the array source and avoids generalizing that packing to other builds or shapes.</p>
+        <p><strong>Canonical example:</strong> <code>ps3-eu-extracted:L01_LandOfChocolate/loc/zone01_str/build/PS3/pal_en/assets/environs/loc/loc/zone01/export/collision/collisionmodel1.hkt.PS3</code>. Flattened alias: <code>L01_LandOfChocolate/loc/zone01str/assetsEnvirons/export/collision/collisionmodel1_cfeaf1.hkt.PS3</code>. Both are 37,152 bytes, SHA-256 <code>8d5c4333c7e5565acf9476ac011b5debf6c231d9fdb141f245234883335787d3</code>.</p>
+        <p><strong>Verified original provenance:</strong> <code>ps3-eu-original:PS3_GAME/USRDIR/loc/loc/zone01.str</code>, section 0 (stored source offset <code>0x800</code>), uncompressed record offset <code>0x0</code>, type <code>HKT</code>, member <code>x:\build\PS3\pal_en\assets\environs\loc\loc\zone01\export\collision\collisionmodel1.hkt.PS3</code>. Independently decoded payload bytes match the extracted SHA-256 above. See the <a href="../../../../research/2026-10-22-collision-provenance.json">archive provenance report</a> for source hashes and decode details. This proves the named sample, not original membership for every listed file.</p>
+        <p>In this example data B is file <code>0x470</code>. Mesh O is data <code>0x330</code> (file <code>0x7a0</code>); the local fixup from data <code>0x344</code> leads to vertices at data <code>0x400</code>, count 34. The fixup from <code>0x350</code> leads to triangles at <code>0x620</code>, count 64; first triangle <code>(0, 1, 16)</code>. The material array starts at data <code>0x920</code>, with 64 pointers. Observed mesh XYZ bounds are approximately <code>(-3.953629, 0, 14.289051)</code> to <code>(0.329924, 4.191096, 18.572603)</code>.</p>
+        <h2 id="extraction-guidance">Extraction guidance and unknowns</h2>
+        <p>For a first collision-geometry extractor, parse this wrapper and section layout, enumerate virtual fixups, follow body-to-shape and mesh-array fixups, then emit triangle meshes plus separate primitive/convex records. The explicit mesh arrays allow collision geometry to be recovered without interpreting or executing the MOPP bytecode. Preserve body names, raw transforms, material references and original units so model/scene associations can be resolved later. A whole level HKT can contain many bodies and need not match a preinstanced file by basename.</p>
+        <p>Matching paths and authored names suggest associations with <a href="preinstanced.html">preinstanced visual models</a> and scene resources. This pass does not prove a complete join to render meshes, transform composition, axis/scale conversion, world placement, skeletal binding, motion modes, material response, contact filters or runtime loading. The other 766 HKT and 996 HKO resources outside literal collision directories need broader class/layout sampling before claiming complete suffix support.</p>
+        <p><strong>Source-inspected tool evidence:</strong> the local <code>reversing/TSGFileViewer/Scripts/Editor/Collision/CollisionLoader.cs</code> and <code>HavokReader/Classes/EAStorageMeshShape.cs</code> already attempt partial mesh/box/sphere/convex visualization. They helped identify field candidates, now checked against the selected bytes. Their hardcoded skips, viewer Z flip, box origin and <code>1 + convexRadius</code> scaling are implementation choices, not established original format semantics; the viewer does not reconstruct the complete physics system. No new engine importer was implemented by this investigation.</p>
+        <pre><code>python -B tools/inspect_havok_collision.py --module-root ../.. --output research/2026-10-22-havok-collision.json</code></pre>
+        <p>Run from the documentation root in a module checkout with both datasets present. Without <code>--paths</code>, the script selects HKT/HKO entries in literal collision directories from the normalizer map; <code>--paths &lt;text-file&gt;</code> restricts it to a supplied absolute flattened-path list. It validates bounds, fixups, class joins, geometry and canonical/alias identity without running the game or exporting model geometry. The retained report fingerprints the current map; the source registry's older map fingerprint remains a separately dated snapshot.</p>
         <section id="related-formats">
             <h2 id="related-formats-2">Related formats</h2>
             <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
@@ -72,53 +263,57 @@
             <p>Observed mesh/shape names support a collision role. Descriptive strings alone do not establish every header, fixup or runtime behavior. No Havok conversion is registered.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
-        <p>A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Map_3-00_SprHub\spr_hub\zone06_str\build\PS3\pal_en\assets\props\eps_mob_rules\mob_scaffolding\geo\export\mob_scaffolding_mr_unbuilt\collisionmodel.hkt.PS3</p>
-        <p><code>collisionmodel1.hkt.PS3</code> likly a <strong>Havok HKX packfile</strong> (big-endian PS3 build) that contains the <strong>physics/collision data</strong> for the prop <em>spr_margesalonchair</em>. The game&#39;s Havok runtime loads this alongside the RenderWare-rendered mesh to provide <strong>static collision</strong>, <strong>raycasts</strong>, and <strong>physics queries</strong> in the Game Hub interior.</p>
-        <hr>
-        <ul>
-            <li>
-                <p><strong>Magic &amp; header:</strong> starts with <code>48 6B 78</code> → <strong>&quot;Hkx&quot;</strong>, followed by <code>Havok-4.1.0-r1</code>. That&#39;s Havok Content Tools 4.1 packfile metadata.</p>
-            </li>
-            <li>
-                <p><strong>Packfile sections:</strong> literal section labels:</p>
-                <ul>
-                    <li><code>__classnames__</code>, <code>__data__</code>, <code>__types__</code> -- classic Havok <strong>tagfile/packfile</strong> layout.</li>
-                </ul>
-            </li>
-            <li>
-                <p><strong>Havok class table:</strong> many baked type names:</p>
-                <ul>
-                    <li><code>hkClass</code>, <code>hkClassMember</code>, <code>hkClassEnum</code>, ...</li>
-                    <li>Physics/shape types: <code>hkRigidBody</code>, <code>hkBvTreeShape</code>, <code>hkMoppBvTreeShape</code>, <code>hkSimpleMeshShape</code>, <code>hkStorageMeshShape</code>, <code>hkShapeContainer</code>, <code>hkMotion</code>, etc.</li>
-                </ul>
-            </li>
-            <li>
-                <p><strong>Asset name string:</strong> <code>spr_margesalonchair|MetaModel|Asset|CollisionModel1|...|v3</code> -- clearly labels this file as the <strong>collision model</strong> for that prop.</p>
-            </li>
-            <li>
-                <p><strong>Geometry + tree:</strong> you can see BE floats and index lists (vertex data / triangle indices) and a <strong>MOPP BVTree</strong> block -- Havok&#39;s static-mesh acceleration structure for collisions.</p>
-            </li>
-        </ul>
-        <hr>
-        <h2 id="what-it-s-for">What it&#39;s for</h2>
-        <ul>
-            <li>
-                <p>Acts as the <strong>physics representation</strong> of the chair prop:</p>
-                <ul>
-                    <li>A <strong>static rigid body</strong> (fixed motion) built from a <strong>mesh shape</strong> wrapped in a <strong>BVTree/MOPP</strong> for fast queries.</li>
-                    <li>Used for <strong>character/controller collision</strong>, <strong>line-of-sight/raycasts</strong>, <strong>projectile hits</strong>, and <strong>placement/blocking</strong>.</li>
-                </ul>
-            </li>
-            <li>
-                <p>Loaded by the game&#39;s Havok integration while the <strong>RenderWare</strong> side draws the visual mesh. The two are associated via the shared asset naming/path.</p>
-            </li>
-        </ul>
-        <hr>
-        <p>related extensions:</p>
-        <ul>
-            <li><code>.hkt.PS3</code> all regular collision files have this extension</li>
-            <li><code>.hko.PS3</code> all animated collision files have this extension, and all character collision spheres use this extension</li>
-            <li><code>.acs.PS3</code> always contained within collision folders (or subfolders of it) often alongside <code>.hko.PS3</code> files</li>
-        </ul>
+        <details>
+            <summary>Historical sample notes, retained with unverified runtime claims</summary>
+            <p>The following older notes preserve their recorded mixed paths and hypotheses. Claims about every suffix, fixed/static motion, runtime loading and specific gameplay queries were not demonstrated by this investigation. The measured layouts and scoped counts above supersede those generalizations. “Tagfile” below is an older loose label; the inspected resources are Havok packfiles.</p>
+            <p>A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Map_3-00_SprHub\spr_hub\zone06_str\build\PS3\pal_en\assets\props\eps_mob_rules\mob_scaffolding\geo\export\mob_scaffolding_mr_unbuilt\collisionmodel.hkt.PS3</p>
+            <p><code>collisionmodel1.hkt.PS3</code> likly a <strong>Havok HKX packfile</strong> (big-endian PS3 build) that contains the <strong>physics/collision data</strong> for the prop <em>spr_margesalonchair</em>. The game&#39;s Havok runtime loads this alongside the RenderWare-rendered mesh to provide <strong>static collision</strong>, <strong>raycasts</strong>, and <strong>physics queries</strong> in the Game Hub interior.</p>
+            <hr>
+            <ul>
+                <li>
+                    <p><strong>Magic &amp; header:</strong> starts with <code>48 6B 78</code> → <strong>&quot;Hkx&quot;</strong>, followed by <code>Havok-4.1.0-r1</code>. That&#39;s Havok Content Tools 4.1 packfile metadata.</p>
+                </li>
+                <li>
+                    <p><strong>Packfile sections:</strong> literal section labels:</p>
+                    <ul>
+                        <li><code>__classnames__</code>, <code>__data__</code>, <code>__types__</code> -- classic Havok <strong>tagfile/packfile</strong> layout.</li>
+                    </ul>
+                </li>
+                <li>
+                    <p><strong>Havok class table:</strong> many baked type names:</p>
+                    <ul>
+                        <li><code>hkClass</code>, <code>hkClassMember</code>, <code>hkClassEnum</code>, ...</li>
+                        <li>Physics/shape types: <code>hkRigidBody</code>, <code>hkBvTreeShape</code>, <code>hkMoppBvTreeShape</code>, <code>hkSimpleMeshShape</code>, <code>hkStorageMeshShape</code>, <code>hkShapeContainer</code>, <code>hkMotion</code>, etc.</li>
+                    </ul>
+                </li>
+                <li>
+                    <p><strong>Asset name string:</strong> <code>spr_margesalonchair|MetaModel|Asset|CollisionModel1|...|v3</code> -- clearly labels this file as the <strong>collision model</strong> for that prop.</p>
+                </li>
+                <li>
+                    <p><strong>Geometry + tree:</strong> you can see BE floats and index lists (vertex data / triangle indices) and a <strong>MOPP BVTree</strong> block -- Havok&#39;s static-mesh acceleration structure for collisions.</p>
+                </li>
+            </ul>
+            <hr>
+            <h2 id="what-it-s-for">What it&#39;s for</h2>
+            <ul>
+                <li>
+                    <p>Acts as the <strong>physics representation</strong> of the chair prop:</p>
+                    <ul>
+                        <li>A <strong>static rigid body</strong> (fixed motion) built from a <strong>mesh shape</strong> wrapped in a <strong>BVTree/MOPP</strong> for fast queries.</li>
+                        <li>Used for <strong>character/controller collision</strong>, <strong>line-of-sight/raycasts</strong>, <strong>projectile hits</strong>, and <strong>placement/blocking</strong>.</li>
+                    </ul>
+                </li>
+                <li>
+                    <p>Loaded by the game&#39;s Havok integration while the <strong>RenderWare</strong> side draws the visual mesh. The two are associated via the shared asset naming/path.</p>
+                </li>
+            </ul>
+            <hr>
+            <p>related extensions:</p>
+            <ul>
+                <li><code>.hkt.PS3</code> all regular collision files have this extension</li>
+                <li><code>.hko.PS3</code> all animated collision files have this extension, and all character collision spheres use this extension</li>
+                <li><code>.acs.PS3</code> always contained within collision folders (or subfolders of it) often alongside <code>.hko.PS3</code> files</li>
+            </ul>
+        </details>
     </body>
 </html>

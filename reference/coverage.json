@@ -290,8 +290,8 @@
       "platforms": {
         "ps3": {
           "colour": "blue",
-          "status": "Analysis only",
-          "detail": "The expanded name and sphere/capsule interpretation are hypotheses. No field-by-field bone-binding join or collision importer has been established."
+          "status": "Record layout and bindings analyzed",
+          "detail": "264 collision-directory files walked to EOF; bunny ACS IDs join BBN aliases and visual HAnim nodes. Shape semantics and pose/coordinate reconstruction remain partial; no registered collision importer."
         },
         "xbox360": {
           "colour": "grey",
@@ -452,8 +452,8 @@
       "platforms": {
         "ps3": {
           "colour": "blue",
-          "status": "Analysis only",
-          "detail": "Static/animated usage patterns are observations, not a universal suffix rule. Complete Havok object/fixup reconstruction is not registered."
+          "status": "Havok primitive objects analyzed",
+          "detail": "25 collision-directory files are identical copies of one packfile containing 13 boxes and 3 spheres. Shape/fixup layout validated for this sample; broader HKO contents and runtime behavior remain unresolved."
         },
         "xbox360": {
           "colour": "grey",
@@ -470,8 +470,8 @@
       "platforms": {
         "ps3": {
           "colour": "blue",
-          "status": "Analysis only",
-          "detail": "Observed mesh/shape names support a collision role. Descriptive strings alone do not establish every header, fixup or runtime behavior. No Havok conversion is registered."
+          "status": "Havok mesh arrays analyzed",
+          "detail": "112 collision-directory HKT files audited: wrapper, sections, fixups and bounded EAStorageMeshShape vertex/triangle arrays. Original runtime and world placement remain unresolved; no registered Havok conversion."
         },
         "xbox360": {
           "colour": "grey",

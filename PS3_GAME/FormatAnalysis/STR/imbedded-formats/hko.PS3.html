@@ -5,8 +5,8 @@
         <title>HKO.PS3 Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="reference-source" content="ps3-eu-original">
-        <meta name="path-namespace" content="legacy-mixed">
+        <meta name="reference-source" content="ps3-eu-extracted">
+        <meta name="path-namespace" content="mixed-explicit">
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Havok object resource (.hko.PS3)</nav>
@@ -16,24 +16,104 @@
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>Stores Havok-associated physics objects in character and prop contexts.</p>
+            <p>Hkx-wrapped Havok 4 object resources. The inspected collision-directory set contains one repeated character collision resource with named box and sphere bodies; the wider HKO set includes many other character and prop paths.</p>
             <dl>
                 <dt>Identification</dt>
-                <dd>Havok class names and physics-system strings in the documented samples.</dd>
+                <dd>16-byte Hkx wrapper, Havok packfile magic at file +0x10, content version Havok-4.1.0-r1.</dd>
                 <dt>Byte order / text</dt>
-                <dd>PS3 numeric data is interpreted per Havok layout; fixups and pointers require separate handling.</dd>
+                <dd>Inspected layout uses big-endian 32-bit integers/floats, four-byte pointers and null-terminated ASCII names. Follow section fixups.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>2026-10-22: all 25 HKO paths in the supplied collision-directory list, one distinct 14,416-byte file; every mapped Full/FullFlattened pair matched byte-for-byte.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
             <strong>On this page</strong>
             <ul>
+                <li><a href="#collision-audit-2026-10-22">2026 collision investigation</a></li>
+                <li><a href="#object-layout">Object and primitive layouts</a></li>
+                <li><a href="#joins-and-limits">Model associations and limits</a></li>
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
             </ul>
         </nav>
+        <h2 id="collision-audit-2026-10-22">2026 collision investigation</h2>
+        <p><strong>Observed scope:</strong> all 25 HKO entries in the supplied 401-path collision-directory list are copies of <code>char_collision_spheres.hko.PS3</code>: 14,416 bytes, SHA-256 <code>a24fda8447716845b840e70d264c2ed1bc5e11ed2a900944582f3f25d397aeda</code>. These paths must not be treated as 25 independently designed collision setups. Their canonical Full counterparts are identical. The entire current flattened dataset contains 1,021 HKO paths, of which 996 lie outside literal <code>collision</code> directories; their layouts were not covered by this selected-set analysis.</p>
+        <p>Despite its filename, this one file contains <strong>13 box shapes and 3 sphere shapes</strong>. Its virtual fixups instantiate one <code>EAPhysicsSystem</code>, 16 <code>hkRigidBody</code>, 16 <code>EAMaterial</code>, 13 <code>hkBoxShape</code> and 3 <code>hkSphereShape</code> objects. There are no instantiated constraint, MOPP or triangle-mesh objects in this file. The class-name table includes other Havok types needed for type relationships; their strings do not prove corresponding object instances or a ragdoll.</p>
+        <p>Static evidence and reproduction: <a href="../../../../tools/inspect_havok_collision.py">inspect_havok_collision.py</a> and <a href="../../../../research/2026-10-22-havok-collision.json">retained HKT/HKO report</a>. The report keeps each path/hash identity and one analysis per unique byte sequence, including all 16 body names, shape pointers, primitive dimensions and raw candidate transforms. No original runtime was executed.</p>
+        <p><strong>Canonical example:</strong> <code>ps3-eu-extracted:A2_Characters/GlobalFolder/chars/marge_mm0_h0_str/build/PS3/pal_en/assets/shared/collision/char_collision_spheres.hko.PS3</code>. Flattened alias: <code>A2_Characters/globalFolder/chars/margeMm0h0str/assets/shared/collision/char_collision_spheres_7959dc.hko.PS3</code>. These are the hashed bytes above, not a reconstruction of the historical Marge sample below.</p>
+        <p><strong>Verified original provenance:</strong> <code>ps3-eu-original:PS3_GAME/USRDIR/simpsons_chars/GlobalFolder/chars/marge_mm0_h0.str</code>, section 0 (stored source offset <code>0x800</code>), uncompressed record offset <code>0x2850</code>, type <code>HKO</code>, member <code>x:\build\PS3\pal_en\assets\shared\collision\char_collision_spheres.hko.PS3</code>. Independently decoded payload bytes match the extracted SHA-256. The <a href="../../../../research/2026-10-22-collision-provenance.json">archive provenance report</a> records source hashes and decode coordinates; original STR membership for the other copies was not established by this sample.</p>
+        <h2 id="object-layout">Object and primitive layouts</h2>
+        <p>The <a href="hkt.PS3.html#packfile-layout">HKT wrapper, section and fixup specification</a> applies byte-for-byte to the selected HKO header: Hkx wrapper at <code>0x00</code>, Havok packfile base H at <code>0x10</code>, version 4, layout rules <code>04 00 01 01</code>, three sections. Data section B is file <code>0x3d0</code>. Its relative boundaries are local fixups <code>0x2ed0</code>, global fixups <code>0x2ff0</code>, virtual fixups <code>0x3230</code>, exports/imports/end <code>0x3480</code>. The empty <code>__types__</code> section starts at EOF <code>0x3850</code>. Parse fixup padding within these bounds rather than assuming every region length is a multiple of its record size.</p>
+        <div class="table-scroll" role="region" aria-label="HKO body and primitive fields" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Object-relative field</th>
+                        <th scope="col">Observed meaning / constraint</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>hkRigidBody +0x10</code></td>
+                        <td>Local fixup to null-terminated body name.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkRigidBody +0x1c</code></td>
+                        <td>Global fixup to a shape object in the data section.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkRigidBody +0xb0</code>–<code>+0xef</code></td>
+                        <td>Sixteen finite Float32 values: padded basis vectors and position. Keep raw values; final bone/world transform composition is unresolved.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkBoxShape +0x0c</code></td>
+                        <td>Float32 convex radius; <code>0.05</code> in all 13 boxes.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkBoxShape +0x10</code></td>
+                        <td>Four Float32 values; XYZ half-extents with a fourth stored value. Preserve the fourth value instead of assuming it is zero.</td>
+                    </tr>
+                    <tr>
+                        <td><code>hkSphereShape +0x0c</code></td>
+                        <td>Float32 radius; the instantiated sphere is 16 bytes long in this layout.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>All fields above are big-endian. Stored pointers are zero before fixup resolution. For example, the first body's data offset is <code>0x170</code>; its name pointer slot at <code>0x180</code> locally resolves to data <code>0x370</code>, and its shape slot at <code>0x18c</code> globally resolves to data <code>0x400</code>, a box. That box's XYZ half-extents are approximately <code>(0.110339, 0.125128, 0.134798)</code>, with convex radius <code>0.05</code>; these are distinct quantities.</p>
+        <div class="table-scroll" role="region" aria-label="Sphere objects in the repeated HKO file" tabindex="0">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Body-name suffix</th>
+                        <th scope="col">Shape offset, data-relative</th>
+                        <th scope="col">Radius in stored units</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>ignore_collision_m_lumbar</code></td>
+                        <td><code>0x1470</code></td>
+                        <td>0.339149</td>
+                    </tr>
+                    <tr>
+                        <td><code>ignore_collision_m_pelvis</code></td>
+                        <td><code>0x1c80</code></td>
+                        <td>1.186556</td>
+                    </tr>
+                    <tr>
+                        <td><code>ignore_collision_m_thoracic</code></td>
+                        <td><code>0x1f20</code></td>
+                        <td>0.191976</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="joins-and-limits">Model associations and limits</h2>
+        <p>All 16 body names begin <code>CHARACTER|MODEL|skel_lotr4|reference|AITrajectory|m_pelvis</code> and continue through bone-like paths to <code>ignore_collision_*</code> labels. This supports a skeletal collision association, but strings named <code>AITrajectory</code> or <code>ignore_collision</code> do not by themselves demonstrate AI trajectories, disabled collision, runtime filtering or a bone-index lookup rule. The repeated file's presence in Marge directories also does not prove its dimensions are the final Marge collision volumes.</p>
+        <p>For collision extraction alongside <a href="preinstanced.html">preinstanced models</a>, resolve named bodies to shape records through fixups, retain primitive radii/half-extents and candidate body transforms, and establish a separate association to skeleton/scene resources. <a href="acs.PS3.html#collision-audit-2026-10-22">ACS</a> is a separate compact record format in nearby directories, not this Havok packfile layout. No binary cross-reference or universal HKO/ACS merge rule was established.</p>
+        <p>The local source <code>reversing/TSGFileViewer/Scripts/Editor/Collision/CollisionLoader.cs</code> attempts partial box/sphere/mesh/convex visualization. Its origin placement and box-size multiplier <code>1 + convexRadius</code> are viewer approximations, not validated physical semantics. A full physics loader still needs class coverage outside the selected set, motion/filter/material meanings, verified transforms and runtime bindings. Static versus animated is not a proven universal distinction between HKT and HKO.</p>
         <section id="related-formats">
             <h2 id="related-formats-2">Related formats</h2>
             <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
@@ -71,78 +151,82 @@
             <p>Static/animated usage patterns are observations, not a universal suffix rule. Complete Havok object/fixup reconstruction is not registered.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
-        <p>A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\marge.acs.PS3 A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\char_collision_spheres.hko.PS3</p>
-        <h4><code>.hko.ps3</code> — Havok Physics Files (PS3 Version)</h4>
-        <p><strong>Purpose:</strong></p>
-        <p>The <code>.hko.ps3</code> files define physics setups for characters, props, and other objects in the game using the Havok Physics Engine. They contain all necessary data for how an object interacts physically within the world — including collision detection, joint constraints, movement behaviors, and material properties.</p>
-        <p>These files are specifically formatted for the PlayStation 3 architecture to optimize performance (e.g., memory layout, endian formats).</p>
-        <p><strong>Context:</strong></p>
-        <p>This game uses RenderWare for graphics and world rendering.</p>
-        <p>It integrates Havok 4.1.0-r1 as its physics simulation middleware.</p>
-        <p><code>.hko.ps3</code> files serve as the bridge between RenderWare-rendered objects and Havok-simulated physical behavior.</p>
-        <p><strong>Example path:</strong></p>
-        <p>...\chars++lisa_hog\bound++export\lisa_hog.hko.PS3</p>
-        <p>Here, <code>lisa_hog.hko.ps3</code> likely contains the complete physics setup for the character Lisa, defining how her body reacts to forces, impacts, and movement.</p>
-        <p><strong>Contents:</strong></p>
-        <p>Analysis of <code>.hko.ps3</code> file internals shows it contains:</p>
-        <ul>
-            <li>
-                <p><strong>Physics Bodies</strong></p>
-                <p><code>hkRigidBody</code>, <code>hkCollidable</code>, <code>hkShape</code>, <code>hkSphereShape</code>, <code>hkConvexShape</code></p>
-                <p>Define the physical shapes and collision volumes for parts of the object (e.g., limbs, torso, props).</p>
-            </li>
-            <li>
-                <p><strong>Constraints &amp; Joints</strong></p>
-                <p><code>hkConstraintData</code>, <code>hkConstraintAtom</code>, <code>hkModifierConstraintAtom</code>, <code>hkConstraintInstance</code></p>
-                <p>Define joints (shoulders, elbows, knees) and rules for how connected bodies can move relative to each other.</p>
-            </li>
-            <li>
-                <p><strong>Motion &amp; Movement</strong></p>
-                <p><code>hkMotion</code>, <code>hkKeyframedRigidMotion</code>, <code>hkMaxSizeMotion</code>, <code>hkMotionState</code></p>
-                <p>Describe how each body part moves, including keyframed (animated) motion or fully simulated physics motion (e.g., ragdolls).</p>
-            </li>
-            <li>
-                <p><strong>Physics Systems</strong></p>
-                <p><code>hkPhysicsSystem</code>, <code>EAPhysicsSystem</code></p>
-                <p>Group multiple bodies and constraints into complete physical &quot;systems&quot; (e.g., a character&#39;s full body or a destructible object).</p>
-                <p><code>EAPhysicsSystem</code> suggests custom EA extensions to base Havok functionality.</p>
-            </li>
-            <li>
-                <p><strong>Materials</strong></p>
-                <p><code>hkMaterial</code>, <code>EAMaterial</code></p>
-                <p>Define physical properties like friction and bounciness (important for realism when surfaces interact).</p>
-            </li>
-            <li>
-                <p><strong>Properties &amp; Metadata</strong></p>
-                <p><code>hkProperty</code>, <code>hkPropertyValue</code></p>
-                <p>Store additional settings for rigid bodies, shapes, and materials.</p>
-            </li>
-            <li>
-                <p><strong>Naming &amp; Tagging</strong></p>
-                <p>Found strings like <code>CHARACTER</code>, <code>MODEL</code>, <code>reference</code>, <code>AITrajectory</code>, <code>JO_shoulder</code>, <code>JO_elbow</code>, <code>JO_wrist</code>, and <code>ignore_DynamicObject</code></p>
-                <p>These link physics parts to animation bones or AI systems and control behaviors like collision ignoring.</p>
-            </li>
-        </ul>
-        <p><strong>Key Takeaways:</strong></p>
-        <ul>
-            <li><code>.hko.ps3</code> files are essential for physics simulation in the game.</li>
-            <li>Without them, characters and objects would either not react physically or behave incorrectly (e.g., no ragdoll on death, no proper collision).</li>
-            <li>Files are tied closely to RenderWare models, character skeletons, and game-specific animations.</li>
-            <li>They ensure physical realism and gameplay interactions are accurate and efficient on PS3 hardware.</li>
-        </ul>
-        <p><strong>Additional Notes:</strong></p>
-        <p>The <code>.ps3</code> suffix means the data is already optimized for PlayStation 3: possibly endian-corrected, tightly memory-aligned, and tailored for the console&#39;s SPUs (co-processors).</p>
-        <p>Full parsing of <code>.hko.ps3</code> files would require either:</p>
-        <ul>
-            <li>Havok 4.1.0-r1 SDK tools (very rare now)</li>
-            <li>Custom reverse engineering based on public Havok 4.x documentation</li>
-        </ul>
-        <hr>
-        <p>related extensions:</p>
-        <ul>
-            <li><code>.hkt.PS3</code> all regular collision files have this extension</li>
-            <li><code>.hko.PS3</code> all animated collision files have this extension, and all character collision spheres use this extension</li>
-            <li><code>.acs.PS3</code> always contained within collision folders (or subfolders of it) often alongside <code>.hko.PS3</code> files</li>
-        </ul>
+        <details>
+            <summary>Historical sample notes, retained with unverified runtime claims</summary>
+            <p>The following older notes preserve their recorded mixed paths, strings and interpretations. Statements about ragdolls, joint constraints, AI control, SPU optimization and universal filename rules were not established by static inspection. The selected collision-directory sample has no instantiated constraints; the scoped measurements above supersede those generalizations. Other HKO resources may contain different classes and require their own investigation.</p>
+            <p>A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\marge.acs.PS3 A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\char_collision_spheres.hko.PS3</p>
+            <h4><code>.hko.ps3</code> — Havok Physics Files (PS3 Version)</h4>
+            <p><strong>Purpose:</strong></p>
+            <p>The <code>.hko.ps3</code> files define physics setups for characters, props, and other objects in the game using the Havok Physics Engine. They contain all necessary data for how an object interacts physically within the world — including collision detection, joint constraints, movement behaviors, and material properties.</p>
+            <p>These files are specifically formatted for the PlayStation 3 architecture to optimize performance (e.g., memory layout, endian formats).</p>
+            <p><strong>Context:</strong></p>
+            <p>This game uses RenderWare for graphics and world rendering.</p>
+            <p>It integrates Havok 4.1.0-r1 as its physics simulation middleware.</p>
+            <p><code>.hko.ps3</code> files serve as the bridge between RenderWare-rendered objects and Havok-simulated physical behavior.</p>
+            <p><strong>Example path:</strong></p>
+            <p>...\chars++lisa_hog\bound++export\lisa_hog.hko.PS3</p>
+            <p>Here, <code>lisa_hog.hko.ps3</code> likely contains the complete physics setup for the character Lisa, defining how her body reacts to forces, impacts, and movement.</p>
+            <p><strong>Contents:</strong></p>
+            <p>Analysis of <code>.hko.ps3</code> file internals shows it contains:</p>
+            <ul>
+                <li>
+                    <p><strong>Physics Bodies</strong></p>
+                    <p><code>hkRigidBody</code>, <code>hkCollidable</code>, <code>hkShape</code>, <code>hkSphereShape</code>, <code>hkConvexShape</code></p>
+                    <p>Define the physical shapes and collision volumes for parts of the object (e.g., limbs, torso, props).</p>
+                </li>
+                <li>
+                    <p><strong>Constraints &amp; Joints</strong></p>
+                    <p><code>hkConstraintData</code>, <code>hkConstraintAtom</code>, <code>hkModifierConstraintAtom</code>, <code>hkConstraintInstance</code></p>
+                    <p>Define joints (shoulders, elbows, knees) and rules for how connected bodies can move relative to each other.</p>
+                </li>
+                <li>
+                    <p><strong>Motion &amp; Movement</strong></p>
+                    <p><code>hkMotion</code>, <code>hkKeyframedRigidMotion</code>, <code>hkMaxSizeMotion</code>, <code>hkMotionState</code></p>
+                    <p>Describe how each body part moves, including keyframed (animated) motion or fully simulated physics motion (e.g., ragdolls).</p>
+                </li>
+                <li>
+                    <p><strong>Physics Systems</strong></p>
+                    <p><code>hkPhysicsSystem</code>, <code>EAPhysicsSystem</code></p>
+                    <p>Group multiple bodies and constraints into complete physical &quot;systems&quot; (e.g., a character&#39;s full body or a destructible object).</p>
+                    <p><code>EAPhysicsSystem</code> suggests custom EA extensions to base Havok functionality.</p>
+                </li>
+                <li>
+                    <p><strong>Materials</strong></p>
+                    <p><code>hkMaterial</code>, <code>EAMaterial</code></p>
+                    <p>Define physical properties like friction and bounciness (important for realism when surfaces interact).</p>
+                </li>
+                <li>
+                    <p><strong>Properties &amp; Metadata</strong></p>
+                    <p><code>hkProperty</code>, <code>hkPropertyValue</code></p>
+                    <p>Store additional settings for rigid bodies, shapes, and materials.</p>
+                </li>
+                <li>
+                    <p><strong>Naming &amp; Tagging</strong></p>
+                    <p>Found strings like <code>CHARACTER</code>, <code>MODEL</code>, <code>reference</code>, <code>AITrajectory</code>, <code>JO_shoulder</code>, <code>JO_elbow</code>, <code>JO_wrist</code>, and <code>ignore_DynamicObject</code></p>
+                    <p>These link physics parts to animation bones or AI systems and control behaviors like collision ignoring.</p>
+                </li>
+            </ul>
+            <p><strong>Key Takeaways:</strong></p>
+            <ul>
+                <li><code>.hko.ps3</code> files are essential for physics simulation in the game.</li>
+                <li>Without them, characters and objects would either not react physically or behave incorrectly (e.g., no ragdoll on death, no proper collision).</li>
+                <li>Files are tied closely to RenderWare models, character skeletons, and game-specific animations.</li>
+                <li>They ensure physical realism and gameplay interactions are accurate and efficient on PS3 hardware.</li>
+            </ul>
+            <p><strong>Additional Notes:</strong></p>
+            <p>The <code>.ps3</code> suffix means the data is already optimized for PlayStation 3: possibly endian-corrected, tightly memory-aligned, and tailored for the console&#39;s SPUs (co-processors).</p>
+            <p>Full parsing of <code>.hko.ps3</code> files would require either:</p>
+            <ul>
+                <li>Havok 4.1.0-r1 SDK tools (very rare now)</li>
+                <li>Custom reverse engineering based on public Havok 4.x documentation</li>
+            </ul>
+            <hr>
+            <p>related extensions:</p>
+            <ul>
+                <li><code>.hkt.PS3</code> all regular collision files have this extension</li>
+                <li><code>.hko.PS3</code> all animated collision files have this extension, and all character collision spheres use this extension</li>
+                <li><code>.acs.PS3</code> always contained within collision folders (or subfolders of it) often alongside <code>.hko.PS3</code> files</li>
+            </ul>
+        </details>
     </body>
 </html>

@@ -14,7 +14,7 @@
         <aside class="source-notice">
             <p><strong>Reference scope:</strong> PS3 EU asset/use analysis. New paths use <code>ps3-eu-extracted</code>. Retained inventories may contain Full and FullFlattened paths and generated outputs; those historical examples remain non-canonical until reconciled. <a href="../../../reference/sources.html#paths">Path roots and provenance</a>.</p>
         </aside>
-        <p>This page scopes asset/use analysis to this extracted level or hub group. A complete resource inventory and the original archive/member provenance have not yet been documented. Source names, extracted names and flattened aliases must be distinguished when matching assets.</p>
+        <p>This page scopes asset/use analysis to this extracted level or hub group. A complete resource inventory has not yet been documented; original archive/member provenance is now verified for the collision samples below. Source names, extracted names and flattened aliases must be distinguished when matching assets.</p>
         <h2>Resource roles to follow</h2>
         <p>Level archives can contain rendered geometry and textures, spatial/navigation data, object properties, collision and effects. Related audio, music and movie assets may live in shared media folders rather than beside a mesh. These are general workflow roles, not a claim that every format occurs in this particular group.</p>
         <ul>
@@ -22,6 +22,12 @@
             <li><a href="../../FormatAnalysis/pipeline.html">Optional Remake Engine operation reference</a></li>
             <li><a href="../../FormatAnalysis/index.html">Format reference and recorded inventory</a></li>
         </ul>
+        <section id="collision-research">
+            <h2>Collision research: bunny and zone01</h2>
+            <p>Inspected on 2026-10-22. <code>ps3-eu-extracted:L01_LandOfChocolate/loc/Challenge_Mode/Challenge_Mode_Design_str/build/PS3/pal_en/assets/shared/collision/npc_bunny.acs.PS3</code> is a 724-byte set of nine primitive records, not a triangle mesh. Its supplied flattened alias ends in <code>npc_bunny_94c523.acs.PS3</code>. <a href="../../FormatAnalysis/STR/imbedded-formats/acs.PS3.html#bunny">The ACS specification</a> records the exact offsets, scalar parameters and joint lookup.</p>
+            <p>The same original <code>ps3-eu-original:PS3_GAME/USRDIR/loc/loc/Challenge_Mode/Challenge_Mode_Design.str</code> contains npc_default BBN and bunny_dark LOD3/LOD5 visual models. All bunny ACS binding IDs resolve through BBN aliases to rig hashes, and all 29 BBN rig hashes occur in both models' HAnim node tables. This proves an identifier bridge; applying collision volumes still requires the correct poses, skinning map, dimensions and coordinates.</p>
+            <p>For level collision, <code>ps3-eu-extracted:L01_LandOfChocolate/loc/zone01_str/build/PS3/pal_en/assets/environs/loc/loc/zone01/export/collision/collisionmodel1.hkt.PS3</code> was checked against the member in original <code>PS3_GAME/USRDIR/loc/loc/zone01.str</code>. Its <a href="../../FormatAnalysis/STR/imbedded-formats/hkt.PS3.html#collision-audit-2026-10-22">Havok mesh arrays</a> are the terrain-collision route. Exact archive/member identities and hashes are in the <a href="../../../research/2026-10-22-collision-provenance.json">provenance ledger</a>; full bounded corpus results are in the <a href="../../../research/2026-10-22-collision-inventory.json">401-file inventory</a> and <a href="../../../research/2026-10-22-havok-collision.json">Havok audit</a>.</p>
+        </section>
         <section id="canonical-examples">
             <h2>Canonical resource examples</h2>
             <p>Representative paths checked in both datasets on 2026-10-19. This is a path-reference pilot, not a complete level inventory. Containing original STR archive/member identities remain unresolved here.</p>

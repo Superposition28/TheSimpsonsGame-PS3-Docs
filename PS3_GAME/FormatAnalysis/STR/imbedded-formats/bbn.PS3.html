@@ -5,8 +5,8 @@
         <title>BBN.PS3 Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="reference-source" content="ps3-eu-original">
-        <meta name="path-namespace" content="legacy-mixed">
+        <meta name="reference-source" content="ps3-eu-extracted">
+        <meta name="path-namespace" content="mixed-explicit">
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Bone bindings (.bbn.PS3)</nav>
@@ -21,19 +21,71 @@
                 <dt>Identification</dt>
                 <dd>Recognizable skeleton-name strings and offset/count tables; no stable magic documented.</dd>
                 <dt>Byte order / text</dt>
-                <dd>Not fully established for all fields.</dd>
+                <dd>Big-endian u32 counts, absolute string offsets, hashes and indices in the inspected npc_default sample; NUL-terminated ASCII names. Other header fields remain unresolved.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>Historical player_default observations, supplemented on 2026-10-22 by an npc_default table walk and an ACS → BBN → preinstanced HAnim identifier join. These are sample-specific byte observations, not full animation decoding.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
             <strong>On this page</strong>
             <ul>
+                <li><a href="#bunny-binding-join">Verified bunny binding tables and model join</a></li>
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
             </ul>
         </nav>
+        <section id="bunny-binding-join">
+            <h2>Verified bunny binding tables and model join</h2>
+            <p>Inspected on 2026-10-22: <code>ps3-eu-extracted:L01_LandOfChocolate/loc/Challenge_Mode/Challenge_Mode_Design_str/build/PS3/pal_en/assets/shared/bonebindings/npc_default.bbn.PS3</code>, 1,344 bytes, SHA-256 <code>352360f5a8064ebe129230310beaf811d3e28195450e2420a203a77bcfbd9c82</code>. Its original archive and member, all table entries and joins are recorded in the <a href="../../../../research/2026-10-22-collision-provenance.json">collision provenance ledger</a>.</p>
+            <div class="table-scroll" role="region" aria-label="Observed BBN binding table layout" tabindex="0">
+                <table>
+                    <caption>One validated npc_default sample; offsets are file-absolute</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Offset</th>
+                            <th scope="col">BE u32 value / layout</th>
+                            <th scope="col">Meaning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>0x18</code></td>
+                            <td>30</td>
+                            <td>Alias-entry count.</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x1C</code></td>
+                            <td>29</td>
+                            <td>Rig-entry count.</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x20</code></td>
+                            <td><code>0x28</code></td>
+                            <td>Absolute rig-table offset.</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x24</code></td>
+                            <td><code>0x110</code></td>
+                            <td>Absolute alias-table offset.</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x28 + 8*i</code></td>
+                            <td>{string offset, rig hash}</td>
+                            <td>29 rig entries; bounded NUL-terminated ASCII string at the absolute offset.</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x110 + 16*i</code></td>
+                            <td>{string offset, alias hash, rig index, flags}</td>
+                            <td>30 aliases; rig index is zero-based into the rig table. Flags retained without runtime interpretation.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Every rig-name hash (29/29) and alias hash (30/30) equals lowercase SDBM: start with <code>h = 0</code>, then <code>h = (byte + 65599*h) mod 2^32</code> for each lowercase ASCII byte. This validates these identifier namespaces in this sample, not all game hashes.</p>
+            <p>All nine <a href="acs.PS3.html#bunny">npc_bunny ACS</a> binding IDs at record <code>+0x08</code> match alias hashes. For example, <code>D3693CBE</code> → “left ankle” → rig index 17 → <code>l_ankle</code> / <code>842EFC24</code>. That rig hash matches a little-endian node ID in the <a href="preinstanced.html#collision-hanim-join">bunny visual model's HAnim node table</a>. Both inspected LODs contain all 29 BBN rig hashes; BBN index 17 is not itself the model's node index (14 in this example).</p>
+            <p>Some identifiers in other ACS resources may name rig nodes directly rather than aliases; the bunny's alias route must not be imposed on every file. Bone poses, mesh skinning indices, animation decoding and target-engine coordinate conversion remain separate tasks.</p>
+        </section>
         <section id="related-formats">
             <h2 id="related-formats-2">Related formats</h2>
             <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
@@ -54,8 +106,8 @@
                         </tr>
                         <tr>
                             <td><a href="acs.PS3.html">Character collision resource (.acs.PS3)</a></td>
-                            <td>Context/tentative</td>
-                            <td>Candidate character hit-shape attachments could use bone bindings. The field layout and bone-ID join still require verification.</td>
+                            <td>Verified sample join</td>
+                            <td>Bunny ACS +0x08 → alias hash → rig index/name/hash → preinstanced HAnim node ID. Pose and skinning reconstruction remain unresolved.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -68,38 +120,42 @@
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>Binding-table and shared-skeleton interpretations are based on the player_default sample. Animation/IK uses and cross-file numeric joins have not been validated by a registered importer.</p>
+            <p>The npc_default sample now has byte-validated binding tables and cross-file identifier joins. Historical player_default observations below are less specific. Animation/IK behavior and a registered animation/collision importer have not been validated.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
-        <h3>Format: <strong>BBN</strong> — Bone Bindings (PS3 build)</h3>
-        <p>Your <code>player_default.bbn.PS3</code> is a <strong>bone-binding table</strong> compiled for PS3. It defines the canonical skeleton joints, their IDs, names, and lookup tables used by animation, IK, and gameplay systems.</p>
-        <h3>Why this fits</h3>
-        <ul>
-            <li>
-                <p>The filename path: <code>.../assets/shared/bonebindings/player_default.bbn.PS3</code> → shared skeleton bindings.</p>
-            </li>
-            <li>
-                <p>Clear joint names &amp; aliases in the string block:</p>
-                <ul>
-                    <li>Short rig names: <code>m_pelvis</code>, <code>m_lumbar</code>, <code>m_thoracic</code>, <code>l_hip</code>, <code>r_knee</code>, <code>l_wrist</code>, <code>r_clav</code>, <code>m_neck2</code>, <code>m_jaw</code>, <code>r_weapon</code>, etc.</li>
-                    <li>Friendly labels: <code>right elbow</code>, <code>pelvis</code>, <code>left clavicle</code>, <code>right eyelid top/bottom</code>, etc.</li>
-                </ul>
-            </li>
-            <li>
-                <p>Small header with counts/offsets, then a sequence of <strong>offset tables</strong> followed by the <strong>name table</strong>.</p>
-            </li>
-            <li>
-                <p>Presence of special tags like <code>AITrajectory</code> and <code>r_eye/l_eye</code> shows extra bindings for look/aim vectors and AI helpers.</p>
-            </li>
-        </ul>
-        <h3>What the game uses it for</h3>
-        <ul>
-            <li><strong>Consistent bone ID ↔ name mapping</strong> across characters and tools.</li>
-            <li><strong>Attachment points</strong> for props/weapons (<code>r_weapon</code>, hands, head).</li>
-            <li><strong>Animation retarget/IK</strong> constraints (knees, hips, wrists, spine chain).</li>
-            <li><strong>Facial/eye controls</strong> (<code>r_eye</code>, eyelids, <code>m_jaw</code>) for look-at and lip/eye cues.</li>
-            <li><strong>AI &amp; camera helpers</strong> (<code>AITrajectory</code>).</li>
-            <li>Acts as the <strong>shared “player” skeleton contract</strong> that animation banks (e.g., your <code>.bnk</code>) and controllers (<code>.cec</code>) reference at runtime.</li>
-        </ul>
+        <details>
+            <summary>Historical player_default interpretation</summary>
+            <p>The retained role descriptions below are hypotheses inferred from names, not observed runtime uses. The npc_default table layout above has its own explicit sample scope.</p>
+            <h3>Format: <strong>BBN</strong> — Bone Bindings (PS3 build)</h3>
+            <p>Your <code>player_default.bbn.PS3</code> is a <strong>bone-binding table</strong> compiled for PS3. It defines the canonical skeleton joints, their IDs, names, and lookup tables used by animation, IK, and gameplay systems.</p>
+            <h3>Why this fits</h3>
+            <ul>
+                <li>
+                    <p>The filename path: <code>.../assets/shared/bonebindings/player_default.bbn.PS3</code> → shared skeleton bindings.</p>
+                </li>
+                <li>
+                    <p>Clear joint names &amp; aliases in the string block:</p>
+                    <ul>
+                        <li>Short rig names: <code>m_pelvis</code>, <code>m_lumbar</code>, <code>m_thoracic</code>, <code>l_hip</code>, <code>r_knee</code>, <code>l_wrist</code>, <code>r_clav</code>, <code>m_neck2</code>, <code>m_jaw</code>, <code>r_weapon</code>, etc.</li>
+                        <li>Friendly labels: <code>right elbow</code>, <code>pelvis</code>, <code>left clavicle</code>, <code>right eyelid top/bottom</code>, etc.</li>
+                    </ul>
+                </li>
+                <li>
+                    <p>Small header with counts/offsets, then a sequence of <strong>offset tables</strong> followed by the <strong>name table</strong>.</p>
+                </li>
+                <li>
+                    <p>Presence of special tags like <code>AITrajectory</code> and <code>r_eye/l_eye</code> shows extra bindings for look/aim vectors and AI helpers.</p>
+                </li>
+            </ul>
+            <h3>What the game uses it for</h3>
+            <ul>
+                <li><strong>Consistent bone ID ↔ name mapping</strong> across characters and tools.</li>
+                <li><strong>Attachment points</strong> for props/weapons (<code>r_weapon</code>, hands, head).</li>
+                <li><strong>Animation retarget/IK</strong> constraints (knees, hips, wrists, spine chain).</li>
+                <li><strong>Facial/eye controls</strong> (<code>r_eye</code>, eyelids, <code>m_jaw</code>) for look-at and lip/eye cues.</li>
+                <li><strong>AI &amp; camera helpers</strong> (<code>AITrajectory</code>).</li>
+                <li>Acts as the <strong>shared “player” skeleton contract</strong> that animation banks (e.g., your <code>.bnk</code>) and controllers (<code>.cec</code>) reference at runtime.</li>
+            </ul>
+        </details>
     </body>
 </html>

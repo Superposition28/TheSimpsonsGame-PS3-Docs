@@ -32,6 +32,7 @@
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                <li><a href="#collision-hanim-join">Bunny collision bindings and HAnim nodes</a></li>
                 <li><a href="#overview">Overview</a></li>
                 <li><a href="#parsing-algorithm-overview">Parsing Algorithm Overview</a></li>
                 <li><a href="#identification-signatures">Identification Signatures</a></li>
@@ -100,6 +101,13 @@
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
             <p>The Blender importer converts geometry and can export GLB or FBX. Texture/material associations remain provisional. Animation banks, Havok physics and gameplay assembly are not reconstructed by operation 8.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+        </section>
+        <section id="collision-hanim-join">
+            <h2>Bunny collision bindings and HAnim nodes</h2>
+            <p>On 2026-10-22, both <code>bunny_dark</code> LOD3 and LOD5 preinstanced models in <code>ps3-eu-extracted:L01_LandOfChocolate/loc/Challenge_Mode/Challenge_Mode_Design_str/</code> were checked against the co-contained <a href="bbn.PS3.html#bunny-binding-join">npc_default BBN tables</a> and <a href="acs.PS3.html#bunny">npc_bunny ACS</a>. Exact full paths, SHA-256 values, original STR records and node entries are retained in the <a href="../../../../research/2026-10-22-collision-provenance.json">provenance ledger</a>. This extends identifier research; it does not change the visual-geometry importer's support.</p>
+            <p>Both samples contain a little-endian RenderWare HAnim chunk (<code>0x11E</code>) at file <code>0xC8</code>, with its payload at <code>0xD4</code>. The payload's first five u32 values are <code>{0x100, 0, 100, 0x38002, 0}</code>, interpreted as version, hierarchy ID, node count, flags and keyframe size. The 100-entry node table begins at <code>0xE8</code> and uses a 12-byte stride: <code>{node ID, node index, flags}</code>, all little-endian. This is a bounded sample layout, not a signature to scan blindly in unrelated meshes.</p>
+            <p>All 29 BBN rig hashes match HAnim node IDs in each model. The verified chain is <code>ACS record +0x08 → BBN alias hash → BBN rig index → rig hash → HAnim node ID → HAnim node index</code>. For example, “left ankle” resolves through <code>l_ankle / 842EFC24</code> to HAnim node index 14; “right ankle” resolves to index 94 and “lumbar” to index 20. BBN order and HAnim order differ, and the BE BBN hash is stored LE in HAnim.</p>
+            <p>This provides a concrete attachment lookup for candidate character collision primitives. It does not establish which skinning palette uses those indices, bone rest/animated transforms, shape dimensions or world coordinate conversion. Level/prop triangle collision uses separate <a href="hkt.PS3.html#collision-audit-2026-10-22">HKT Havok arrays</a>; visual mesh geometry alone does not recover those resources or their instance transforms.</p>
         </section>
         <p><strong>Version:</strong> 2.1</p>
         <p><strong>Last Updated:</strong> 2026-10-02</p>

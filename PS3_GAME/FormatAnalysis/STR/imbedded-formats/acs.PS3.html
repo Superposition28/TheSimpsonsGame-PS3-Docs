@@ -5,8 +5,8 @@
         <title>ACS.PS3 Format Documentation</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="reference-source" content="ps3-eu-original">
-        <meta name="path-namespace" content="legacy-mixed">
+        <meta name="reference-source" content="ps3-eu-extracted">
+        <meta name="path-namespace" content="mixed-explicit">
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Character collision resource (.acs.PS3)</nav>
@@ -16,24 +16,179 @@
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>Occurs beside character collision resources and contains candidate primitive/bone-related data.</p>
+            <p>Compact character/weapon collision records with binding identifiers, transform-like floats and primitive parameters. These records contain no triangle mesh and are distinct from the Havok HKT/HKO packfiles.</p>
             <dl>
                 <dt>Identification</dt>
-                <dd>No validated universal magic; paths and repeating numeric records identify the research samples.</dd>
+                <dd>Observed header <code>01 count 00 00</code>, followed by length-prefixed records. No universal magic established.</dd>
                 <dt>Byte order / text</dt>
-                <dd>Big-endian float interpretations in samples; record schema unresolved.</dd>
+                <dd>Big-endian record lengths, identifiers and IEEE-754 floats; byte-sized header/tag interpretations are sample-derived.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>2026-10-22: all 264 ACS files in the supplied collision-directory inventory walked to EOF; 29 distinct contents. The bunny sample's binding IDs were joined to BBN aliases. Shape semantics and original runtime behavior remain partly unresolved.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
             <strong>On this page</strong>
             <ul>
+                <li><a href="#corpus">Inspected corpus and provenance</a></li>
+                <li><a href="#layout">Observed record layout</a></li>
+                <li><a href="#bunny">Bunny sample and bone bindings</a></li>
+                <li><a href="#extraction">Collision extraction implications</a></li>
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
             </ul>
         </nav>
+        <section id="collision-audit-2026-10-22">
+            <h2 id="corpus">Inspected corpus and provenance</h2>
+            <p>The 2026-10-22 user-supplied list contains 401 files beneath directories named <code>collision</code>: 264 ACS, 112 HKT and 25 HKO. It exactly matches that directory-name scope in the current <code>ps3-eu-flattened</code> tree. Every listed file has a unique mapping to <code>ps3-eu-extracted</code> and an identical canonical byte sequence. This is a bounded inventory, not every collision resource in the game: the canonical Full collision directories retain three additional weapon ACS files and two costume HKO files absent from this alternate view. Their paths are listed in the provenance ledger.</p>
+            <p>The <a href="../../../../research/2026-10-22-collision-inventory.json">inventory and ACS record ledger</a> records all paths, sizes, SHA-256 values and all 29 distinct ACS decodings. The current normalizer map has 63,377 rows and SHA-256 <code>081262cc3df9966431b47c569d9dedf9cc06421f1a1100e5e9369fe48e9d4032</code>; it is a later local snapshot than the map recorded in the <a href="../../../../reference/sources.html">source registry</a>. The mapping alone does not establish original STR membership.</p>
+            <p>Reproduce with the standard-library <a href="../../../../tools/inspect_acs_collision.py">read-only audit script</a>, supplying the two processed dataset roots and an output JSON path. It checks byte equality, record bounds, declared count and EOF, and retains unknown fields. No proprietary asset payload is required to read the committed ledger or this page.</p>
+        </section>
+        <section id="layout">
+            <h2>Observed record layout</h2>
+            <p>All 264 inspected headers begin with <code>01</code>, have a record count at byte <code>+1</code>, and end with two zero bytes. Treat <code>+0</code> as a candidate version byte and <code>+2..3</code> as uninterpreted zeros. Records start at file <code>0x04</code>; each first word is its complete size, including that word. Advance by the declared size rather than a fixed stride. All declared records end exactly at EOF in this corpus.</p>
+            <div class="table-scroll" role="region" aria-label="ACS record layout" tabindex="0">
+                <table>
+                    <caption>Offsets relative to the start of an ACS record</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Offset</th>
+                            <th scope="col">Bytes / encoding</th>
+                            <th scope="col">Observed interpretation and limits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>+0x00</code></td>
+                            <td>4 / BE u32</td>
+                            <td>Total record size: 80 (<code>0x50</code>) or 84 (<code>0x54</code>).</td>
+                        </tr>
+                        <tr>
+                            <td><code>+0x04</code></td>
+                            <td>4 / identifier</td>
+                            <td>Stable record identifier; name/hash meaning unresolved.</td>
+                        </tr>
+                        <tr>
+                            <td><code>+0x08</code></td>
+                            <td>4 / BE u32</td>
+                            <td>Binding identifier. Bunny values match BBN alias hashes and lowercase SDBM of the corresponding alias strings.</td>
+                        </tr>
+                        <tr>
+                            <td><code>+0x0C</code></td>
+                            <td>4 / opaque bytes</td>
+                            <td>Five observed patterns: <code>00064300</code>, <code>00000100</code>, <code>00020100</code>, <code>00004000</code>, <code>00060100</code>. Flag subdivision and meanings unknown.</td>
+                        </tr>
+                        <tr>
+                            <td><code>+0x10</code></td>
+                            <td>4 / opaque bytes</td>
+                            <td><code>00 73 00 00</code> in every record, including all three kinds. The <code>73</code> byte is not an observed sphere/capsule discriminator.</td>
+                        </tr>
+                        <tr>
+                            <td><code>+0x14</code></td>
+                            <td>4 / identifier</td>
+                            <td>Additional identifier or zero. No verified material, bone or shape-name lookup.</td>
+                        </tr>
+                        <tr>
+                            <td><code>+0x18</code></td>
+                            <td>48 / 12 BE f32</td>
+                            <td>Three basis-like triples followed by a translation-like triple. Identity is <code>(1,0,0), (0,1,0), (0,0,1), (0,0,0)</code>. Row/column convention, handedness and world units require validation.</td>
+                        </tr>
+                        <tr>
+                            <td><code>+0x48</code></td>
+                            <td>1 + 3</td>
+                            <td>Candidate kind byte <code>01</code>, <code>02</code> or <code>03</code>, followed by three zeros. Preserve all four raw bytes; enum storage is not established by runtime code.</td>
+                        </tr>
+                        <tr>
+                            <td><code>+0x4C</code></td>
+                            <td>4 or 8 / BE f32</td>
+                            <td>Kind 1: one scalar, size 80. Kinds 2 and 3: two scalars, size 84. Scalar units and exact geometry remain inferred.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Counting duplicate files, the corpus contains 1,505 records: 1,341 kind 1, 121 kind 2 and 43 kind 3. Kind 1's positive scalar is consistent with a sphere radius. Kind 2 occurs on elongated weapons, commonly with <code>(0.1, 0.7)</code>; capsule-like radius/length is a hypothesis. Kind 3 occurs in Homer, Lisa, Lard Lad and Selmatty resources with different scalar pairs; a cylinder/capsule or gameplay-volume interpretation is unresolved. No observed <code>'c'</code> tag is needed to walk these variants.</p>
+            <p>The transform-like block has six distinct values in this corpus. Alien knee records include opposite X offsets and a shared <code>-0.5</code> Z offset; weapon saw/cane records have non-identity basis triples. These examples support a local transform interpretation, but do not determine a target engine's coordinate conversion.</p>
+        </section>
+        <section id="bunny">
+            <h2>Bunny sample and bone bindings</h2>
+            <p>Canonical sample: <code>ps3-eu-extracted:L01_LandOfChocolate/loc/Challenge_Mode/Challenge_Mode_Design_str/build/PS3/pal_en/assets/shared/collision/npc_bunny.acs.PS3</code>. The supplied alias is <code>ps3-eu-flattened:L01_LandOfChocolate/loc/challengeModeDesignStr/assets/shared/collision/npc_bunny_94c523.acs.PS3</code>. Both contain 724 bytes, SHA-256 <code>be60735c3f63a4ee5376d450b1fb8197c327d863d5d8d5ec708aa8645368da64</code>.</p>
+            <p>Header <code>01 09 00 00</code> is followed by nine <code>0x50</code>-byte kind-1 records, all with identity transform-like blocks. The co-contained <a href="bbn.PS3.html#bunny-binding-join">npc_default.bbn.PS3 alias table</a> resolves every binding ID to a rig name/hash. All 29 BBN rig hashes also match node IDs in <a href="preinstanced.html#collision-hanim-join">both inspected bunny visual LODs' HAnim tables</a>. This is a verified identifier bridge; mesh skinning and bone-pose reconstruction remain unresolved.</p>
+            <div class="table-scroll" role="region" aria-label="Bunny ACS to BBN join" tabindex="0">
+                <table>
+                    <caption>Bunny records in file order; scalar values rounded for display</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">File offset</th>
+                            <th scope="col">Record ID / binding ID</th>
+                            <th scope="col">BBN alias → rig name</th>
+                            <th scope="col">Scalar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>0x004</code></td>
+                            <td><code>DCBBA7F2 / D3693CBE</code></td>
+                            <td>left ankle → l_ankle</td>
+                            <td>0.3</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x054</code></td>
+                            <td><code>4C37DE91 / 5BC758F3</code></td>
+                            <td>right ankle → r_ankle</td>
+                            <td>0.3</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x0A4</code></td>
+                            <td><code>BB94A2E6 / D3693CBE</code></td>
+                            <td>left ankle → l_ankle</td>
+                            <td>0.3</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x0F4</code></td>
+                            <td><code>2D632971 / 5BC758F3</code></td>
+                            <td>right ankle → r_ankle</td>
+                            <td>0.3</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x144</code></td>
+                            <td><code>11BC6B07 / F8E31095</code></td>
+                            <td>left weapon → l_weapon</td>
+                            <td>0.3</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x194</code></td>
+                            <td><code>838AF192 / A44101A0</code></td>
+                            <td>right weapon → r_weapon</td>
+                            <td>0.3</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x1E4</code></td>
+                            <td><code>2ADA7A59 / 65CA5B0F</code></td>
+                            <td>lumbar → m_lumbar</td>
+                            <td>1.5</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x234</code></td>
+                            <td><code>1EFC0F2F / EC83435C</code></td>
+                            <td>left knee → l_knee</td>
+                            <td>0.3</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x284</code></td>
+                            <td><code>014E4694 / 5E51C9E7</code></td>
+                            <td>right knee → r_knee</td>
+                            <td>0.3</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Original source was checked separately: <code>ps3-eu-original:PS3_GAME/USRDIR/loc/loc/Challenge_Mode/Challenge_Mode_Design.str</code>, section 4 (zero-based), decompressed record offset <code>0x94D08</code>, member <code>x:\build\PS3\pal_en\assets\shared\collision\npc_bunny.acs.PS3</code>, resource type <code>ACS</code>. Exact archive, section and BBN evidence is retained in the <a href="../../../../research/2026-10-22-collision-provenance.json">provenance ledger</a>. See also the <a href="../../../USRDIR/L01_LandOfChocolate/index.html#collision-research">level resource analysis</a>.</p>
+        </section>
+        <section id="extraction">
+            <h2>Collision extraction implications</h2>
+            <p>For terrain and prop triangle collision, start with <a href="hkt.PS3.html#collision-audit-2026-10-22">HKT's Havok shape graph</a>, including EAStorageMeshShape vertex/index arrays. ACS is a separate primitive/binding path. The <a href="hko.PS3.html#collision-audit-2026-10-22">shared HKO sample</a> provides boxes and spheres; its filename does not identify the geometry of every contained shape.</p>
+            <p>An ACS viewer can already show identifiers, transforms and scalar parameters. For the bunny, the BBN-to-HAnim identifier lookup is established, but correctly attaching candidate spheres still requires resolving and applying bone transforms. A direct file pointer or original runtime selection of these visual LODs from ACS has not been recovered. Bone poses, scale, shape-kind semantics and gameplay flags must be resolved before treating a preview as original collision behavior.</p>
+        </section>
         <section id="related-formats">
             <h2 id="related-formats-2">Related formats</h2>
             <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
@@ -49,8 +204,8 @@
                     <tbody>
                         <tr>
                             <td><a href="bbn.PS3.html">Bone bindings (.bbn.PS3)</a></td>
-                            <td>Context/tentative</td>
-                            <td>Candidate character hit-shape attachments could use bone bindings. The field layout and bone-ID join still require verification.</td>
+                            <td>Verified sample join</td>
+                            <td>Bunny record +0x08 matches BBN alias hashes, which map through rig indices to names/hashes and then HAnim node IDs. Pose and skinning reconstruction remain unresolved.</td>
                         </tr>
                         <tr>
                             <td><a href="hko.PS3.html">Havok object resource (.hko.PS3)</a></td>
@@ -68,53 +223,57 @@
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>The expanded name and sphere/capsule interpretation are hypotheses. No field-by-field bone-binding join or collision importer has been established.</p>
+            <p>The expanded name “Articulated Collision Shapes” remains a historical hypothesis. Record boundaries and the bunny BBN join are now byte-validated; exact shape geometry, flag behavior, model coordinate transforms and a game-module collision importer remain unresolved. No original game runtime execution was observed.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
-        <p>A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\marge.acs.PS3 A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\char_collision_spheres.hko.PS3</p>
-        <h3>Format: <strong>ACS</strong> — per-character <strong>A</strong>rticulated <strong>C</strong>ollision <strong>S</strong>hapes (PS3)</h3>
-        <p><code>marge.acs.PS3</code> is a small, binary list of simple hit-shape primitives (mostly spheres/capsules) attached to a character’s bones. The game uses this to do lightweight gameplay collision (melee hits, pickups, proximity checks, cursor targeting, etc.) without touching the full Havok meshes.</p>
-        <h4>Why this is ACS / hit-spheres</h4>
-        <ul>
-            <li>
-                <p>The path: <code>assets\shared\collision\marge.acs.PS3</code> → per-character collision set.</p>
-            </li>
-            <li>
-                <p>You see lots of IEEE-754 floats like:</p>
-                <ul>
-                    <li><code>3F 80 00 00</code> = <strong>1.0</strong> (identity scale/weights),</li>
-                    <li><code>3E 99 99 9A</code> ≈ <strong>0.30</strong>, <code>3E 80 00 00</code> = <strong>0.25</strong>, <code>3F C0 00 00</code> = <strong>1.5</strong>, <code>3D CC CC CD</code> = <strong>0.1</strong> — typical <strong>radii</strong> for gameplay spheres.</li>
-                </ul>
-            </li>
-            <li>
-                <p>Repeating fixed-size records with very similar layouts (centers/flags/identity), suggesting “one primitive per bone”.</p>
-            </li>
-        </ul>
-        <h4>What the game uses it for</h4>
-        <ul>
-            <li><strong>Hit detection / hurtboxes</strong> for punches, kicks, and small overlaps.</li>
-            <li><strong>Targeting helpers</strong> for abilities and cursor hover.</li>
-            <li><strong>Cheap per-bone checks</strong> while Havok handles full body collision separately (your <code>.hkt</code> file).</li>
-        </ul>
-        <h4>Rough layout you’re seeing (per entry)</h4>
-        <p>Not exact names, but the pattern maps like this for each shape:</p>
-        <ul>
-            <li>A small header/IDs (includes a bone or binding hash; EA often stores CRCs of bone names).</li>
-            <li>A primitive <strong>type</strong> code (you’ll spot <code>0x73 00 00</code> → <code>&#39;s&#39;</code> = <strong>sphere</strong>; some titles also use <code>&#39;c&#39;</code> for capsule).</li>
-            <li>Center/orientation-ish block (many <code>1.0</code> values → identity) and/or flags.</li>
-            <li>A <strong>radius</strong> (those 0.25 / 0.30 / 0.10 / 1.50 values).</li>
-            <li>Repeats for each bone hotspot (head, hands, forearms, torso, legs, etc.).</li>
-        </ul>
-        <p>In short: <strong><code>.acs.PS3</code> = fast hit-shape set</strong>—a handful of bone-attached spheres (and possibly capsules) used by the EA/RenderWare runtime for quick overlap tests and gameplay interactions on PS3.</p>
-        <p>only 267 .acs.PS3 files found in the game data, here is every possible file name found with this extension at some paths: GameFiles/STROUT/Assets_2_Characters_Simpsons/GlobalFolder/chars/bart_bc0_grp0_ss1_h0_str/build/PS3/pal_en/assets/shared/collision/bart.acs.PS3 GameFiles/STROUT/Assets_2_Characters_Simpsons/GlobalFolder/chars/homer_fh0_gh0_hh0_h0_str/build/PS3/pal_en/assets/shared/collision/homer.acs.PS3 GameFiles/STROUT/Assets_2_Characters_Simpsons/GlobalFolder/chars/lisa_str/build/PS3/pal_en/assets/shared/collision/lisa.acs.PS3 GameFiles/STROUT/Assets_2_Characters_Simpsons/GlobalFolder/chars/marge_mm0_h0_str/build/PS3/pal_en/assets/shared/collision/marge.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream_str/build/PS3/pal_en/assets/shared/collision/npc_alien.acs.PS3 GameFiles/STROUT/Map_3-01_LandOfChocolate/loc/Challenge_Mode/Challenge_Mode_Design_str/build/PS3/pal_en/assets/shared/collision/npc_bunny.acs.PS3 GameFiles/STROUT/Map_3-00_GameHub/gamehub_str/build/PS3/pal_en/assets/shared/collision/npc_dash.acs.PS3 GameFiles/STROUT/Map_3-00_GameHub/gamehub_str/build/PS3/pal_en/assets/shared/collision/npc_default.acs.PS3 GameFiles/STROUT/Map_3-07_DayOfTheDolphin/dayofthedolphins/challenge_mode/challenge_mode_design_str/build/PS3/pal_en/assets/shared/collision/npc_dolphin.acs.PS3 GameFiles/STROUT/Map_3-08_TheColossalDonut/colossaldonut/story_mode/Story_mode_design_str/build/PS3/pal_en/assets/shared/collision/npc_lardlad.acs.PS3 GameFiles/STROUT/Map_3-11_NeverQuest/neverquest/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/npc_selmatty.acs.PS3 GameFiles/STROUT/Map_3-16_MeetThyPlayer/meetthyplayer/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/npc_shakespeare.acs.PS3 GameFiles/STROUT/Map_3-14_BigSuperHappy/bigsuperhappy_str/build/PS3/pal_en/assets/shared/collision/npc_sumo_dash.acs.PS3 GameFiles/STROUT/Map_3-02_BartmanBegins/brt/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_baton.acs.PS3 GameFiles/STROUT/Map_3-12_GrandTheftScratchy/grand_theft_scratchy/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_brokenbottle.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_1_folderstream/stream_c_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_cane.acs.PS3 GameFiles/STROUT/Map_3-05_MobRules/mob_rules/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_cattleprod.acs.PS3 GameFiles/STROUT/Map_3-11_NeverQuest/neverquest/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_club.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/zone16_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_hammer.acs.PS3 GameFiles/STROUT/Map_3-05_MobRules/mob_rules/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_kids_bat.acs.PS3 GameFiles/STROUT/Map_3-11_NeverQuest/neverquest/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_morc_club.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream/stream_a_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_pipe.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream/stream_b_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_pitchfork.acs.PS3 GameFiles/STROUT/Map_3-02_BartmanBegins/brt/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_purse.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/zone14_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_saw.acs.PS3 GameFiles/STROUT/Map_3-11_NeverQuest/neverquest/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_shovel.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream/stream_b_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_torch.acs.PS3</p>
-        <hr>
-        <p>clearly some relation to collision, characters and weapons</p>
-        <hr>
-        <p>related extensions:</p>
-        <ul>
-            <li><code>.hkt.PS3</code> all regular collision files have this extension</li>
-            <li><code>.hko.PS3</code> all animated collision files have this extension, and all character collision spheres use this extension</li>
-            <li><code>.acs.PS3</code> always contained within collision folders (or subfolders of it) often alongside <code>.hko.PS3</code> files</li>
-        </ul>
+        <details>
+            <summary>Historical notes and sample paths — interpretations retained for provenance</summary>
+            <p><strong>Historical hypothesis, not a validated specification:</strong> the notes below predate the 2026-10-22 byte audit. Their expanded ACS name, gameplay-use list, <code>'s'</code> type-code explanation, “one primitive per bone” wording and universal HKT/HKO static/animated rules are unsupported. The layout and bounded counts above supersede conflicting claims. Legacy paths retain their original namespace.</p>
+            <p>A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\marge.acs.PS3 A:\RemakeEngine\EngineApps\Games\TheSimpsonsGame-PS3\GameFiles\STROUT\Assets_2_Characters_Simpsons\GlobalFolder\chars\marge_mm2_h2_mtp_str\build\PS3\pal_en\assets\shared\collision\char_collision_spheres.hko.PS3</p>
+            <h3>Format: <strong>ACS</strong> — per-character <strong>A</strong>rticulated <strong>C</strong>ollision <strong>S</strong>hapes (PS3)</h3>
+            <p><code>marge.acs.PS3</code> is a small, binary list of simple hit-shape primitives (mostly spheres/capsules) attached to a character’s bones. The game uses this to do lightweight gameplay collision (melee hits, pickups, proximity checks, cursor targeting, etc.) without touching the full Havok meshes.</p>
+            <h4>Why this is ACS / hit-spheres</h4>
+            <ul>
+                <li>
+                    <p>The path: <code>assets\shared\collision\marge.acs.PS3</code> → per-character collision set.</p>
+                </li>
+                <li>
+                    <p>You see lots of IEEE-754 floats like:</p>
+                    <ul>
+                        <li><code>3F 80 00 00</code> = <strong>1.0</strong> (identity scale/weights),</li>
+                        <li><code>3E 99 99 9A</code> ≈ <strong>0.30</strong>, <code>3E 80 00 00</code> = <strong>0.25</strong>, <code>3F C0 00 00</code> = <strong>1.5</strong>, <code>3D CC CC CD</code> = <strong>0.1</strong> — typical <strong>radii</strong> for gameplay spheres.</li>
+                    </ul>
+                </li>
+                <li>
+                    <p>Repeating fixed-size records with very similar layouts (centers/flags/identity), suggesting “one primitive per bone”.</p>
+                </li>
+            </ul>
+            <h4>What the game uses it for</h4>
+            <ul>
+                <li><strong>Hit detection / hurtboxes</strong> for punches, kicks, and small overlaps.</li>
+                <li><strong>Targeting helpers</strong> for abilities and cursor hover.</li>
+                <li><strong>Cheap per-bone checks</strong> while Havok handles full body collision separately (your <code>.hkt</code> file).</li>
+            </ul>
+            <h4>Rough layout you’re seeing (per entry)</h4>
+            <p>Not exact names, but the pattern maps like this for each shape:</p>
+            <ul>
+                <li>A small header/IDs (includes a bone or binding hash; EA often stores CRCs of bone names).</li>
+                <li>A primitive <strong>type</strong> code (you’ll spot <code>0x73 00 00</code> → <code>&#39;s&#39;</code> = <strong>sphere</strong>; some titles also use <code>&#39;c&#39;</code> for capsule).</li>
+                <li>Center/orientation-ish block (many <code>1.0</code> values → identity) and/or flags.</li>
+                <li>A <strong>radius</strong> (those 0.25 / 0.30 / 0.10 / 1.50 values).</li>
+                <li>Repeats for each bone hotspot (head, hands, forearms, torso, legs, etc.).</li>
+            </ul>
+            <p>In short: <strong><code>.acs.PS3</code> = fast hit-shape set</strong>—a handful of bone-attached spheres (and possibly capsules) used by the EA/RenderWare runtime for quick overlap tests and gameplay interactions on PS3.</p>
+            <p>only 267 .acs.PS3 files found in the game data, here is every possible file name found with this extension at some paths: GameFiles/STROUT/Assets_2_Characters_Simpsons/GlobalFolder/chars/bart_bc0_grp0_ss1_h0_str/build/PS3/pal_en/assets/shared/collision/bart.acs.PS3 GameFiles/STROUT/Assets_2_Characters_Simpsons/GlobalFolder/chars/homer_fh0_gh0_hh0_h0_str/build/PS3/pal_en/assets/shared/collision/homer.acs.PS3 GameFiles/STROUT/Assets_2_Characters_Simpsons/GlobalFolder/chars/lisa_str/build/PS3/pal_en/assets/shared/collision/lisa.acs.PS3 GameFiles/STROUT/Assets_2_Characters_Simpsons/GlobalFolder/chars/marge_mm0_h0_str/build/PS3/pal_en/assets/shared/collision/marge.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream_str/build/PS3/pal_en/assets/shared/collision/npc_alien.acs.PS3 GameFiles/STROUT/Map_3-01_LandOfChocolate/loc/Challenge_Mode/Challenge_Mode_Design_str/build/PS3/pal_en/assets/shared/collision/npc_bunny.acs.PS3 GameFiles/STROUT/Map_3-00_GameHub/gamehub_str/build/PS3/pal_en/assets/shared/collision/npc_dash.acs.PS3 GameFiles/STROUT/Map_3-00_GameHub/gamehub_str/build/PS3/pal_en/assets/shared/collision/npc_default.acs.PS3 GameFiles/STROUT/Map_3-07_DayOfTheDolphin/dayofthedolphins/challenge_mode/challenge_mode_design_str/build/PS3/pal_en/assets/shared/collision/npc_dolphin.acs.PS3 GameFiles/STROUT/Map_3-08_TheColossalDonut/colossaldonut/story_mode/Story_mode_design_str/build/PS3/pal_en/assets/shared/collision/npc_lardlad.acs.PS3 GameFiles/STROUT/Map_3-11_NeverQuest/neverquest/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/npc_selmatty.acs.PS3 GameFiles/STROUT/Map_3-16_MeetThyPlayer/meetthyplayer/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/npc_shakespeare.acs.PS3 GameFiles/STROUT/Map_3-14_BigSuperHappy/bigsuperhappy_str/build/PS3/pal_en/assets/shared/collision/npc_sumo_dash.acs.PS3 GameFiles/STROUT/Map_3-02_BartmanBegins/brt/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_baton.acs.PS3 GameFiles/STROUT/Map_3-12_GrandTheftScratchy/grand_theft_scratchy/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_brokenbottle.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_1_folderstream/stream_c_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_cane.acs.PS3 GameFiles/STROUT/Map_3-05_MobRules/mob_rules/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_cattleprod.acs.PS3 GameFiles/STROUT/Map_3-11_NeverQuest/neverquest/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_club.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/zone16_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_hammer.acs.PS3 GameFiles/STROUT/Map_3-05_MobRules/mob_rules/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_kids_bat.acs.PS3 GameFiles/STROUT/Map_3-11_NeverQuest/neverquest/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_morc_club.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream/stream_a_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_pipe.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream/stream_b_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_pitchfork.acs.PS3 GameFiles/STROUT/Map_3-02_BartmanBegins/brt/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_purse.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/zone14_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_saw.acs.PS3 GameFiles/STROUT/Map_3-11_NeverQuest/neverquest/story_mode/story_mode_design_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_shovel.acs.PS3 GameFiles/STROUT/Map_3-00_SprHub/spr_hub/design/Act_2_folderstream/stream_b_str/build/PS3/pal_en/assets/shared/collision/weapons/weapon_torch.acs.PS3</p>
+            <hr>
+            <p>clearly some relation to collision, characters and weapons</p>
+            <hr>
+            <p>related extensions:</p>
+            <ul>
+                <li><code>.hkt.PS3</code> all regular collision files have this extension</li>
+                <li><code>.hko.PS3</code> all animated collision files have this extension, and all character collision spheres use this extension</li>
+                <li><code>.acs.PS3</code> always contained within collision folders (or subfolders of it) often alongside <code>.hko.PS3</code> files</li>
+            </ul>
+        </details>
     </body>
 </html>
