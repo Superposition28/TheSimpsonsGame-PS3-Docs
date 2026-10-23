@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed": "2026-10-19",
+  "reviewed": "2026-10-22",
   "platforms": {
     "ps3": {
       "name": "PS3"
@@ -289,9 +289,9 @@
       "aliases": [],
       "platforms": {
         "ps3": {
-          "colour": "blue",
-          "status": "Record layout and bindings analyzed",
-          "detail": "264 collision-directory files walked to EOF; bunny ACS IDs join BBN aliases and visual HAnim nodes. Shape semantics and pose/coordinate reconstruction remain partial; no registered collision importer."
+          "colour": "yellow",
+          "status": "Partial import · Godot collisionTest",
+          "detail": "264 collision-directory files (and all 267 canonical ACS files) walked to EOF; Godot collisionTest builds unresolved capsule/box/sphere preview galleries and joins BBN aliases and visual HAnim nodes. Shape semantics and pose/coordinate reconstruction remain partial; separate from operations.toml."
         },
         "xbox360": {
           "colour": "grey",
@@ -361,9 +361,9 @@
       "aliases": [],
       "platforms": {
         "ps3": {
-          "colour": "blue",
-          "status": "Analysis only",
-          "detail": "Binding-table and shared-skeleton interpretations are based on the player_default sample. Animation/IK uses and cross-file numeric joins have not been validated by a registered importer."
+          "colour": "yellow",
+          "status": "Partial lookup · Godot collisionTest",
+          "detail": "33-byte header, 52-byte records and SDBM bone-name hashes validated on player_default.bbn.PS3; Godot collisionTest resolves ACS node aliases against HAnim bones. Full animation/IK and runtime semantics remain partial; separate from operations.toml."
         },
         "xbox360": {
           "colour": "grey",
@@ -451,9 +451,9 @@
       "aliases": [],
       "platforms": {
         "ps3": {
-          "colour": "blue",
-          "status": "Havok primitive objects analyzed",
-          "detail": "25 collision-directory files are identical copies of one packfile containing 13 boxes and 3 spheres. Shape/fixup layout validated for this sample; broader HKO contents and runtime behavior remain unresolved."
+          "colour": "yellow",
+          "status": "Partial import · Godot collisionTest",
+          "detail": "25 collision-directory files are identical copies of one packfile containing 13 boxes and 3 spheres; Godot collisionTest builds BoxShape3D and SphereShape3D previews. Non-collision-directory HKO contents and runtime transforms remain unresolved; separate from operations.toml."
         },
         "xbox360": {
           "colour": "grey",
@@ -469,9 +469,9 @@
       "aliases": [],
       "platforms": {
         "ps3": {
-          "colour": "blue",
-          "status": "Havok mesh arrays analyzed",
-          "detail": "112 collision-directory HKT files audited: wrapper, sections, fixups and bounded EAStorageMeshShape vertex/triangle arrays. Original runtime and world placement remain unresolved; no registered Havok conversion."
+          "colour": "yellow",
+          "status": "Partial import · Godot collisionTest",
+          "detail": "112 collision-directory HKT files audited and imported in Godot collisionTest as ConcavePolygonShape3D / BoxShape3D static bodies with visual GLB pairing, raycast and physics checks. Non-collision-directory HKT variants and runtime world placement remain partial; separate from operations.toml."
         },
         "xbox360": {
           "colour": "grey",

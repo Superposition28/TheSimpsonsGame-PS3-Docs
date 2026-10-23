@@ -9,11 +9,11 @@
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../index.html" target="_top">Documentation</a></nav>
         <h1>Remake Engine conversion coverage</h1>
-        <p>These summaries describe Remake Engine implementation support as reviewed on 2026-10-18. They are not research-completeness ratings or guarantees about the original game. <a href="index.html">Integration overview</a> · <a href="pipeline.html">Operation details</a></p>
+        <p>These summaries describe Remake Engine implementation support as reviewed on 2026-10-22. They are not research-completeness ratings or guarantees about the original game. <a href="index.html">Integration overview</a> · <a href="pipeline.html">Operation details</a></p>
         <section class="format-coverage" aria-labelledby="format-coverage-title">
             <div class="format-coverage-heading">
                 <h2 id="format-coverage-title">Registered format coverage</h2>
-                <p>Current output usability and conversion limits, including registered operations and the Godot GRAPH editor importer, compared with the implementation on 2026-10-18. The same colours appear in the Documentation Map. These entries describe code paths, not a fresh end-to-end conversion run.</p>
+                <p>Current output usability and conversion limits, including registered operations, the Godot GRAPH editor importer and the standalone <code>Godot/GodotGame/collisionTest</code> harness, compared with the implementation on 2026-10-22. The same colours appear in the Documentation Map. These entries describe code paths, not a fresh end-to-end conversion run.</p>
             </div>
             <ul class="format-coverage-legend" id="conversion-status-legend" aria-label="Conversion status legend">
                 <li><span class="coverage-icon coverage-green" role="img" aria-label="Usable output / source"></span>Usable output / source</li>
@@ -37,6 +37,10 @@
                 <li class="format-coverage-item" data-format-route="graph" data-conversion-status="yellow">
                     <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial Godot import"></span>
                     <div><strong>GRAPH → TSGNavGraph (.res)</strong><span class="coverage-status">Partial import · Godot editor plugin</span><span class="coverage-detail">The enabled TSG Graph Importer reads GUID, nodes and edges for resource use and visualization. Edge boundaries are heuristic; no AStar3D or navigation mesh is generated. This is separate from operations.toml.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="collision" data-conversion-status="yellow">
+                    <span class="coverage-icon coverage-yellow" role="img" aria-label="Partial Godot import"></span>
+                    <div><strong>HKT / HKO / ACS / BBN → Godot 3D collision &amp; lookup</strong><span class="coverage-status">Partial import · Godot collisionTest</span><span class="coverage-detail">The standalone Godot/GodotGame/collisionTest project imports collision-directory .hkt.PS3 (112 files) and .hko.PS3 (25 files), parses all 267 canonical .acs.PS3 files and resolves .bbn.PS3 bone aliases against HAnim nodes. Non-collision-directory Havok files and runtime pose/placement semantics remain partial; separate from operations.toml.</span></div>
                 </li>
                 <li class="format-coverage-item" data-format-route="lh2" data-conversion-status="yellow">
                     <span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span>
