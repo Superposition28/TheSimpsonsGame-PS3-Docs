@@ -1,13 +1,303 @@
-APP_VER = "01.00"
-ATTRIBUTE = 0
-BOOTABLE = 1
-CATEGORY = "HG"
-LICENSE = "Library programs ©Sony Computer Entertainment Inc. Licensed for play on the PLAYSTATION®3 Computer Entertainment System or authorized PLAYSTATION®3 format systems. For full terms and conditions see the user's manual. This product is authorized and produced under license from Sony Computer Entertainment Inc. Use is subject to the copyright laws and the terms and conditions of the user's license."
-PARENTAL_LEVEL = 5
-PS3_SYSTEM_VER = "01.9000"
-RESOLUTION = 38
-SOUND_FORMAT = 5
-TITLE = "The Simpsons™ Game Demo"
-TITLE_01 = "The Simpsons™ Game Demo"
-TITLE_ID = "NPEB90029"
-VERSION = "01.00"
+# PARAM.SFO metadata: decoded values plus source-preserving index context.
+# Hex fields are strings; offsets and lengths are decimal byte positions.
+# [[entries]] is authoritative if a key occurs more than once.
+# Unknown formats/flags remain explicit rather than being guessed.
+
+[sfo]
+source_file = "PARAM.SFO"
+file_size_bytes = 1192
+sha256 = "d2b560ca361a0af214ced21bd946e2438d66bd84cb776f706b9f498f09bbffa3"
+magic_hex = "00505346"
+header_version = "0x00000101"
+header_version_explanation = "PSF container header version; 0x00000101 corresponds to version 1.1, not the game VERSION key."
+header_size_bytes = 20
+index_entry_size_bytes = 16
+entry_count = 13
+key_table_start = 228
+data_table_start = 360
+key_table_hex = "4150505F5645520041545452494255544500424F4F5441424C450043415445474F5259004C4943454E534500504152454E54414C5F4C4556454C005053335F53595354454D5F564552005245534F4C5554494F4E00534F554E445F464F524D4154005449544C45005449544C455F3031005449544C455F49440056455253494F4E000000"
+warnings = []
+
+[values]
+# Convenience map of unambiguous decoded scalars only.
+# For missing/opaque/duplicate keys, read [[entries]] instead.
+"APP_VER" = "01.00"
+"ATTRIBUTE" = 0
+"BOOTABLE" = 1
+"CATEGORY" = "HG"
+"LICENSE" = "Library programs ©Sony Computer Entertainment Inc. Licensed for play on the PLAYSTATION®3 Computer Entertainment System or authorized PLAYSTATION®3 format systems. For full terms and conditions see the user's manual. This product is authorized and produced under license from Sony Computer Entertainment Inc. Use is subject to the copyright laws and the terms and conditions of the user's license."
+"PARENTAL_LEVEL" = 5
+"PS3_SYSTEM_VER" = "01.9000"
+"RESOLUTION" = 38
+"SOUND_FORMAT" = 5
+"TITLE" = "The Simpsons™ Game Demo"
+"TITLE_01" = "The Simpsons™ Game Demo"
+"TITLE_ID" = "NPEB90029"
+"VERSION" = "01.00"
+
+[sfo_index]
+# Counts help detect data omitted from the convenience [values] view.
+duplicate_keys = []
+decoded_unique_values = 13
+opaque_or_duplicate_entries = 0
+
+[[entries]]
+index = 0
+key = "APP_VER"
+description = "Application/executable version, often increased by an update; distinct from VERSION and the PSF header version."
+interpretation = "Declared application/patch version 01.00."
+format_code = "0x0204"
+format_description = "NUL-terminated UTF-8 string"
+key_offset = 0
+key_position = 228
+index_record_position = 20
+data_offset = 0
+data_position = 360
+used_bytes = 6
+capacity_bytes = 8
+unused_bytes = 2
+raw_hex = "30312E303000"
+value = "01.00"
+notes = []
+
+[[entries]]
+index = 1
+key = "ATTRIBUTE"
+description = "Category-dependent bitmask of special content features and boot-related attributes."
+interpretation = "No ATTRIBUTE feature bits set"
+format_code = "0x0404"
+format_description = "Little-endian unsigned 32-bit integer"
+key_offset = 8
+key_position = 236
+index_record_position = 36
+data_offset = 8
+data_position = 368
+used_bytes = 4
+capacity_bytes = 4
+unused_bytes = 0
+raw_hex = "00000000"
+value = 0
+value_hex = "0x00000000"
+value_binary = "00000000000000000000000000000000"
+notes = []
+
+[[entries]]
+index = 2
+key = "BOOTABLE"
+description = "Content boot mode: 0 not bootable, 1 bootable game, 2 alternate software boot mode (firmware-dependent)."
+interpretation = "Bootable (game mode 1)"
+format_code = "0x0404"
+format_description = "Little-endian unsigned 32-bit integer"
+key_offset = 18
+key_position = 246
+index_record_position = 52
+data_offset = 12
+data_position = 372
+used_bytes = 4
+capacity_bytes = 4
+unused_bytes = 0
+raw_hex = "01000000"
+value = 1
+value_hex = "0x00000001"
+value_binary = "00000000000000000000000000000001"
+notes = []
+
+[[entries]]
+index = 3
+key = "CATEGORY"
+description = "PS3 XMB content category code. A category alone is not proof that a game is a demo."
+interpretation = "HDD Game (installed/downloaded content; not automatically a demo)"
+format_code = "0x0204"
+format_description = "NUL-terminated UTF-8 string"
+key_offset = 27
+key_position = 255
+index_record_position = 68
+data_offset = 16
+data_position = 376
+used_bytes = 3
+capacity_bytes = 4
+unused_bytes = 1
+raw_hex = "484700"
+value = "HG"
+notes = []
+
+[[entries]]
+index = 4
+key = "LICENSE"
+description = "License/copyright notice carried by the content; may not be shown by retail system software."
+interpretation = "String decoded as UTF-8; see value for the original metadata text."
+format_code = "0x0204"
+format_description = "NUL-terminated UTF-8 string"
+key_offset = 36
+key_position = 264
+index_record_position = 84
+data_offset = 20
+data_position = 380
+used_bytes = 401
+capacity_bytes = 512
+unused_bytes = 111
+raw_hex = "4C6962726172792070726F6772616D7320C2A9536F6E7920436F6D707574657220456E7465727461696E6D656E7420496E632E204C6963656E73656420666F7220706C6179206F6E2074686520504C415953544154494F4EC2AE3320436F6D707574657220456E7465727461696E6D656E742053797374656D206F7220617574686F72697A656420504C415953544154494F4EC2AE3320666F726D61742073797374656D732E20466F722066756C6C207465726D7320616E6420636F6E646974696F6E73207365652074686520757365722773206D616E75616C2E20546869732070726F6475637420697320617574686F72697A656420616E642070726F647563656420756E646572206C6963656E73652066726F6D20536F6E7920436F6D707574657220456E7465727461696E6D656E7420496E632E20557365206973207375626A65637420746F2074686520636F70797269676874206C61777320616E6420746865207465726D7320616E6420636F6E646974696F6E73206F662074686520757365722773206C6963656E73652E00"
+value = "Library programs ©Sony Computer Entertainment Inc. Licensed for play on the PLAYSTATION®3 Computer Entertainment System or authorized PLAYSTATION®3 format systems. For full terms and conditions see the user's manual. This product is authorized and produced under license from Sony Computer Entertainment Inc. Use is subject to the copyright laws and the terms and conditions of the user's license."
+notes = []
+
+[[entries]]
+index = 5
+key = "PARENTAL_LEVEL"
+description = "PS3 parental-control restriction level (not a player's age or an ESRB/PEGI rating)."
+interpretation = "Restriction level 5 (PS3 scale, not an age rating)."
+format_code = "0x0404"
+format_description = "Little-endian unsigned 32-bit integer"
+key_offset = 44
+key_position = 272
+index_record_position = 100
+data_offset = 532
+data_position = 892
+used_bytes = 4
+capacity_bytes = 4
+unused_bytes = 0
+raw_hex = "05000000"
+value = 5
+value_hex = "0x00000005"
+value_binary = "00000000000000000000000000000101"
+notes = []
+
+[[entries]]
+index = 6
+key = "PS3_SYSTEM_VER"
+description = "Minimum declared PS3 system-software version required by this content."
+interpretation = "Requires at least declared PS3 system software version 01.9000."
+format_code = "0x0204"
+format_description = "NUL-terminated UTF-8 string"
+key_offset = 59
+key_position = 287
+index_record_position = 116
+data_offset = 536
+data_position = 896
+used_bytes = 8
+capacity_bytes = 8
+unused_bytes = 0
+raw_hex = "30312E3930303000"
+value = "01.9000"
+notes = []
+
+[[entries]]
+index = 7
+key = "RESOLUTION"
+description = "Bitmask of declared supported video-output modes; not the measured in-game rendering resolution."
+interpretation = "Declared video-output modes"
+format_code = "0x0404"
+format_description = "Little-endian unsigned 32-bit integer"
+key_offset = 74
+key_position = 302
+index_record_position = 132
+data_offset = 544
+data_position = 904
+used_bytes = 4
+capacity_bytes = 4
+unused_bytes = 0
+raw_hex = "26000000"
+value = 38
+value_hex = "0x00000026"
+value_binary = "00000000000000000000000000100110"
+set_flags = ["0x00000002: 576-line (4:3)", "0x00000004: 720-line (16:9)", "0x00000020: 576-line (16:9)"]
+unknown_flag_bits_hex = "0x00000000"
+notes = []
+
+[[entries]]
+index = 8
+key = "SOUND_FORMAT"
+description = "Bitmask of supported PS3 output audio formats; not the codec or channel count of every game asset."
+interpretation = "Declared audio-output formats"
+format_code = "0x0404"
+format_description = "Little-endian unsigned 32-bit integer"
+key_offset = 85
+key_position = 313
+index_record_position = 148
+data_offset = 548
+data_position = 908
+used_bytes = 4
+capacity_bytes = 4
+unused_bytes = 0
+raw_hex = "05000000"
+value = 5
+value_hex = "0x00000005"
+value_binary = "00000000000000000000000000000101"
+set_flags = ["0x00000001: Linear PCM 2.0", "0x00000004: Linear PCM 5.1"]
+unknown_flag_bits_hex = "0x00000000"
+notes = []
+
+[[entries]]
+index = 9
+key = "TITLE"
+description = "Default title displayed in the PS3 XMB."
+interpretation = "XMB display title; localized language (if any) is specified in description."
+format_code = "0x0204"
+format_description = "NUL-terminated UTF-8 string"
+key_offset = 98
+key_position = 326
+index_record_position = 164
+data_offset = 552
+data_position = 912
+used_bytes = 26
+capacity_bytes = 128
+unused_bytes = 102
+raw_hex = "5468652053696D70736F6E73E284A22047616D652044656D6F00"
+value = "The Simpsons™ Game Demo"
+notes = []
+
+[[entries]]
+index = 10
+key = "TITLE_01"
+description = "Localized XMB display title for language slot 01 (English (United States))."
+interpretation = "XMB display title; localized language (if any) is specified in description."
+format_code = "0x0204"
+format_description = "NUL-terminated UTF-8 string"
+key_offset = 104
+key_position = 332
+index_record_position = 180
+data_offset = 680
+data_position = 1040
+used_bytes = 26
+capacity_bytes = 128
+unused_bytes = 102
+raw_hex = "5468652053696D70736F6E73E284A22047616D652044656D6F00"
+value = "The Simpsons™ Game Demo"
+notes = []
+
+[[entries]]
+index = 11
+key = "TITLE_ID"
+description = "Sony platform content title identifier; identifies this release, not an in-game text asset."
+interpretation = "Content title ID NPEB90029; identifies the product/release."
+format_code = "0x0204"
+format_description = "NUL-terminated UTF-8 string"
+key_offset = 113
+key_position = 341
+index_record_position = 196
+data_offset = 808
+data_position = 1168
+used_bytes = 10
+capacity_bytes = 16
+unused_bytes = 6
+raw_hex = "4E504542393030323900"
+value = "NPEB90029"
+notes = []
+
+[[entries]]
+index = 12
+key = "VERSION"
+description = "Disc/package revision string; distinct from APP_VER and the binary PSF header version."
+interpretation = "Declared disc/package revision 01.00 (not necessarily executable version)."
+format_code = "0x0204"
+format_description = "NUL-terminated UTF-8 string"
+key_offset = 122
+key_position = 350
+index_record_position = 212
+data_offset = 824
+data_position = 1184
+used_bytes = 6
+capacity_bytes = 8
+unused_bytes = 2
+raw_hex = "30312E303000"
+value = "01.00"
+notes = []
