@@ -1,3 +1,32 @@
+# Documentation review — 2026-10-28
+
+The original PS3 EU ALB/LH2/SMB audit is now reflected in the homepage coverage
+registry, map dots/tooltips, format summaries, related-format tables and optional
+Remake Engine integration. ALB and LH2 are green for validated data reading and
+usable individual-dialogue lookup/output. SMB is yellow: record boundaries and
+filename lookup are validated, while many playback fields remain unresolved.
+Green does not assert complete original runtime behavior. Xbox statuses retain
+independent platform evidence.
+
+The live documentation uses current converter paths and operation numbers
+(LH2 CSV 8, fonts 9, FMV subtitles 10, SBK 11, SNU 12, MUS 13, video 14).
+Pipeline metadata is synchronized with all 21 active manifest operations,
+including asset copying, scene-path refresh and isolated variants. Legacy Lua
+CSV host fidelity remains separate from the validated standalone Python reader.
+Missing evidence-ledger links were replaced with available inline investigations
+and reproduction instructions; the removed JSON ledgers were not restored.
+
+Desktop and narrow-width browser review could not be completed in this session:
+the native Computer Use pipe was unavailable, no browser surfaces were returned,
+and the in-app browser was unavailable. Static HTML structure, links, generated
+coverage and manifest consistency were verified.
+
+Earlier dated reviews below describe their snapshots; their old operation IDs,
+validation totals and outstanding work are historical, not current support
+claims. The current reference and integration checks are the maintenance source.
+
+---
+
 # Documentation migration — 2026-10-19
 
 The site now presents the game and its file formats as an independent reference. The container-origin format tree and USRDIR asset/use tree remain in place. Remake Engine operation metadata and detailed implementation support have dedicated integration pages. The PS3 and Xbox 360 homepages retain Pipeline Format Coverage as the explicit exception, combining research and project progress. Former pipeline URLs and existing navigation destinations are retained.

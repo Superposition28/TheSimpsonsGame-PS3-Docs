@@ -85,6 +85,14 @@ def render_index(root: Path = ROOT) -> str:
         stop = text.index(ending, start)
         section = text[start:stop]
 
+        # The localization family and base LH2 page share one navigation entry.
+        # Keep the old iframe route as an alias, but list its language children
+        # beneath the canonical group instead of displaying the base file twice.
+        section = re.sub(r'\s*<li><a\b[^>]*href="#FormatAnalysis-lh2"[^>]*>.*?</a></li>',
+                         '', section, flags=re.S)
+        section = section.replace('href="#FormatAnalysis-lh2-base"', 'href="#FormatAnalysis-lh2"')
+        section = section.replace('<span>.LH2</span>', '<span>.LH2 (Localization)</span>')
+
         def adorn(match: re.Match) -> str:
             """Keep the label in the second grid column after a status dot."""
             opening, route, content = match.group(1), match.group(2), match.group(3)
@@ -96,6 +104,8 @@ def render_index(root: Path = ROOT) -> str:
                 status = {'colour': 'grey', 'status': 'Reference group',
                           'detail': 'A suffix family or navigation group; see its individual resource references.'}
             content = re.sub(r'<span class="coverage-icon[^>]*></span>', '', content)
+            if 'map_label' in status:
+                content = '<span>' + escape(status['map_label']) + '</span>'
             opening = re.sub(r' (?:data-conversion-status|data-coverage-status|title)="[^"]*"', '', opening)
             opening += f' data-coverage-status="{escape(status["colour"])}" title="{escape(status["status"] + ": " + status["detail"])}"'
             return opening + '>' + icon(status['colour'], status['status']) + content.strip() + '</a>'

@@ -9,11 +9,11 @@
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../index.html" target="_top">Documentation</a></nav>
         <h1>Remake Engine conversion coverage</h1>
-        <p>These summaries describe Remake Engine implementation support as reviewed on 2026-10-22. They are not research-completeness ratings or guarantees about the original game. <a href="index.html">Integration overview</a> · <a href="pipeline.html">Operation details</a></p>
+        <p>These summaries describe Remake Engine implementation support as reviewed on 2026-10-28. They are not research-completeness ratings or guarantees about the original game. <a href="index.html">Integration overview</a> · <a href="pipeline.html">Operation details</a></p>
         <section class="format-coverage" aria-labelledby="format-coverage-title">
             <div class="format-coverage-heading">
                 <h2 id="format-coverage-title">Registered format coverage</h2>
-                <p>Current output usability and conversion limits, including registered operations, the Godot GRAPH editor importer and the standalone <code>Godot/GodotGame/collisionTest</code> harness, compared with the implementation on 2026-10-22. The same colours appear in the Documentation Map. These entries describe code paths, not a fresh end-to-end conversion run.</p>
+                <p>Current output usability and conversion limits, including registered operations, the Godot GRAPH editor importer and the standalone <code>Godot/GodotGame/collisionTest</code> harness and original-source dialogue audit, compared with the implementation on 2026-10-28. The homepage map combines research and usable readers; this panel rates each named implementation separately. A yellow legacy CSV entry can coexist with a green validated original-source reader. These entries describe code paths, not a fresh end-to-end conversion run.</p>
             </div>
             <ul class="format-coverage-legend" id="conversion-status-legend" aria-label="Conversion status legend">
                 <li><span class="coverage-icon coverage-green" role="img" aria-label="Usable output / source"></span>Usable output / source</li>
@@ -44,7 +44,11 @@
                 </li>
                 <li class="format-coverage-item" data-format-route="lh2" data-conversion-status="yellow">
                     <span class="coverage-icon coverage-yellow" role="img" aria-label="Conversion needs validation"></span>
-                    <div><strong>LH2 → CSV</strong><span class="coverage-status">Conversion needs validation · Operation 8</span><span class="coverage-detail">Column export is registered; binary IDs and text encoding still need validation under the engine Lua host.</span></div>
+                    <div><strong>LH2 → CSV</strong><span class="coverage-status">Conversion needs validation · Operation 8</span><span class="coverage-detail">Operation 8 CSV byte/encoding fidelity still needs engine-host validation. Original LH2 layout and dialogue text are independently validated by the standalone Python reader; see the separate green dialogue-audit entry.</span></div>
+                </li>
+                <li class="format-coverage-item" data-format-route="dialogue-audit" data-conversion-status="green">
+                    <span class="coverage-icon coverage-green" role="img" aria-label="Usable original-source dialogue lookup"></span>
+                    <div><strong><a href="index.html#original-subtitle-test">ALB + SMB + LH2 + SNU → subtitle test videos</a></strong><span class="coverage-status">Validated lookup and usable output · Standalone research script</span><span class="coverage-detail">All 14,283 distinct-payload ALB records resolve, covering 7,314 original dialogue clips. LH2 text is decoded directly; demo timing spans the clip duration. Composite IGC timelines, event triggering and other audio families remain unresolved. This is separate from operations.toml.</span></div>
                 </li>
                 <li class="format-coverage-item" data-format-route="inf" data-conversion-status="green">
                     <span class="coverage-icon coverage-green" role="img" aria-label="Usable conversion"></span>
@@ -75,7 +79,7 @@
                     <div><strong>Other extracted resource families</strong><span class="coverage-status">No registered conversion · No dedicated conversion</span><span class="coverage-detail">Character, physics, scene, effect and audio-control formats have research notes but no dedicated registered conversion.</span></div>
                 </li>
             </ul>
-            <p><a href="../../index.html#FormatAnalysis-pipeline">All 18 registered operations</a> · <a href="../../index.html#FormatAnalysis-relationships">Relationships and shared data types</a> · <a href="../../review.md">Documentation audit</a></p>
+            <p><a href="../../index.html#FormatAnalysis-pipeline">All 21 registered operations</a> · <a href="../../index.html#FormatAnalysis-relationships">Relationships and shared data types</a> · <a href="../../review.md">Documentation audit</a></p>
         </section>
         <section class="format-coverage" aria-labelledby="xbox360-format-coverage-title">
             <div class="format-coverage-heading">

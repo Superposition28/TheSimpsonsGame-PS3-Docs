@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed": "2026-10-22",
+  "reviewed": "2026-10-28",
   "platforms": {
     "ps3": {
       "name": "PS3"
@@ -109,9 +109,9 @@
       ],
       "platforms": {
         "ps3": {
-          "colour": "yellow",
-          "status": "Conversion needs validation · Operation 8",
-          "detail": "Column export is registered; binary IDs and text encoding still need validation under the engine Lua host."
+          "colour": "green",
+          "status": "Validated text and dialogue lookup",
+          "detail": "All 654 original EU tables are readable; language/label columns and 7,314 dialogue links are validated. Reserved header fields and original subtitle timing remain unresolved. Operation 8 Lua CSV fidelity is a separate validation gap."
         },
         "xbox360": {
           "colour": "grey",
@@ -307,9 +307,9 @@
       "aliases": [],
       "platforms": {
         "ps3": {
-          "colour": "blue",
-          "status": "Analysis only",
-          "detail": "The ALB/CTB pairing is supported by shared names and IDs in samples. A complete event-to-stream resolver is not registered; unidentified fields and record variations need further validation."
+          "colour": "green",
+          "status": "Validated records and dialogue links",
+          "detail": "Original EU version-6 records are 24 bytes; all 14,283 distinct-payload records join to SMB streams and LH2 text. Standalone subtitle videos are usable. Alias semantics, stream-slot roles and event triggering remain unresolved."
         },
         "xbox360": {
           "colour": "grey",
@@ -633,7 +633,9 @@
         "ps3": {
           "colour": "blue",
           "status": "Analysis only",
-          "detail": "Entity IDs and resource references must be matched against the correct level context. No scene-assembly operation is registered."
+          "detail": "Extraction categorizes identified SimGroup/UIE data and leaves unidentified families as .dat. Record bytes are preserved; entity joins and runtime scene assembly remain unresolved.",
+          "label": ".dat.simgroup / .dat.uie",
+          "map_label": ".dat.simgroup / .dat.uie"
         },
         "xbox360": {
           "colour": "grey",
@@ -649,9 +651,9 @@
       "aliases": [],
       "platforms": {
         "ps3": {
-          "colour": "blue",
-          "status": "Analysis only",
-          "detail": "The stream-name strings are observed. Specific attenuation meanings, hash algorithms and a universal 96-byte record stride remain interpretations until validated across the corpus. No registered SMB-to-SNU resolver exists."
+          "colour": "yellow",
+          "status": "Stream lookup usable; playback metadata partial",
+          "detail": "All 99 original EU banks have validated 96-byte records naming all 7,413 distinct SNU files. Bank/stream joins support dialogue lookup; flags, attenuation fields and other playback semantics remain partly unknown."
         },
         "xbox360": {
           "colour": "grey",

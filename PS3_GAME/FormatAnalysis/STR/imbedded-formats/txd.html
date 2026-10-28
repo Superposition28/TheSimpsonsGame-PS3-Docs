@@ -60,7 +60,7 @@
                         <tr>
                             <td><a href="../index.html">STR archive</a></td>
                             <td>Implemented</td>
-                            <td>Operation 1 extracts texture dictionaries; operation 3 decodes supported textures to PNG.</td>
+                            <td>Operation 1 extracts texture dictionaries; operation 5 decodes supported textures to PNG.</td>
                         </tr>
                         <tr>
                             <td><a href="preinstanced.html">Preinstanced models</a></td>
@@ -70,7 +70,7 @@
                         <tr>
                             <td><a href="inf.html">Bitmap font descriptor (.inf)</a></td>
                             <td>Implemented</td>
-                            <td>Operation 3 supplies the PNG atlas used by operation 15. INF stores glyph rectangles/metrics, while the texture dictionary supplies pixels. The font converter matches cleaned base names, preferring the same archive context.</td>
+                            <td>Operation 5 supplies the PNG atlas used by operation 9. INF stores glyph rectangles/metrics, while the texture dictionary supplies pixels. The font converter matches cleaned base names, preferring the same archive context.</td>
                         </tr>
                         <tr>
                             <td><a href="uix.html">Compiled APT interface (.uix)</a></td>
@@ -93,7 +93,7 @@
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>Operation 3 requests PNG output from the engine TXD extractor. The DDS examples below explain intermediate pixel representation; unsupported native formats and material assignment remain separate concerns.</p>
+            <p>Operation 5 requests PNG output from the engine TXD extractor. The DDS examples below explain intermediate pixel representation; unsupported native formats and material assignment remain separate concerns.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
         <p><strong>Version:</strong> 1.0<br><strong>Last Updated:</strong> 2026-10-02<br><strong>Author(s):</strong> samarixum</p>

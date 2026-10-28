@@ -58,7 +58,7 @@
                         <tr>
                             <td><a href="../STR/imbedded-formats/tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td>
                             <td>Implemented</td>
-                            <td>Operation 16 matches cleaned timing/movie stems plus the parent language folder under A1_Video. It writes SRT/VTT beside matching VP6 or OGV files. StartMs and StartMs + DurationMs are the cue bounds.</td>
+                            <td>Operation 10 matches cleaned timing/movie stems plus the parent language folder under A1_Video. It writes SRT/VTT beside matching VP6 or OGV files. StartMs and StartMs + DurationMs are the cue bounds.</td>
                         </tr>
                         <tr>
                             <td><a href="../STR/imbedded-formats/lh2.html">Localization table (.LH2)</a></td>
@@ -143,8 +143,8 @@
         <p>Preserve four-character chunk IDs as literal bytes. Numeric byte order is a separate question: a PS3 source does not make every chunk-size field big-endian. Use a decoder/probe and validate each chunk boundary against the actual file length.</p>
         <p><strong>Current EU header check:</strong> all 172 local VP6 files begin with literal <code>SCHl</code>. The next four bytes decode as a little-endian chunk size of 40 (73 files) or 44 (99 files). This establishes that field for this corpus, not the byte order of every payload field or every EA movie variant.</p>
         <h2 id="conversion-and-playback">Conversion and playback</h2>
-        <p>Operation 13 delegates <code>.vp6</code> to <code>.ogv</code> conversion to FFmpeg with replacement enabled. Audio decoding alone through vgmstream is not video conversion. Inspect the output streams when a movie has multiple tracks; the manifest does not request exhaustive stream mapping.</p>
-        <p>Operation 16 can write external SRT/VTT companions beside either the original VP6 or converted OGV. Captions remain separate files: the registered video conversion does not burn text into frames or choose an INF font. Pairing works by movie stem and language directory, not by parsing a font or subtitle pointer out of the movie.</p>
+        <p>Operation 14 delegates <code>.vp6</code> to <code>.ogv</code> conversion to FFmpeg with replacement enabled. Audio decoding alone through vgmstream is not video conversion. Inspect the output streams when a movie has multiple tracks; the manifest does not request exhaustive stream mapping.</p>
+        <p>Operation 10 can write external SRT/VTT companions beside either the original VP6 or converted OGV. Captions remain separate files: the registered video conversion does not burn text into frames or choose an INF font. Pairing works by movie stem and language directory, not by parsing a font or subtitle pointer out of the movie.</p>
         <h2 id="variants-and-unresolved-fields">Variants and unresolved fields</h2>
         <p>The original examples were <code>attractloop.vp6</code> and <code>loc_igc01.vp6</code>. The <code>sf</code> directory contains special-feature movies in the EU inventory. Logos, attract loops and feature clips may have no non-empty TOX timing table. Cross-platform similarity does not establish byte-identical PS3 and Xbox 360 movies, codecs or headers.</p>
         <p>A complete chunk field map, authoritative per-field byte order, track-selection rules and integrity/checksum scheme remain undocumented. Common resolutions or sample rates should be treated as observations of a particular movie, not format constants.</p>

@@ -59,24 +59,24 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><a href="../STR/imbedded-formats/alb.html">Audio alias/library metadata (.alb)</a></td>
-                            <td>Tentative</td>
-                            <td>Alias metadata is associated with streamed audio, but a complete ALB-record-to-SNU-filename join has not been implemented.</td>
+                            <td><a href="../STR/imbedded-formats/alb.html">Audio alias records (.alb)</a></td>
+                            <td>Byte-validated (PS3 EU)</td>
+                            <td>Original EU ALB bank/stream IDs join to SMB filenames, while ALB StringIDs join to LH2 text. This resolves 7,314 individual dialogue filenames; original event selection and composite IGC timing remain unresolved.</td>
                         </tr>
                         <tr>
                             <td><a href="../STR/imbedded-formats/ctb.html">Audio control metadata (.ctb)</a></td>
                             <td>Tentative</td>
-                            <td>Event names and IDs describe control metadata; SNU carries decodable audio. Operation 11 decodes files without interpreting CTB event logic.</td>
+                            <td>Event names and IDs describe control metadata; SNU carries decodable audio. Operation 12 decodes files without interpreting CTB event logic.</td>
                         </tr>
                         <tr>
                             <td><a href="../STR/imbedded-formats/smb.html">Stream metadata (.smb)</a></td>
-                            <td>Observed</td>
-                            <td>SMB samples contain .exa stream names, while the disc inventory uses .exa.snu wrappers. Filename normalization and a complete numeric-ID join must be verified per sample.</td>
+                            <td>Byte-validated (PS3 EU)</td>
+                            <td>All 7,413 distinct original EU SNU filenames are named by SMB records. The stored .exa filename gains .snu on disc; bank/stream IDs join to ALB for individual-dialogue subtitle lookup.</td>
                         </tr>
                         <tr>
                             <td><a href="../STR/imbedded-formats/sbk.html">Sound bank (.sbk)</a></td>
                             <td>Related payloads</td>
-                            <td>Both can carry EA compressed audio, but bank-contained subsongs and standalone SNU files are separate inputs to operations 10 and 11; no mandatory SBK-to-SNU dependency is established.</td>
+                            <td>Both can carry EA compressed audio, but bank-contained subsongs and standalone SNU files are separate inputs to operations 11 and 12; no mandatory SBK-to-SNU dependency is established.</td>
                         </tr>
                         <tr>
                             <td><a href="../STR/imbedded-formats/mib.html">Mix metadata (.mib)</a></td>
@@ -99,7 +99,7 @@
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>Operation 11 matches the final .snu extension, including .exa.snu, and requests Godot-compatible WAV output. Codec and channel counts are file-specific. Decoding does not reconstruct audio-event control logic.</p>
+            <p>Operation 12 matches the final .snu extension, including .exa.snu, and requests Godot-compatible WAV output. Codec and channel counts are file-specific. Decoding does not reconstruct audio-event control logic.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
         <p>This format is understood and easily converted to wav using vgmstream</p>
@@ -391,5 +391,9 @@ bitrate: 610 kbps
 play duration: 1649623 samples (0:51.551 seconds)
 ...
 </code></pre>
+        <section id="original-subtitle-links">
+            <h2>Original individual-dialogue subtitle links</h2>
+            <p>The <a href="../STR/imbedded-formats/lh2.html#audio-subtitle-join">2026-10-28 original PS3 EU audit</a> resolves 7,314 dialogue filenames through ALB bank/stream IDs → SMB filenames and ALB StringIDs → LH2 text. The SNU is the audio payload; the subtitle mapping lives in external metadata. Composite IGC tracks and other audio families need their own control/timing analysis. This join establishes audio/text associations, not original subtitle dwell timing.</p>
+        </section>
     </body>
 </html>

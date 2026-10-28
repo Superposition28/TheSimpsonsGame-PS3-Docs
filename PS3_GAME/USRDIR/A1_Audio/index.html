@@ -15,6 +15,8 @@
         </aside>
         <p>A1_Audio is the canonical extracted group for streamed dialogue, ambient resources and music. Its original source group is audiostreams. EN/ES/FR/IT and Global organization in this dataset includes processing conventions; verify original paths separately.</p>
         <p>See <a href="../../FormatAnalysis/relationships.html#audio">audio relationships</a> for ALB/CTB/SMB metadata and <a href="../../../reference/naming.html#audio">audio naming associations</a>. Tool-specific processing belongs in the optional <a href="../../../integrations/remake-engine/index.html">Remake Engine integration</a>.</p>
+        <h2 id="original-subtitles">Original dialogue subtitle links</h2>
+        <p>The <a href="../../FormatAnalysis/STR/imbedded-formats/lh2.html#audio-subtitle-join">2026-10-28 original EU audit</a> recovers the shipped ALB bank/stream → SMB filename and ALB StringID → LH2 text joins for 7,314 distinct individual dialogue streams. LH2 covers general interface text, FMV dialogue and incidental in-game speech. This relationship is independent of AudioMap organization rules. The remaining 99 SNU filenames comprise composite IGC, ambience/music and one unresolved Nelson clip; full event selection and original subtitle timing remain open.</p>
         <p>the audio streams/A1_Audio contains these items in EU:</p>
         <ul>
             <li>EN: English</li>
@@ -22,7 +24,7 @@
             <li>FR: French</li>
             <li>IT: Italian</li>
         </ul>
-        <p>Global: Ambient sounds</p>
+        <p>Global: processed grouping for ambience and other non-localized streams.</p>
         <section aria-labelledby="audio-map-title">
             <h2 id="audio-map-title">AudioMap Registry</h2>
             <p><a href="./AudioMap.yaml">View AudioMap.yaml</a></p>
@@ -36,7 +38,7 @@
             <p>AudioMap.yaml remains at this path using <code>schema_version: 2</code>. Historical fields and unconsumed metadata are retained under legacy records; the original <a href="AudioMap.v1.yaml">V1 snapshot</a> remains available as research history. Its character, level and stream associations serve the game reference. The <a href="../../../integrations/remake-engine/index.html#audio-map">Remake Engine consumer contract</a> records V2 output paths and execution behavior.</p>
         </section>
         <p>The reference includes EN/ES/FR/IT language groups. Exact cross-language inventory parity has not been established in this migration.</p>
-        <p>the language folders contain .exa.snu audio files, each represent a charactors voice lines</p>
+        <p>The localized groups contain individual dialogue clips and composite IGC tracks. SNU also carries ambience and music-related streams; a SNU filename does not always identify one spoken line. Original individual-dialogue subtitle links are documented above.</p>
         <p>the mus files are music container archives used for background music. the current extraction path unpacks each mus into paired .snr metadata files and .sns stream payloads, which vgmstream can decode as EA-XAS audio.</p>
         <ul>
             <li>80b_mus.mus</li>

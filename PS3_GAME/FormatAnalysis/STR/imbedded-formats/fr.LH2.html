@@ -16,7 +16,7 @@
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>The french column of the shared LH2 localization family.</p>
+            <p>The French single-column global variant of the shared LH2 localization family.</p>
             <dl>
                 <dt>Identification</dt>
                 <dd>2HCL; the binary layout is shared with the LH2 reference page.</dd>
@@ -57,7 +57,7 @@
                         <tr>
                             <td><a href="tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td>
                             <td>Implemented</td>
-                            <td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
+                            <td>Operation 10 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
                         </tr>
                         <tr>
                             <td><a href="../../VP6/index.html">Movie container (.vp6)</a></td>
@@ -78,7 +78,8 @@
             <p>The inventory below was read from the local EU flattened dataset. It is not a universal regional inventory. File paths retain their normalization hashes; the six-hex suffix is not an LH2 StringID.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
-        <p>This variant uses the shared LH2 binary layout. Operation 16 uses the first table in the selected simpsons_global.fr.LH2 file for french subtitle text.</p>
+        <p>This variant uses the shared LH2 binary layout. Operation 10 uses the first table in the selected simpsons_global.fr.LH2 file for french subtitle text.</p>
+        <p>The <a href="lh2.html#audio-subtitle-join">original EU dialogue audit</a> also validates five-column unsuffixed LH2 tables (English, French, Italian, Spanish, internal label). Individual SNU dialogue links resolve through ALB/SMB to those rows; this global suffix inventory is not the complete dialogue-table inventory.</p>
         <h2 id="variant-identification">Variant identification</h2>
         <p>Match the full <code>.fr.LH2</code> compound suffix, allowing the six-hex normalization hash before it. Do not confuse language suffixes with arbitrary unsuffixed LH2 tables; column meaning is a content-level property.</p>
         <h2 id="eu-flattened-inventory">EU flattened inventory</h2>

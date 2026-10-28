@@ -2,28 +2,28 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>ALB Format Documentation</title>
+        <title>Audio alias records (.alb)</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="reference-source" content="ps3-eu-original">
         <meta name="path-namespace" content="legacy-mixed">
     </head>
     <body class="doc-page">
-        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Audio alias/library metadata (.alb)</nav>
-        <h1>File Format Documentation: ALB</h1>
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Audio alias records (.alb)</nav>
+        <h1>Audio alias records (.alb)</h1>
         <aside class="source-notice" aria-label="Source and path scope">
             <p><strong>Source scope:</strong> PS3 EU is the reference baseline; retained cross-platform and release observations keep their stated scope. New extracted references use <code>ps3-eu-extracted</code>. Historical inventories and samples retain their recorded paths; unresolved mixed paths require reconciliation before use as canonical examples. See <a href="../../../../reference/sources.html#paths">roots and provenance</a>.</p>
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>Catalogues audio event identifiers; the expanded format name is a working interpretation.</p>
+            <p>Stores alias IDs, bank/stream references and LH2 StringIDs linking individual dialogue audio to localized text. Original event selection remains unresolved.</p>
             <dl>
                 <dt>Identification</dt>
-                <dd>Observed 00 06 prefix; 8-byte header and candidate 28-byte records.</dd>
+                <dd>Observed 00 06 prefix; 8-byte header and 24-byte records in the audited PS3 EU corpus.</dd>
                 <dt>Byte order / text</dt>
                 <dd>Big-endian in the documented samples.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>Original PS3 EU structures and dialogue joins were audited on 2026-10-28. Usable data reading does not establish every field's semantics or original runtime behavior; see the evidence and limitations below.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
@@ -66,8 +66,8 @@
                         </tr>
                         <tr>
                             <td><a href="../../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td>
-                            <td>Tentative</td>
-                            <td>Alias metadata is associated with streamed audio, but a complete ALB-record-to-SNU-filename join has not been implemented.</td>
+                            <td>Byte-validated (PS3 EU)</td>
+                            <td>The bank/stream pair joins to SMB filenames; the final record word joins to LH2 text. See the original EU numeric-join audit below.</td>
                         </tr>
                         <tr>
                             <td><a href="amb.html">AMB resource (.amb)</a></td>
@@ -78,6 +78,16 @@
                             <td><a href="aub.html">AUB resource (.aub)</a></td>
                             <td>Context only</td>
                             <td>Both suffixes occur in the audio-associated inventory. No verified AUB-to-ALB dependency or common binary schema is documented.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="lh2.html">Localization table (.LH2)</a></td>
+                            <td>Byte-validated (PS3 EU)</td>
+                            <td>Record +0x14 joins directly to an LH2 StringID for translated dialogue text and an internal label.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="smb.html">Stream metadata (.smb)</a></td>
+                            <td>Byte-validated (PS3 EU)</td>
+                            <td>ALB record +0x04/+0x08 joins to the SMB bank/stream pair, which names the original audio stream.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -90,10 +100,10 @@
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>The ALB/CTB pairing is supported by shared names and IDs in samples. A complete event-to-stream resolver is not registered; unidentified fields and record variations need further validation.</p>
+            <p>The 2026-10-28 original PS3 EU audit validates all 529 ALB occurrences: 519 distinct payloads and 14,283 records after payload deduplication. Every file has size 8 + 24 * EntryCount. Every record joins numerically to SMB stream metadata and LH2 localized text. CTB event selection and original runtime playback remain unresolved. The earlier 28-byte interpretation is superseded; it incorrectly included the next record's first word.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
-        <p><strong>Version:</strong> 1.0 <strong>Last Updated:</strong> 2025-05-05 <strong>Author(s):</strong> Contributor not recorded</p>
+        <p><strong>Version:</strong> 1.0 <strong>Last Updated:</strong> 2026-10-28 <strong>Author(s):</strong> Contributor not recorded</p>
         <hr>
         <h2 id="overview">Overview</h2>
         <ul>
@@ -188,9 +198,9 @@
             <li><strong>Structure Name:</strong> <code>AlbEntry</code></li>
             <li><strong>Count:</strong> Determined by <code>Header.EntryRecordCount</code></li>
             <li><strong>Location:</strong> Starts at offset <code>Header.DataOffset</code> (always 8)</li>
-            <li><strong>Total Size per Record:</strong> 28 bytes</li>
+            <li><strong>Total Size per Record:</strong> 24 bytes</li>
         </ul>
-        <p><em>Structure based on common pattern (e.g., <code>global_marg.alb</code>), see notes for variations:</em></p>
+        <p>All offsets below are relative to a 24-byte record. The bank/stream pair and StringID joins are validated throughout the inspected EU corpus; names for the three stream slots remain unresolved. See the <a href="lh2.html#audio-subtitle-join">worked example and coverage</a> and <a href="lh2.html#audio-subtitle-join">inline audit scope and worked example</a>.</p>
         <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
             <table>
                 <thead>
@@ -210,8 +220,8 @@
                         <td align="left">4</td>
                         <td align="left"><code>uint32</code></td>
                         <td align="left">Big</td>
-                        <td align="left">Primary ID / Metadata 1</td>
-                        <td align="left">Often seems sequential or related between entries.</td>
+                        <td align="left">Alias ID</td>
+                        <td align="left">A separate alias identifier; CTB/event selection semantics remain partly unresolved.</td>
                         <td align="left"><code>11 8B D8 FD</code>, <code>12 94 15 3E</code></td>
                     </tr>
                     <tr>
@@ -219,8 +229,8 @@
                         <td align="left">4</td>
                         <td align="left"><code>uint32</code></td>
                         <td align="left">Big</td>
-                        <td align="left">Constant Flag / Type ID?</td>
-                        <td align="left">Appears fixed within a file/category. <strong>Position might vary (see Variations below)</strong>.</td>
+                        <td align="left">Bank ID</td>
+                        <td align="left">Joins to SMB record +0x04 together with the stream ID at +0x08. It is not a constant flag.</td>
                         <td align="left"><code>A1 B3 C0 62</code></td>
                     </tr>
                     <tr>
@@ -229,7 +239,7 @@
                         <td align="left"><code>uint32</code></td>
                         <td align="left">Big</td>
                         <td align="left">Sound Hash / Secondary ID 1</td>
-                        <td align="left">Main identifier for the sound cue. Repeated 3 times.</td>
+                        <td align="left">Stream ID joining to SMB record +0x08 within the same bank. All three slots are equal in this corpus.</td>
                         <td align="left"><code>3E 02 F8 57</code></td>
                     </tr>
                     <tr>
@@ -255,18 +265,9 @@
                         <td align="left">4</td>
                         <td align="left"><code>uint32</code></td>
                         <td align="left">Big</td>
-                        <td align="left">Metadata Field 2</td>
-                        <td align="left">Varies per entry. Purpose unclear (flags, length, priority?).</td>
+                        <td align="left">LH2 StringID</td>
+                        <td align="left">Joins directly to an LH2 ID; that row supplies localized text and an internal line label.</td>
                         <td align="left"><code>B7 14 EE 51</code>, <code>B7 14 EE 52</code></td>
-                    </tr>
-                    <tr>
-                        <td align="left"><code>0x18</code></td>
-                        <td align="left">4</td>
-                        <td align="left"><code>uint32</code></td>
-                        <td align="left">Big</td>
-                        <td align="left">Metadata Field 3 / Next ID?</td>
-                        <td align="left">Often related to the Primary ID of the current or next entry. <strong>May contain Constant Flag in variations.</strong></td>
-                        <td align="left"><code>11 8B D8 FE</code>, <code>12 94 15 3F</code></td>
                     </tr>
                 </tbody>
             </table>
@@ -284,31 +285,22 @@
         </ul>
         <hr>
         <h2 id="known-variations-versions">Known Variations / Versions</h2>
-        <ul>
-            <li>
-                The primary variation observed is the position of the 4-byte &quot;Constant Flag / Type ID&quot;.
-                <ul>
-                    <li><strong>Common Position:</strong> Offset <code>0x04</code> within the 28-byte record (e.g., <code>global_marg.alb</code>).</li>
-                    <li><strong>Alternate Position:</strong> Offset <code>0x18</code> within the 28-byte record (e.g., <code>eps_gam_homr.alb</code>, Example: <code>2C 04 E1 25</code>). In this case, the field at offset <code>0x04</code> takes on a different, variable role.</li>
-                </ul>
-            </li>
-            <li>The core structure (28-byte record size, 3x repeated Sound Hash) appears consistent across observed variations.</li>
-            <li><strong>How to Differentiate:</strong> Requires inspecting the value at offset <code>0x04</code> across multiple records. If it&#39;s constant, it&#39;s likely the flag. If it varies, the flag might be at offset <code>0x18</code>.</li>
-        </ul>
+        <p>No 28-byte variant or displaced bank-ID field occurred in the inspected EU corpus. The earlier alternate-field hypothesis arose from an incorrect 28-byte stride; +0x18 is the next 24-byte record, not another field. Other platforms/releases still require their own validation.</p>
         <hr>
         <h2 id="analysis-tools-methods">Analysis Tools &amp; Methods</h2>
         <ul>
             <li><strong>Tools Used:</strong> Hex Editor (e.g., HxD, 010 Editor).</li>
-            <li><strong>Methodology:</strong> Manual comparison and analysis of various <code>.alb</code> files using a hex editor. Identifying fixed patterns (header, record size) and variable fields. Correlating repeated values (Sound Hash). Observing differences between files associated with different game contexts (global vs. level-specific).</li>
+            <li><strong>2026-10-28 audit:</strong> Bounded extraction from all 550 original EU STRs; strict 24-byte ALB records and numeric ALB/SMB/LH2 joins. The worked-example payloads also matched fresh QuickBMS extraction hashes. See the <a href="lh2.html#audio-subtitle-join">corpus counts, field offsets and remaining gaps</a>.</li>
+            <li><strong>Historical methodology:</strong> Manual comparison and analysis of various <code>.alb</code> files using a hex editor. Identifying fixed patterns (header, record size) and variable fields. Correlating repeated values (Sound Hash). Observing differences between files associated with different game contexts (global vs. level-specific).</li>
         </ul>
         <hr>
         <h2 id="open-questions-uncertainties">Open Questions / Uncertainties</h2>
         <ul>
-            <li>Precise meaning and usage of <code>Primary ID / Metadata 1</code> (Offset <code>0x00</code>).</li>
-            <li>Precise meaning and usage of <code>Metadata Field 2</code> (Offset <code>0x14</code>).</li>
-            <li>Precise meaning and usage of <code>Metadata Field 3 / Next ID?</code> (Offset <code>0x18</code>), especially when it doesn&#39;t contain the Constant Flag.</li>
-            <li>Exact relationship between <code>Primary ID</code> and the repeated <code>Sound Hash / Secondary ID</code>. Is one derived from the other, or are they independent lookups?</li>
-            <li>Full extent of variations across all <code>.alb</code> files in the game.</li>
+            <li>Precise meaning and usage of <code>Alias ID</code> (Offset <code>0x00</code>).</li>
+            <li>Original subtitle triggering and display duration; the numeric text association does not establish either.</li>
+            <li>Separate roles of the three equal stream-ID slots at +0x08/+0x0C/+0x10.</li>
+            <li>Exact relationship between <code>Alias ID</code> and the repeated <code>Sound Hash / Secondary ID</code>. Is one derived from the other, or are they independent lookups?</li>
+            <li>Differences in other releases/platforms; this audit covers the inspected PS3 EU source only.</li>
         </ul>
         <hr>
         <h2 id="references">References</h2>

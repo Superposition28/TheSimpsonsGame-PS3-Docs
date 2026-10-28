@@ -66,42 +66,42 @@
                                 <tr>
                                     <td><a href="inf.html">Bitmap font descriptor (.inf)</a></td>
                                     <td>Rendering context</td>
-                                    <td>A subtitle renderer can display TOX-timed LH2 text using an INF-derived FNT and atlas. TOX contains no font selection or atlas pointer, and operation 16 does not require operation 15.</td>
+                                    <td>A subtitle renderer can display TOX-timed LH2 text using an INF-derived FNT and atlas. TOX contains no font selection or atlas pointer, and operation 10 does not require operation 9.</td>
                                 </tr>
                                 <tr>
                                     <td><a href="lh2.html">Localization table (.LH2)</a></td>
                                     <td>Implemented</td>
-                                    <td>Operation 16 joins each TOX StringID to first-column global LH2 text by the same 32-bit ID. The .ss.LH2 variant supplies labels; .en/.es/.fr/.it supply the four output languages.</td>
+                                    <td>Operation 10 joins each TOX StringID to first-column global LH2 text by the same 32-bit ID. The .ss.LH2 variant supplies labels; .en/.es/.fr/.it supply the four output languages.</td>
                                 </tr>
                                 <tr>
                                     <td><a href="../../VP6/index.html">Movie container (.vp6)</a></td>
                                     <td>Implemented</td>
-                                    <td>Operation 16 matches cleaned timing/movie stems plus the parent language folder under A1_Video. It writes SRT/VTT beside matching VP6 or OGV files. StartMs and StartMs + DurationMs are the cue bounds.</td>
+                                    <td>Operation 10 matches cleaned timing/movie stems plus the parent language folder under A1_Video. It writes SRT/VTT beside matching VP6 or OGV files. StartMs and StartMs + DurationMs are the cue bounds.</td>
                                 </tr>
                                 <tr>
                                     <td><a href="en.LH2.html">English LH2 variant (.en.LH2)</a></td>
                                     <td>Implemented</td>
-                                    <td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
+                                    <td>Operation 10 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
                                 </tr>
                                 <tr>
                                     <td><a href="es.LH2.html">Spanish LH2 variant (.es.LH2)</a></td>
                                     <td>Implemented</td>
-                                    <td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
+                                    <td>Operation 10 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
                                 </tr>
                                 <tr>
                                     <td><a href="fr.LH2.html">French LH2 variant (.fr.LH2)</a></td>
                                     <td>Implemented</td>
-                                    <td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
+                                    <td>Operation 10 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
                                 </tr>
                                 <tr>
                                     <td><a href="it.LH2.html">Italian LH2 variant (.it.LH2)</a></td>
                                     <td>Implemented</td>
-                                    <td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
+                                    <td>Operation 10 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
                                 </tr>
                                 <tr>
                                     <td><a href="ss.LH2.html">Internal string labels LH2 variant (.ss.LH2)</a></td>
                                     <td>Implemented</td>
-                                    <td>Operation 16 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
+                                    <td>Operation 10 uses the selected global first-column table for subtitle text or labels, joining by 32-bit StringID rather than filename order.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -120,7 +120,7 @@
                 <p><strong>Version:</strong> 1.0<br><strong>Last Updated:</strong> 2026-10-18<br><strong>Author(s):</strong> samarixum, Gemini / Codex</p>
                 <h2 id="purpose">Overview &amp; Purpose</h2>
                 <p><code>.tox.PS3</code> is Electronic Arts' binary subtitle timing table used in <em>The Simpsons Game</em> (PS3) to synchronize localized subtitles during pre-rendered On2 VP6 Full-Motion Video cutscenes and mission briefings. Companion movies are stored under <code>A1_Video/{en,es,fr,it,sf}/*.vp6</code>; extracted / converted video collections also contain <code>.ogv</code> copies. The magic bytes are <code>1BOT</code> (<code>31 42 4F 54</code>), or <code>"TOB1"</code> when interpreted as a Little-Endian 32-bit FourCC. Numeric fields are <strong>Big-Endian</strong>.</p>
-                <p>The table contains timing and string IDs; subtitle text lives in companion <code>.LH2</code> localization files. <code>StringID</code> identifies a dialogue label, not a text offset or an audio filename. <code>operations/tox_to_srt.Subtitles.lua</code> resolves all timing tables against <code>simpsons_global.{en,es,fr,it,ss}.LH2</code> and exports standard <strong>SubRip (.srt)</strong>, <strong>WebVTT (.vtt)</strong>, and <strong>multilingual .csv</strong> files, including .srt/.vtt files directly alongside matching localized .ogv/.vp6 streams in <code>A1_Video/{en,es,fr,it}/</code>.</p>
+                <p>The table contains timing and string IDs; subtitle text lives in companion <code>.LH2</code> localization files. <code>StringID</code> identifies a dialogue label, not a text offset or an audio filename. <code>operations/Converters/tox_to_srt.Subtitles.lua</code> resolves all timing tables against <code>simpsons_global.{en,es,fr,it,ss}.LH2</code> and exports standard <strong>SubRip (.srt)</strong>, <strong>WebVTT (.vtt)</strong>, and <strong>multilingual .csv</strong> files, including .srt/.vtt files directly alongside matching localized .ogv/.vp6 streams in <code>A1_Video/{en,es,fr,it}/</code>.</p>
                 <nav aria-label="Specification contents">
                     <ul>
                         <li><a href="#layout">Binary layout</a> and <a href="#hash">exact SDBM hash algorithm</a></li>
@@ -913,8 +913,8 @@
                 </section>
                 <p>The first record decodes to <code>StringID = 0x3F02A918</code>, <code>StartTimeMs = 70</code>, and <code>DurationMs = 5000</code>. Its English subtitle interval is <code>00:00:00,070 --&gt; 00:00:05,070</code>; WebVTT uses <code>00:00:00.070 --&gt; 00:00:05.070</code>. The next line begins at 5,110 ms, leaving a 40 ms gap.</p>
                 <h2 id="converter">Implemented Converter &amp; Output Behavior</h2>
-                <p>Run registered operation 16 from the engine root (<code>A:/RemakeEngine/Main</code>). Its Lua entry point is <code>operations/tox_to_srt.Subtitles.lua</code>. The default input is <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed</code>. The CLI supports <code>--input-dir</code> / <code>-i</code>, <code>--output-dir</code> / <code>-o</code>, <code>--no-video-pairing</code>, and <code>--include-speaker</code>.</p>
-                <pre><code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 16</code></pre>
+                <p>Run registered operation 10 from the engine root (<code>A:/RemakeEngine/Main</code>). Its Lua entry point is <code>operations/Converters/tox_to_srt.Subtitles.lua</code>. The default input is <code>GameFiles/PS3-EU-FullFlattened-audio_reorg-isRenamed</code>. The CLI supports <code>--input-dir</code> / <code>-i</code>, <code>--output-dir</code> / <code>-o</code>, <code>--no-video-pairing</code>, and <code>--include-speaker</code>.</p>
+                <pre><code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 10</code></pre>
                 <ul>
                     <li><strong>Default placement:</strong> Alongside each timing file, write <code>&lt;movie&gt;_&lt;hash&gt;.tox.PS3.csv</code> and, for nonempty timing tables, <code>&lt;movie&gt;_&lt;hash&gt;.{en,es,fr,it}.srt</code> and <code>.vtt</code>. The CSV retains every timing record with ID, label, speaker, start / duration / end milliseconds, SRT start / end, constant, and all four translations.</li>
                     <li><strong>Video companions:</strong> With default placement and pairing enabled, also write <code>&lt;video-stem&gt;.srt</code> and <code>&lt;video-stem&gt;.vtt</code> beside matching <code>A1_Video/{en,es,fr,it}/</code> streams. Pair by cleaned stem and language, preserving each video's own suffix. Multiple archive copies are deduplicated for companion writes.</li>

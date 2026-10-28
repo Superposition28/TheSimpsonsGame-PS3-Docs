@@ -62,17 +62,17 @@
                         <tr>
                             <td><a href="imbedded-formats/txd.html">Texture dictionary (.txd)</a></td>
                             <td>Implemented</td>
-                            <td>Operation 1 extracts texture dictionaries; operation 3 decodes supported textures to PNG.</td>
+                            <td>Operation 1 extracts texture dictionaries; operation 5 decodes supported textures to PNG.</td>
                         </tr>
                         <tr>
                             <td><a href="imbedded-formats/preinstanced.html">Preinstanced models</a></td>
                             <td>Implemented</td>
-                            <td>Operation 1 extracts model payloads; operation 8 imports their geometry through Blender.</td>
+                            <td>Operation 1 extracts model payloads; operation 7 imports their geometry through Blender.</td>
                         </tr>
                         <tr>
                             <td><a href="imbedded-formats/lh2.html">Localization table (.LH2)</a></td>
                             <td>Implemented</td>
-                            <td>Extracted localization tables remain inputs to operations 9 and 16.</td>
+                            <td>Extracted localization tables remain inputs to operations 8 and 10.</td>
                         </tr>
                         <tr>
                             <td><a href="imbedded-formats/tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td>
@@ -105,7 +105,7 @@
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>The registered QuickBMS script is the extraction reference. On 2026-10-19, an independent Python RefPack decoder and bounded record walker inspected all 490 STRs (1,193,330,688 source bytes) in the supplementary PS3 US source set. All 2,725 sections and 26,379 record boundaries validated: 25,927 records of type <code>0x1607</code> and 452 of type <code>0x2207</code>. No other outer record types occurred in this source set. Of those sections, 2,473 were RefPack compressed. This is structural coverage of this snapshot, not complete payload or runtime decoding. Source hashes, identification prefixes, sample comparisons and the separate EU output inventory are recorded in <a href="unnamed-payload-evidence.json">the evidence ledger</a>.</p>
+            <p>The registered QuickBMS script is the extraction reference. On 2026-10-19, an independent Python RefPack decoder and bounded record walker inspected all 490 STRs (1,193,330,688 source bytes) in the supplementary PS3 US source set. All 2,725 sections and 26,379 record boundaries validated: 25,927 records of type <code>0x1607</code> and 452 of type <code>0x2207</code>. No other outer record types occurred in this source set. Of those sections, 2,473 were RefPack compressed. This is structural coverage of this snapshot, not complete payload or runtime decoding. Representative source coordinates and extraction comparisons are retained in the <a href="#unnamed-payloads">unnamed-payload investigation below</a>. The former separate JSON ledger is not distributed in this checkout; its complete hash inventory cannot be consulted here.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
         <p><strong>Version:</strong> 1.1<br><strong>Last Updated:</strong> 2026-10-19<br><strong>Author(s):</strong> samarixum</p>
@@ -144,7 +144,7 @@
                 </tbody>
             </table>
         </div>
-        <p>There are 452 SimGroup records across 417 sections in the US audit; 14 sections contain more than one. All have <code>SimG</code> at full body <code>+8</code>. Thus neither the DAT extension nor a zero word is a sufficient format discriminator. Preserve the outer type, body size, source section and record offset. Project-specific synthetic names, duplicate-path handling and manual commands are documented in the <a href="../../../integrations/remake-engine/pipeline.html#str-unnamed">extraction integration</a>.</p>
+        <p>There are 452 SimGroup records across 417 sections in the US audit; 14 sections contain more than one. All have <code>SimG</code> at full body <code>+8</code>. Thus neither the DAT extension nor a zero word is a sufficient format discriminator. Preserve the outer type, body size, source section and record offset. The current extractor categorizes identified SimGroup bodies as <code>.dat.simgroup</code> and UIE DAT assets as <code>.dat.uie</code>, preserving all payload bytes; uncategorized <code>.dat</code> outputs represent unidentified families. These are output naming conventions, not original game extensions. Project-specific synthetic names, duplicate-path handling and manual commands are documented in the <a href="../../../integrations/remake-engine/pipeline.html#str-unnamed">extraction integration</a>.</p>
         <h2 id="parsing-algorithm-overview">Parsing Algorithm Overview</h2>
         <ol>
             <li>Read and validate file header at offset 0x00</li>

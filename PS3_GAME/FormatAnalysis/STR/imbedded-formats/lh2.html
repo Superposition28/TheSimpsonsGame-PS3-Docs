@@ -16,14 +16,14 @@
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>Maps 32-bit string IDs to one or more columns of localized text or internal labels.</p>
+            <p>Maps 32-bit string IDs to localized text and internal labels for interface text, objectives/tutorials, FMV dialogue and individual in-game voice lines.</p>
             <dl>
                 <dt>Identification</dt>
                 <dd>2HCL at 0x00; 32-byte header, ID array and absolute string-pointer matrix.</dd>
                 <dt>Byte order / text</dt>
                 <dd>Big-endian integers; NUL-terminated Windows-1252 text in the observed PS3 tables.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>Original PS3 EU structures and dialogue joins were audited on 2026-10-28. Usable data reading does not establish every field's semantics or original runtime behavior; see the evidence and limitations below.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
@@ -35,6 +35,7 @@
                 <li><a href="#header-and-identification">Header and identification</a></li>
                 <li><a href="#id-array-pointer-matrix-and-strings">ID array, pointer matrix and strings</a></li>
                 <li><a href="#text-columns-and-language-variants">Text columns and language variants</a></li>
+                <li><a href="#audio-subtitle-join">Original dialogue audio-to-subtitle mapping</a></li>
             </ul>
         </nav>
         <section id="related-formats">
@@ -53,7 +54,7 @@
                         <tr>
                             <td><a href="../index.html">STR archive</a></td>
                             <td>Implemented</td>
-                            <td>Extracted localization tables remain inputs to operations 9 and 16.</td>
+                            <td>Extracted localization tables remain inputs to operations 8 and 10.</td>
                         </tr>
                         <tr>
                             <td><a href="inf.html">Bitmap font descriptor (.inf)</a></td>
@@ -63,7 +64,7 @@
                         <tr>
                             <td><a href="tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td>
                             <td>Implemented</td>
-                            <td>Operation 16 joins each TOX StringID to first-column global LH2 text by the same 32-bit ID. The .ss.LH2 variant supplies labels; .en/.es/.fr/.it supply the four output languages.</td>
+                            <td>Operation 10 joins each TOX StringID to first-column global LH2 text by the same 32-bit ID. The .ss.LH2 variant supplies labels; .en/.es/.fr/.it supply the four output languages.</td>
                         </tr>
                         <tr>
                             <td><a href="../../VP6/index.html">Movie container (.vp6)</a></td>
@@ -100,6 +101,16 @@
                             <td>Same binary family</td>
                             <td>The suffix identifies a content variant; header, ID array and pointer matrix follow the shared LH2 layout.</td>
                         </tr>
+                        <tr>
+                            <td><a href="alb.html">Audio alias records (.alb)</a></td>
+                            <td>Byte-validated (PS3 EU)</td>
+                            <td>ALB record +0x14 selects the LH2 StringID; this original numeric link resolves 7,314 individual dialogue streams.</td>
+                        </tr>
+                        <tr>
+                            <td><a href="smb.html">Stream metadata (.smb)</a></td>
+                            <td>Byte-validated (PS3 EU)</td>
+                            <td>The ALB bank/stream pair joins to SMB filenames while its StringID joins to LH2 text; LH2 stores no verified direct SMB pointer.</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -111,7 +122,7 @@
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>Operation 9 exports table columns without assigning language names. Operation 16 reads the first column of selected global language files directly, so it does not depend on operation 9 CSV output. A language suffix alone does not prove the contents of every table. Runtime fidelity of operation 9 remains to be checked: its binary integer reader uses <code>string.byte</code>, whereas the newer INF/TOX converters use <code>string.unicode</code> and explicitly document the host's high-byte handling. The structural sample checks do not execute that Lua reader.</p>
+            <p>Operation 8 exports table columns without assigning language names. Operation 10 reads the first column of selected global language files directly, so it does not depend on operation 8 CSV output. A language suffix alone does not prove the contents of every table. Runtime fidelity of operation 8 remains to be checked: its binary integer reader uses <code>string.byte</code>, whereas the newer INF/TOX converters use <code>string.unicode</code> and explicitly document the host's high-byte handling. The structural sample checks do not execute that Lua reader.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
         <p>LH2 maps 32-bit IDs to columns of strings. The observed PS3 signature is <code>2HCL</code>, with big-endian integers and absolute offsets measured from the start of the file.</p>
@@ -135,7 +146,7 @@
                     <tr>
                         <td>0x04</td>
                         <td>uint32 BE</td>
-                        <td>Declared file size. Operation 9 warns when it differs from the actual length; it is not padding.</td>
+                        <td>Declared file size. Operation 8 warns when it differs from the actual length; it is not padding.</td>
                     </tr>
                     <tr>
                         <td>0x08–0x0F</td>
@@ -155,7 +166,7 @@
                     <tr>
                         <td>0x18–0x1F</td>
                         <td>byte[8]</td>
-                        <td>Reserved/runtime fields skipped by operation 9; runtime purpose not verified.</td>
+                        <td>Reserved/runtime fields skipped by operation 8; runtime purpose not verified.</td>
                     </tr>
                 </tbody>
             </table>
@@ -164,8 +175,33 @@
         <p>The ID array begins at <code>0x20</code> and contains <code>N</code> unsigned 32-bit values. The pointer matrix begins at <code>0x20 + 4*N</code>. Columns are stored consecutively: table 0 has N pointers, then table 1 has N pointers, and so on. Pointer <code>(t,e)</code> is at <code>0x20 + 4*N + 4*(t*N + e)</code> and points to a NUL-terminated string at an absolute file offset.</p>
         <p>Before reading strings, check that <code>0x20 + 4*N*(1+T)</code> fits inside the file and that every referenced offset and terminator is in bounds. A zero-entry table is distinct from an invalid/truncated header. Shared pointers do not imply duplicate IDs.</p>
         <h2 id="text-columns-and-language-variants">Text columns and language variants</h2>
+        <p>LH2 is a general localization resource, not exclusively a movie-subtitle format. Original global labels include <code>MENU_MAIN_CONTINUE_STORY</code>, <code>tutorial_one_LOC</code> and <code>CREDITS_IntEngineers_1</code>; dialogue tables also contain incidental speech and scripted in-game lines. Table contents alone do not establish which lines the original game actually displays as subtitles.</p>
         <p>The EU flattened inventory contains 654 LH2 files: 554 without a language suffix and 20 each with <code>.en</code>, <code>.es</code>, <code>.fr</code>, <code>.it</code> and <code>.ss</code>. The four language variants supply English, Spanish, French and Italian. The observed global <code>.ss.LH2</code> table supplies internal labels, not an additional Spanish translation.</p>
-        <p>Operation 9 writes <code>original.LH2.csv</code> beside the source. It emits an eight-digit hexadecimal String ID and <code>Language 0</code> onward. For multiple columns it treats the final column as <code>String Label</code>; that is a converter convention, not a guaranteed meaning of every LH2 table. Its reader preserves source characters without an explicit CP1252 control-range remap. Operation 16 explicitly decodes Windows-1252 when producing subtitle text.</p>
-        <p>Operation 16 selects the first non-empty path-sorted global table for each supported language/label column, reads only its first table, and joins on the numeric ID. It does not merge all duplicate localization copies. The lowercase SDBM label/hash relationship is validated for the TOX dialogue labels described on the timing page; do not generalize that result to every unidentified ID in every format.</p>
+        <p>Operation 8 writes <code>original.LH2.csv</code> beside the source. It emits an eight-digit hexadecimal String ID and <code>Language 0</code> onward. For multiple columns it treats the final column as <code>String Label</code>; that is a converter convention, not a guaranteed meaning of every LH2 table. Its reader preserves source characters without an explicit CP1252 control-range remap. Operation 10 explicitly decodes Windows-1252 when producing subtitle text.</p>
+        <p>Operation 10 selects the first non-empty path-sorted global table for each supported language/label column, reads only its first table, and joins on the numeric ID. It does not merge all duplicate localization copies. The lowercase SDBM label/hash relationship is validated for the TOX dialogue labels described on the timing page; do not generalize that result to every unidentified ID in every format.</p>
+        <section id="audio-subtitle-join">
+            <h2>Original dialogue audio-to-subtitle mapping</h2>
+            <p><strong>Original-byte audit, 2026-10-28:</strong> all 550 STR archives beneath <code>ps3-eu-original:PS3_GAME/USRDIR</code> were walked and relevant payloads decoded directly. The 654 LH2 occurrences reduce to 346 distinct payloads: 341 five-column tables and five single-column global variants. The five-column tables contain 7,420 distinct IDs with columns <strong>English, French, Italian, Spanish, internal label</strong>. Every label in those tables reproduces its ID using lowercase SDBM (<code>h = (h * 65599 + byte) mod 2^32</code>, initially zero). This validates this table population; it is not a universal hash claim.</p>
+            <pre class="relationship-flow">ALB record +0x04 bank ID, +0x08 stream ID
+    └── equal SMB record +0x04 bank ID, +0x08 stream ID
+          └── SMB record +0x34 names the .exa stream; original file adds .snu
+ALB record +0x14 StringID
+    └── equal LH2 ID → localized text and internal label</pre>
+            <p>The join uses the original numeric fields, not AudioMap, speaker guesses, filename sequence numbers, normalized suffixes or a custom subtitle map. The three stream-ID words at ALB/SMB record <code>+0x08/+0x0C/+0x10</code> are equal throughout this audit; their separate runtime roles remain unknown. Preserve the bank ID when joining. ALB record <code>+0x00</code> is a separate alias identifier.</p>
+            <p>All 529 ALB occurrences (519 distinct payloads; 14,333 records including duplicate payloads, 14,283 after payload deduplication) have the <a href="alb.html#detailed-structure">24-byte layout</a>. All 14,283 records resolve to SMB filenames and five-column LH2 text, covering <strong>7,314 distinct dialogue SNU filenames and StringIDs</strong>. Each recovered name also equals <code>d_&lt;LH2 internal label&gt;.exa</code>; this is an independent consistency check on the numeric join. The trailing seven hexadecimal characters of a dialogue filename are not its LH2 StringID.</p>
+            <h3>Worked original-file example</h3>
+            <p>In original <code>PS3_GAME/USRDIR/bargainbin/bargainbin.str</code>, section 5 contains <code>eps_bin_brt8.alb</code>, <code>bargainbin.smb</code> and <code>{CF608FDC-8FDC-CF60-DC8F-60CFDC8F60CF}.LH2</code>. The exact embedded member paths, original archive/payload hashes and source coordinates are retained in the locally generated audit report described under <a href="../../../../integrations/remake-engine/index.html#original-subtitle-test">reproducing the original-source audit</a>.</p>
+            <ul>
+                <li>ALB payload record <code>0x98</code>: alias <code>C9FE2D88</code>, bank <code>6AA373D3</code>, stream <code>37485CCE</code>, StringID <code>C9EAD80F</code>.</li>
+                <li>SMB payload record <code>0x1180</code>: the same bank/stream pair; filename at <code>0x11B4</code> is <code>d_brt8_xxx_00033c4.exa</code>.</li>
+                <li>LH2 row 1: ID <code>C9EAD80F</code>, label <code>brt8_xxx_00033c4</code>, English text “Cowabunga!  I need help!  Cowabunga!”</li>
+                <li>Original English audio: <code>PS3_GAME/USRDIR/audiostreams/t8_xxx_0/d_brt8_xxx_00033c4.exa.snu</code>. FR/IT/ES counterparts are beneath those language directories. English banks are directly beneath audiostreams in this source.</li>
+            </ul>
+            <h3>Coverage and remaining gaps</h3>
+            <p>The 99 SMB payloads contain 14,382 records and name all 7,413 distinct original SNU filenames (29,430 physical files across language/global scopes). The remaining <strong>99 filenames lack this ALB-to-LH2 link</strong>: 34 composite IGC tracks, 64 ambience/music streams and <code>d_nels_xxx_000683f.exa</code>. That Nelson label is also absent from the inspected five-column LH2 tables. Absence here is not evidence that no subtitle exists elsewhere. Some physical language copies are absent; filename coverage is not four-language inventory parity.</p>
+            <p>The other 106 five-column LH2 IDs all have labels containing <code>_igc_</code>; they have no recovered ALB link. None of the 34 composite SNU stems equals one of the 43 distinct TOX stems in the original archives. The existing FMV TOX association therefore does not directly supply these SNU timelines. Text presence and clock recovery remain separate questions.</p>
+            <p>Composite cutscenes need sequence/timing analysis; do not assign a single dialogue row to a whole IGC mix or assume an FMV TOX is its timeline. VP6/TOX movie audio, SBK subsongs and MUS/SNR/SNS music remain separate resource families. CTB event selection, interruptions and original subtitle dwell times are not established by this static join. No original executable behavior was observed.</p>
+            <p>The optional <a href="../../../../integrations/remake-engine/index.html#original-subtitle-test">original-source test script</a> produces black videos with original SNU audio and numerically resolved LH2 subtitles. Its cue spans the decoded clip duration as a demonstration choice, not recovered game timing. Full per-record evidence is generated locally; core documentation does not require proprietary files.</p>
+        </section>
     </body>
 </html>

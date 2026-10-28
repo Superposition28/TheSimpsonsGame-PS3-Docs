@@ -60,14 +60,14 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><a href="alb.html">Audio alias/library metadata (.alb)</a></td>
+                            <td><a href="alb.html">Audio alias records (.alb)</a></td>
                             <td>Observed</td>
                             <td>Matching base names and repeated IDs support paired alias/event metadata. The full conditional event-to-alias schema remains incomplete.</td>
                         </tr>
                         <tr>
                             <td><a href="../../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td>
                             <td>Tentative</td>
-                            <td>Event names and IDs describe control metadata; SNU carries decodable audio. Operation 11 decodes files without interpreting CTB event logic.</td>
+                            <td>Event names and IDs describe control metadata; SNU carries decodable audio. Operation 12 decodes files without interpreting CTB event logic.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -80,7 +80,7 @@
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>Control-flow interpretations are tentative. Shared names/IDs do not establish every field or a complete playback graph. No CTB decoder is registered.</p>
+            <p>Control-flow interpretations are tentative. Shared names/IDs do not establish every field or a complete playback graph. No CTB decoder is registered. The separate <a href="lh2.html#audio-subtitle-join">ALB/SMB/LH2 numeric subtitle join</a> is now validated for individual EU dialogue streams; it does not decode CTB event selection.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
         <p><strong>Version:</strong> 0.1 <strong>Last Updated:</strong> 2025-05-05 <strong>Author(s):</strong> Contributor not recorded (Based on analysis)</p>

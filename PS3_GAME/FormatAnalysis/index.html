@@ -9,7 +9,7 @@
     <body class="doc-page">
         <h1>File format analysis</h1>
         <section class="doc-overview">
-            <p>This tree follows format origin: source-level formats first, then resources extracted from containers such as STR. The counts below are recorded reference inventories, not a fresh scan of every region; grouped totals include their indented child rows and must not be added to them.</p>
+            <p>This tree follows format origin: source-level formats first, then resources extracted from containers such as STR. The counts below are recorded reference inventories, supplemented by the 2026-10-28 original EU ALB/LH2/SMB audit; they are not a fresh scan of every region; grouped totals include their indented child rows and must not be added to them.</p>
             <ul class="overview-links">
                 <li><a href="relationships.html">Format relationships</a></li>
                 <li><a href="../../reference/sources.html">Canonical sources and path conventions</a></li>
@@ -19,7 +19,7 @@
             <h2>How the files fit together</h2>
             <ul>
                 <li><strong>Media and localization:</strong> VP6/OGV supplies playback, TOX supplies cue times, LH2 supplies text, and INF plus TXD supplies bitmap-font data for a renderer.</li>
-                <li><strong>Audio and music:</strong> SNU and SBK carry decodable sounds; ALB/CTB/SMB/MIB describe partly understood metadata. MSB names MUS containers whose SNR/SNS segments are decoded separately.</li>
+                <li><strong>Audio and music:</strong> SNU and SBK carry decodable sounds. <a href="STR/imbedded-formats/lh2.html#audio-subtitle-join">ALB bank/stream and StringID joins</a> connect 7,314 individual dialogue streams through SMB to LH2 text; CTB event logic and SMB/MIB playback metadata remain partly understood. MSB names MUS containers whose SNR/SNS segments are decoded separately.</li>
                 <li><strong>World and characters:</strong> preinstanced geometry uses texture dictionaries. Animation, collision, navigation, object properties and VFX live in separate resources with different levels of research coverage.</li>
             </ul>
             <p><code>.PS3</code> and <code>.XEN</code> are platform suffixes. A shared word such as bank, table, graph or XML does not establish a common binary layout. Unknown descriptions below are explicitly marked; use each format's evidence section before implementing a parser.</p>
@@ -88,7 +88,7 @@
                 <tbody>
                     <tr>
                         <td><a href="./STR/imbedded-formats/alb.html">.alb</a></td>
-                        <td>Audio alias/library metadata (.alb)</td>
+                        <td>24-byte alias records: bank/stream references and LH2 subtitle IDs</td>
                         <td>529</td>
                     </tr>
                     <tr>
@@ -117,8 +117,8 @@
                         <td>528</td>
                     </tr>
                     <tr>
-                        <td><a href="./STR/imbedded-formats/simgroup.dat.html">.dat</a></td>
-                        <td>SimGroup</td>
+                        <td><a href="./STR/imbedded-formats/simgroup.dat.html">.dat (legacy extraction)</a></td>
+                        <td>Historical SimGroup/UIE outputs; new extraction uses .dat.simgroup / .dat.uie</td>
                         <td>434</td>
                     </tr>
                     <tr>
@@ -144,32 +144,32 @@
                     </tr>
                     <tr>
                         <td class="suffix-child">└ <a href="./STR/imbedded-formats/lh2.html">.LH2</a></td>
-                        <td>Localization Header 2</td>
+                        <td>Unsuffixed localization and dialogue tables; five columns in the original EU audit</td>
                         <td>554</td>
                     </tr>
                     <tr>
                         <td class="suffix-child">└ <a href="./STR/imbedded-formats/en.LH2.html">.en.LH2</a></td>
-                        <td>Localization Header 2, English</td>
+                        <td>Global English text; one column in the observed EU table</td>
                         <td>20</td>
                     </tr>
                     <tr>
                         <td class="suffix-child">└ <a href="./STR/imbedded-formats/es.LH2.html">.es.LH2</a></td>
-                        <td>Localization Header 2, Spanish</td>
+                        <td>Global Spanish text; one column in the observed EU table</td>
                         <td>20</td>
                     </tr>
                     <tr>
                         <td class="suffix-child">└ <a href="./STR/imbedded-formats/fr.LH2.html">.fr.LH2</a></td>
-                        <td>Localization Header 2, French</td>
+                        <td>Global French text; one column in the observed EU table</td>
                         <td>20</td>
                     </tr>
                     <tr>
                         <td class="suffix-child">└ <a href="./STR/imbedded-formats/it.LH2.html">.it.LH2</a></td>
-                        <td>Localization Header 2, Italian</td>
+                        <td>Global Italian text; one column in the observed EU table</td>
                         <td>20</td>
                     </tr>
                     <tr>
                         <td class="suffix-child">└ <a href="./STR/imbedded-formats/ss.LH2.html">.ss.LH2</a></td>
-                        <td>Localization Header 2, Internal string labels (observed global table)</td>
+                        <td>Global internal labels; one column in the observed EU table</td>
                         <td>20</td>
                     </tr>
                     <tr>
@@ -266,7 +266,7 @@
                     </tr>
                     <tr>
                         <td><a href="./STR/imbedded-formats/smb.html">.smb</a></td>
-                        <td>Stream metadata (.smb)</td>
+                        <td>Bank/stream filename lookup; playback fields partly understood</td>
                         <td>99</td>
                     </tr>
                     <tr>
@@ -421,7 +421,7 @@
                     </tr>
                     <tr>
                         <td class="suffix-child">└ .lh2</td>
-                        <td>Localization Header 2</td>
+                        <td>Unsuffixed localization and dialogue tables; five columns in the original EU audit</td>
                         <td>554</td>
                     </tr>
                     <tr>

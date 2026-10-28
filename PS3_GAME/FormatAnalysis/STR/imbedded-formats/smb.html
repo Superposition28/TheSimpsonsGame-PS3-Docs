@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>.smb Format Documentation</title>
+        <title>Stream metadata and filename lookup (.smb)</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="reference-source" content="ps3-eu-original">
@@ -18,14 +18,14 @@
                 </aside>
                 <section class="format-summary" aria-label="Format summary">
                     <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-                    <p>Contains audio-related metadata and embedded external stream names.</p>
+                    <p>Maps bank/stream IDs to external .exa filenames; record boundaries and dialogue joins are validated, while playback-field semantics remain partial.</p>
                     <dl>
                         <dt>Identification</dt>
                         <dd>Observed count at 0x10 and pointer tables; no universal signature established here.</dd>
                         <dt>Byte order / text</dt>
                         <dd>Big-endian integer/float interpretations in samples; ASCII names.</dd>
                         <dt>Documentation scope</dt>
-                        <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                        <dd>Original PS3 EU structures and dialogue joins were audited on 2026-10-28. Usable data reading does not establish every field's semantics or original runtime behavior; see the evidence and limitations below.</dd>
                     </dl>
                 </section>
                 <nav class="page-toc" aria-label="On this page">
@@ -53,13 +53,23 @@
                             <tbody>
                                 <tr>
                                     <td><a href="../../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td>
-                                    <td>Observed</td>
-                                    <td>SMB samples contain .exa stream names, while the disc inventory uses .exa.snu wrappers. Filename normalization and a complete numeric-ID join must be verified per sample.</td>
+                                    <td>Byte-validated (PS3 EU)</td>
+                                    <td>SMB bank/stream fields join to ALB, which supplies an LH2 StringID. The stored .exa filename gains .snu in the original audio tree. The original EU audit verifies all 7,413 distinct filenames.</td>
                                 </tr>
                                 <tr>
                                     <td><a href="sbk.html">Sound bank (.sbk)</a></td>
                                     <td>Unverified</td>
                                     <td>Both occur in audio contexts. No direct SBK record-to-SMB record mapping has been verified; proximity alone is insufficient.</td>
+                                </tr>
+                                <tr>
+                                    <td><a href="alb.html">Audio alias records (.alb)</a></td>
+                                    <td>Byte-validated (PS3 EU)</td>
+                                    <td>The same bank/stream pair selects the SMB record; ALB supplies the separate LH2 StringID.</td>
+                                </tr>
+                                <tr>
+                                    <td><a href="lh2.html">Localization table (.LH2)</a></td>
+                                    <td>Byte-validated (PS3 EU)</td>
+                                    <td>ALB bridges SMB stream identity to LH2 localized dialogue text; SMB itself does not carry the subtitle StringID.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -72,23 +82,25 @@
                 </section>
                 <section id="evidence-limits">
                     <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-                    <p>The stream-name strings are observed. Specific attenuation meanings, hash algorithms and a universal 96-byte record stride remain interpretations until validated across the corpus. No registered SMB-to-SNU resolver exists.</p>
+                    <p>The 2026-10-28 original EU audit validates all 99 SMB payloads: 14,382 records with a 96-byte stride. Each ALB bank/stream pair resolves to an SMB filename; all 7,413 distinct SMB filenames exist as original .exa.snu files. Specific attenuation meanings, identifier-generation algorithms and original runtime behavior remain unresolved. See the <a href="lh2.html#audio-subtitle-join">numeric subtitle join</a> and <a href="lh2.html#audio-subtitle-join">inline audit scope and worked example</a>.</p>
                     <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
                 </section>
-                <p>The <code>.smb</code> (Stream Meta Bank) format serves as an index and metadata table for Electronic Arts' streaming audio engine, specifically dictating how external <code>.exa</code> sound streams are loaded and played within a game level. It relies on a big-endian architecture typical of PS3-era game assets to organize lightweight Table-of-Contents (TOC) files.</p>
+                <p>The <code>.smb</code> (Stream Meta Bank) resource indexes external <code>.exa</code> filenames and stores playback-related metadata. Big-endian bank/stream identifiers and record boundaries are validated in the original PS3 EU corpus. Many flag and playback-field meanings, and the original loading/selection behavior, remain unresolved.</p>
                 <p>Think <strong>“Stream Meta Bank”</strong>: one small index file that points to many external <code>.exa</code> assets (voice lines, SFX, ambience) and supplies playback settings for each.</p>
                 <h2 id="global-file-structure">Global File Structure</h2>
                 <ul>
                     <li><strong>Header:</strong> The beginning of the file establishes core structural properties. At offset <code>0x10</code>, a 32-bit integer explicitly declares the total number of audio entries contained in the bank. For example, <code>igc_11_folderstream.smb</code> reads <code>00 00 00 01</code> (1 entry), while <code>simpsons_chars_global.smb</code> contains <code>00 00 00 17</code> (23 entries).</li>
-                    <li><strong>Offset Table:</strong> Immediately following the entry count is a contiguous array of 32-bit pointers. These define the exact memory offset for the beginning of each individual audio record (e.g., <code>00 00 00 2C</code>, <code>00 00 00 8C</code>, <code>00 00 00 EC</code> mapped in <code>loc/Story_Mode_Design.smb</code>).</li>
+                    <li><strong>Offset Table:</strong> The word after the entry count points to a contiguous array of 32-bit pointers. These define the exact memory offset for the beginning of each individual audio record (e.g., <code>00 00 00 2C</code>, <code>00 00 00 8C</code>, <code>00 00 00 EC</code> mapped in <code>loc/Story_Mode_Design.smb</code>).</li>
                     <li><strong>Data Payload:</strong> The remainder of the file consists of sequential, fixed-size records (measuring 96 bytes in the illustrated examples, or <code>0x60</code>, each) mapped sequentially by the offset table.</li>
                 </ul>
+                <p><strong>Audited layout:</strong> +0x10 is the BE record count; +0x14 is the absolute pointer-table offset (0x18 in all 99 files). The table contains N absolute BE record pointers, and the first record begins at 0x18 + 4*N. The record count is not immediately followed by record pointers: the +0x14 table-offset word must be read first.</p>
                 <h2 id="individual-record-metadata">Individual Record Metadata</h2>
+                <p>Within each 96-byte record, +0x04 is the bank ID and +0x08/+0x0C/+0x10 are three equal stream-ID words in this corpus. ALB joins on the bank and stream fields; neither SMB field is the LH2 StringID. A NUL-terminated .exa filename begins at record +0x34. All pointer bounds, strides, duplicate-key filename agreement and physical filenames were checked. Record +0x00 flags and the remaining playback fields retain their unresolved semantics.</p>
                 <ul>
-                    <li><strong>Identifiers and Context Flags:</strong> Each entry opens with categorical flags and repeated 4-byte ID hashes linking the specific voice line, SFX, or ambient track to the current level.</li>
-                    <li><strong>3D Attenuation Variables:</strong> Several IEEE-754 big-endian floats dictate spatial playback behavior. The hex dumps consistently reveal float sequences like <code>41 A0 00 00</code> (20.0) and <code>42 C8 00 00</code> (100.0), which are candidates for minimum and maximum 3D distance parameters.</li>
+                    <li><strong>Identifiers and unresolved flags:</strong> Record +0x00 contains flag/type bytes with unresolved semantics. The bank ID at +0x04 and three equal stream-ID words at +0x08/+0x0C/+0x10 participate in the validated ALB join; their generating algorithms and the separate slot roles are unknown.</li>
+                    <li><strong>Candidate 3D attenuation fields:</strong> Several words have plausible IEEE-754 big-endian float interpretations. The hex dumps consistently reveal float sequences like <code>41 A0 00 00</code> (20.0) and <code>42 C8 00 00</code> (100.0), which are candidates for minimum and maximum 3D distance parameters.</li>
                     <li><strong>Unidentified 8-byte Identifier:</strong> An 8-byte sequence associated with the linked asset sits immediately before the string definition.</li>
-                    <li><strong>Asset Pointer:</strong> The end of every record stores a padded, null-terminated ASCII string containing the filename of the physical <code>.exa</code> stream file (e.g., <code>d_frin_xxx_0004f66.exa</code>, <code>d_lis8_xxx_0004fcd.exa</code>, <code>d_suds_xxx_0006851.exa</code>, <code>d_wchr_xxx_0000b33.exa</code>).</li>
+                    <li><strong>Inline stream filename:</strong> At record +0x34, a padded, NUL-terminated ASCII string names the external <code>.exa</code> stream file (e.g., <code>d_frin_xxx_0004f66.exa</code>, <code>d_lis8_xxx_0004fcd.exa</code>, <code>d_suds_xxx_0006851.exa</code>, <code>d_wchr_xxx_0000b33.exa</code>).</li>
                 </ul>
                 <p>The separate metadata/stream arrangement is consistent with streaming playback. Actual loading behavior, compression and record-to-file resolution have not been established by these byte samples alone.</p>
             </div>

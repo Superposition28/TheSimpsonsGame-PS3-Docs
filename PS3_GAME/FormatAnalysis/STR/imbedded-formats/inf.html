@@ -58,7 +58,7 @@
                         <tr>
                             <td><a href="txd.html">Texture dictionary (.txd)</a></td>
                             <td>Implemented</td>
-                            <td>Operation 3 supplies the PNG atlas used by operation 15. INF stores glyph rectangles/metrics, while the texture dictionary supplies pixels. The font converter matches cleaned base names, preferring the same archive context.</td>
+                            <td>Operation 5 supplies the PNG atlas used by operation 9. INF stores glyph rectangles/metrics, while the texture dictionary supplies pixels. The font converter matches cleaned base names, preferring the same archive context.</td>
                         </tr>
                         <tr>
                             <td><a href="lh2.html">Localization table (.LH2)</a></td>
@@ -68,7 +68,7 @@
                         <tr>
                             <td><a href="tox.PS3.html">FMV subtitle timing (.tox.PS3)</a></td>
                             <td>Rendering context</td>
-                            <td>A subtitle renderer can display TOX-timed LH2 text using an INF-derived FNT and atlas. TOX contains no font selection or atlas pointer, and operation 16 does not require operation 15.</td>
+                            <td>A subtitle renderer can display TOX-timed LH2 text using an INF-derived FNT and atlas. TOX contains no font selection or atlas pointer, and operation 10 does not require operation 9.</td>
                         </tr>
                         <tr>
                             <td><a href="../../VP6/index.html">Movie container (.vp6)</a></td>
@@ -96,7 +96,7 @@
         </section>
         <p><strong>Version:</strong> 2.0 (Validated across all 12 PS3 files &amp; 1,784 glyphs)<br><strong>Last Updated:</strong> 2026-10-18<br><strong>Author(s):</strong> yggdrasil-au, samarixum</p>
         <p>The <code>.inf</code> format (magic signature <code>FONT</code>, version <code>6</code>) is Electronic Arts' binary bitmap font descriptor used in <em>The Simpsons Game</em> (PS3) to map characters and controller button prompts onto companion <code>.png</code> texture atlases extracted from RenderWare <code>.txd</code> dictionaries. Each <code>.inf</code> file defines global line metrics, 24-byte per-glyph bounding boxes and typographic bearings, <strong>12.4 fixed-point subpixel atlas coordinates</strong>, and a 4-byte kerning pair table.</p>
-        <p><strong>Endianness:</strong> Big-Endian throughout (with 8-bit character IDs padded by a trailing zero byte).<br><strong>Character Encoding:</strong> ASCII (<code>0x20..0x7E</code>), Extended Latin-1 / Windows-1252 hybrid (<code>0xA0..0xFF</code>), and Custom Controller Button Indices (<code>0x00..0x20</code>).<br><strong>Converter Script:</strong> <code>operations/inf_to_fnt.Fonts.lua</code> (exports Godot 4-compatible AngelCode BMFont <code>.fnt</code> descriptors).</p>
+        <p><strong>Endianness:</strong> Big-Endian throughout (with 8-bit character IDs padded by a trailing zero byte).<br><strong>Character Encoding:</strong> ASCII (<code>0x20..0x7E</code>), Extended Latin-1 / Windows-1252 hybrid (<code>0xA0..0xFF</code>), and Custom Controller Button Indices (<code>0x00..0x20</code>).<br><strong>Converter Script:</strong> <code>operations/Converters/inf_to_fnt.Fonts.lua</code> (exports Godot 4-compatible AngelCode BMFont <code>.fnt</code> descriptors).</p>
         <div class="callout">
             <strong>How <code>.inf</code> Coincides with <code>.png</code> Font Textures:</strong>
             <ul>
@@ -815,8 +815,8 @@
         </div>
         <p><em>Note:</em> The 5 shared fonts present in both <code>A2_Characters</code> and <code>A2_Frontend</code> (<code>buttons</code>, <code>DomCasualStd3636</code>, <code>HighlanderStdBold6060b</code>, <code>HighlanderStdMed3636</code>, and <code>LetterGothicStdBold2424b</code>) are byte-for-byte identical in both <code>.inf</code> and <code>.png</code> content across the two archives.</p>
         <h2 id="reference-python-parser-godot-fnt-converter">Registered Lua converter and illustrative Python parser</h2>
-        <p>The conversion script at <code>operations/inf_to_fnt.Fonts.lua</code> parses all 12 <code>.inf</code> files, matches them to their <code>.png</code> texture atlases, reads the exact PNG <code>IHDR</code> dimensions, shifts the 12.4 fixed-point UVs into pixel coordinates, and writes valid AngelCode BMFont <code>.fnt</code> files for Godot 4:</p>
-        <p>From the engine root, run <code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 15</code>. The Lua entry point accepts <code>--input-dir</code>, <code>--output-dir</code>, <code>--copy-png</code> and <code>--no-unicode-aliases</code>. Output defaults beside each INF, with a relative atlas reference.</p>
+        <p>The conversion script at <code>operations/Converters/inf_to_fnt.Fonts.lua</code> parses all 12 <code>.inf</code> files, matches them to their <code>.png</code> texture atlases, reads the exact PNG <code>IHDR</code> dimensions, shifts the 12.4 fixed-point UVs into pixel coordinates, and writes valid AngelCode BMFont <code>.fnt</code> files for Godot 4:</p>
+        <p>From the engine root, run <code>dotnet run -c Debug --project ./EngineNet/ -- --game_module TheSimpsonsGame-PS3 --run_op 9</code>. The Lua entry point accepts <code>--input-dir</code>, <code>--output-dir</code>, <code>--copy-png</code> and <code>--no-unicode-aliases</code>. Output defaults beside each INF, with a relative atlas reference.</p>
         <p>The Python fragment below illustrates binary layout only. It is not the registered converter, does not write FNT, and omits several validation/Unicode-alias checks present in the Lua implementation.</p>
         <pre><code>import struct
 from pathlib import Path
