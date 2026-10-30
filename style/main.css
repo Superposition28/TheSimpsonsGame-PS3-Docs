@@ -763,3 +763,11 @@ iframe.page { top: var(--nav-height); height: calc(100dvh - var(--nav-height)); 
     .breadcrumbs, .page-toc { display: none; }
     .table-scroll { overflow: visible; }
 }
+
+/* Preserve the original plain-text file tree and its spacing. */
+.usrdir-tree-page { margin: 8px; padding: 0; background: #1e1e1e; color: #c9d1d9; line-height: normal; }
+.usrdir-tree-page pre { font-family: monospace; font-size: 13px; line-height: normal; }
+.usrdir-tree-page .duplicate { color: #e3b341; }
+.usrdir-tree-page .unique { color: #56d879; }
+.usrdir-tree-page .empty { color: #ff7b72; }
+.usrdir-tree-page .unknown { color: #b0bac5; }
