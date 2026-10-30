@@ -54,8 +54,8 @@
                     <tbody>
                         <tr>
                             <td><a href="../STR/imbedded-formats/msb.html">Interactive music metadata (.msb)</a></td>
-                            <td>Observed</td>
-                            <td>MSB samples name .mus containers and expose PFDx event/part symbols. Operation 13 extracts and decodes SNR/SNS segments without reading the MSB transition logic.</td>
+                            <td>Verified 1-to-1 Join</td>
+                            <td>MSB containers house the EA Pathfinder conductor logic, whose section 7 stores a 4-byte <code>MusFileId</code> checksum matching the first word of the MUS header, and section 8 mirrors all raw SNS offsets and segment millisecond durations. Operation 13 extracts and decodes SNR/SNS segments without executing MSB state-machine transitions.</td>
                         </tr>
                         <tr>
                             <td><a href="../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td>

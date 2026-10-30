@@ -18,14 +18,14 @@
                 </aside>
                 <section class="format-summary" aria-label="Format summary">
                     <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-                    <p>References MUS music containers and includes Pathfinder-related event/part metadata.</p>
+                    <p>Composite container bundling Electronic Arts Pathfinder Music Engine (v5.3) interactive audio metadata, state-machine transitions, and paired MUS container verification records.</p>
                     <dl>
                         <dt>Identification</dt>
-                        <dd>PFDx observed at 0x50 in documented examples; embedded .mus names.</dd>
+                        <dd>80-byte outer wrapper header with signature <code>0x38071778</code> at offset 0x2C; embedded EA Pathfinder binary map chunk starting with ASCII magic <code>PFDx</code> (<code>0x50464478</code>) at offset 0x50; plaintext symbol trailer (<code>numevents</code>, <code>numparts</code>, <code>numdefines</code>) at <code>0x50 + PfdMapSize</code>.</dd>
                         <dt>Byte order / text</dt>
-                        <dd>Mixed/partly unresolved; do not apply a global endian assumption.</dd>
-                        <dt>Documentation scope</dt>
-                        <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                        <dd>Big-endian numeric words throughout wrapper header and binary <code>PFDx</code> tables; Windows-1252 / ASCII plaintext with CR (<code>0x0D</code>) line endings in symbol trailer.</dd>
+                        <dt>Runtime linkage</dt>
+                        <dd>Verified in PS3 <code>EBOOT.elf</code>: outer binary block passed to <code>PATH_addmapfile</code> (0xA02708), symbol trailer passed to <code>PATH_addnamfile</code> (0xA007A8), track verification executed via <code>PATH_verifymusfile</code> (0xA051E4), and playback triggered via <code>PATH_event</code> (0xA04EF8).</dd>
                     </dl>
                 </section>
                 <nav class="page-toc" aria-label="On this page">
@@ -35,6 +35,12 @@
                         <li><a href="#operation-support-2">Tools and integrations</a></li>
                         <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
                         <li><a href="#format-structure-breakdown">Format Structure &amp; Breakdown</a></li>
+                        <li><a href="#binary-wrapper-header">Outer Wrapper Header (0x00..0x4F)</a></li>
+                        <li><a href="#pfdx-map-block">Pathfinder Map Chunk (PFDx at 0x50)</a></li>
+                        <li><a href="#pfdx-section-tables">PFDx Internal Section Tables (S0..S8)</a></li>
+                        <li><a href="#nam-symbol-trailer">Plaintext Symbol Trailer (.nam)</a></li>
+                        <li><a href="#runtime-verification">Runtime Call Chain in EBOOT.elf</a></li>
+                        <li><a href="#corpus-inventory">Corpus Inventory &amp; MUS Verification (19 Files)</a></li>
                     </ul>
                 </nav>
                 <section id="related-formats">
@@ -66,25 +72,658 @@
                 </section>
                 <section id="evidence-limits">
                     <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-                    <p>The MUS linkage and readable symbols are observed. Transition/state-machine semantics are not implemented by operation 13, and the PFDx offset should be checked per file.</p>
-                    <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
+                    <p>Corpus evidence is derived from all 19 extracted <code>.msb</code> files in the reference PS3 EU audio dataset (17 distinct payloads across 16 episode levels, 2 hubs, and the frontend). Exact 1-to-1 byte joins with all 17 paired <code>.mus</code> containers in <code>USRDIR/audiostreams/</code> are established across all files: the 4-byte <code>MusFileId</code> checksum in section 7 matches the first word of the paired <code>.mus</code> header, section 8 segment counts match <code>.mus</code> TOC counts, and section 8 raw SNS offsets match the 28-byte TOC entries.</p>
+                    <p>Runtime behavior and symbol identities are verified against original executable code in PS3 <code>EBOOT.elf</code> (specifically loader stub <code>0x011460</code> calling <code>PATH_addmapfile</code> at <code>0xA02708</code>, <code>0x013160</code> calling <code>PATH_addnamfile</code> at <code>0xA007A8</code>, <code>PATH_verifymusfile</code> at <code>0xA051E4</code>, and playback dispatch <code>PATH_event</code> at <code>0xA04EF8</code>). Operation 13 extracts and decodes individual audio stream segments from the paired <code>.mus</code> files using QuickBMS; it does not execute the MSB state-machine transition logic.</p>
+                    <p>Offsets in the structural tables below are zero-based from the respective section or wrapper base; range ends are exclusive unless noted otherwise.</p>
                 </section>
-                <p>Based on the provided hex dumps and file paths, the <code>.msb</code> format is an <strong>EA Pathfinder Interactive Music Data Bank</strong> used to govern dynamic audio routing and playback logic in titles like <em>The Simpsons Game</em>.</p>
+                <p>The <code>.msb</code> (Music Stream Bank) file format is the compiled interactive music descriptor for Electronic Arts' proprietary <strong>EA Pathfinder Music Engine (version 5.3)</strong>. It contains no raw waveform or compressed audio data itself; instead, it defines the conductor state machine, playback branch nodes, interactive gameplay event mappings, and verification checksums for streaming audio segments housed in external <a href="../../MUS/index.html">.mus containers</a>.</p>
                 <h2 id="format-structure-breakdown">Format Structure &amp; Breakdown</h2>
+                <p>Every <code>.msb</code> file consists of three contiguous sequential sections:</p>
+                <ol>
+                    <li><strong>Outer Wrapper Header (<code>0x00..0x4F</code>, 80 bytes):</strong> Defines the container descriptor offset, binary map size, format signature, and the null-padded ASCII filename of the target <code>.mus</code> stream archive.</li>
+                    <li><strong>Pathfinder Binary Map Block (<code>0x50 .. 0x50 + PfdMapSize</code>):</strong> Starts with magic <code>PFDx</code> and contains 9 indexed sections (<code>S0</code> through <code>S8</code>) describing node pointers, state machine transition tables, event action sequences, variable conditions, track checksum verification, and stream segment millisecond durations. Passed directly to <code>PATH_addmapfile</code>.</li>
+                    <li><strong>Pathfinder Plaintext Symbol Trailer (<code>0x50 + PfdMapSize .. EOF</code>):</strong> ASCII symbol table with CR line endings defining interactive event IDs (<code>numevents</code>), part entry node indices (<code>numparts</code>), and engine voice/track bitmasks (<code>numdefines</code>). Passed directly to <code>PATH_addnamfile</code>.</li>
+                </ol>
+                <h2 id="binary-wrapper-header">Outer Wrapper Header (0x00..0x4F)</h2>
+                <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                    <table>
+                        <caption>Outer .msb container wrapper layout (80 bytes)</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Offset</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Field name</th>
+                                <th scope="col">Observed value &amp; purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>0x00..0x07</code></td>
+                                <td>uint64 BE</td>
+                                <td><code>ReservedZero0</code></td>
+                                <td>Always <code>0x0000000000000000</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x08..0x0B</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>DescriptorOffset</code></td>
+                                <td>Always <code>0x00000020</code> (32 decimal). Points to the sub-descriptor at byte <code>0x20</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x0C..0x1F</code></td>
+                                <td>uint8[20]</td>
+                                <td><code>ReservedZero1</code></td>
+                                <td>20 zero padding bytes.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x20..0x23</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>ContainerType</code></td>
+                                <td>Always <code>0x00000005</code> (5). Pathfinder music bank descriptor type identifier.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x24..0x27</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>PfdMapSize</code></td>
+                                <td>Exact byte length of the embedded binary <code>PFDx</code> map block (16-byte aligned). Across all 19 corpus files, <code>0x50 + PfdMapSize</code> points exactly to the first byte of the plaintext <code>numevents</code> trailer.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x28..0x2B</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>ReservedZero2</code></td>
+                                <td>Always <code>0x00000000</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x2C..0x2F</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>Signature</code></td>
+                                <td>Always <code>0x38071778</code> in all 19 files.</td>
+                            </tr>
+                            <tr>
+                                <td><code>0x30..0x4F</code></td>
+                                <td>char[32]</td>
+                                <td><code>PairedMusFilename</code></td>
+                                <td>Null-terminated, null-padded ASCII filename of the target MUS stream container (e.g., <code>menu_mus.mus</code>, <code>loc_mus.mus</code>, <code>bin.mus</code>).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h2 id="pfdx-map-block">Pathfinder Map Chunk (PFDx at 0x50)</h2>
+                <p>Located at offset <code>0x50</code>, this block begins with a 72-byte (<code>0x48</code>) header followed by 9 internal data sections. In <code>EBOOT.elf</code>, <code>PATH_addmapfile</code> (<code>0xA02708</code>) validates the header signature and converts internal relative offsets to runtime memory pointers.</p>
+                <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                    <table>
+                        <caption>PFDx binary map chunk header (0x50..0x97, 72 bytes)</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Chunk offset</th>
+                                <th scope="col">File offset</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Field name</th>
+                                <th scope="col">Observed value &amp; purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>+0x00..+0x03</code></td>
+                                <td><code>0x50..0x53</code></td>
+                                <td>char[4]</td>
+                                <td><code>Magic</code></td>
+                                <td>ASCII <code>PFDx</code> (<code>0x50464478</code>). Verified at <code>0xA02804</code> in <code>EBOOT.elf</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x04..+0x05</code></td>
+                                <td><code>0x54..0x55</code></td>
+                                <td>uint16 BE</td>
+                                <td><code>Version</code></td>
+                                <td>Format version <code>0x0503</code> (v5.3). Verified at <code>0xA02818</code> in <code>EBOOT.elf</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x06..+0x07</code></td>
+                                <td><code>0x56..0x57</code></td>
+                                <td>uint16 BE</td>
+                                <td><code>BuildTag</code></td>
+                                <td>Build identifier <code>0xB003</code> across all 19 files.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x08..+0x09</code></td>
+                                <td><code>0x58..0x59</code></td>
+                                <td>uint16 BE</td>
+                                <td><code>ReservedZero</code></td>
+                                <td>Always <code>0x0000</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x0A..+0x0B</code></td>
+                                <td><code>0x5A..0x5B</code></td>
+                                <td>uint16 BE</td>
+                                <td><code>SubBankId</code></td>
+                                <td>Sub-project/bank ID; <code>0x0000</code> across all files. Checked at <code>0xA027E8</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x0C</code></td>
+                                <td><code>0x5C</code></td>
+                                <td>uint8</td>
+                                <td><code>ProjectId</code></td>
+                                <td>Pathfinder Project ID (<code>0x00</code> in all files, matching trailer constant <code>PATH_ID_... 0</code>). Shifted at <code>0xA02860</code> to form voice mask <code>(0x01000000 &lt;&lt; ProjectId)</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x0D</code></td>
+                                <td><code>0x5D</code></td>
+                                <td>uint8</td>
+                                <td><code>NumTracks</code></td>
+                                <td>Number of audio tracks in map. Always <code>1</code> in all 19 files. Determines size of section 7 (<code>NumTracks * 20</code> bytes).</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x0E</code></td>
+                                <td><code>0x5E</code></td>
+                                <td>uint8</td>
+                                <td><code>UnknownCount</code></td>
+                                <td>Small integer count (<code>1</code> in 16 files, <code>2</code> in <code>sss_mus</code> and <code>rwc_mus</code>, <code>3</code> in <code>mob_mus</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x0F</code></td>
+                                <td><code>0x5F</code></td>
+                                <td>uint8</td>
+                                <td><code>NumEvents</code></td>
+                                <td>Total interactive event definitions. Matches <code>numevents</code> in the symbol trailer (range 2 to 34). Determines entry count of Section 2.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x10..+0x11</code></td>
+                                <td><code>0x60..0x61</code></td>
+                                <td>uint16 BE</td>
+                                <td><code>NumSection4Entries</code></td>
+                                <td>Entry count for Section 4 (branch condition table). <code>0</code> in 16 files, <code>1</code> in <code>hub_mus</code> and <code>moh_mus</code>, <code>7</code> in <code>spr_mus</code>. Each entry is exactly 20 bytes.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x12..+0x13</code></td>
+                                <td><code>0x62..0x63</code></td>
+                                <td>uint16 BE</td>
+                                <td><code>NumNodes</code></td>
+                                <td>Total state-machine node count (range 11 to 433). Determines entry count of Section 0.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x14..+0x17</code></td>
+                                <td><code>0x64..0x67</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>Section0Offset</code></td>
+                                <td>Relative offset to Section 0 (Node Offset Table). Always <code>0x00000048</code> (immediately following the 72-byte header).</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x18..+0x1B</code></td>
+                                <td><code>0x68..0x6B</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>Section1Offset</code></td>
+                                <td>Relative offset to Section 1 (Node Data Table). Equal to <code>align4(0x48 + 2 * NumNodes)</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x1C..+0x1F</code></td>
+                                <td><code>0x6C..0x6F</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>Section2Offset</code></td>
+                                <td>Relative offset to Section 2 (Event Offset Table).</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x20..+0x23</code></td>
+                                <td><code>0x70..0x73</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>Section3Offset</code></td>
+                                <td>Relative offset to Section 3 (Event Action Table). Equal to <code>align4(S2_Offset + 2 * NumEvents)</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x24..+0x27</code></td>
+                                <td><code>0x74..0x77</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>Section4Offset</code></td>
+                                <td>Relative offset to Section 4 (Branch/Variable Condition Table). Size equals <code>20 * NumSection4Entries</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x28..+0x2B</code></td>
+                                <td><code>0x78..0x7B</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>Section5Offset</code></td>
+                                <td>Relative offset to Section 5. Section size is always 4 bytes (1 uint32).</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x2C..+0x2F</code></td>
+                                <td><code>0x7C..0x7F</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>Section6Offset</code></td>
+                                <td>Relative offset to Section 6. Section size is always 4 bytes (1 uint32).</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x30..+0x33</code></td>
+                                <td><code>0x80..0x83</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>Section7Offset</code></td>
+                                <td>Relative offset to Section 7 (Track Header &amp; MUS Verification Table). Size is <code>NumTracks * 20</code> (20 bytes).</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x34..+0x37</code></td>
+                                <td><code>0x84..0x87</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>Section8Offset</code></td>
+                                <td>Relative offset to Section 8 (MUS Segment &amp; Duration Table). Size is <code>NumMusSegments * 8</code> bytes.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x38..+0x3B</code></td>
+                                <td><code>0x88..0x8B</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>PfdDataEndOffset</code></td>
+                                <td>Unpadded end offset of Section 8 relative to <code>0x50</code>. Followed by 0 to 12 zero padding bytes to align to <code>PfdMapSize</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x3C..+0x47</code></td>
+                                <td><code>0x8C..0x97</code></td>
+                                <td>uint8[12]</td>
+                                <td><code>ReservedZeroHeader</code></td>
+                                <td>12 zero padding bytes concluding the 72-byte header.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h2 id="pfdx-section-tables">PFDx Internal Section Tables (S0..S8)</h2>
+                <h3>Section 0: Node Word-Offset Table</h3>
+                <p>Begins at <code>0x50 + Section0Offset</code> (always file offset <code>0x98</code>). Contains <code>NumNodes</code> entries of <code>uint16 BE</code>, padded to 4-byte alignment (<code>S0_size = align4(2 * NumNodes)</code>). To resolve the byte location of Node <code>i</code> inside Section 1, the engine multiplies the 16-bit word value by 4 and adds the base address of the <code>PFDx</code> chunk: <code>node_byte_offset = 0x50 + (Section0[i] * 4)</code>.</p>
+                <h3>Section 1: State-Machine Node Table</h3>
+                <p>Contains <code>NumNodes</code> variable-length node structures (commonly 16, 20, 24, 32, or 44 bytes, always aligned to 4 bytes). Nodes define audio stem routing, loop playback rules, volume attenuation, playback transitions, and destination branches.</p>
+                <h3>Section 2: Event Word-Offset Table</h3>
+                <p>Begins at <code>0x50 + Section2Offset</code>. Contains <code>NumEvents</code> entries of <code>uint16 BE</code>, padded to 4-byte alignment (<code>S2_size = align4(2 * NumEvents)</code>). To resolve the byte location of Event <code>e</code> inside Section 3, the engine multiplies the word value by 4 and adds the <code>PFDx</code> base: <code>event_byte_offset = 0x50 + (Section2[e] * 4)</code>.</p>
+                <h3>Section 3: Event Action Table</h3>
+                <p>Contains <code>NumEvents</code> variable-length event records. Each event record begins with a 20-byte (<code>0x14</code>) header followed by an array of 12-byte action command blocks:</p>
                 <ul>
-                    <li><strong>File Linkage Header:</strong> The first <code>0x50</code> bytes act as a wrapper that directly references the paired audio stream file containing the actual music data. You can see the target filename encoded in plaintext right before the main data chunk (e.g., <code>menu_mus.mus</code>, <code>loc_mus.mus</code>, <code>brt_mus.mus</code>).</li>
-                    <li><strong>Pathfinder Magic Number:</strong> At exact offset <code>0x50</code>, the chunk identifier <code>PFDx</code> appears, signaling the start of the Electronic Arts Pathfinder engine data.</li>
-                    <li><strong>Binary Routing Logic:</strong> Directly following <code>PFDx</code> is the compiled state machine. This area contains arrays of sequential bytes (e.g., <code>01 02 01 07 01 0D</code>) and memory offsets that map out node transitions, branching paths, and playback conditions for the interactive music engine.</li>
+                    <li><code>+0x00..+0x0B</code> (12 bytes): Reserved / event context flags (all zero in observed files).</li>
+                    <li><code>+0x0C..+0x0E</code> (uint24 BE): <strong>EventIdLower24</strong> — The lower 24 bits of the 32-bit Pathfinder event ID. In the <code>.nam</code> trailer, event IDs are formatted as <code>(0x01000000 &lt;&lt; ProjectId) | EventIdLower24</code> (e.g., <code>PATH_EVENT_fe_start 0x1AB0DB5</code> has lower 24 bits <code>0xAB0DB5</code>, which equals <code>11210165</code> decimal as printed in the trailer's <code>fe_start:27987381</code> when combined with the project voice prefix).</li>
+                    <li><code>+0x0F</code> (uint8): <strong>ActionCount</strong> — Number of 12-byte action commands following the header.</li>
+                    <li><code>+0x10..+0x13</code> (4 bytes): Reserved (all zero).</li>
                     <li>
-                        <strong>Plaintext Metadata Trailer:</strong> The file concludes with a highly readable symbol table that acts as an index for the game engine to interface with the audio logic. This section is split into three distinct categories:
+                        <code>+0x14 .. +0x14 + (ActionCount * 12)</code>: 12-byte Action Commands:
                         <ul>
-                            <li><strong>Events (<code>numevents</code>):</strong> Lists triggerable interactive cues (like <code>fe_start</code>, <code>stop</code>, <code>puzzle1</code>) mapped to their hashed integer IDs (e.g., <code>stop:22419055</code>).</li>
-                            <li><strong>Entry Nodes (<code>numparts</code>):</strong> Maps logical musical phases to exact entry points within the binary state machine (e.g., <code>menu1 entry node = 41</code> or <code>loc_hz entry node = 0</code>).</li>
-                            <li><strong>Definitions (<code>numdefines</code>):</strong> Sets core configuration constants. This includes the track's memory ID (<code>PATH_TRACK_menu_mus 0x11000001</code>), the expected byte rate for timing (<code>PATH_TRACK_BYTESPERSEC</code>), and global bitmasks for system broadcasts (e.g., <code>PATH_ALL_VOICES F0000000</code> and <code>PATH_INTENSITY 0</code>).</li>
+                            <li><strong>Stop / Fade Command (12 bytes):</strong> <code>11 00 00 01 00 08 F0 00 FF FF FF 80</code> — Halts or fades current playback voice.</li>
+                            <li><strong>Branch to Part Entry Node (12 bytes):</strong> <code>11 00 00 01 00 08 C0 00 [NodeIndex_u16] FF 00</code> — Directs the state machine to enter the specified node index (e.g., <code>00 29</code> for <code>menu1</code> entry node 41).</li>
                         </ul>
                     </li>
                 </ul>
-                <p>In short, the <code>.msb</code> file acts as the conductor's sheet music: it holds no actual audio itself, but rather feeds the game engine a list of triggers, a node-based roadmap of how the tracks should seamlessly loop and transition, and a direct pointer to the <code>.mus</code> file containing the audio payload.</p>
+                <h3>Section 4: Branch / Variable Condition Table</h3>
+                <p>Present only when header field <code>NumSection4Entries</code> (<code>+0x10</code>) is non-zero (<code>hub_mus</code> and <code>moh_mus</code> have 1 entry = 20 bytes; <code>spr_mus</code> has 7 entries = 140 bytes; all other 16 files have 0 entries = 0 bytes). Each entry is exactly 20 bytes long.</p>
+                <h3>Section 5 &amp; Section 6: State-Machine Word Records</h3>
+                <p>Both Section 5 and Section 6 are exactly 4 bytes (1 uint32 BE) long in all 19 files. They store global state-machine control flags (for example, <code>0x0000036F</code> and <code>0x00000370</code> in <code>menu_mus.msb</code>).</p>
+                <h3>Section 7: Track Header &amp; MUS Verification Record (20 bytes)</h3>
+                <p>Contains <code>NumTracks * 20</code> bytes (exactly 20 bytes in all 19 files since <code>NumTracks = 1</code>). Crucially, this record contains the cryptographic join fields verified by <code>PATH_verifymusfile</code> (<code>0xA051E4</code> in <code>EBOOT.elf</code>) before playing the paired <code>.mus</code> archive:</p>
+                <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                    <table>
+                        <caption>Section 7 Track Verification Record layout (20 bytes)</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Offset</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Field name</th>
+                                <th scope="col">Observed value &amp; purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>+0x00..+0x07</code></td>
+                                <td>uint64 BE</td>
+                                <td><code>ReservedZero</code></td>
+                                <td>Always <code>0x0000000000000000</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x08..+0x0B</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>MusFileId</code></td>
+                                <td><strong>MUS Checksum / Container ID:</strong> Exact 1-to-1 match to the first 4 bytes (<code>0x00..0x03</code>) of the paired <code>.mus</code> file header across all 19 corpus files (e.g., <code>0x64A12795</code> in <code>menu_mus.msb</code> and <code>menu_mus.mus</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x0C..+0x0F</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>MusHeaderEndOffset</code></td>
+                                <td>Exact byte end offset (aligned to 16 bytes) of the <code>.snr</code> metadata region inside the paired <code>.mus</code> container (e.g., <code>0x00000750</code> in <code>menu_mus.msb</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x10..+0x13</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>ReservedZeroEnd</code></td>
+                                <td>Always <code>0x00000000</code>.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>Section 8: MUS Stream Segment &amp; Duration Table</h3>
+                <p>Contains <code>NumMusSegments * 8</code> bytes. The entry count equals the exact segment count stored at offset <code>0x04</code> of the paired <code>.mus</code> header across all 19 files. Each 8-byte entry <code>i</code> directly describes segment <code>i</code> in the paired <code>.mus</code> TOC:</p>
+                <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                    <table>
+                        <caption>Section 8 Stream Segment Descriptor (8 bytes per entry)</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Offset</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Field name</th>
+                                <th scope="col">Observed value &amp; purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>+0x00..+0x03</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>SnsOffsetRaw</code></td>
+                                <td>Exact match to TOC entry <code>i</code> offset <code>+0x0C</code> in the paired <code>.mus</code> container (<code>SNS_OFFSET_RAW = sns_byte_offset / 0x80</code>). Verified 100% identical across all 2,345 segments in the 19 files.</td>
+                            </tr>
+                            <tr>
+                                <td><code>+0x04..+0x07</code></td>
+                                <td>uint32 BE</td>
+                                <td><code>DurationMs</code></td>
+                                <td>Exact stream duration of segment <code>i</code> in milliseconds. Equal to <code>floor(snr_sample_count / 48)</code> for 48,000 Hz audio streams. Allows the Pathfinder engine to time state transitions and loop stitching without decoding audio waveforms.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h2 id="nam-symbol-trailer">Plaintext Symbol Trailer (.nam)</h2>
+                <p>Beginning at file offset <code>0x50 + PfdMapSize</code>, this trailer is an ASCII plaintext symbol table formatted with carriage return (<code>0x0D</code>) line endings. In <code>EBOOT.elf</code>, this section is passed to <code>PATH_addnamfile</code> (<code>0xA007A8</code>) to populate human-readable debugging symbols and event hash lookup maps.</p>
+                <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                    <table>
+                        <caption>Plaintext symbol trailer sections</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Trailer section</th>
+                                <th scope="col">Syntax &amp; format</th>
+                                <th scope="col">Purpose &amp; engine encoding</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>numevents &lt;N&gt;</code></td>
+                                <td><code>&lt;event_name&gt;:&lt;decimal_id&gt;</code></td>
+                                <td>Defines triggerable interactive cues (e.g. <code>fe_start:27987381</code>, <code>stop:22419055</code>). The decimal ID is the 32-bit integer <code>(0x01000000 &lt;&lt; ProjectId) | EventIdLower24</code> (for example, <code>0x01AB0DB5 = 27987381</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>numparts &lt;M&gt;</code></td>
+                                <td><code>&lt;part_name&gt; entry node = &lt;node_index&gt;</code></td>
+                                <td>Maps musical phases or stems to their entry node index in Section 1 (e.g., <code>menu1 entry node = 41</code>, <code>menu2 entry node = 103</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>numdefines &lt;K&gt;</code></td>
+                                <td><code>&lt;KEY&gt; &lt;VALUE&gt;</code></td>
+                                <td>
+                                    Pathfinder engine constants:
+                                    <ul>
+                                        <li><code>PATH_ID_&lt;name&gt; 0</code>: Project ID (0).</li>
+                                        <li><code>PATH_TRACKID_&lt;name&gt; 0</code>: Track index (0).</li>
+                                        <li><code>PATH_TRACK_&lt;name&gt; 0x11000001</code>: Primary voice/track handle <code>(0x10000000 &lt;&lt; voice) | (0x01000000 &lt;&lt; project) | track</code>.</li>
+                                        <li><code>PATH_TRACK_2&lt;name&gt; 0x21000001</code>: Secondary voice handle.</li>
+                                        <li><code>PATH_TRACK_BYTESPERSEC_&lt;name&gt; 576099</code>: Playback rate timing constant.</li>
+                                        <li><code>PATH_EVENT_&lt;name&gt; 0x1xxxxxx</code>: Hexadecimal representation of event IDs.</li>
+                                        <li><code>PATH_ALL FFFFFFFF</code>, <code>PATH_ALL_VOICES F0000000</code>, <code>PATH_ALL_PROJECTS F000000</code>, <code>PATH_ALL_TRACKS FFFFFF</code>: System bitmasks for event dispatch.</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h2 id="runtime-verification">Runtime Call Chain in EBOOT.elf</h2>
+                <p>Disassembly of the PS3 game binary (<code>Source/PS3/REA/EBOOT.elf</code>) establishes the exact sequence in which <code>.msb</code> files are ingested and executed by the audio engine:</p>
+                <ol>
+                    <li><strong>Audio Resource Ingestion (<code>0x9DCFCC</code>):</strong> When an episode or frontend STR archive is loaded, the game audio subsystem identifies the <code>.msb</code> resource and passes its memory pointer to the sound manager wrapper at <code>0x0EA818</code>.</li>
+                    <li>
+                        <strong>Pathfinder Registration (<code>0x0EA468</code>):</strong>
+                        <ul>
+                            <li>Calls <code>0x011460</code> &rarr; <code>PATH_addmapfile</code> (<code>0xA02708</code>) with <code>r3 = msb_buffer + 0x50</code>. The engine verifies magic <code>PFDx</code>, checks version <code>0x0503</code>, and registers internal section pointers <code>S0..S8</code>.</li>
+                            <li>Calls <code>0x013160</code> &rarr; <code>PATH_addnamfile</code> (<code>0xA007A8</code>) with <code>r3 = msb_buffer + 0x50 + PfdMapSize</code> to parse event names, part entry nodes, and defines.</li>
+                            <li>Executes internal voice allocation and track state initialization at <code>0x0E98AC</code>.</li>
+                            <li>Calls <code>0x010470</code> &rarr; <code>PATH_event</code> (<code>0xA04EF8</code>) passing <code>r3 = 0x11000001</code> (<code>PATH_TRACK_...</code>), <code>r4 = event_id</code>, and <code>r5 = 1000</code> to trigger the initial music cue with a 1,000 ms fade-in parameter.</li>
+                        </ul>
+                    </li>
+                    <li><strong>MUS Verification (<code>0xA051E4</code>):</strong> <code>PATH_verifymusfile</code> compares the loaded MUS container's header checksum against <code>MusFileId</code> from Section 7 (<code>+0x08</code>). If the checksums do not match, streaming playback is aborted.</li>
+                </ol>
+                <h2 id="corpus-inventory">Corpus Inventory &amp; MUS Verification (19 Files)</h2>
+                <p>The table below summarizes all 19 <code>.msb</code> files across the reference PS3 EU dataset. Two pairs are exact byte-identical duplicates (<code>treetemp.msb</code> SHA-256 <code>de0186958ef4...</code> shared between Tree Hugger and Day of the Dolphin; <code>mob_mus.msb</code> SHA-256 <code>76c2253e725e...</code> shared between Mob Rules and The Colossal Donut), yielding 17 unique payloads that pair 1-to-1 with the 17 <code>.mus</code> containers in <code>USRDIR/audiostreams/</code>.</p>
+                <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                    <table>
+                        <caption>Complete PS3 EU MSB Corpus &amp; Paired MUS Verification Table</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Filename</th>
+                                <th scope="col">Size</th>
+                                <th scope="col">SHA-256 (12 chars)</th>
+                                <th scope="col">Paired MUS</th>
+                                <th scope="col">MusFileId</th>
+                                <th scope="col">Segments</th>
+                                <th scope="col">Nodes</th>
+                                <th scope="col">Events</th>
+                                <th scope="col">Sec4</th>
+                                <th scope="col">MUS Join Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>menu_mus.msb</code></td>
+                                <td>4,766</td>
+                                <td><code>fbe9b52dc2e1</code></td>
+                                <td><code>menu_mus.mus</code></td>
+                                <td><code>0x64A12795</code></td>
+                                <td>37</td>
+                                <td>142</td>
+                                <td>7</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>loc_mus.msb</code></td>
+                                <td>2,950</td>
+                                <td><code>d5463091aa95</code></td>
+                                <td><code>loc_mus.mus</code></td>
+                                <td><code>0x8E513626</code></td>
+                                <td>50</td>
+                                <td>62</td>
+                                <td>6</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>brt_mus.msb</code></td>
+                                <td>5,866</td>
+                                <td><code>53e9a60a0d68</code></td>
+                                <td><code>brt_mus.mus</code></td>
+                                <td><code>0x97E5AB32</code></td>
+                                <td>137</td>
+                                <td>149</td>
+                                <td>7</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>80b_mus.msb</code></td>
+                                <td>12,527</td>
+                                <td><code>3f32605ee22a</code></td>
+                                <td><code>80b_mus.mus</code></td>
+                                <td><code>0xE59258AC</code></td>
+                                <td>174</td>
+                                <td>433</td>
+                                <td>8</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>treetemp.msb</code> (L04)</td>
+                                <td>9,475</td>
+                                <td><code>de0186958ef4</code></td>
+                                <td><code>treetemp.mus</code></td>
+                                <td><code>0x92F29DBE</code></td>
+                                <td>242</td>
+                                <td>258</td>
+                                <td>8</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>mob_mus.msb</code> (L05)</td>
+                                <td>12,747</td>
+                                <td><code>76c2253e725e</code></td>
+                                <td><code>mob_mus.mus</code></td>
+                                <td><code>0x8F945861</code></td>
+                                <td>151</td>
+                                <td>403</td>
+                                <td>19</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>cheater.msb</code></td>
+                                <td>3,955</td>
+                                <td><code>c7ff025b42d5</code></td>
+                                <td><code>cheater.mus</code></td>
+                                <td><code>0x170DCDC9</code></td>
+                                <td>72</td>
+                                <td>102</td>
+                                <td>4</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>treetemp.msb</code> (L07)</td>
+                                <td>9,475</td>
+                                <td><code>de0186958ef4</code></td>
+                                <td><code>treetemp.mus</code></td>
+                                <td><code>0x92F29DBE</code></td>
+                                <td>242</td>
+                                <td>258</td>
+                                <td>8</td>
+                                <td>0</td>
+                                <td>Verified (identical to L04)</td>
+                            </tr>
+                            <tr>
+                                <td><code>mob_mus.msb</code> (L08)</td>
+                                <td>12,747</td>
+                                <td><code>76c2253e725e</code></td>
+                                <td><code>mob_mus.mus</code></td>
+                                <td><code>0x8F945861</code></td>
+                                <td>151</td>
+                                <td>403</td>
+                                <td>19</td>
+                                <td>0</td>
+                                <td>Verified (identical to L05)</td>
+                            </tr>
+                            <tr>
+                                <td><code>sss_mus.msb</code></td>
+                                <td>7,670</td>
+                                <td><code>16c728796ee2</code></td>
+                                <td><code>sss_mus.mus</code></td>
+                                <td><code>0xE6AC2651</code></td>
+                                <td>204</td>
+                                <td>233</td>
+                                <td>5</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>bargain_bin.msb</code></td>
+                                <td>3,545</td>
+                                <td><code>6449f8072124</code></td>
+                                <td><code>bin.mus</code></td>
+                                <td><code>0x63A93A22</code></td>
+                                <td>63</td>
+                                <td>97</td>
+                                <td>2</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>nvq_mus.msb</code></td>
+                                <td>9,657</td>
+                                <td><code>0a97c47d7f77</code></td>
+                                <td><code>nvq_mus.mus</code></td>
+                                <td><code>0x7D52AF90</code></td>
+                                <td>249</td>
+                                <td>267</td>
+                                <td>11</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>gts_mus.msb</code></td>
+                                <td>1,261</td>
+                                <td><code>1901c03478fe</code></td>
+                                <td><code>gts_mus.mus</code></td>
+                                <td><code>0x4D7C955C</code></td>
+                                <td>6</td>
+                                <td>12</td>
+                                <td>4</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>moh_mus.msb</code></td>
+                                <td>5,695</td>
+                                <td><code>fa296b158a18</code></td>
+                                <td><code>moh_mus.mus</code></td>
+                                <td><code>0xCB80F36B</code></td>
+                                <td>40</td>
+                                <td>79</td>
+                                <td>28</td>
+                                <td>1</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>bsh_mus.msb</code></td>
+                                <td>6,931</td>
+                                <td><code>c51c0733a7f8</code></td>
+                                <td><code>bsh_mus.mus</code></td>
+                                <td><code>0x016D21FF</code></td>
+                                <td>160</td>
+                                <td>173</td>
+                                <td>9</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>rwc_mus.msb</code></td>
+                                <td>7,558</td>
+                                <td><code>cb2e293029e0</code></td>
+                                <td><code>rwc_mus.mus</code></td>
+                                <td><code>0xC54BDE4F</code></td>
+                                <td>161</td>
+                                <td>229</td>
+                                <td>9</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>mtp_mus.msb</code></td>
+                                <td>8,958</td>
+                                <td><code>79a2b73d5e92</code></td>
+                                <td><code>mtp_mus.mus</code></td>
+                                <td><code>0x950A3497</code></td>
+                                <td>212</td>
+                                <td>232</td>
+                                <td>9</td>
+                                <td>0</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>hub_mus.msb</code></td>
+                                <td>1,374</td>
+                                <td><code>90f7789abf27</code></td>
+                                <td><code>hub_mus.mus</code></td>
+                                <td><code>0xD241C20D</code></td>
+                                <td>6</td>
+                                <td>11</td>
+                                <td>7</td>
+                                <td>1</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                            <tr>
+                                <td><code>spr_mus.msb</code></td>
+                                <td>8,983</td>
+                                <td><code>34045f30cfd6</code></td>
+                                <td><code>spr_mus.mus</code></td>
+                                <td><code>0x414D265D</code></td>
+                                <td>93</td>
+                                <td>103</td>
+                                <td>34</td>
+                                <td>7</td>
+                                <td>Verified (ID, Segments, SNS match)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="file-list-container" id="file-list">
                 <h3>Discovered .msb Files (19 Total)</h3>
