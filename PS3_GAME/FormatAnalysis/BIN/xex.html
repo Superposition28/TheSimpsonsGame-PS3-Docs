@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Xbox 360 Executable (default.xex)</title>
+        <link rel="stylesheet" href="../../../style/main.css">
+        <meta name="reference-source" content="xbox360">
+        <meta name="path-namespace" content="original">
+    </head>
+    <body class="doc-page">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>Xbox 360 Executable (default.xex)</nav>
+        <h1>Xbox 360 Executable (default.xex)</h1>
+        <aside class="source-notice" aria-label="Source and path scope">
+            <p><strong>Source scope:</strong> Xbox 360 EU Retail (Media ID <code>467C2924</code>) and US Retail (Media ID <code>05631042</code>) releases under <code>Source/XBOX360/</code>. Evaluated alongside the decompiled PC port in <code>Source/XBOX360/GamePCport/</code>. See <a href="../../../reference/sources.html#paths">roots and provenance</a>.</p>
+        </aside>
+        <section class="format-summary" aria-label="Format summary">
+            <p class="eyebrow">Game format research · Xbox 360 executable specification</p>
+            <p>This page documents the Xbox 360 executable container (<code>default.xex</code>) for <em>The Simpsons Game</em>, including its <code>XEX2</code> header structure, certificate descriptors, decrypted PowerPC PE basefile layout, ordinal import thunks, and its architectural 1:1 correspondence to the PS3 <a href="index.html">EBOOT.BIN / ELF</a>.</p>
+            <dl>
+                <dt>Identification</dt>
+                <dd><code>default.xex</code>, beginning with magic <code>58 45 58 32</code> (literal <code>XEX2</code>).</dd>
+                <dt>Architecture</dt>
+                <dd>64-bit Big-Endian PowerPC (Xenon, 3 dual-threaded cores) with 32-bit pointers.</dd>
+                <dt>PE Basefile</dt>
+                <dd>Original PE name <code>simpsons_f.exe</code> loaded at base address <code>0x82000000</code>, entry point <code>0x82432280</code>.</dd>
+                <dt>Title ID</dt>
+                <dd><code>45410809</code> (EA-2057).</dd>
+            </dl>
+        </section>
+        <nav class="page-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <ul>
+                <li><a href="#identification-and-header">XEX2 container & header descriptors</a></li>
+                <li><a href="#execution-identities">Release variants and media IDs</a></li>
+                <li><a href="#basefile-layout">Decrypted PE basefile layout</a></li>
+                <li><a href="#import-libraries">Kernel and XAM imports</a></li>
+                <li><a href="#ps3-correspondence">Cross-architecture correspondence to PS3 EBOOT</a></li>
+                <li><a href="#related-formats">Related files and formats</a></li>
+                <li><a href="#operation-support">Tools and integrations</a></li>
+                <li><a href="#evidence-limits">Evidence and limitations</a></li>
+            </ul>
+        </nav>
+        <section id="identification-and-header">
+            <h2>XEX2 container & header descriptors</h2>
+            <p>The Xbox 360 executable container begins with a 24-byte header followed by an array of 8-byte optional header descriptors (key/value or key/offset pairs):</p>
+            <div class="table-scroll" role="region" aria-label="XEX2 header layout" tabindex="0">
+                <table>
+                    <caption>XEX2 Header (24 bytes)</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Offset</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Field</th>
+                            <th scope="col">Observed value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>0x00</code></td>
+                            <td>uint32 BE</td>
+                            <td>Magic</td>
+                            <td><code>0x58455832</code> (<code>"XEX2"</code>)</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x04</code></td>
+                            <td>uint32 BE</td>
+                            <td>Module Flags</td>
+                            <td><code>0x00000001</code> (Title Module)</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x08</code></td>
+                            <td>uint32 BE</td>
+                            <td>PE Data Offset</td>
+                            <td><code>0x00003000</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x0C</code></td>
+                            <td>uint32 BE</td>
+                            <td>Reserved</td>
+                            <td><code>0x00000000</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x10</code></td>
+                            <td>uint32 BE</td>
+                            <td>Certificate Offset</td>
+                            <td><code>0x00000098</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x14</code></td>
+                            <td>uint32 BE</td>
+                            <td>Optional Header Count</td>
+                            <td><code>16</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>The optional header descriptor table defines image attributes:</p>
+            <div class="table-scroll" role="region" aria-label="XEX2 optional headers" tabindex="0">
+                <table>
+                    <caption>Verified Optional Header Descriptors in default.xex</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Key</th>
+                            <th scope="col">Interpretation</th>
+                            <th scope="col">Value / Offset</th>
+                            <th scope="col">Observed Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>0x00010100</code></td>
+                            <td>Entry Point</td>
+                            <td>Value</td>
+                            <td><code>0x82432280</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00010201</code></td>
+                            <td>Image Base Address</td>
+                            <td>Value</td>
+                            <td><code>0x82000000</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00020200</code></td>
+                            <td>Default Stack Size</td>
+                            <td>Value</td>
+                            <td><code>0x00040000</code> (256 KiB)</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00020401</code></td>
+                            <td>Default Heap Size</td>
+                            <td>Value</td>
+                            <td><code>0x00100000</code> (1 MiB)</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x000183FF</code></td>
+                            <td>Original PE Executable Name</td>
+                            <td>Offset</td>
+                            <td><code>"simpsons_f.exe"</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00040006</code></td>
+                            <td>Execution Info Struct</td>
+                            <td>Offset</td>
+                            <td>Media ID, Title ID <code>0x45410809</code>, Version, Disc 1/1</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00018002</code></td>
+                            <td>Game Ratings</td>
+                            <td>Offset</td>
+                            <td>ESRB, PEGI, USK descriptors</td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00010040</code></td>
+                            <td>Static Libraries</td>
+                            <td>Offset</td>
+                            <td>XAPILIB, D3D9, D3DX9, XGRAPHC, XBOXKRNL, XNET, XONLINE, XHV, LIBCPMT, XMP, XAUD (all v2.0.5632.0)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section id="execution-identities">
+            <h2>Release variants and media IDs</h2>
+            <p>Both inspected retail discs share the EA title ID <code>45410809</code> (EA-2057), but carry distinct media IDs and disc region permissions:</p>
+            <div class="table-scroll" role="region" aria-label="Observed Xbox 360 releases" tabindex="0">
+                <table>
+                    <caption>Observed Xbox 360 Release Variants</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Release</th>
+                            <th scope="col">Media ID</th>
+                            <th scope="col">Build Version</th>
+                            <th scope="col">Build Date</th>
+                            <th scope="col">Allowed Regions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>EU Retail (<code>Source/XBOX360/EU/1/TSG</code>)</td>
+                            <td><code>467C2924</code></td>
+                            <td><code>v0.0.0.7</code></td>
+                            <td>Sat Sep 29 06:35:00 2007</td>
+                            <td>Europe, Australia / New Zealand</td>
+                        </tr>
+                        <tr>
+                            <td>US Retail (<code>Source/XBOX360/US/1/extractedFiles</code>)</td>
+                            <td><code>05631042</code></td>
+                            <td><code>v0.0.0.1</code></td>
+                            <td>Thu Sep 27 12:02:20 2007</td>
+                            <td>North America</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section id="basefile-layout">
+            <h2>Decrypted PE basefile layout</h2>
+            <p>Decompressing and decrypting <code>default.xex</code> with XexTool (<code>XexTool -b default.exe default.xex</code>) yields a 15,466,496-byte uncompressed PowerPC PE image loaded at <code>0x82000000</code>. Section boundaries from the image descriptor and generated IDC script:</p>
+            <div class="table-scroll" role="region" aria-label="Section memory boundaries" tabindex="0">
+                <table>
+                    <caption>PE Basefile Memory Segments</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Segment</th>
+                            <th scope="col">Virtual Address Range</th>
+                            <th scope="col">Permissions</th>
+                            <th scope="col">Contents</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>.rdata</code></td>
+                            <td><code>0x82000400 – 0x821E2A80</code></td>
+                            <td>Read-Only</td>
+                            <td>Constants, string tables, actor class IDs, virtual method tables</td>
+                        </tr>
+                        <tr>
+                            <td><code>.pdata</code></td>
+                            <td><code>0x821E2C00 – 0x82225800</code></td>
+                            <td>Read-Only</td>
+                            <td>PowerPC exception directory and unwind function descriptors</td>
+                        </tr>
+                        <tr>
+                            <td><code>.text</code></td>
+                            <td><code>0x82230000 – 0x82CC3CE4</code></td>
+                            <td>Read / Execute</td>
+                            <td>PPC64/Xenon machine code (~10.6 MiB)</td>
+                        </tr>
+                        <tr>
+                            <td><code>.data</code></td>
+                            <td><code>0x82CD0000 – 0x82E3E280</code></td>
+                            <td>Read / Write</td>
+                            <td>Mutable engine globals, subsystem singletons (~1.4 MiB)</td>
+                        </tr>
+                        <tr>
+                            <td><code>.tls</code></td>
+                            <td><code>0x82E3E400 – 0x82E3E40D</code></td>
+                            <td>Read / Write</td>
+                            <td>Thread Local Storage template</td>
+                        </tr>
+                        <tr>
+                            <td><code>.XBMOVIE</code></td>
+                            <td><code>0x82E3E600 – 0x82E3E60C</code></td>
+                            <td>Read / Write</td>
+                            <td>Bink / EA video player state</td>
+                        </tr>
+                        <tr>
+                            <td>Resource</td>
+                            <td><code>0x82E3E680 – 0x82EB92A7</code></td>
+                            <td>Read-Only</td>
+                            <td>Embedded Xbox 360 title resources (ID <code>45410809</code>)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section id="import-libraries">
+            <h2>Kernel and XAM imports</h2>
+            <p>Unlike the PS3 version's PRX module tables, Xbox 360 binaries import system functions through ordinal import tables resolved by the kernel loader:</p>
+            <ul>
+                <li><strong><code>xam.xex</code> (v2.0.5766.0):</strong> Xbox Application Model, handling game voice, notifications, gamer profiles, achievements, and input controller reading.</li>
+                <li><strong><code>xboxkrnl.exe</code> (v2.0.5766.0):</strong> Core operating system kernel providing thread scheduling, virtual memory management, synchronization events, and D3D ring buffer submission.</li>
+            </ul>
+        </section>
+        <section id="ps3-correspondence">
+            <h2>Cross-architecture correspondence to PS3 EBOOT</h2>
+            <p>Because both Xbox 360 Xenon and PS3 Cell PPE execute Big-Endian 64-bit PowerPC code with 32-bit pointers, the game logic, RenderWare engine subsystems, and asset schemas correspond 1:1 between <code>default.xex</code> and <a href="index.html">EBOOT.BIN</a>:</p>
+            <div class="table-scroll" role="region" aria-label="PS3 vs Xbox 360 function correspondence" tabindex="0">
+                <table>
+                    <caption>Confirmed Cross-Platform Architecture Correspondence</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Subsystem / Feature</th>
+                            <th scope="col">PS3 EBOOT.elf</th>
+                            <th scope="col">Xbox 360 default.xex</th>
+                            <th scope="col">Semantic Correspondence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Actor Registration Initializer</td>
+                            <td><code>0x00054BDC</code></td>
+                            <td><code>0x823C3A00</code></td>
+                            <td>Identical straight-line registration of 149 actor classes</td>
+                        </tr>
+                        <tr>
+                            <td>Actor Registration Dispatcher</td>
+                            <td><code>0x003EC9B0</code></td>
+                            <td><code>0x82704008</code></td>
+                            <td>Takes tuple <code>(ID, name_str, callback, alloc_size)</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>NPCDash</code> Class Registration</td>
+                            <td><code>0x00054C2C</code></td>
+                            <td><code>0x823C3A24</code></td>
+                            <td>ID <code>0x5B264B93</code>, size <code>0x8A0</code>, callback to actor constructor</td>
+                        </tr>
+                        <tr>
+                            <td><code>EARS_MESH</code> (0xEA33) Reader</td>
+                            <td><code>0x005542A0</code></td>
+                            <td><code>0x826F29F8</code></td>
+                            <td>Decodes RenderWare geometry clump and relocates pointer tables</td>
+                        </tr>
+                        <tr>
+                            <td>Graphics Command Dispatch</td>
+                            <td><code>0x00438E3C</code> / <code>0x0043A2EC</code></td>
+                            <td><code>0x824626B8</code> / <code>0x82462810</code></td>
+                            <td>PS3 emits NV406E RSX commands; Xbox emits ATI Xenos PM4 packets</td>
+                        </tr>
+                        <tr>
+                            <td>Scripting API Vocabulary</td>
+                            <td>tolua bindings in EBOOT</td>
+                            <td>tolua bindings in XEX</td>
+                            <td>Identical Lua gameflow builders: <code>NewGame</code>, <code>NewEpisode</code>, <code>NewMode</code>, <code>NewMap</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section id="related-formats">
+            <h2>Related files and formats</h2>
+            <p>The Xbox 360 executable operates alongside disc assets and has an architecture-equivalent sibling in the PS3 release:</p>
+            <ul>
+                <li><a href="index.html">PS3 Executable (EBOOT.BIN / ELF)</a>: The PlayStation 3 counterpart, sharing the core engine architecture with Sony Cell GCM graphics instead of Direct3D.</li>
+                <li><a href="../relationships.html">Format Relationships Guide</a>: Cross-format hierarchy linking containers to embedded resources.</li>
+            </ul>
+        </section>
+        <section id="operation-support">
+            <h2>Tools and integrations</h2>
+            <p>Support for Xbox 360 binary inspection and execution is provided across multiple tools in this workspace:</p>
+            <ul>
+                <li><strong><code>Source/XBOX360/XexTool-windows-x64/XexTool.exe</code>:</strong> Reads XEX headers (<code>-l</code>), strips encryption/compression, and dumps the raw PE basefile (<code>-b</code>) and IDA IDC scripts (<code>-i</code>).</li>
+                <li><strong><code>reversing/boot/</code>:</strong> Native C# bootloader featuring <code>XexFile.cs</code>, auto-discovering and verifying Xbox 360 game trees alongside PS3.</li>
+                <li><strong><code>Source/XBOX360/GamePCport/</code> (TheSimpsonsGameRecomp):</strong> Static binary recompiler translating Xbox 360 Xenon PPC code to native x86-64 C++ with Direct3D 12 and Vulkan rendering on Windows, containing 1,077 mapped function boundaries in <code>functions_patch.toml</code> and 73 D3D dispatch handlers in <code>d3d_method_table.md</code>.</li>
+                <li><strong><code>operations/init</code>:</strong> Module initialization script automatically parsing <code>default.xex</code> to identify Xbox 360 title/media variants.</li>
+            </ul>
+        </section>
+        <section id="evidence-limits">
+            <h2>Evidence and limitations</h2>
+            <p>Header bytes, optional descriptors, execution IDs, and segment layouts were directly verified against both <code>Source/XBOX360/EU/1/TSG/default.xex</code> and <code>Source/XBOX360/US/1/extractedFiles/default.xex</code> using <code>XexTool.exe</code> and custom binary inspection tools on 2026-10-31.</p>
+            <p>Direct function correspondences were confirmed by cross-referencing disassembled PowerPC instruction sequences and string references against the PS3 static flow index. Dynamic runtime behavior notes are corroborated by the native PC port's verified execution.</p>
+        </section>
+    </body>
+</html>
