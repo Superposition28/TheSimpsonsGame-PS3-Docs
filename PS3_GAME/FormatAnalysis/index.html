@@ -18,8 +18,9 @@
             </ul>
             <h2>How the files fit together</h2>
             <ul>
+                <li><strong>Executables:</strong> <a href="./BIN/index.html">PS3 EBOOT.BIN</a> (ELF64) and <a href="./BIN/xex.html">Xbox 360 default.xex</a> (XEX2) share 149 actor tuples, RenderWare plugins, and gameplay state flow.</li>
                 <li><strong>Media and localization:</strong> VP6/OGV supplies playback, TOX supplies cue times, LH2 supplies text, and INF plus TXD supplies bitmap-font data for a renderer.</li>
-                <li><strong>Audio and music:</strong> SNU and SBK carry decodable sounds. <a href="STR/imbedded-formats/lh2.html#audio-subtitle-join">ALB bank/stream and StringID joins</a> connect 7,314 individual dialogue streams through SMB to LH2 text; CTB event logic and SMB/MIB playback metadata remain partly understood. MSB names MUS containers whose SNR/SNS segments are decoded separately.</li>
+                <li><strong>Audio and music:</strong> SNU and SBK carry decodable sounds. <a href="STR/imbedded-formats/lh2.html#audio-subtitle-join">ALB bank/stream and StringID joins</a> connect 7,314 individual dialogue streams through SMB to LH2 text; CTB event logic and SMB/MIB playback metadata remain partly understood. MSB bundles EA Pathfinder interactive music metadata, verified 1-to-1 against MUS containers whose SNR/SNS segments are decoded separately.</li>
                 <li><strong>World and characters:</strong> preinstanced geometry uses texture dictionaries. Animation, collision, navigation, object properties and VFX live in separate resources with different levels of research coverage.</li>
             </ul>
             <p><code>.PS3</code> and <code>.XEN</code> are platform suffixes. A shared word such as bank, table, graph or XML does not establish a common binary layout. Unknown descriptions below are explicitly marked; use each format's evidence section before implementing a parser.</p>
@@ -71,6 +72,11 @@
                 </tbody>
             </table>
         </div>
+        <h2>Executables</h2>
+        <ul>
+            <li><a href="./BIN/index.html">PS3 Executable (.BIN / EBOOT.BIN / ELF)</a></li>
+            <li><a href="./BIN/xex.html">Xbox 360 Executable (.xex / default.xex)</a></li>
+        </ul>
         <h2>Archives</h2>
         <ul>
             <li><a href="./STR/index.html">.STR (EA Stream File)</a></li>

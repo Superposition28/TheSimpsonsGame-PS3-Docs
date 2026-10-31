@@ -1,3 +1,14 @@
+# Documentation review — 2026-10-31
+
+Recent reverse-engineering updates are now reflected across the homepage coverage registry (`reference/coverage.json`), platform progress panels, Documentation Map dots/tooltips, format indices, and optional Remake Engine integration notes:
+
+- **PS3 Executable (EBOOT.BIN / ELF) and Xbox 360 Executable (default.xex):** PS3 executable progress is updated from research TODO (orange) to analysis only (blue). ELF64/PPC64 layout, TOC register conventions (`r2 = 0x00AFDA30`), PRX dynamic library imports (7 Cell OS modules), embedded SPU image workloads (8 programs), Cell GCM RSX command FIFO push buffer dispatch, 21-stage RenderWare frame pipeline, and all 149 actor registrations are documented from verified `EBOOT.elf` disassembly (13,711 verified instruction records). A dedicated Xbox 360 executable reference (`PS3_GAME/FormatAnalysis/BIN/xex.html`, blue) documents the `XEX2` header structure, certificate descriptors, decrypted PowerPC PE basefile (`simpsons_f.exe`), `xboxkrnl.exe`/`xam.xex` ordinal imports, and architectural 1:1 correspondence to PS3 `EBOOT.BIN`.
+- **Preinstanced models (.preinstanced / .dff / .rws):** Specification refined with verified Criterion RenderWare 3.7.0.2 clump stream architecture, `EA_EARS_MESH` (`0x0000EA33`) extension, mixed-endian memory layout, 8-byte pointer relocation table (`mDataTable`), and 1-to-1 mapping from submesh `MaterialId` to `rwID_MATERIAL` chunks and child `rwID_TEXTURE` names in TXD dictionaries, substantiated by `EBOOT.elf` disassembly. Coverage detail updated while Operation 7 material pipeline integration remains partial.
+- **Interactive music metadata (.msb):** Documented EA Pathfinder Music Engine v5.3 metadata container structure across all 19 extracted PS3 EU files (17 distinct payloads). Analysis records the 80-byte outer wrapper header (signature `0x38071778` at `0x2C`), embedded `PFDx` binary map at fixed offset `0x50` with 9 section tables (`S0`..`S8`), plaintext symbol trailer (`.nam`), verified 1-to-1 joins to MUS `MusFileId` checksums and raw SNS stream offsets, and `EBOOT.elf` Pathfinder call chains.
+- **Duplicate and empty STR files:** Original PS3 EU duplicate STR archives and payloads documented under `PS3_GAME/USRDIR/duplicates.html` with inventory trees and research ledgers.
+
+---
+
 # Documentation review — 2026-10-28
 
 The original PS3 EU ALB/LH2/SMB audit is now reflected in the homepage coverage

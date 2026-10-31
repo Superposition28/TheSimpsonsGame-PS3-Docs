@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed": "2026-10-28",
+  "reviewed": "2026-10-31",
   "platforms": {
     "ps3": {
       "name": "PS3"
@@ -86,7 +86,7 @@
         "ps3": {
           "colour": "yellow",
           "status": "Partial conversion · Operation 7",
-          "detail": "Geometry import and optional exports; texture/material associations remain partial."
+          "detail": "Geometry import and optional exports via operation 7; RenderWare clump hierarchy, EARS_MESH structure and rwID_MATERIAL texture mapping are documented. Remake material pipeline assignment remains partial."
         },
         "xbox360": {
           "colour": "grey",
@@ -147,7 +147,7 @@
         "ps3": {
           "colour": "yellow",
           "status": "Partial conversion · Operation 13",
-          "detail": "Segments are usable separately; adaptive playback and MSB transition logic are not reconstructed."
+          "detail": "Segments are usable separately via operation 13; 1-to-1 joins to MSB checksums and SNS stream offsets are documented, but adaptive playback and transition logic are not reconstructed."
         },
         "xbox360": {
           "colour": "grey",
@@ -253,15 +253,22 @@
       "aliases": [],
       "platforms": {
         "ps3": {
-          "colour": "orange",
-          "status": "Research TODO / inventory only",
-          "detail": "Signature, digest and release metadata are recorded. Executable structure and code behavior have not been analyzed here."
-        },
+          "colour": "blue",
+          "status": "ELF64 layout and runtime analyzed",
+          "detail": "ELF64 layout, TOC architecture, PRX imports, embedded SPU workloads, Cell GCM RSX graphics pipeline and 149 actor registrations documented from EBOOT.elf disassembly. No runtime loader or executable translation is registered."
+        }
+      }
+    },
+    {
+      "route": "FormatAnalysis-xex",
+      "label": ".xex",
+      "aliases": [],
+      "platforms": {
         "xbox360": {
-          "colour": "grey",
-          "status": "Xbox support unverified",
-          "label": ".xex (PS3 executable reference)",
-          "detail": "The linked shared page is primarily a PS3 reference. Xbox layout, decoding and runtime semantics need platform-specific validation."
+          "colour": "blue",
+          "status": "Xbox executable layout analyzed",
+          "label": ".xex",
+          "detail": "XEX2 container, certificate descriptors, decrypted PE basefile (simpsons_f.exe), kernel/XAM ordinal imports and 1:1 engine architecture alignment with PS3 EBOOT are documented. No Xbox executable loader or translation is registered."
         }
       }
     },
@@ -542,8 +549,8 @@
       "platforms": {
         "ps3": {
           "colour": "blue",
-          "status": "Analysis only",
-          "detail": "The MUS linkage and readable symbols are observed. Transition/state-machine semantics are not implemented by operation 13, and the PFDx offset should be checked per file."
+          "status": "Pathfinder map and MUS joins analyzed",
+          "detail": "Outer 80-byte wrapper header, PFDx map at offset 0x50 with 9 sections, and plaintext symbol trailer documented across all 19 files. 1-to-1 joins to MUS checksums and SNS stream offsets and EBOOT.elf Pathfinder calls are verified; transition logic is not implemented by operation 13."
         },
         "xbox360": {
           "colour": "grey",
