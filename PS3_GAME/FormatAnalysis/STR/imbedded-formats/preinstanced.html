@@ -490,23 +490,23 @@ for (uint32_t i = 0; i &lt; RelocCount; i++) {
                         <td>UInt32</td>
                         <td>BE</td>
                         <td>Flags</td>
-                        <td>Primitive and submesh render flags.</td>
+                        <td>Primitive and submesh render flags (e.g. <code>0x00030002</code>).</td>
                     </tr>
                     <tr>
                         <td>0x04</td>
                         <td>4</td>
-                        <td>Float32</td>
+                        <td>UInt32</td>
                         <td>BE</td>
-                        <td>BoundsRadius</td>
-                        <td>Submesh bounding sphere radius.</td>
+                        <td>ShaderGroupId</td>
+                        <td>Material shader group identifier / semantic hash (e.g. <code>0x0628A186</code> for <code>simpsons_palette</code>, <code>0xB5F1839E</code> for <code>dual_simpsons_palette</code>, <code>0xB5F8FBF2</code> for <code>buildings_dualtone</code>, <code>0x98FB7BC2</code> for <code>spr_dufftank02</code>).</td>
                     </tr>
                     <tr>
                         <td>0x08</td>
                         <td>4</td>
                         <td>UInt32</td>
                         <td>BE</td>
-                        <td>MaterialId</td>
-                        <td>0-based index into the <code>rwID_MATLIST</code> material array.</td>
+                        <td>MaterialFlags</td>
+                        <td>Auxiliary submesh material flags. Submesh index $i$ inside <code>EA_EARS_MESH</code> directly indexes the $i$-th material in <code>rwID_MATLIST</code>.</td>
                     </tr>
                     <tr>
                         <td>0x0C</td>
