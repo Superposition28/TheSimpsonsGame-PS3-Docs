@@ -39,7 +39,7 @@
                         <li><a href="#pfdx-map-block">Pathfinder Map Chunk (PFDx at 0x50)</a></li>
                         <li><a href="#pfdx-section-tables">PFDx Internal Section Tables (S0..S8)</a></li>
                         <li><a href="#nam-symbol-trailer">Plaintext Symbol Trailer (.nam)</a></li>
-                        <li><a href="#runtime-verification">Runtime Call Chain in EBOOT.elf</a></li>
+                        <li><a href="#runtime-verification">Static call chain in EBOOT.elf</a></li>
                         <li><a href="#corpus-inventory">Corpus Inventory &amp; MUS Verification (19 Files)</a></li>
                     </ul>
                 </nav>
@@ -64,6 +64,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <p>The <a href="../../BIN/index.html">PS3 executable reference</a> fingerprints the payload used for the static call-chain observations.</p>
                     <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
                 </section>
                 <section id="operation-support">
@@ -73,7 +74,7 @@
                 <section id="evidence-limits">
                     <h2 id="evidence-and-limitations">Evidence and limitations</h2>
                     <p>Corpus evidence is derived from all 19 extracted <code>.msb</code> files in the reference PS3 EU audio dataset (17 distinct payloads across 16 episode levels, 2 hubs, and the frontend). Exact 1-to-1 byte joins with all 17 paired <code>.mus</code> containers in <code>USRDIR/audiostreams/</code> are established across all files: the 4-byte <code>MusFileId</code> checksum in section 7 matches the first word of the paired <code>.mus</code> header, section 8 segment counts match <code>.mus</code> TOC counts, and section 8 raw SNS offsets match the 28-byte TOC entries.</p>
-                    <p>Runtime behavior and symbol identities are verified against original executable code in PS3 <code>EBOOT.elf</code> (specifically loader stub <code>0x011460</code> calling <code>PATH_addmapfile</code> at <code>0xA02708</code>, <code>0x013160</code> calling <code>PATH_addnamfile</code> at <code>0xA007A8</code>, <code>PATH_verifymusfile</code> at <code>0xA051E4</code>, and playback dispatch <code>PATH_event</code> at <code>0xA04EF8</code>). Operation 13 extracts and decodes individual audio stream segments from the paired <code>.mus</code> files using QuickBMS; it does not execute the MSB state-machine transition logic.</p>
+                    <p>The static executable observations below belong to the retail ELF fingerprinted in the <a href="../../BIN/index.html">EBOOT reference</a> (SHA-256 <code>092a8dbf6530e897ab0395ed45b3941e0723b8d50d361b0e958a5a6991d90fbc</code>). Function labels are analysis annotations; they are not recovered ELF symbols. Original-game execution was not observed in this analysis. Operation 13 extracts and decodes individual audio stream segments from the paired <code>.mus</code> files using QuickBMS; it does not execute the MSB state-machine transition logic.</p>
                     <p>Offsets in the structural tables below are zero-based from the respective section or wrapper base; range ends are exclusive unless noted otherwise.</p>
                 </section>
                 <p>The <code>.msb</code> (Music Stream Bank) file format is the compiled interactive music descriptor for Electronic Arts' proprietary <strong>EA Pathfinder Music Engine (version 5.3)</strong>. It contains no raw waveform or compressed audio data itself; instead, it defines the conductor state machine, playback branch nodes, interactive gameplay event mappings, and verification checksums for streaming audio segments housed in external <a href="../../MUS/index.html">.mus containers</a>.</p>
@@ -458,8 +459,8 @@
                         </tbody>
                     </table>
                 </div>
-                <h2 id="runtime-verification">Runtime Call Chain in EBOOT.elf</h2>
-                <p>Disassembly of the PS3 game binary (<code>Source/PS3/REA/EBOOT.elf</code>) establishes the exact sequence in which <code>.msb</code> files are ingested and executed by the audio engine:</p>
+                <h2 id="runtime-verification">Static call chain in EBOOT.elf</h2>
+                <p>The following is a static interpretation of disassembly from the fingerprinted retail ELF. It does not establish that the original game executed this path, nor independently validate every semantic label or timing unit below:</p>
                 <ol>
                     <li><strong>Audio Resource Ingestion (<code>0x9DCFCC</code>):</strong> When an episode or frontend STR archive is loaded, the game audio subsystem identifies the <code>.msb</code> resource and passes its memory pointer to the sound manager wrapper at <code>0x0EA818</code>.</li>
                     <li>

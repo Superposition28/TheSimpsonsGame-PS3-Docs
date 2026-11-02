@@ -6,328 +6,2430 @@
         <title>PS3 Executable (EBOOT.BIN / ELF)</title>
         <link rel="stylesheet" href="../../../style/main.css">
         <meta name="reference-source" content="ps3-eu-original">
-        <meta name="path-namespace" content="legacy-mixed">
+        <meta name="path-namespace" content="original">
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../index.html" target="_top">Documentation</a><span>/</span><a href="../index.html">Format index</a><span>/</span>PS3 Executable (EBOOT.BIN / ELF)</nav>
         <h1>PS3 Executable (EBOOT.BIN / ELF)</h1>
         <aside class="source-notice" aria-label="Source and path scope">
-            <p><strong>Source scope:</strong> PS3 EU Retail full release (<code>BLES00142</code>) is the primary baseline; compared structurally against the PS3 Demo (<code>NPEB90029</code>) and US Retail (<code>BLUS30065</code>). Cross-platform correspondence is established against Xbox 360 <a href="xex.html">default.xex</a>. See <a href="../../../reference/sources.html#paths">roots and provenance</a>.</p>
+            <p><strong>Source scope:</strong> inspected PS3 EU retail <code>BLES00142</code>, US retail <code>BLUS30065</code> and EU demo <code>NPEB90029</code>. The supplied EU/US wrappers are byte-identical; demo is a separate executable. These are local-copy observations, not a claim about every published revision or whole-disc equality. Paths below use the <a href="../../../reference/sources.html#paths">original source namespaces</a>.</p>
         </aside>
         <section class="format-summary" aria-label="Format summary">
-            <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>This page documents the PlayStation 3 executable container (<code>USRDIR/EBOOT.BIN</code>) and decrypted ELF binary for <em>The Simpsons Game</em>, covering the outer SCE/SELF wrapper, ELF64/PPC64 section architecture, TOC and procedure descriptor conventions, runtime boot lifecycle, Cell OS PRX imports, embedded SPU programs, Cell GCM RSX push buffer dispatch, and the 21-stage RenderWare frame pipeline.</p>
+            <p class="eyebrow">Game format research · verified 2026-11-02</p>
+            <p>The executable has an outer SCE/SELF container and an inspected ELF64 big-endian PowerPC payload. This reference records byte layouts and reviewed static code paths. Whole-program reverse engineering remains incomplete.</p>
             <dl>
-                <dt>Container</dt>
-                <dd><code>USRDIR/EBOOT.BIN</code>, beginning with <code>SCE\0</code> (version 2 SELF wrapper, 14,073,144 bytes).</dd>
-                <dt>Architecture</dt>
-                <dd>64-bit Big-Endian PowerPC (Cell PPE) with 32-bit pointers. Global TOC base register <code>r2 = 0x00AFDA30</code>.</dd>
-                <dt>Entry Point</dt>
-                <dd><code>0x00014A30</code> (Retail) / <code>0x000149D0</code> (Demo); main loop at <code>0x005BAA34</code>; state machine at <code>0x005B475C</code>.</dd>
-                <dt>Hardware Graphics</dt>
-                <dd>Cell GCM RSX command FIFO push buffer via <code>CellGcmContextData</code> at <code>0x10380310</code>.</dd>
+                <dt>Container signature</dt>
+                <dd><code>53 43 45 00</code> (<code>SCE</code> followed by NUL); common-header version 2.</dd>
+                <dt>Decrypted ELF</dt>
+                <dd>Class 2, data encoding 2, machine 21, executable type 2; 8 program headers and 79 section headers in each inspected target.</dd>
+                <dt>Retail entry</dt>
+                <dd><code>e_entry = 0x00AA8F70</code> points to an eight-byte descriptor <code>{code=0x000149D0, TOC=0x00AFDA30}</code>.</dd>
+                <dt>Demo entry</dt>
+                <dd><code>e_entry = 0x00AA8F78</code> points to <code>{code=0x00014A30, TOC=0x00AFDAB8}</code>.</dd>
+                <dt>Machine-readable evidence</dt>
+                <dd><a href="eboot-reference.json">Verified header, section, import-library and embedded-image records</a>, including input hashes and method limits.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
             <strong>On this page</strong>
             <ul>
-                <li><a href="#identification-and-scope">SELF wrapper and file identity</a></li>
-                <li><a href="#elf-architecture">ELF64 binary layout and TOC architecture</a></li>
-                <li><a href="#boot-lifecycle">Startup lifecycle and state machine</a></li>
-                <li><a href="#prx-imports">PRX dynamic library imports</a></li>
-                <li><a href="#embedded-spu">Embedded SPU image workloads</a></li>
-                <li><a href="#graphics-pipeline">Cell GCM RSX graphics & 21-stage render pipeline</a></li>
-                <li><a href="#actor-registry">Engine actor and RenderWare plugin registries</a></li>
-                <li><a href="#cross-platform-comparison">Cross-release and Xbox 360 correspondence</a></li>
-                <li><a href="#related-formats">Related files and formats</a></li>
-                <li><a href="#operation-support">Tools and integrations</a></li>
-                <li><a href="#evidence-limits">Evidence and limitations</a></li>
+                <li><a href="#identification-and-scope">SELF identity and header</a></li>
+                <li><a href="#elf-architecture">ELF headers, maps and descriptors</a></li>
+                <li><a href="#boot-lifecycle">Static startup and state dispatch</a></li>
+                <li><a href="#prx-imports">Process/PRX records and imports</a></li>
+                <li><a href="#embedded-spu">Embedded SPU images</a></li>
+                <li><a href="#spu-metadata-producer">Original ELF32 metadata extraction</a></li>
+                <li><a href="#ppu-jobqueue">PPU queue records and packed flags</a></li>
+                <li><a href="#graphics-pipeline">Frame-stage evidence</a></li>
+                <li><a href="#actor-registry">Named registrations and format callbacks</a></li>
+                <li><a href="#cross-platform-comparison">Comparison limits</a></li>
+                <li><a href="#related-formats">Related formats</a></li>
+                <li><a href="#operation-support">Tools</a></li>
+                <li><a href="#evidence-limits">Evidence and remaining work</a></li>
             </ul>
         </nav>
         <section id="identification-and-scope">
-            <h2>SELF wrapper and file identity</h2>
-            <div class="table-scroll" role="region" aria-label="Inspected executable identity" tabindex="0">
+            <h2>SELF identity and common header</h2>
+            <div class="table-scroll" role="region" aria-label="Three supplied release identities" tabindex="0">
                 <table>
-                    <caption>Inspected Executable Identity</caption>
+                    <caption>Three supplied release identities</caption>
                     <thead>
                         <tr>
-                            <th scope="col">Property</th>
-                            <th scope="col">Observed value</th>
+                            <th scope="col">Release</th>
+                            <th scope="col">Original source-relative path</th>
+                            <th scope="col">Bytes</th>
+                            <th scope="col">Wrapper SHA-256</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Source path</td>
-                            <td><code>Source/PS3/EU/1/PS3_GAME/USRDIR/EBOOT.BIN</code></td>
-                        </tr>
-                        <tr>
-                            <td>Role</td>
-                            <td>Primary PS3 game executable at <code>USRDIR/EBOOT.BIN</code>.</td>
-                        </tr>
-                        <tr>
-                            <td>Size</td>
-                            <td>14,073,144 bytes (approximately 13.42 MiB).</td>
-                        </tr>
-                        <tr>
-                            <td>Opening signature</td>
-                            <td><code>53 43 45 00</code> (literal <code>SCE</code> followed by NUL).</td>
-                        </tr>
-                        <tr>
-                            <td>Container</td>
-                            <td>Sony SCE/SELF executable wrapper (version 2 in big-endian layout).</td>
-                        </tr>
-                        <tr>
-                            <td>SHA-256 (SELF)</td>
+                            <td>EU retail · <code>BLES00142</code></td>
+                            <td><code>PS3_GAME/USRDIR/EBOOT.BIN</code></td>
+                            <td>14,073,144</td>
                             <td><code>73019ff7264b1b0fbcaeac3572994e66e4a1163bd6ceeee333cd9af6d495c5a6</code></td>
                         </tr>
                         <tr>
-                            <td>SHA-256 (Decrypted ELF)</td>
-                            <td><code>092a8dbf6530e897ab0395ed45b3941e0723b8d50d361b0e958a5a6991d90fbc</code></td>
+                            <td>US retail · <code>BLUS30065</code></td>
+                            <td><code>PS3_GAME/USRDIR/EBOOT.BIN</code></td>
+                            <td>14,073,144</td>
+                            <td><code>73019ff7264b1b0fbcaeac3572994e66e4a1163bd6ceeee333cd9af6d495c5a6</code></td>
+                        </tr>
+                        <tr>
+                            <td>EU demo · <code>NPEB90029</code></td>
+                            <td><code>USRDIR/EBOOT.BIN</code></td>
+                            <td>14,073,536</td>
+                            <td><code>00d3f9fd917796eda4838c874ba6a867f9b84e1251b5ae15a10f7bb3bf76c8ee</code></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <p>The SCE header wraps the decrypted 64-bit ELF executable. Decryption reveals 41,300 indexed functions across 2,572,961 PowerPC instructions.</p>
+            <p>Each release identity comes from its adjacent <code>PARAM.SFO</code>; the JSON retains that file's hash. Retail paths start at the disc root containing <code>PS3_GAME</code>; demo paths start at the package root. The EU and US wrapper files compare equal in every byte. No separate US payload was decrypted during this pass.</p>
+            <div class="table-scroll" role="region" aria-label="Two inspected decrypted ELF contents" tabindex="0">
+                <table>
+                    <caption>Two inspected decrypted ELF contents</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Target</th>
+                            <th scope="col">Bytes / SHA-256</th>
+                            <th scope="col">ELF e_entry / file offset</th>
+                            <th scope="col">Descriptor code / TOC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Retail analysis target</td>
+                            <td>14,070,712<br><code>092a8dbf6530e897ab0395ed45b3941e0723b8d50d361b0e958a5a6991d90fbc</code></td>
+                            <td><code>0x00AA8F70</code><br><code>0x00A98F70</code></td>
+                            <td><code>0x000149D0</code><br><code>0x00AFDA30</code></td>
+                        </tr>
+                        <tr>
+                            <td>Demo analysis target</td>
+                            <td>14,070,800<br><code>d09a27208167c7f35a95d8128247c505b97b707f472a04db89f2432e7e2cde38</code></td>
+                            <td><code>0x00AA8F78</code><br><code>0x00A98F78</code></td>
+                            <td><code>0x00014A30</code><br><code>0x00AFDAB8</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>The retail analysis copy is <code>Source/PS3/REA/EBOOT.elf</code>; its digest equals the ELF beside the EU executable. The demo analysis copy is <code>Source/PS3/DEMO/1/NPEB90029/-USRDIR---/DEMO_EBOOT.elf</code>. These workspace paths identify research inputs, not original disc filenames.</p>
+            <div class="table-scroll" role="region" aria-label="Common SCE header: big-endian raw fields" tabindex="0">
+                <table>
+                    <caption>Common SCE header: big-endian raw fields</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Offset</th>
+                            <th scope="col">Bytes</th>
+                            <th scope="col">Field</th>
+                            <th scope="col">Retail</th>
+                            <th scope="col">Demo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>0x00000000</code></td>
+                            <td>4</td>
+                            <td>Magic</td>
+                            <td><code>0x53434500</code></td>
+                            <td><code>0x53434500</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00000004</code></td>
+                            <td>4</td>
+                            <td>Version</td>
+                            <td><code>0x00000002</code></td>
+                            <td><code>0x00000002</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00000008</code></td>
+                            <td>2</td>
+                            <td>Raw word +0x08</td>
+                            <td><code>0x00000001</code></td>
+                            <td><code>0x00000001</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x0000000A</code></td>
+                            <td>2</td>
+                            <td>Raw word +0x0A</td>
+                            <td><code>0x00000001</code></td>
+                            <td><code>0x00000001</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x0000000C</code></td>
+                            <td>4</td>
+                            <td>Metadata-offset field</td>
+                            <td><code>0x00000410</code></td>
+                            <td><code>0x000004A0</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00000010</code></td>
+                            <td>8</td>
+                            <td>Header-size field</td>
+                            <td><code>0x00000980</code></td>
+                            <td><code>0x00000A80</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00000018</code></td>
+                            <td>8</td>
+                            <td>Declared ELF-size field</td>
+                            <td><code>0x00D6B3B8</code></td>
+                            <td><code>0x00D6B410</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>The embedded ELF header starts at wrapper offset <code>0x90</code>, and its program-header copy at <code>0xD0</code>. The 64-byte ELF header and all 448 program-header bytes equal the standalone ELF records. Wrapper section-table offsets are <code>0x00D6A978</code> (retail) and <code>0x00D6AAD0</code> (demo); all 5,056 bytes equal each standalone ELF's section table. This comparison verifies metadata agreement. Payload decryption, signatures, encrypted metadata and the remaining SELF control records have not been revalidated here.</p>
         </section>
         <section id="elf-architecture">
-            <h2>ELF64 binary layout and TOC architecture</h2>
-            <p>The decrypted executable adheres to the 64-bit PowerPC ELF ABI for Sony PlayStation 3 (Cell OS). Key structural characteristics:</p>
-            <ul>
-                <li><strong>Memory Model:</strong> 64-bit Big-Endian PowerPC with 32-bit user-space pointers. Code resides in the lower 32-bit address space.</li>
-                <li><strong>TOC Architecture:</strong> The primary Table of Contents (TOC) is anchored at <code>0x00AFDA30</code>, loaded into register <code>r2</code> across all nominal engine functions. A secondary TOC range (<code>0x00B04660</code>) is utilized by specific RenderWare and graphics backend modules.</li>
-                <li>
-                    <strong>Official Procedure Descriptors (.opd):</strong> PowerPC function pointers do not point directly to executable code bytes; instead, they point to an 8-byte descriptor in <code>.opd</code> consisting of:
-                    <ol>
-                        <li>Word 0 (4 bytes BE): Virtual address of the target machine instructions.</li>
-                        <li>Word 1 (4 bytes BE): The TOC base address (<code>0x00AFDA30</code>) required by that function.</li>
-                    </ol>
-                </li>
-            </ul>
-            <div class="table-scroll" role="region" aria-label="ELF segment layout" tabindex="0">
+            <h2>ELF64 binary layout and descriptor conventions</h2>
+            <p>Both ELF identifiers are <code>7F454C46020201660000000000000000</code>. Header fields below are big-endian. Addresses are virtual addresses; file offsets refer to the decrypted ELF unless explicitly labeled wrapper offsets.</p>
+            <div class="table-scroll" role="region" aria-label="ELF64 headers" tabindex="0">
                 <table>
-                    <caption>ELF Memory Segments</caption>
+                    <caption>ELF64 headers</caption>
                     <thead>
                         <tr>
-                            <th scope="col">Segment</th>
-                            <th scope="col">Base Virtual Address</th>
-                            <th scope="col">Permissions</th>
-                            <th scope="col">Subsystems & Content</th>
+                            <th scope="col">Offset</th>
+                            <th scope="col">Bytes</th>
+                            <th scope="col">Field</th>
+                            <th scope="col">Retail</th>
+                            <th scope="col">Demo</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Code (<code>PT_LOAD</code>)</td>
-                            <td><code>0x00010000 – 0x006E5000</code></td>
-                            <td>Read / Execute</td>
-                            <td>Executable PPC instructions, linkage stubs, CRT init, state machine</td>
+                            <td><code>0x00000010</code></td>
+                            <td>2</td>
+                            <td><code>e_type</code></td>
+                            <td><code>0x00000002</code></td>
+                            <td><code>0x00000002</code></td>
                         </tr>
                         <tr>
-                            <td>Read-Only Data</td>
-                            <td><code>0x006E5000 – 0x00AAB000</code></td>
-                            <td>Read-Only</td>
-                            <td>String tables, vtables, constants, 3 embedded SPU binaries</td>
+                            <td><code>0x00000012</code></td>
+                            <td>2</td>
+                            <td><code>e_machine</code></td>
+                            <td><code>0x00000015</code></td>
+                            <td><code>0x00000015</code></td>
                         </tr>
                         <tr>
-                            <td>TOC & Descriptors</td>
-                            <td><code>0x00AAB000 – 0x00B10000</code></td>
-                            <td>Read / Write</td>
-                            <td><code>.opd</code> function descriptors, primary TOC at <code>0x00AFDA30</code></td>
+                            <td><code>0x00000014</code></td>
+                            <td>4</td>
+                            <td><code>e_version</code></td>
+                            <td><code>0x00000001</code></td>
+                            <td><code>0x00000001</code></td>
                         </tr>
                         <tr>
-                            <td>Data & BSS</td>
-                            <td><code>0x10000000 – 0x103A0000</code></td>
-                            <td>Read / Write</td>
-                            <td>Mutable globals, Cell GCM context (<code>0x10380310</code>), heap singletons</td>
+                            <td><code>0x00000018</code></td>
+                            <td>8</td>
+                            <td><code>e_entry</code></td>
+                            <td><code>0x00AA8F70</code></td>
+                            <td><code>0x00AA8F78</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00000020</code></td>
+                            <td>8</td>
+                            <td><code>e_phoff</code></td>
+                            <td><code>0x00000040</code></td>
+                            <td><code>0x00000040</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00000028</code></td>
+                            <td>8</td>
+                            <td><code>e_shoff</code></td>
+                            <td><code>0x00D69FF8</code></td>
+                            <td><code>0x00D6A050</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00000030</code></td>
+                            <td>4</td>
+                            <td><code>e_flags</code></td>
+                            <td><code>0x00000000</code></td>
+                            <td><code>0x00000000</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00000034</code></td>
+                            <td>2</td>
+                            <td><code>e_ehsize</code></td>
+                            <td><code>0x00000040</code></td>
+                            <td><code>0x00000040</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00000036</code></td>
+                            <td>2</td>
+                            <td><code>e_phentsize</code></td>
+                            <td><code>0x00000038</code></td>
+                            <td><code>0x00000038</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x00000038</code></td>
+                            <td>2</td>
+                            <td><code>e_phnum</code></td>
+                            <td><code>0x00000008</code></td>
+                            <td><code>0x00000008</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x0000003A</code></td>
+                            <td>2</td>
+                            <td><code>e_shentsize</code></td>
+                            <td><code>0x00000040</code></td>
+                            <td><code>0x00000040</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x0000003C</code></td>
+                            <td>2</td>
+                            <td><code>e_shnum</code></td>
+                            <td><code>0x0000004F</code></td>
+                            <td><code>0x0000004F</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x0000003E</code></td>
+                            <td>2</td>
+                            <td><code>e_shstrndx</code></td>
+                            <td><code>0x0000004E</code></td>
+                            <td><code>0x0000004E</code></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </section>
-        <section id="boot-lifecycle">
-            <h2>Startup lifecycle and state machine</h2>
-            <p>The game boot sequence progresses through four verified stages from entry point to interactive gameplay:</p>
-            <ol>
-                <li><strong>ELF Entry Point (<code>0x00014A30</code>):</strong> Receives system arguments from the Cell OS kernel and immediately calls CRT startup <code>0x00010210</code>.</li>
-                <li><strong>CRT Initialization & Static Constructors:</strong> <code>0x00010210</code> invokes <code>0x00014D4C</code> to iterate and execute the table of 26 static constructor descriptors located at <code>0x00A73E40</code>.</li>
-                <li><strong>Bootstrap Allocator (<code>0x00014B18</code>):</strong> Initializes the global heap allocator singleton (<code>HeapAllocator 0x102E5D68</code> via Meyers singleton factory <code>0x0044FE58</code>) before parsing application arguments.</li>
-                <li><strong>Application Main (<code>0x00054A9C</code>):</strong> Loads gameflow definitions from <code>simpsons_gameflow.lua</code>, invokes the actor class registration table at <code>0x00054BDC</code>, and enters the main loop at <code>0x005BAA34</code>.</li>
-            </ol>
-            <p>The main loop is driven by a 16-slot application state machine at <code>0x005B475C</code> (dispatcher at <code>0x005B443C</code>):</p>
-            <ul>
-                <li><code>0x00000000</code> (<code>InitOnce</code>): Initial hardware and gameflow setup; transitions immediately to frontend.</li>
-                <li><code>0x2B059711</code> (<code>FrontendMainLoop</code>): Mounts <code>.str</code> archives, loads localization tables, mounts costumes, and initializes the menu UI.</li>
-                <li><code>0xB92397EF</code> (<code>GameMainLoop</code>): Primary in-game simulation loop executing level physics, entity logic, and rendering.</li>
-            </ul>
-        </section>
-        <section id="prx-imports">
-            <h2>PRX dynamic library imports</h2>
-            <p>The retail executable imports 180 system functions across 15 Cell OS PRX modules via structural linkage stubs (1,795 checked transfer stubs):</p>
-            <div class="table-scroll" role="region" aria-label="Imported PRX modules" tabindex="0">
+            <h3 id="program-headers">Program headers and safe address translation</h3>
+            <p>An ELF64 program record is 56 bytes: <code>p_type</code>/<code>p_flags</code> are 32-bit words, followed by 64-bit <code>p_offset</code>, <code>p_vaddr</code>, <code>p_paddr</code>, <code>p_filesz</code>, <code>p_memsz</code> and <code>p_align</code>. The JSON retains every field. All displayed range ends are exclusive.</p>
+            <div class="table-scroll" role="region" aria-label="Retail program headers (end addresses exclusive)" tabindex="0">
                 <table>
-                    <caption>Verified PRX Dynamic Module Imports</caption>
+                    <caption>Retail program headers (end addresses exclusive)</caption>
                     <thead>
                         <tr>
-                            <th scope="col">PRX Module</th>
-                            <th scope="col">Imports</th>
-                            <th scope="col">Role in Engine</th>
+                            <th scope="col">PH</th>
+                            <th scope="col">Type / raw flags</th>
+                            <th scope="col">File offset / size</th>
+                            <th scope="col">Virtual address</th>
+                            <th scope="col">File-backed end</th>
+                            <th scope="col">Memory end</th>
+                            <th scope="col">Alignment</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><code>cellSysutil</code></td>
-                            <td>38</td>
-                            <td>System callbacks, display mode query, save data, system parameters</td>
+                            <td>0</td>
+                            <td><code>0x00000001</code><br><code>0x00000005</code></td>
+                            <td><code>0x00000000</code><br><code>0x00A891D0</code></td>
+                            <td><code>0x00010000</code></td>
+                            <td><code>0x00A991D0</code></td>
+                            <td><code>0x00A991D0</code></td>
+                            <td><code>0x00010000</code></td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td><code>0x00000001</code><br><code>0x00000006</code></td>
+                            <td><code>0x00A90000</code><br><code>0x0006FAA8</code></td>
+                            <td><code>0x00AA0000</code></td>
+                            <td><code>0x00B0FAA8</code></td>
+                            <td><code>0x00B0FAA8</code></td>
+                            <td><code>0x00010000</code></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><code>0x00000001</code><br><code>0x00400004</code></td>
+                            <td><code>0x00B00000</code><br><code>0x000AE280</code></td>
+                            <td><code>0x10000000</code></td>
+                            <td><code>0x100AE280</code></td>
+                            <td><code>0x100AE280</code></td>
+                            <td><code>0x00010000</code></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><code>0x00000001</code><br><code>0x00600006</code></td>
+                            <td><code>0x00BB0000</code><br><code>0x001A2014</code></td>
+                            <td><code>0x100B0000</code></td>
+                            <td><code>0x10252014</code></td>
+                            <td><code>0x103E58A0</code></td>
+                            <td><code>0x00010000</code></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><code>0x00000001</code><br><code>0x06600006</code></td>
+                            <td><code>0x00D52014</code><br><code>0x00000000</code></td>
+                            <td><code>0x00000000</code></td>
+                            <td><code>0x00000000</code></td>
+                            <td><code>0x00000000</code></td>
+                            <td><code>0x00010000</code></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><code>0x00000007</code><br><code>0x00000004</code></td>
+                            <td><code>0x00AFFAA0</code><br><code>0x00000008</code></td>
+                            <td><code>0x00B0FAA0</code></td>
+                            <td><code>0x00B0FAA8</code></td>
+                            <td><code>0x00B0FC54</code></td>
+                            <td><code>0x00000008</code></td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><code>0x60000001</code><br><code>0x00000000</code></td>
+                            <td><code>0x00A89188</code><br><code>0x00000020</code></td>
+                            <td><code>0x00A99188</code></td>
+                            <td><code>0x00A991A8</code></td>
+                            <td><code>0x00A991A8</code></td>
+                            <td><code>0x00000008</code></td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td><code>0x60000002</code><br><code>0x00000000</code></td>
+                            <td><code>0x00A891A8</code><br><code>0x00000028</code></td>
+                            <td><code>0x00A991A8</code></td>
+                            <td><code>0x00A991D0</code></td>
+                            <td><code>0x00A991D0</code></td>
+                            <td><code>0x00000004</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-scroll" role="region" aria-label="Demo program headers (end addresses exclusive)" tabindex="0">
+                <table>
+                    <caption>Demo program headers (end addresses exclusive)</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">PH</th>
+                            <th scope="col">Type / raw flags</th>
+                            <th scope="col">File offset / size</th>
+                            <th scope="col">Virtual address</th>
+                            <th scope="col">File-backed end</th>
+                            <th scope="col">Memory end</th>
+                            <th scope="col">Alignment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0</td>
+                            <td><code>0x00000001</code><br><code>0x00000005</code></td>
+                            <td><code>0x00000000</code><br><code>0x00A89420</code></td>
+                            <td><code>0x00010000</code></td>
+                            <td><code>0x00A99420</code></td>
+                            <td><code>0x00A99420</code></td>
+                            <td><code>0x00010000</code></td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td><code>0x00000001</code><br><code>0x00000006</code></td>
+                            <td><code>0x00A90000</code><br><code>0x0006F860</code></td>
+                            <td><code>0x00AA0000</code></td>
+                            <td><code>0x00B0F860</code></td>
+                            <td><code>0x00B0F860</code></td>
+                            <td><code>0x00010000</code></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><code>0x00000001</code><br><code>0x00400004</code></td>
+                            <td><code>0x00B00000</code><br><code>0x000ADB80</code></td>
+                            <td><code>0x10000000</code></td>
+                            <td><code>0x100ADB80</code></td>
+                            <td><code>0x100ADB80</code></td>
+                            <td><code>0x00010000</code></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><code>0x00000001</code><br><code>0x00600006</code></td>
+                            <td><code>0x00BB0000</code><br><code>0x001A2014</code></td>
+                            <td><code>0x100B0000</code></td>
+                            <td><code>0x10252014</code></td>
+                            <td><code>0x103E6DA0</code></td>
+                            <td><code>0x00010000</code></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><code>0x00000001</code><br><code>0x06600006</code></td>
+                            <td><code>0x00D52014</code><br><code>0x00000000</code></td>
+                            <td><code>0x00000000</code></td>
+                            <td><code>0x00000000</code></td>
+                            <td><code>0x00000000</code></td>
+                            <td><code>0x00010000</code></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><code>0x00000007</code><br><code>0x00000004</code></td>
+                            <td><code>0x00AFF858</code><br><code>0x00000008</code></td>
+                            <td><code>0x00B0F858</code></td>
+                            <td><code>0x00B0F860</code></td>
+                            <td><code>0x00B0FA0C</code></td>
+                            <td><code>0x00000008</code></td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><code>0x60000001</code><br><code>0x00000000</code></td>
+                            <td><code>0x00A893D8</code><br><code>0x00000020</code></td>
+                            <td><code>0x00A993D8</code></td>
+                            <td><code>0x00A993F8</code></td>
+                            <td><code>0x00A993F8</code></td>
+                            <td><code>0x00000008</code></td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td><code>0x60000002</code><br><code>0x00000000</code></td>
+                            <td><code>0x00A893F8</code><br><code>0x00000028</code></td>
+                            <td><code>0x00A993F8</code></td>
+                            <td><code>0x00A99420</code></td>
+                            <td><code>0x00A99420</code></td>
+                            <td><code>0x00000004</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>For a read of <code>n</code> bytes at address <code>v</code>, require one unambiguous <code>PT_LOAD</code> mapping with <code>p_vaddr &lt;= v</code> and <code>v + n &lt;= p_vaddr + p_filesz</code>; then <code>file_offset = p_offset + v - p_vaddr</code>. Validate the resulting file range and arithmetic overflow. Use <code>p_memsz</code> for memory extent only. A zero-fill tail has no corresponding source bytes.</p>
+            <p>Retail has file-backed VA gaps <code>[0x00A991D0,0x00AA0000)</code> and <code>[0x100AE280,0x100B0000)</code>. PH[3] source bytes end at VA <code>0x10252014</code>, while its memory extent ends at <code>0x103E58A0</code>. Subtracting a fixed base across those gaps or the zero-fill tail produces false file reads. Low permission bits are R=4, W=2, X=1; preserve the additional raw flag bits without assigning unverified meanings.</p>
+            <h3 id="sections">Section directory and names</h3>
+            <p>The section-name string table is SH[78] and is entirely zero-filled in both targets. No <code>SHT_SYMTAB</code> or <code>SHT_DYNSYM</code> section is present. Names such as <code>.text</code>, <code>.opd</code>, <code>.toc</code> and <code>.bss</code> in research notes are analyst descriptions, not recovered section-name strings. <code>SHT_NOBITS</code> sections (type 8) declare memory size without file payload. Full section records, including link/info/entry-size fields, are retained in the JSON.</p>
+            <details>
+                <summary>Retail: all 79 section records</summary>
+                <div class="table-scroll" role="region" aria-label="Retail complete section directory (unnamed in the ELF)" tabindex="0">
+                    <table>
+                        <caption>Retail complete section directory (unnamed in the ELF)</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">SH</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Flags</th>
+                                <th scope="col">Virtual address</th>
+                                <th scope="col">File offset</th>
+                                <th scope="col">Size</th>
+                                <th scope="col">Alignment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>0</td>
+                                <td>0</td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>1</td>
+                                <td><code>0x00000006</code></td>
+                                <td><code>0x00010200</code></td>
+                                <td><code>0x00000200</code></td>
+                                <td><code>0x0000003C</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>1</td>
+                                <td><code>0x00000006</code></td>
+                                <td><code>0x00010240</code></td>
+                                <td><code>0x00000240</code></td>
+                                <td><code>0x00A63C68</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>1</td>
+                                <td><code>0x00000006</code></td>
+                                <td><code>0x00A73EA8</code></td>
+                                <td><code>0x00A63EA8</code></td>
+                                <td><code>0x00000024</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>1</td>
+                                <td><code>0x00000006</code></td>
+                                <td><code>0x00A73ECC</code></td>
+                                <td><code>0x00A63ECC</code></td>
+                                <td><code>0x00001680</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A7554C</code></td>
+                                <td><code>0x00A6554C</code></td>
+                                <td><code>0x0001EEEC</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A94438</code></td>
+                                <td><code>0x00A84438</code></td>
+                                <td><code>0x000046F9</code></td>
+                                <td><code>0x00000001</code></td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A98B34</code></td>
+                                <td><code>0x00A88B34</code></td>
+                                <td><code>0x000000E0</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A98C14</code></td>
+                                <td><code>0x00A88C14</code></td>
+                                <td><code>0x000002D0</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A98EE4</code></td>
+                                <td><code>0x00A88EE4</code></td>
+                                <td><code>0x00000004</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A98EE8</code></td>
+                                <td><code>0x00A88EE8</code></td>
+                                <td><code>0x00000004</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A98EEC</code></td>
+                                <td><code>0x00A88EEC</code></td>
+                                <td><code>0x00000004</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>12</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A98EF0</code></td>
+                                <td><code>0x00A88EF0</code></td>
+                                <td><code>0x00000294</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>13</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A99184</code></td>
+                                <td><code>0x00A89184</code></td>
+                                <td><code>0x00000004</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>14</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00A99188</code></td>
+                                <td><code>0x00A89188</code></td>
+                                <td><code>0x00000020</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>15</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A991A8</code></td>
+                                <td><code>0x00A891A8</code></td>
+                                <td><code>0x00000028</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>16</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA0000</code></td>
+                                <td><code>0x00A90000</code></td>
+                                <td><code>0x00000600</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>17</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA0600</code></td>
+                                <td><code>0x00A90600</code></td>
+                                <td><code>0x0000022C</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>18</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA082C</code></td>
+                                <td><code>0x00A9082C</code></td>
+                                <td><code>0x00000004</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>19</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA0830</code></td>
+                                <td><code>0x00A90830</code></td>
+                                <td><code>0x000038E0</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>20</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA4110</code></td>
+                                <td><code>0x00A94110</code></td>
+                                <td><code>0x000002D0</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>21</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA43E0</code></td>
+                                <td><code>0x00A943E0</code></td>
+                                <td><code>0x00004B80</code></td>
+                                <td><code>0x00000001</code></td>
+                            </tr>
+                            <tr>
+                                <td>22</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA8F60</code></td>
+                                <td><code>0x00A98F60</code></td>
+                                <td><code>0x0004CAD0</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>23</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AF5A30</code></td>
+                                <td><code>0x00AE5A30</code></td>
+                                <td><code>0x0001A070</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>24</td>
+                                <td>1</td>
+                                <td><code>0x00000403</code></td>
+                                <td><code>0x00B0FAA0</code></td>
+                                <td><code>0x00AFFAA0</code></td>
+                                <td><code>0x00000008</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>25</td>
+                                <td>8</td>
+                                <td><code>0x00000403</code></td>
+                                <td><code>0x00B0FAA8</code></td>
+                                <td><code>0x00AFFAA8</code></td>
+                                <td><code>0x000001AC</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>26</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x10000000</code></td>
+                                <td><code>0x00B00000</code></td>
+                                <td><code>0x00059D50</code></td>
+                                <td><code>0x00000080</code></td>
+                            </tr>
+                            <tr>
+                                <td>27</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10059D80</code></td>
+                                <td><code>0x00B59D80</code></td>
+                                <td><code>0x00054500</code></td>
+                                <td><code>0x00000080</code></td>
+                            </tr>
+                            <tr>
+                                <td>28</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x100B0000</code></td>
+                                <td><code>0x00BB0000</code></td>
+                                <td><code>0x0019150C</code></td>
+                                <td><code>0x00000080</code></td>
+                            </tr>
+                            <tr>
+                                <td>29</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024150C</code></td>
+                                <td><code>0x00D4150C</code></td>
+                                <td><code>0x00000974</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>30</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10241E80</code></td>
+                                <td><code>0x00D41E80</code></td>
+                                <td><code>0x000001A4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>31</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10242024</code></td>
+                                <td><code>0x00D42024</code></td>
+                                <td><code>0x000004C4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>32</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102424E8</code></td>
+                                <td><code>0x00D424E8</code></td>
+                                <td><code>0x00000574</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>33</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10242A5C</code></td>
+                                <td><code>0x00D42A5C</code></td>
+                                <td><code>0x00000514</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>34</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10242F70</code></td>
+                                <td><code>0x00D42F70</code></td>
+                                <td><code>0x000004C4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>35</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10243434</code></td>
+                                <td><code>0x00D43434</code></td>
+                                <td><code>0x00000634</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>36</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10243A68</code></td>
+                                <td><code>0x00D43A68</code></td>
+                                <td><code>0x000007F4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>37</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024425C</code></td>
+                                <td><code>0x00D4425C</code></td>
+                                <td><code>0x00000364</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>38</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102445C0</code></td>
+                                <td><code>0x00D445C0</code></td>
+                                <td><code>0x00000384</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>39</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10244944</code></td>
+                                <td><code>0x00D44944</code></td>
+                                <td><code>0x000003A4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>40</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10244CE8</code></td>
+                                <td><code>0x00D44CE8</code></td>
+                                <td><code>0x00000634</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>41</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024531C</code></td>
+                                <td><code>0x00D4531C</code></td>
+                                <td><code>0x000004F4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>42</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10245810</code></td>
+                                <td><code>0x00D45810</code></td>
+                                <td><code>0x00000554</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>43</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10245D64</code></td>
+                                <td><code>0x00D45D64</code></td>
+                                <td><code>0x000003A4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>44</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10246108</code></td>
+                                <td><code>0x00D46108</code></td>
+                                <td><code>0x000003F4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>45</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102464FC</code></td>
+                                <td><code>0x00D464FC</code></td>
+                                <td><code>0x00000414</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>46</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10246910</code></td>
+                                <td><code>0x00D46910</code></td>
+                                <td><code>0x00000364</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>47</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10246C74</code></td>
+                                <td><code>0x00D46C74</code></td>
+                                <td><code>0x000001B4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>48</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10246E28</code></td>
+                                <td><code>0x00D46E28</code></td>
+                                <td><code>0x000008C4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>49</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102476EC</code></td>
+                                <td><code>0x00D476EC</code></td>
+                                <td><code>0x000003C4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>50</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10247AB0</code></td>
+                                <td><code>0x00D47AB0</code></td>
+                                <td><code>0x00000404</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>51</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10247EB4</code></td>
+                                <td><code>0x00D47EB4</code></td>
+                                <td><code>0x00000444</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>52</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102482F8</code></td>
+                                <td><code>0x00D482F8</code></td>
+                                <td><code>0x00000484</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>53</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024877C</code></td>
+                                <td><code>0x00D4877C</code></td>
+                                <td><code>0x000004B4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>54</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10248C30</code></td>
+                                <td><code>0x00D48C30</code></td>
+                                <td><code>0x000004E4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>55</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10249114</code></td>
+                                <td><code>0x00D49114</code></td>
+                                <td><code>0x000009C4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>56</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10249AD8</code></td>
+                                <td><code>0x00D49AD8</code></td>
+                                <td><code>0x000009F4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>57</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024A4CC</code></td>
+                                <td><code>0x00D4A4CC</code></td>
+                                <td><code>0x00000A24</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>58</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024AEF0</code></td>
+                                <td><code>0x00D4AEF0</code></td>
+                                <td><code>0x00000A54</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>59</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024B944</code></td>
+                                <td><code>0x00D4B944</code></td>
+                                <td><code>0x000016E4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>60</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024D028</code></td>
+                                <td><code>0x00D4D028</code></td>
+                                <td><code>0x00001774</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>61</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024E79C</code></td>
+                                <td><code>0x00D4E79C</code></td>
+                                <td><code>0x00000524</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>62</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024ECC0</code></td>
+                                <td><code>0x00D4ECC0</code></td>
+                                <td><code>0x00000564</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>63</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024F224</code></td>
+                                <td><code>0x00D4F224</code></td>
+                                <td><code>0x000005D4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>64</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024F7F8</code></td>
+                                <td><code>0x00D4F7F8</code></td>
+                                <td><code>0x00000604</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>65</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024FDFC</code></td>
+                                <td><code>0x00D4FDFC</code></td>
+                                <td><code>0x00000644</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>66</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10250440</code></td>
+                                <td><code>0x00D50440</code></td>
+                                <td><code>0x00000804</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>67</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10250C44</code></td>
+                                <td><code>0x00D50C44</code></td>
+                                <td><code>0x00000274</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>68</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10250EB8</code></td>
+                                <td><code>0x00D50EB8</code></td>
+                                <td><code>0x00000234</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>69</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102510EC</code></td>
+                                <td><code>0x00D510EC</code></td>
+                                <td><code>0x000001E4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>70</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102512D0</code></td>
+                                <td><code>0x00D512D0</code></td>
+                                <td><code>0x00000214</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>71</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102514E4</code></td>
+                                <td><code>0x00D514E4</code></td>
+                                <td><code>0x00000314</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>72</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102517F8</code></td>
+                                <td><code>0x00D517F8</code></td>
+                                <td><code>0x000002D4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>73</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10251ACC</code></td>
+                                <td><code>0x00D51ACC</code></td>
+                                <td><code>0x00000264</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>74</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10251D30</code></td>
+                                <td><code>0x00D51D30</code></td>
+                                <td><code>0x000002E4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>75</td>
+                                <td>8</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10252080</code></td>
+                                <td><code>0x00D52014</code></td>
+                                <td><code>0x00193820</code></td>
+                                <td><code>0x00000080</code></td>
+                            </tr>
+                            <tr>
+                                <td>76</td>
+                                <td>1</td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00D52014</code></td>
+                                <td><code>0x00016193</code></td>
+                                <td><code>0x00000001</code></td>
+                            </tr>
+                            <tr>
+                                <td>77</td>
+                                <td>1</td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00D681A7</code></td>
+                                <td><code>0x0000187D</code></td>
+                                <td><code>0x00000001</code></td>
+                            </tr>
+                            <tr>
+                                <td>78</td>
+                                <td>3</td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00D69A24</code></td>
+                                <td><code>0x000005CD</code></td>
+                                <td><code>0x00000001</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+            <details>
+                <summary>Demo: all 79 section records</summary>
+                <div class="table-scroll" role="region" aria-label="Demo complete section directory (unnamed in the ELF)" tabindex="0">
+                    <table>
+                        <caption>Demo complete section directory (unnamed in the ELF)</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">SH</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Flags</th>
+                                <th scope="col">Virtual address</th>
+                                <th scope="col">File offset</th>
+                                <th scope="col">Size</th>
+                                <th scope="col">Alignment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>0</td>
+                                <td>0</td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td>1</td>
+                                <td><code>0x00000006</code></td>
+                                <td><code>0x00010200</code></td>
+                                <td><code>0x00000200</code></td>
+                                <td><code>0x0000003C</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>1</td>
+                                <td><code>0x00000006</code></td>
+                                <td><code>0x00010240</code></td>
+                                <td><code>0x00000240</code></td>
+                                <td><code>0x00A63E70</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>1</td>
+                                <td><code>0x00000006</code></td>
+                                <td><code>0x00A740B0</code></td>
+                                <td><code>0x00A640B0</code></td>
+                                <td><code>0x00000024</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>1</td>
+                                <td><code>0x00000006</code></td>
+                                <td><code>0x00A740D4</code></td>
+                                <td><code>0x00A640D4</code></td>
+                                <td><code>0x000016C0</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A75794</code></td>
+                                <td><code>0x00A65794</code></td>
+                                <td><code>0x0001EEEC</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A94680</code></td>
+                                <td><code>0x00A84680</code></td>
+                                <td><code>0x000046F9</code></td>
+                                <td><code>0x00000001</code></td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A98D7C</code></td>
+                                <td><code>0x00A88D7C</code></td>
+                                <td><code>0x000000E0</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A98E5C</code></td>
+                                <td><code>0x00A88E5C</code></td>
+                                <td><code>0x000002D8</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A99134</code></td>
+                                <td><code>0x00A89134</code></td>
+                                <td><code>0x00000004</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A99138</code></td>
+                                <td><code>0x00A89138</code></td>
+                                <td><code>0x00000004</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A9913C</code></td>
+                                <td><code>0x00A8913C</code></td>
+                                <td><code>0x00000004</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>12</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A99140</code></td>
+                                <td><code>0x00A89140</code></td>
+                                <td><code>0x00000294</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>13</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A993D4</code></td>
+                                <td><code>0x00A893D4</code></td>
+                                <td><code>0x00000004</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>14</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00A993D8</code></td>
+                                <td><code>0x00A893D8</code></td>
+                                <td><code>0x00000020</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>15</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x00A993F8</code></td>
+                                <td><code>0x00A893F8</code></td>
+                                <td><code>0x00000028</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>16</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA0000</code></td>
+                                <td><code>0x00A90000</code></td>
+                                <td><code>0x00000600</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>17</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA0600</code></td>
+                                <td><code>0x00A90600</code></td>
+                                <td><code>0x0000022C</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>18</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA082C</code></td>
+                                <td><code>0x00A9082C</code></td>
+                                <td><code>0x00000004</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>19</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA0830</code></td>
+                                <td><code>0x00A90830</code></td>
+                                <td><code>0x000038E0</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>20</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA4110</code></td>
+                                <td><code>0x00A94110</code></td>
+                                <td><code>0x000002D8</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>21</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA43E8</code></td>
+                                <td><code>0x00A943E8</code></td>
+                                <td><code>0x00004B80</code></td>
+                                <td><code>0x00000001</code></td>
+                            </tr>
+                            <tr>
+                                <td>22</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AA8F68</code></td>
+                                <td><code>0x00A98F68</code></td>
+                                <td><code>0x0004CB50</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>23</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x00AF5AB8</code></td>
+                                <td><code>0x00AE5AB8</code></td>
+                                <td><code>0x00019DA0</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>24</td>
+                                <td>1</td>
+                                <td><code>0x00000403</code></td>
+                                <td><code>0x00B0F858</code></td>
+                                <td><code>0x00AFF858</code></td>
+                                <td><code>0x00000008</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>25</td>
+                                <td>8</td>
+                                <td><code>0x00000403</code></td>
+                                <td><code>0x00B0F860</code></td>
+                                <td><code>0x00AFF860</code></td>
+                                <td><code>0x000001AC</code></td>
+                                <td><code>0x00000008</code></td>
+                            </tr>
+                            <tr>
+                                <td>26</td>
+                                <td>1</td>
+                                <td><code>0x00000002</code></td>
+                                <td><code>0x10000000</code></td>
+                                <td><code>0x00B00000</code></td>
+                                <td><code>0x00059650</code></td>
+                                <td><code>0x00000080</code></td>
+                            </tr>
+                            <tr>
+                                <td>27</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10059680</code></td>
+                                <td><code>0x00B59680</code></td>
+                                <td><code>0x00054500</code></td>
+                                <td><code>0x00000080</code></td>
+                            </tr>
+                            <tr>
+                                <td>28</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x100B0000</code></td>
+                                <td><code>0x00BB0000</code></td>
+                                <td><code>0x0019150C</code></td>
+                                <td><code>0x00000080</code></td>
+                            </tr>
+                            <tr>
+                                <td>29</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024150C</code></td>
+                                <td><code>0x00D4150C</code></td>
+                                <td><code>0x00000974</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>30</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10241E80</code></td>
+                                <td><code>0x00D41E80</code></td>
+                                <td><code>0x000001A4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>31</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10242024</code></td>
+                                <td><code>0x00D42024</code></td>
+                                <td><code>0x000004C4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>32</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102424E8</code></td>
+                                <td><code>0x00D424E8</code></td>
+                                <td><code>0x00000574</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>33</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10242A5C</code></td>
+                                <td><code>0x00D42A5C</code></td>
+                                <td><code>0x00000514</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>34</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10242F70</code></td>
+                                <td><code>0x00D42F70</code></td>
+                                <td><code>0x000004C4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>35</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10243434</code></td>
+                                <td><code>0x00D43434</code></td>
+                                <td><code>0x00000634</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>36</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10243A68</code></td>
+                                <td><code>0x00D43A68</code></td>
+                                <td><code>0x000007F4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>37</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024425C</code></td>
+                                <td><code>0x00D4425C</code></td>
+                                <td><code>0x00000364</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>38</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102445C0</code></td>
+                                <td><code>0x00D445C0</code></td>
+                                <td><code>0x00000384</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>39</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10244944</code></td>
+                                <td><code>0x00D44944</code></td>
+                                <td><code>0x000003A4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>40</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10244CE8</code></td>
+                                <td><code>0x00D44CE8</code></td>
+                                <td><code>0x00000634</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>41</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024531C</code></td>
+                                <td><code>0x00D4531C</code></td>
+                                <td><code>0x000004F4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>42</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10245810</code></td>
+                                <td><code>0x00D45810</code></td>
+                                <td><code>0x00000554</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>43</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10245D64</code></td>
+                                <td><code>0x00D45D64</code></td>
+                                <td><code>0x000003A4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>44</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10246108</code></td>
+                                <td><code>0x00D46108</code></td>
+                                <td><code>0x000003F4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>45</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102464FC</code></td>
+                                <td><code>0x00D464FC</code></td>
+                                <td><code>0x00000414</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>46</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10246910</code></td>
+                                <td><code>0x00D46910</code></td>
+                                <td><code>0x00000364</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>47</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10246C74</code></td>
+                                <td><code>0x00D46C74</code></td>
+                                <td><code>0x000001B4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>48</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10246E28</code></td>
+                                <td><code>0x00D46E28</code></td>
+                                <td><code>0x000008C4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>49</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102476EC</code></td>
+                                <td><code>0x00D476EC</code></td>
+                                <td><code>0x000003C4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>50</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10247AB0</code></td>
+                                <td><code>0x00D47AB0</code></td>
+                                <td><code>0x00000404</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>51</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10247EB4</code></td>
+                                <td><code>0x00D47EB4</code></td>
+                                <td><code>0x00000444</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>52</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102482F8</code></td>
+                                <td><code>0x00D482F8</code></td>
+                                <td><code>0x00000484</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>53</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024877C</code></td>
+                                <td><code>0x00D4877C</code></td>
+                                <td><code>0x000004B4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>54</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10248C30</code></td>
+                                <td><code>0x00D48C30</code></td>
+                                <td><code>0x000004E4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>55</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10249114</code></td>
+                                <td><code>0x00D49114</code></td>
+                                <td><code>0x000009C4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>56</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10249AD8</code></td>
+                                <td><code>0x00D49AD8</code></td>
+                                <td><code>0x000009F4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>57</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024A4CC</code></td>
+                                <td><code>0x00D4A4CC</code></td>
+                                <td><code>0x00000A24</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>58</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024AEF0</code></td>
+                                <td><code>0x00D4AEF0</code></td>
+                                <td><code>0x00000A54</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>59</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024B944</code></td>
+                                <td><code>0x00D4B944</code></td>
+                                <td><code>0x000016E4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>60</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024D028</code></td>
+                                <td><code>0x00D4D028</code></td>
+                                <td><code>0x00001774</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>61</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024E79C</code></td>
+                                <td><code>0x00D4E79C</code></td>
+                                <td><code>0x00000524</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>62</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024ECC0</code></td>
+                                <td><code>0x00D4ECC0</code></td>
+                                <td><code>0x00000564</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>63</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024F224</code></td>
+                                <td><code>0x00D4F224</code></td>
+                                <td><code>0x000005D4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>64</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024F7F8</code></td>
+                                <td><code>0x00D4F7F8</code></td>
+                                <td><code>0x00000604</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>65</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x1024FDFC</code></td>
+                                <td><code>0x00D4FDFC</code></td>
+                                <td><code>0x00000644</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>66</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10250440</code></td>
+                                <td><code>0x00D50440</code></td>
+                                <td><code>0x00000804</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>67</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10250C44</code></td>
+                                <td><code>0x00D50C44</code></td>
+                                <td><code>0x00000274</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>68</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10250EB8</code></td>
+                                <td><code>0x00D50EB8</code></td>
+                                <td><code>0x00000234</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>69</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102510EC</code></td>
+                                <td><code>0x00D510EC</code></td>
+                                <td><code>0x000001E4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>70</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102512D0</code></td>
+                                <td><code>0x00D512D0</code></td>
+                                <td><code>0x00000214</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>71</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102514E4</code></td>
+                                <td><code>0x00D514E4</code></td>
+                                <td><code>0x00000314</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>72</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x102517F8</code></td>
+                                <td><code>0x00D517F8</code></td>
+                                <td><code>0x000002D4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>73</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10251ACC</code></td>
+                                <td><code>0x00D51ACC</code></td>
+                                <td><code>0x00000264</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>74</td>
+                                <td>1</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10251D30</code></td>
+                                <td><code>0x00D51D30</code></td>
+                                <td><code>0x000002E4</code></td>
+                                <td><code>0x00000004</code></td>
+                            </tr>
+                            <tr>
+                                <td>75</td>
+                                <td>8</td>
+                                <td><code>0x00000003</code></td>
+                                <td><code>0x10252080</code></td>
+                                <td><code>0x00D52014</code></td>
+                                <td><code>0x00194D20</code></td>
+                                <td><code>0x00000080</code></td>
+                            </tr>
+                            <tr>
+                                <td>76</td>
+                                <td>1</td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00D52014</code></td>
+                                <td><code>0x000161C1</code></td>
+                                <td><code>0x00000001</code></td>
+                            </tr>
+                            <tr>
+                                <td>77</td>
+                                <td>1</td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00D681D5</code></td>
+                                <td><code>0x000018AB</code></td>
+                                <td><code>0x00000001</code></td>
+                            </tr>
+                            <tr>
+                                <td>78</td>
+                                <td>3</td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00000000</code></td>
+                                <td><code>0x00D69A80</code></td>
+                                <td><code>0x000005CD</code></td>
+                                <td><code>0x00000001</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+            <h3 id="procedure-descriptors">Procedure descriptor candidates and TOCs</h3>
+            <p>SH[22] is the unique writable PROGBITS section containing <code>e_entry</code>. Interpreting it as eight-byte pairs yields a BE32 code address at +0 and BE32 TOC at +4. The entry words and the executable targets of every candidate were checked against source bytes. This supports its descriptor role; its original section name is absent.</p>
+            <div class="table-scroll" role="region" aria-label="Eight-byte descriptor candidates in SH[22]" tabindex="0">
+                <table>
+                    <caption>Eight-byte descriptor candidates in SH[22]</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Target</th>
+                            <th scope="col">Slots / executable targets</th>
+                            <th scope="col">TOC value and record count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Retail</td>
+                            <td>39,258 / 39,257</td>
+                            <td><code>0x00afda30</code>: 18,162<br><code>0x00000000</code>: 1<br><code>0x00b0da10</code>: 21,095</td>
+                        </tr>
+                        <tr>
+                            <td>Demo</td>
+                            <td>39,274 / 39,273</td>
+                            <td><code>0x00afdab8</code>: 18,375<br><code>0x00000000</code>: 1<br><code>0x00b0da58</code>: 20,898</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Each target has one all-zero slot: retail at <code>0x00AA8F78</code>, demo at <code>0x00AA8F80</code>. The retail TOCs differ by <code>0xFFE0</code>; the demo TOCs differ by <code>0xFFA0</code>. Track the callee's descriptor and each TOC-adjusting transfer. A primary-TOC assumption for all functions is incorrect. Reviewed indirect descriptor calls load these two 32-bit words even though the PPU registers are 64-bit; this observation does not prescribe the representation of every pointer-like value.</p>
+            <h3 id="tls">TLS and zero-fill</h3>
+            <p>Retail PH[5] is type 7 (<code>PT_TLS</code>), with an eight-byte initialized template at file <code>0x00AFFAA0</code>, VA <code>0x00B0FAA0</code>, and memory size <code>0x1B4</code>. Demo uses file <code>0x00AFF858</code>, VA <code>0x00B0F858</code>, with the same initialized and memory sizes. SH[24] has eight initialized bytes and SH[25] has <code>0x1AC</code> NOBITS bytes. These describe a template, not a recovered live thread address.</p>
+        </section>
+        <section id="boot-lifecycle">
+            <h2>Reviewed static startup and state dispatch</h2>
+            <p>The following is a static path through the retail ELF, conditional on calls returning normally. It is not a trace of an executed original game:</p>
+            <pre>e_entry descriptor 0x00AA8F70
+  -&gt; code 0x000149D0
+  -&gt; bootstrap 0x00014B18
+  -&gt; application function 0x00054A9C
+  -&gt; TOC transfer 0x00013050
+  -&gt; persistent loop function 0x005BAA34</pre>
+            <ul>
+                <li>Entry saves incoming r3/r4 to <code>0x100B0000</code>/+4, reloads r2 from its descriptor, allocates <code>0x70</code> stack bytes and calls <code>0x14B18</code> at <code>0x14A00</code>. It does not immediately call <code>0x10210</code>.</li>
+                <li><code>0x14B18</code> calls the declared <code>sysPrxForUser</code> NID <code>0x744680A2</code> import stub (saved database label <code>sys_initialize_tls</code>), compacts low words from eight-byte input slots into four-byte arrays and stores a count/pointer pair. The loader argument ABI remains an external contract to verify.</li>
+                <li>The bootstrap calls <code>0x10210</code> at <code>0x14C3C</code>. That routine calls <code>0x14D4C</code> and then thunk <code>0x10200</code>, which changes TOC by <code>+0xFFE0</code> and branches to <code>0xA73E40</code>.</li>
+                <li>The initializer walker visits 382 descriptor pointers in reverse order in SH[16], <code>[0xAA0000,0xAA0600)</code>. Its leading <code>FFFFFFFF</code> stops the reverse traversal; the trailing zero is distinct. SH[17], <code>[0xAA0600,0xAA082C)</code>, contains 137 cleanup pointers and a zero terminator for the forward walker. Demo has the same counts; callback addresses/TOCs differ.</li>
+                <li><code>0x54A9C</code> passes initialization descriptor <code>0xAAC518</code> (code <code>0x54BDC</code>) and cleanup descriptor <code>0xAABDB0</code> (code <code>0x54B7C</code>) to the loop through the TOC transfer. Exporting these functions does not establish every callback's semantics.</li>
+            </ul>
+            <p>The loop uses the strings <code>InitOnceMainLoop</code>, <code>FrontendMainLoop</code> and <code>GameMainLoop</code>. The state manager at <code>0x5B475C</code> has up to 16 key/object entries, with insertion at <code>0x5B443C</code>. An update result of 1 leaves the old state and returns 0 to the outer loop; result 2 leaves it, selects a next key and enters the selected object, returning 1. Other results retain the current object and return 1. Archive mounting, gameplay, physics and UI behavior require their own call/data evidence; state names alone do not establish them.</p>
+        </section>
+        <section id="prx-imports">
+            <h2>Process/PRX records and declared imports</h2>
+            <p>PH[6] has type <code>0x60000001</code>, size <code>0x20</code>; its retail file/VA start is <code>0xA89188</code>/<code>0xA99188</code>. Demo uses <code>0xA893D8</code>/<code>0xA993D8</code>. The record bytes are identical:</p>
+            <pre>00000020 13BCC5F6 00009000 00190002 000003E9 00000040 00100000 00000000</pre>
+            <p>The record includes raw SDK word <code>0x00190002</code>, priority word 1001 and stack-size code <code>0x40</code>. The raw stack code is retained without treating it as a measured stack allocation.</p>
+            <p>PH[7] has type <code>0x60000002</code>, size <code>0x28</code>. Retail file/VA start is <code>0xA891A8</code>/<code>0xA991A8</code>; demo uses <code>0xA893F8</code>/<code>0xA993F8</code>. Its magic is <code>0x1B434CEC</code>, version 2. Retail export bounds are both <code>0xA98EE8</code> (empty declared range), and import bounds are <code>[0xA98EF0,0xA99184)</code>. Demo import bounds are <code>[0xA99140,0xA993D4)</code>.</p>
+            <p>Import records are 44 bytes each, with function/variable/TLS-variable counts at +6/+8/+10, and BE32 library-name, function-NID and address-table pointers at +16/+20/+24. All declared variable/TLS-variable counts are zero. The JSON retains each full record's raw bytes. Both targets declare 15 library strings:</p>
+            <div class="table-scroll" role="region" aria-label="Declared import libraries" tabindex="0">
+                <table>
+                    <caption>Declared import libraries</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Library string</th>
+                            <th scope="col">Retail count</th>
+                            <th scope="col">Demo count</th>
+                            <th scope="col">Retail descriptor VA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>sysPrxForUser</code></td>
+                            <td>14</td>
+                            <td>14</td>
+                            <td><code>0x00A98EF0</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>sys_fs</code></td>
+                            <td>14</td>
+                            <td>14</td>
+                            <td><code>0x00A98F1C</code></td>
                         </tr>
                         <tr>
                             <td><code>cellGcmSys</code></td>
-                            <td>26</td>
-                            <td>RSX GPU hardware control, display buffers, memory mapping, interrupt events</td>
+                            <td>20</td>
+                            <td>20</td>
+                            <td><code>0x00A98F48</code></td>
                         </tr>
                         <tr>
-                            <td><code>sys_spu</code></td>
-                            <td>22</td>
-                            <td>SPU thread group management, raw SPU queue initialization, SPU image loading</td>
+                            <td><code>sys_io</code></td>
+                            <td>6</td>
+                            <td>6</td>
+                            <td><code>0x00A98F74</code></td>
                         </tr>
                         <tr>
-                            <td><code>cellFs</code></td>
-                            <td>21</td>
-                            <td>Filesystem I/O, asynchronous archive streaming, directory traversal</td>
+                            <td><code>sys_net</code></td>
+                            <td>25</td>
+                            <td>25</td>
+                            <td><code>0x00A98FA0</code></td>
                         </tr>
                         <tr>
-                            <td><code>cellPad</code></td>
-                            <td>12</td>
-                            <td>Sixaxis / DualShock 3 controller polling, vibration motors</td>
+                            <td><code>cellSysmodule</code></td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td><code>0x00A98FCC</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>sceNp</code></td>
+                            <td>33</td>
+                            <td>33</td>
+                            <td><code>0x00A98FF8</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>cellSysutil</code></td>
+                            <td>17</td>
+                            <td>19</td>
+                            <td><code>0x00A99024</code></td>
                         </tr>
                         <tr>
                             <td><code>cellAudio</code></td>
-                            <td>11</td>
-                            <td>Multi-channel linear PCM audio port configuration, hardware mix buffers</td>
+                            <td>9</td>
+                            <td>9</td>
+                            <td><code>0x00A99050</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>cellMic</code></td>
+                            <td>9</td>
+                            <td>9</td>
+                            <td><code>0x00A9907C</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>cellNetCtl</code></td>
+                            <td>8</td>
+                            <td>8</td>
+                            <td><code>0x00A990A8</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>cellRtc</code></td>
+                            <td>3</td>
+                            <td>3</td>
+                            <td><code>0x00A990D4</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>cellSync</code></td>
+                            <td>4</td>
+                            <td>4</td>
+                            <td><code>0x00A99100</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>cellAdec</code></td>
+                            <td>8</td>
+                            <td>8</td>
+                            <td><code>0x00A9912C</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>cellCelpEnc</code></td>
+                            <td>8</td>
+                            <td>8</td>
+                            <td><code>0x00A99158</code></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+            <p>Retail declares 180 function imports, demo 182. Demo adds only <code>cellSysutil</code> NIDs <code>0x9117DF20</code> and <code>0xAFD605B3</code> to the retail library/NID set. No function names are inferred from those numeric IDs.</p>
+            <p>The 180 retail stubs exactly fill <code>[0xA73ECC,0xA7554C)</code>; demo's 182 fill <code>[0xA740D4,0xA75794)</code>. Each is 32 bytes. All 362 original stubs construct the declared address slot, save r2, load the callee descriptor's code/TOC and transfer through CTR. Original slot values point back to stub code. Runtime-bound slot values, actual import use and dynamically loaded dependencies remain separate questions. The 1,795 reviewed inter-TOC transfers are a different population from these import stubs.</p>
         </section>
         <section id="embedded-spu">
-            <h2>Embedded SPU image workloads</h2>
-            <p>The executable contains three embedded Synergistic Processing Unit (SPU) ELF binaries in its read-only data segment (byte-identical between Retail and Demo):</p>
-            <div class="table-scroll" role="region" aria-label="Embedded SPU ELF images" tabindex="0">
+            <h2>Embedded SPU image inventory and workloads</h2>
+            <p>Each parent ELF has three validated ELF32 big-endian executable images with machine 23, within parent PH[2]/SH[27]. Nested addresses belong to separate SPU address spaces; PPU carrier addresses locate the embedded bytes only.</p>
+            <div class="table-scroll" role="region" aria-label="Embedded ELF32 big-endian SPU images" tabindex="0">
                 <table>
-                    <caption>Embedded SPU Binaries</caption>
+                    <caption>Embedded ELF32 big-endian SPU images</caption>
                     <thead>
                         <tr>
-                            <th scope="col">Image</th>
-                            <th scope="col">Virtual Address</th>
-                            <th scope="col">Size</th>
-                            <th scope="col">Workload Description</th>
+                            <th scope="col">Index</th>
+                            <th scope="col">Retail ELF file offset / PPU carrier VA</th>
+                            <th scope="col">Demo ELF file offset / PPU carrier VA</th>
+                            <th scope="col">SPU entry</th>
+                            <th scope="col">Declared extent bytes</th>
+                            <th scope="col">Extent SHA-256</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>SPU Program 1</td>
-                            <td><code>0x00A15380</code></td>
-                            <td>72,944 bytes</td>
-                            <td>Character skeletal vertex skinning and dual-quaternion deformation</td>
+                            <td>0</td>
+                            <td><code>0x00B59D80</code><br><code>0x10059D80</code></td>
+                            <td><code>0x00B59680</code><br><code>0x10059680</code></td>
+                            <td><code>0x00000090</code></td>
+                            <td>6,352</td>
+                            <td><code>78897f73cad400959294692fc8b8724590a86805a0b39e6e5645961f28e26f16</code></td>
                         </tr>
                         <tr>
-                            <td>SPU Program 2</td>
-                            <td><code>0x00A27030</code></td>
-                            <td>68,432 bytes</td>
-                            <td>Havok rigid body collision and broadphase physics batching</td>
+                            <td>1</td>
+                            <td><code>0x00B5B680</code><br><code>0x1005B680</code></td>
+                            <td><code>0x00B5AF80</code><br><code>0x1005AF80</code></td>
+                            <td><code>0x00000090</code></td>
+                            <td>110,848</td>
+                            <td><code>1158f3941783cd38d35346a60bdd55937a2683b8403ebec5e198ad7614f8c7c6</code></td>
                         </tr>
                         <tr>
-                            <td>SPU Program 3</td>
-                            <td><code>0x00A37BB0</code></td>
-                            <td>45,616 bytes</td>
-                            <td>Multi-channel audio mixing and decompression streaming</td>
+                            <td>2</td>
+                            <td><code>0x00B76780</code><br><code>0x10076780</code></td>
+                            <td><code>0x00B76080</code><br><code>0x10076080</code></td>
+                            <td><code>0x0003F980</code></td>
+                            <td>7,992</td>
+                            <td><code>2abe79bf14ea4e3356f4fef1674db1373d10a3351d056f5cade37e907bb89eac</code></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+            <p>The declared extent runs from the nested ELF header through the maximum declared file-backed range or metadata-table end, including interior gaps. Corresponding retail/demo extents are byte-equal. Named SPU <code>.text</code> sections total 112,392 bytes (28,098 instructions across all three images), 100.0% disassembled and verified with zero unhandled opcodes using the standalone Cell SPU ISA v1.2 disassembler based on GNU Binutils opcode specifications.</p>
+            <div class="table-scroll" role="region" aria-label="Verified SPU workloads" tabindex="0">
+                <table>
+                    <caption>Verified SPU image identities, instruction counts, and binary workloads</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Index</th>
+                            <th scope="col">Identifier / SPUNAME</th>
+                            <th scope="col">Text bytes (Instructions)</th>
+                            <th scope="col">Decode rate</th>
+                            <th scope="col">Binary ground-truth workload</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0</td>
+                            <td><code>VfxSPUCull.elf</code></td>
+                            <td>4,784 B (1,196 insns)</td>
+                            <td>100.0%</td>
+                            <td>Visual Effects (VFX) particle and geometry bounding-box frustum culling. Enforces 128-byte cache-line aligned DMA buffers (<code>[SPU]: DMA data buffer must be 128 byte aligned.</code>).</td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>On2 VP6 Video Decoder (<code>v6.1.0.5</code>)</td>
+                            <td>101,440 B (25,360 insns)</td>
+                            <td>100.0%</td>
+                            <td>Full-motion video (FMV) cutscene movie decompression (<code>VP6 Library assertion failed (SPU)</code>, <code>JobExecuteParams</code>, <code>inputChunk</code>, <code>inputChunkSize</code>). Intensive mailbox/DMA streaming (29 <code>MFC_WrTagMask</code>, 25 <code>MFC_WrOutMbox</code>, 24 <code>MFC_RdInMbox</code>).</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><code>spu_kernel_spu_threads.elf</code></td>
+                            <td>6,168 B (1,542 insns)</td>
+                            <td>100.0%</td>
+                            <td>SPU Task Scheduler Worker Kernel coordinating with the PPU queue manager. Entry <code>0x3F980</code> sets stack to <code>0x3DFB0</code>, protects stack frame with canary <code>0xDEADBEEF</code>, and handles mailbox work dispatch.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h3 id="ppu-spu-links">PPU carrier references</h3>
+            <div class="table-scroll" role="region" aria-label="Source-checked retail carrier loads (descriptor-TOC arithmetic)" tabindex="0">
+                <table>
+                    <caption>Source-checked retail carrier loads (descriptor-TOC arithmetic)</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Owner entry</th>
+                            <th scope="col">Load site / destination</th>
+                            <th scope="col">Entry TOC</th>
+                            <th scope="col">Pointer slot</th>
+                            <th scope="col">Carrier header</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>0x003CB21C</code></td>
+                            <td><code>0x003CB36C</code> → r4</td>
+                            <td><code>0x00AFDA30</code></td>
+                            <td><code>0x00B03178</code></td>
+                            <td><code>0x10059D80</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x003CB4A8</code></td>
+                            <td><code>0x003CB5F8</code> → r4</td>
+                            <td><code>0x00AFDA30</code></td>
+                            <td><code>0x00B03178</code></td>
+                            <td><code>0x10059D80</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x009A9DE0</code></td>
+                            <td><code>0x009A9E34</code> → r4</td>
+                            <td><code>0x00B0DA10</code></td>
+                            <td><code>0x00B0D8C8</code></td>
+                            <td><code>0x1005B680</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>0x009ABFA8</code></td>
+                            <td><code>0x009AC08C</code> → r28</td>
+                            <td><code>0x00B0DA10</code></td>
+                            <td><code>0x00B0D920</code></td>
+                            <td><code>0x10076780</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Using each function's unique descriptor TOC gives the four source-checked loads above. Image 0 is passed in r4 with r5=1 to stub <code>0xA73FCC</code> at call sites <code>0x3CB374</code> and <code>0x3CB600</code>. That stub is declared under <code>sysPrxForUser</code> NID <code>0xEBE5F72F</code>; its saved database label is <code>sys_spu_image_import</code>. The name is attributed to the database, rather than recovered from a symbol table or independently authoritative NID map.</p>
+            <p>Image 2 reaches the same declared import through <code>0x9AC0A8 → 0x9AD10C</code>; the wrapper calls the import at <code>0x9AD124</code> after moving the carrier into r4 and setting r5=1. Image 1 is passed at <code>0x9A9E40</code> to <code>0x9AA8A4</code>, which calls <code>0x9AD644</code> at <code>0x9AA93C</code>. Its internal format probes lead to an ELF32 header consumer at <code>0x9AD394</code> for the supplied ELF magic. The evidence record retains raw call words and 945 source-compared instruction records in its linked research input. Successful loading, scheduling, DMA protocols and workloads remain unobserved.</p>
+            <p>The complete 72-byte wrapper <code>0x9AD10C</code> forwards its incoming r4/r5 as the import's r3/r4, fixes import r5 to 1, and returns 1 exactly when the import's returned low 32 bits are zero, otherwise 0. This follows the source-checked shift/XOR/subtract/rotate sequence. It establishes result normalization, without assigning an unverified success/error meaning to the imported result.</p>
+            <h3 id="spu-metadata-producer">Original ELF32 metadata extraction</h3>
+            <p>Retail <code>0x9AD644</code> probes first words <code>JOB1</code>, <code>0xA122E6A2</code> and <code>ELF</code> through three helper bodies. These are observed code tests; this pass has no independently inventoried JOB1 or <code>0xA122E6A2</code> resource corpus. The JOB1 branch ignores its inner probe's failure result, so matching its outer magic does not establish a valid inner image.</p>
+            <p>The ELF branch at <code>0x9AD394</code> checks the first word for <code>0x7F454C46</code> and then reads fixed ELF32 offsets. Its six BE32 result words are: kind 1; the carrier pointer plus the first nonempty PT_LOAD file offset; a file-span accumulator; the ELF32 entry word; selected data pointer; and selected data size. The span adds each nonempty PT_LOAD file size and positive signed32 gaps from the preceding participating segment's file end. It is not a general union-of-ranges size, memory allocation size or declared nested-file extent.</p>
+            <p>Data selection first seeks a nonempty PT_LOAD with flags <em>exactly</em> 6. If none supplies a data pointer, it walks PROGBITS sections with flags exactly 3, nonzero size and a name equal to the source literal <code>.data</code>. The producer has no explicit buffer-length parameter and does not validate ELF class, byte order, machine, table/name bounds or arithmetic overflow in its body. The bounded inspector's validation is separately implemented; these observations do not define safe input acceptance.</p>
+            <div class="table-scroll" role="region" aria-label="Image 2 metadata producer output" tabindex="0">
+                <table>
+                    <caption>Concrete retail image-2 result at carrier VA 0x10076780</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Result offset</th>
+                            <th scope="col">Value</th>
+                            <th scope="col">Source-backed meaning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>+0x00</td>
+                            <td><code>1</code></td>
+                            <td>ELF branch kind</td>
+                        </tr>
+                        <tr>
+                            <td>+0x04</td>
+                            <td><code>0x10076880</code></td>
+                            <td>Carrier +0x100, first nonempty PT_LOAD file bytes</td>
+                        </tr>
+                        <tr>
+                            <td>+0x08</td>
+                            <td><code>0x1970</code></td>
+                            <td>File-span accumulator: 0x10 +0x70 gap +0x18F0</td>
+                        </tr>
+                        <tr>
+                            <td>+0x0C</td>
+                            <td><code>0x3F980</code></td>
+                            <td>SPU entry address, separate address space</td>
+                        </tr>
+                        <tr>
+                            <td>+0x10</td>
+                            <td><code>0x10076900</code></td>
+                            <td>Carrier +0x180; SH[3] .data fallback</td>
+                        </tr>
+                        <tr>
+                            <td>+0x14</td>
+                            <td><code>0x50</code></td>
+                            <td>SH[3] stored size</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Image 2's flags-6 PT_LOAD has zero file size and is skipped; its nonempty flags-7 segment fails the exact flags-6 test. The section-name fallback therefore supplies the data fields. Its declared extent is 7,992 bytes, distinct from the span above. The complete wrapper <code>0x9AD6CC</code> zeroes a six-word stack record, calls the producer, stores record[1] to its second argument, record[3] to its fourth argument, then record[2] to its third argument, and returns whether record[0] equals 1. The callee's direct return register is ignored. The earlier generated C's unconditional zero output assignments contradict these assembly loads/stores.</p>
+            <p>Caller <code>0x9ABFA8</code> sets up the SPU thread group and ID pool: it invokes once-guarded pool init <code>0x9AB044</code> with <code>(r4, r5)</code>, writes counts to owner+0x5EC/+0x5F0, loops allocating numeric IDs through <code>0x9AB0B4</code> at owner+0x500+24*i, and forwards thread IDs at syscall selector <code>0xAC</code> to owner+0x514+24*i. A subsequent PPU callback descriptor <code>0xAEEC78</code> resolves to code <code>0x9ABD4C</code>, TOC <code>0xB0DA10</code>. That callback reads a context pointer from its input record+0x10 and repeatedly calls consumer <code>0x9ACF24</code> while context byte+0x10 is nonzero.</p>
+            <h3 id="ppu-jobqueue">PPU queue records and packed flags</h3>
+            <p>The image-1 setup path calls <code>0x542B44</code>, whose two-instruction body loads the original context pointer <code>0x10312880</code> through secondary-TOC slot <code>0xB06C64</code>, then passes that context and a record list to <code>0x9AAC10</code>. The reviewed records below are PPU runtime structures; they are not another serialized resource format. Their source-checked instruction words and exact packed-byte identities are retained in <a href="eboot-reference.json">the evidence record</a>.</p>
+            <div class="table-scroll" role="region" aria-label="Reviewed queue runtime fields" tabindex="0">
+                <table>
+                    <caption>Fields consumed by the reviewed PPU queue bodies</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Structure / offset</th>
+                            <th scope="col">Width</th>
+                            <th scope="col">Observed use</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Context +0x08 +8*i</td>
+                            <td>8 bytes</td>
+                            <td>127 slots (i=0..126); BE16 sequence, U8 flags, U8 count and BE32 record pointer. 0x7F is a failed-selection sentinel.</td>
+                        </tr>
+                        <tr>
+                            <td>Context +0x06 / +0x07</td>
+                            <td>U8 each</td>
+                            <td>Counters cleared at batch start; incremented conditionally from record flags when record+0x4F is zero.</td>
+                        </tr>
+                        <tr>
+                            <td>Context +0x500 +24*i</td>
+                            <td>BE32</td>
+                            <td>Allocated ID array populated from the global pool by 0x9AB0B4; freed by 0x9AB13C during teardown 0x9AC3FC.</td>
+                        </tr>
+                        <tr>
+                            <td>Context +0x5C0 / +0x5C4</td>
+                            <td>BE32 each</td>
+                            <td>Event queue ID (polled via syscall 0x83, blocked via 0x82) / Event port ID (signaled via syscall 0x8A).</td>
+                        </tr>
+                        <tr>
+                            <td>Context +0x5E8</td>
+                            <td>BE32</td>
+                            <td>SPU thread group ID joined via syscall 0xB2 and destroyed via 0xAB during teardown 0x9AC3FC.</td>
+                        </tr>
+                        <tr>
+                            <td>Context +0x60C / +0x60E</td>
+                            <td>U8 / BE16</td>
+                            <td>Enable gate / incrementing publication sequence</td>
+                        </tr>
+                        <tr>
+                            <td>Record +0x00</td>
+                            <td>BE32</td>
+                            <td>Procedure descriptor (.opd) pointer dispatched by 0x9ACEA0 via bctrl.</td>
+                        </tr>
+                        <tr>
+                            <td>Record +0x10 / +0x1C</td>
+                            <td>BE64 / BE32</td>
+                            <td>Dispatched 24-bit identifier / argument word passed to the OPD entry point.</td>
+                        </tr>
+                        <tr>
+                            <td>Record +0x14</td>
+                            <td>U8</td>
+                            <td>Publication argument byte; batch traversal later clears bits 1 and 2 (AND 0xF9).</td>
+                        </tr>
+                        <tr>
+                            <td>Record +0x20</td>
+                            <td>BE32 elements</td>
+                            <td>References converted from record pointers to numeric slot indices using the count at +0x54; capacity is not proven.</td>
+                        </tr>
+                        <tr>
+                            <td>Record +0x48</td>
+                            <td>BE32</td>
+                            <td>Pointer back to the current context slot</td>
+                        </tr>
+                        <tr>
+                            <td>Record +0x50</td>
+                            <td>BE32</td>
+                            <td>Self-pointer written by constructors 0x9AA728 / 0x9AAA8C (record+0x50 = record), preserved by field zeroer 0x9AA538, copied into slot+4.</td>
+                        </tr>
+                        <tr>
+                            <td>Record +0x4C / +0x4E / +0x4F</td>
+                            <td>BE16 / U8 / U8</td>
+                            <td>Sequence / packed flags / dependent-record count</td>
+                        </tr>
+                        <tr>
+                            <td>Record +0x54 / +0x84</td>
+                            <td>BE32 / BE32 elements</td>
+                            <td>Reference count / pointers to dependent records whose numeric indices are rewritten after a slot move</td>
+                        </tr>
+                        <tr>
+                            <td>Record +0xB7</td>
+                            <td>U8</td>
+                            <td>Copied to +0x4F by reset helper 0x9AA5BC</td>
+                        </tr>
+                        <tr>
+                            <td>Record +0xB8</td>
+                            <td>16 bytes</td>
+                            <td>ASCII task label string copied by 0x9AA6C4.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p><code>0x9AAC10</code> walks the supplied list at stride <code>0x100</code>. A zero enable byte returns 0 before helper calls. The normal enabled path publishes records through <code>0x9AB408</code>, converts reference pointers using <code>0x9AC634</code>, invokes its paired release/notification wrapper and returns 1. Failed selection <code>0x7F</code> invokes a scan/detach helper, releases through the same wrapper, prints <code>ASSERT: Job list is full!</code> and reaches a trap. These are local static effects; valid record counts, pointer ranges, concurrent mutation and callee outcomes are caller contracts.</p>
+            <ul>
+                <li><code>0x9AA848</code> returns 1 iff <code>(record[0x4E] &amp; 0x70) == 0x30</code>, otherwise 0. The reviewed caller polls this predicate; status 0x30 represents task completion.</li>
+                <li><code>0x9AA5BC</code> leaves flags <code>old &amp; 0x0F</code>, writes byte+0x14=1, clears the slot-pointer/sequence fields and copies byte+0xB7 to +0x4F.</li>
+                <li><code>0x9AA5F8</code> waits for the same masked status 0x30, issuing literal syscall selector <code>0x2B</code> between reads, after a sequence of self-register operations. It has no local timeout or error branch. The actual status producer and syscall semantics remain separate evidence.</li>
+                <li><code>0x9AB408</code> writes flags <code>(old &amp; 0x0F) | 0x10 | ((BE32[record]==0) &lt;&lt; 7)</code>, stores the current sequence and slot back-pointer, then copies record+0x4C/+0x50 to that slot. All 256 flag values were checked using the actual rotate/mask instruction operands.</li>
+                <li><code>0x9AB4E4</code> scans 127 candidate slots in opposite directions for categories 1 and 0, skipping occupied status-2 entries and occupied entries of the requested category. <code>0x9AB744</code> can move an occupied candidate into an empty second slot through <code>0x9AB660</code>; the latter updates its back-pointer and dependent indices. None of these bodies validates arbitrary slot indices or pointers.</li>
+                <li><code>0x9AC634</code> computes the low32 arithmetic-right-shift result of <code>(record.slot_pointer - (context+8)) &gt;&gt; 3</code>. It roundtrips all 127 valid slot pointers; it does not validate an arbitrary pointer.</li>
+                <li><code>0x9ACF24</code> polls the event queue via syscall 0x83, acquires mutex <code>0x9AC6D0</code>, scans 127 slots for flag bit 2 set, status <code>0x10</code> (QUEUED), nonzero payload pointer via <code>0x9AB198</code>, and dependency count zero (<code>slot+3 == 0</code>). On match, it transitions slot status to <code>0x20</code> (RUNNING), releases the mutex, and dispatches via <code>0x9ACEA0</code>. On exhaustion, it blocks on the event queue via syscall 0x82.</li>
+                <li><code>0x9ACEA0</code> dispatches the task's procedure descriptor (OPD) via <code>bctrl</code> with arguments <code>(context+4, record+0x1C, record+0x10 &amp; 0xFFFFFF)</code> and tail-branches to completion <code>0x9ACC00</code>.</li>
+                <li><code>0x9ACC00</code> transitions slot status to <code>0x30</code> (COMPLETED), decrements dependent task prerequisite counters in <code>record+0x20+4*i</code>, wakes worker threads via syscall 0x8A on port <code>context+0x5C4</code> when tasks unblock, detaches the record, and marks <code>record+0x4E</code> as status 0x30.</li>
+                <li><code>0x9AC3FC</code> orchestrates queue and SPU thread group teardown: joins the SPU group (syscall 0xB2), disconnects SPU events (syscall 0xC0), destroys the SPU group (syscall 0xAB), closes the SPU image (<code>0xA73F8C</code>), frees IDs via <code>0x9AB13C</code>, and destroys IPC events.</li>
+                <li><code>0x9AB044</code>, <code>0x9AB0B4</code> and <code>0x9AB13C</code> implement once-guarded numeric ID pool allocation using a 7-byte bitmap at <code>0x103A6200</code>.</li>
+            </ul>
+            <p>The release/notification wrapper <code>0x9AABB0</code> copies the context's first eight bytes, calls <code>0x9AC9D0</code> to clear selected live mask bits/count, calls two import wrappers, then calls <code>0x9AC76C</code> with the snapshot. The latter preserves the copied mask, decrements its count byte and issues literal syscall <code>0xB8</code> for selected entries. Selection uses MSB-first bits, a seven-position lookahead and an inclusive limit. Sentinel index 32 stops only when the configured limit is below 32; those bounds are not enforced locally. Syscall semantics, receiver consumption, valid configuration producers and complete SPU/PPU execution protocols remain unresolved.</p>
         </section>
         <section id="graphics-pipeline">
-            <h2>Cell GCM RSX graphics & 21-stage render pipeline</h2>
-            <p>Low-level 3D graphics on PS3 bypasses generic libraries and writes directly into the NVIDIA NV40 / RSX command FIFO:</p>
-            <ul>
-                <li><strong>GCM Push Buffer:</strong> Managed by Sony's <code>CellGcmContextData</code> struct at global address <code>0x10380310</code> (fields <code>begin</code>, <code>end</code>, <code>current</code>, <code>callback</code>).</li>
-                <li><strong>Hardware Command Emitters:</strong> Routines <code>0x00438E3C</code> and <code>0x0043A2EC</code> write NV406E register packets (<code>0x40194</code>, <code>0x4018C</code>, <code>0x801B4</code>, <code>0x40198</code>) directly into the push buffer.</li>
-                <li><strong>21-Stage Frame Dispatcher (<code>0x003F6E40</code>):</strong> Coordinates camera matrices, stage sorting, and execution. Stage sorting excludes the upper endpoint while execution includes it. Stages 1 and 11 serve as the primary opaque and transparent draw-call submission queues.</li>
-            </ul>
+            <h2>Frame-stage evidence</h2>
+            <p>Retail <code>0x3F6E40</code> orchestrates stage queues. Reviewed records have stride <code>0x30</code>: sort mode at +0, two pre-callback descriptor pointers at +4/+8, a job-pointer array at +0x14, job count at +0x18, and two post-callback pointers at +0x20/+0x24. Job records contain execution descriptor, optional cleanup descriptor, unsigned sort key and argument at +0/+4/+8/+0x0C. These are runtime structures, not serialized ELF sections.</p>
+            <p><code>0x41BB10</code> sorts a half-open stage range; <code>0x41AC54</code> executes an inclusive range. The common orchestration uses arguments 0 and 18, so sorting visits 0–17 and execution visits 0–18. Cleanup at <code>0x41A6F8</code> visits fixed indices 0–20, subject to the configured stage count. This establishes a 21-index cleanup boundary, not the rendering purpose of every stage. Opaque/transparent labels and complete draw-job producers remain unresolved.</p>
+            <p>The reviewed exports at <code>0x438E3C</code> and <code>0x43A2EC</code> access the object reached through TOC slot <code>0xB04720</code>, whose original word is <code>0x10380310</code>. They compare a current-pointer field at +8 against a limit at +4, write command words and advance the current pointer. Complete hardware-method decoding, vertex formats and presentation behavior require further corroboration. See the <a href="../STR/imbedded-formats/preinstanced.html">preinstanced format reference</a> for source-scoped model observations.</p>
         </section>
         <section id="actor-registry">
-            <h2>Engine actor and RenderWare plugin registries</h2>
-            <p>During application startup, function <code>0x00054BDC</code> populates the engine's core actor factory by registering 149 named classes through dispatcher <code>0x003EC9B0</code>:</p>
-            <ul>
-                <li>All 149 registrations pass a 32-bit unique ID, printable ASCII name string, 8-byte procedure descriptor (with TOC <code>0x00AFDA30</code>), and allocation size.</li>
-                <li>Examples: <code>NPCDash</code> (ID <code>0x5B264B93</code>, size <code>0x8A0</code>), <code>BartPlayer</code> (ID <code>0x13B821A4</code>), <code>Door</code> (ID <code>0x8C1265E0</code>).</li>
-                <li>RenderWare plugin extensions: <code>0x005540C0</code> registers clump plugin <code>0xEA33</code> (<code>EARS_MESH</code>), reading geometry streams via <code>0x005542A0</code> and relocating 8-byte pointer records via <code>0x005549A4</code>.</li>
-            </ul>
+            <h2>Named registrations and format callbacks</h2>
+            <p>The retail initializer <code>0x54BDC</code> makes 149 explicit name/ID/descriptor/integer calls to <code>0x3EC9B0</code>, and a separate 94 ID-only calls to <code>0x47C168</code>. The named family contains 149 distinct IDs and 131 distinct callback code addresses; 19 names share one callback. Callback names and constructor behavior cannot be assigned one-to-one from these tuples.</p>
+            <p>All 149 explicit IDs equal the hash of their paired ASCII name under the reviewed <code>0x522090</code> recurrence: start at zero, fold ASCII A–Z to a–z, then <code>h = (h * 65599 + byte) mod 2^32</code> until NUL. Null/empty input returns zero. Example: <code>NPCDash</code> → <code>0x5B264B93</code>, with integer argument <code>0x8A0</code>. This does not prove that every identifier in every resource uses this hash.</p>
+            <p>Prior static exports associate plugin ID <code>0xEA33</code> registration at <code>0x5540C0</code> with stream callback <code>0x5542A0</code> and relocation helper <code>0x5549A4</code>, using the secondary TOC. Their stream and buffer contracts belong to the <a href="../STR/imbedded-formats/preinstanced.html#executable-call-chain">preinstanced analysis</a>; registration alone does not establish full geometry or material understanding.</p>
         </section>
         <section id="cross-platform-comparison">
-            <h2>Cross-release and Xbox 360 correspondence</h2>
-            <p>The PS3 implementation correlates directly with the Xbox 360 build (<a href="xex.html">default.xex</a>):</p>
-            <div class="table-scroll" role="region" aria-label="Cross-platform function correlation" tabindex="0">
-                <table>
-                    <caption>PS3 vs Xbox 360 Engine Architecture Alignment</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">Feature</th>
-                            <th scope="col">PS3 EBOOT.BIN (PPC64)</th>
-                            <th scope="col">Xbox 360 default.xex (PPC64)</th>
-                            <th scope="col">Alignment Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Actor Registration Initializer</td>
-                            <td><code>0x00054BDC</code></td>
-                            <td><code>0x823C3A00</code></td>
-                            <td>Exact 1:1 match across all 149 actor tuples</td>
-                        </tr>
-                        <tr>
-                            <td>Actor Dispatch Function</td>
-                            <td><code>0x003EC9B0</code></td>
-                            <td><code>0x82704008</code></td>
-                            <td>Identical parameter contracts</td>
-                        </tr>
-                        <tr>
-                            <td><code>EARS_MESH</code> (0xEA33) Plugin</td>
-                            <td><code>0x005542A0</code></td>
-                            <td><code>0x826F29F8</code></td>
-                            <td>Identical 12-byte header & relocation format</td>
-                        </tr>
-                        <tr>
-                            <td>Graphics Command Submission</td>
-                            <td>Cell GCM NV406E Push Buffer</td>
-                            <td>ATI Xenos PM4 Type-3 Ring Buffer</td>
-                            <td>Hardware divergent; logic identical</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <h2>Cross-release and Xbox comparison limits</h2>
+            <p>The supplied retail EU/US wrappers are identical. Demo differs in code/data addresses, descriptor TOCs, import membership and section extents. Matching startup-array counts and byte-equal nested images do not imply identical whole-program behavior. A single global retail-to-demo address delta is invalid.</p>
+            <p><a href="xex.html">Xbox 360 default.xex</a> is a separate container and address space. Shared registration tuples and string-signature matches are research anchors. The existing 598 cross-platform correlations include heuristic candidates; they are not 598 semantic function reviews or proof of whole-engine equivalence.</p>
         </section>
         <section id="related-formats">
             <h2>Related files and formats</h2>
-            <p>The PS3 executable operates alongside disc assets and has an architecture-equivalent sibling in the Xbox 360 release:</p>
             <ul>
-                <li><a href="xex.html">Xbox 360 Executable (default.xex)</a>: The Xenon PowerPC sibling executable, sharing the core engine architecture with Direct3D rendering.</li>
-                <li><a href="../../PARAM.SFO.html">PARAM.SFO Platform Metadata</a>: Disc and build metadata container located adjacent to the executable.</li>
-                <li><a href="../relationships.html">Format Relationships Guide</a>: Comprehensive resource dependency hierarchy across STR containers, Lua scripts, and media streams.</li>
+                <li><a href="../../PARAM.SFO.html">PARAM.SFO</a>: adjacent source metadata used to identify release trees.</li>
+                <li><a href="xex.html">Xbox 360 executable</a>: separate cross-platform research.</li>
+                <li><a href="../STR/imbedded-formats/preinstanced.html">Preinstanced streams</a> and <a href="../STR/imbedded-formats/msb.html">MSB music metadata</a>: format-specific static loader evidence.</li>
+                <li><a href="../relationships.html">Format relationships</a>: keeps numeric joins and unresolved runtime associations separate.</li>
             </ul>
         </section>
         <section id="operation-support">
             <h2 id="operation-support-2">Tools and integrations</h2>
-            <p>Optional <a href="../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-bin-index-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
-            <p>Support for PS3 executable analysis and reproduction in this workspace includes:</p>
-            <ul>
-                <li><strong><code>reversing/boot/</code>:</strong> Standalone C# bootloader reimplementation mimicking the EBOOT's initialization, state machine transitions, and asset mounting across all PS3 and Xbox 360 releases.</li>
-                <li><strong><code>Source/PS3/REA/TMP/</code>:</strong> Contains verified Ghidra decompiler exports, static flow indices (2.57M instructions), function reviews (<code>FUNCTION_REVIEWS.md</code>), and linkage ledgers.</li>
-                <li><strong><code>operations/init</code>:</strong> Module initialization scripts validating game disc structure, checking executable presence, and extracting PARAM.SFO metadata.</li>
-            </ul>
+            <p><a href="../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-bin-index-html">Remake Engine implementation notes</a> describe optional inspectors and project behavior separately from this format reference. Ghidra database inventories, exports, review ledgers and reproducible verification scripts live in the module's <code>Source/PS3/REA/TMP/</code>. The static documentation can be read and checked without those local game inputs.</p>
         </section>
         <section id="evidence-limits">
-            <h2>Evidence and limitations</h2>
-            <p>The findings documented here are derived from systematic static reverse engineering of <code>Source/PS3/REA/EBOOT.elf</code> (SHA-256 <code>092a8dbf6530e897ab0395ed45b3941e0723b8d50d361b0e958a5a6991d90fbc</code>) using headless Ghidra flow exports, opcode pattern verification, and 135 source-verified function passes. 13,711 instruction records were individually verified against raw ELF bytes with 0 mismatches.</p>
-            <p>Certain high-level gameplay state triggers, dynamic scripting callbacks, and SPU skinning microcode kernels remain under active investigation.</p>
+            <h2>Evidence, corrections and remaining work</h2>
+            <p>The <a href="eboot-reference.json">portable evidence record</a> was regenerated from original source bytes on 2026-11-02. ELF headers, all 79 section records per target, descriptor histograms, process/PRX bytes, every declared import stub, startup-array pointers and all six nested-image extents were checked. It also retains 2,123 source-compared instruction records across 43 selected protocol bodies and the packed-byte identities; this is separate from their semantic-review status. It records source paths/hashes and verification script hashes. Essential module research notes are 001, 002, 004–010, 013, 015, 016 and 026–029; note 006 documents a saved Ghidra TOC-context failure.</p>
+            <p>The existing retail database lists 41,300 functions, of which 41,233 start in file-executable sections, 66 are synthetic syscall entries and one is non-executable. Its static flow index contains 2,572,961 listing instructions whose bytes were compared to the ELF. These are database/inventory counts, not recovered-source counts or semantic completion. Undefined bytes, missed/split functions, indirect calls, callback bodies and separate SPU code remain in scope.</p>
+            <p>This audit corrects the former page's reversed entry addresses, approximate segment map, incorrect secondary TOC, import counts, SPU addresses/sizes and unsupported workload descriptions. The reverse initializer count is 382, not 26. Prior generated pseudocode can retain stale TOC/type/function-boundary artifacts even after entry-context correction; assembly and raw source mappings take precedence.</p>
+            <p>Remaining work includes full SELF control/cryptographic structure, function-by-function review of both unique payloads, unresolved executable regions, SPU load/job and DMA contracts, dynamic dispatch, asset-loader contracts, and runtime validation where needed. Neither a metadata inspector nor the separate C# boot simulation executes or reconstructs the original executable's full behavior.</p>
         </section>
     </body>
 </html>

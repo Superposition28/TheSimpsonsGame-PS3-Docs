@@ -12,7 +12,7 @@
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Preinstanced models</nav>
         <h1>Preinstanced Asset Format (EARS_MESH) - Complete Implementation Guide</h1>
         <aside class="source-notice" aria-label="Source and path scope">
-            <p><strong>Source scope:</strong> PS3 EU retail release executable (<code>ps3-eu-executable:EBOOT.elf</code>) and extracted assets (<code>ps3-eu-extracted</code>). Retained cross-platform and release observations keep their stated scope. Historical inventories and samples retain their recorded paths; unresolved mixed paths require reconciliation before use as canonical examples. See <a href="../../../../reference/sources.html#paths">roots and provenance</a>.</p>
+            <p><strong>Source scope:</strong> the inspected PS3 EU retail executable payload (<code>ps3-eu-original</code>; ELF fingerprint below) and extracted assets (<code>ps3-eu-extracted</code>). Retained cross-platform and release observations keep their stated scope. Historical inventories and samples retain their recorded paths; unresolved mixed paths require reconciliation before use as canonical examples. See <a href="../../../../reference/sources.html#paths">roots and provenance</a>.</p>
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
@@ -23,7 +23,7 @@
                 <dt>Byte order / text</dt>
                 <dd>Mixed-Endian: RenderWare stream chunk headers, chunk size words, and EARS_MESH header buffer sizes are <strong>Little-Endian</strong> (<code>UInt32 LE</code>); CPU submesh metadata (Buffer 1) and GPU vertex/index arrays (Buffer 2) are <strong>Big-Endian</strong> (<code>UInt32 BE</code>, <code>Float32 BE</code>, <code>UInt16 BE</code>).</dd>
                 <dt>Documentation scope</dt>
-                <dd>Updated on 2026-10-31 based on complete static disassembly of the PS3 retail executable (<code>EBOOT.elf</code> functions <code>0x005540C0</code>, <code>0x005542A0</code>, <code>0x005549A4</code>, <code>0x00428448</code>, <code>0x00429070</code>, <code>0x004223A0</code>, <code>0x00422EE4</code>) and 100% corpus verification across all game files.</dd>
+                <dd>Selected static loader/relocation exports and asset observations, with source-specific limits below. Whole-executable semantic review is incomplete; disassembly and successful conversion do not establish complete format or corpus validation.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
@@ -34,7 +34,7 @@
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
                 <li><a href="#collision-hanim-join">Bunny collision bindings and HAnim nodes</a></li>
                 <li><a href="#overview">Overview &amp; Engine Architecture</a></li>
-                <li><a href="#executable-call-chain">PS3 Executable Disassembly &amp; Runtime Evidence</a></li>
+                <li><a href="#executable-call-chain">PS3 executable static evidence</a></li>
                 <li><a href="#identification-signatures">RenderWare Chunk Hierarchy &amp; Signatures</a></li>
                 <li><a href="#texture-name-extraction">Texture Name &amp; Material Association</a></li>
                 <li><a href="#mesh-chunk-header-structure">Mesh Chunk Header Structure (EARS_MESH)</a></li>
@@ -93,6 +93,7 @@
                     </tbody>
                 </table>
             </div>
+            <p>The <a href="../../BIN/index.html">PS3 executable reference</a> identifies the payload supplying the static loader evidence and its TOC/mapping constraints.</p>
             <p>See the <a href="../../relationships.html">format relationship guide</a> for the larger asset workflows and shared data conventions.</p>
         </section>
         <section id="operation-support">
@@ -134,8 +135,8 @@
                 </ul>
             </li>
         </ul>
-        <h2 id="executable-call-chain">PS3 Executable Disassembly &amp; Runtime Evidence</h2>
-        <p>Static analysis of the retail PS3 executable (<code>ps3-eu-executable:EBOOT.elf</code>) documents the exact loader implementation, chunk registrations, and memory fixup routines:</p>
+        <h2 id="executable-call-chain">PS3 executable static evidence</h2>
+        <p>The <a href="../../BIN/index.html">executable reference</a> fingerprints the inspected retail ELF as SHA-256 <code>092a8dbf6530e897ab0395ed45b3941e0723b8d50d361b0e958a5a6991d90fbc</code> and documents its two TOC bases. The loader addresses below belong to that target. Static disassembly supplies these call and buffer observations; original-game execution was not observed in this analysis.</p>
         <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
             <table>
                 <thead>
