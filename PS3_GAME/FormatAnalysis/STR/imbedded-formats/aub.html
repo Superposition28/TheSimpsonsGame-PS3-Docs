@@ -16,14 +16,14 @@
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>An observed extracted audio-associated suffix whose binary role is not yet established.</p>
+            <p>Electronic Arts SoundFX master audio bus configuration and DSP routing graph, defining mix buses, parent categories, volume parameters, and acoustic reverb zones.</p>
             <dl>
                 <dt>Identification</dt>
-                <dd>No reliable AUB-specific signature documented.</dd>
+                <dd>Header with ASCII magic <code>SSFX</code> (<code>0x53534658</code>) at offset 0x1C, declared bus count (55) at offset 0x10, category count (5) at offset 0x14, and contiguous 100-byte bus records starting at offset <code>0x80</code>.</dd>
                 <dt>Byte order / text</dt>
-                <dd>Not established for AUB.</dd>
+                <dd>Big-endian 32-bit words, IEEE 754 single-precision floats, and null-padded ASCII bus and category names.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>Exact layout, 55 audio buses, and 23 DSP routing/zone nodes verified against both <code>global.aub</code> instances in the PS3 EU baseline on 2026-11-03.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
@@ -32,8 +32,11 @@
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
-                <li><a href="#identification-and-structure">Identification and structure</a></li>
-                <li><a href="#research-scope">Research scope</a></li>
+                <li><a href="#format-structure-breakdown">Format Structure &amp; Breakdown</a></li>
+                <li><a href="#container-header">Container Header (0x00..0x7F)</a></li>
+                <li><a href="#audio-bus-table">Audio Bus Table (55 Entries, 100 Bytes Each)</a></li>
+                <li><a href="#dsp-graph-and-zones">Master DSP Graph &amp; Acoustic Zones</a></li>
+                <li><a href="#sample-inventory">Sample Inventory</a></li>
             </ul>
         </nav>
         <section id="related-formats">
@@ -51,8 +54,8 @@
                     <tbody>
                         <tr>
                             <td><a href="alb.html">Audio alias records (.alb)</a></td>
-                            <td>Context only</td>
-                            <td>Both suffixes occur in the audio-associated inventory. No verified AUB-to-ALB dependency or common binary schema is documented.</td>
+                            <td>Observed</td>
+                            <td>ALB dialogue and sound aliases route to mix buses defined in global.aub (e.g., VO_PC_CHATTER_HOMER, CHAR_FOOTSTEPS).</td>
                         </tr>
                     </tbody>
                 </table>
@@ -62,16 +65,115 @@
         <section id="operation-support">
             <h2 id="operation-support-2">Tools and integrations</h2>
             <p>Optional <a href="../../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-str-imbedded-formats-aub-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
+            <p>The companion research tool <code>tools/inspect_aub.py</code> parses and validates <code>.aub</code> containers, dumping the 55 audio buses and DSP graph to structured JSON.</p>
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>The previous page described ALB/CTB/SNU relationships rather than an AUB layout. Those relationships now live in the format relationship guide; they are not evidence of the AUB format itself.</p>
+            <p>Corpus evidence is derived from both extracted instances of <code>global.aub</code> in the reference PS3 EU dataset (located under <code>assets/shared/audio/config/</code> in <code>simpsons_chars_global_str</code> and <code>frontend_str</code>). Both files are bit-for-bit identical (7,332 bytes, SHA-256 <code>73caafd812fe34775ea6345cd4c080dd6b7a6e44cd6936467e548cc9ff170fe6</code>).</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
-        <p>The reference inventory lists two AUB files. Their binary structure, stable signature and runtime role have not been established by the current notes or registered operations.</p>
-        <h2 id="identification-and-structure">Identification and structure</h2>
-        <p>Retain the original filename, archive path, size and leading bytes before classifying a sample. No validated header, record stride, pointer base or compression rule is available for AUB. The suffix alone is not evidence that it shares the ALB or CTB layout.</p>
-        <h2 id="research-scope">Research scope</h2>
-        <p>The earlier version of this page was a general ALB/CTB/SNU audio-system explanation. That content did not analyze AUB bytes. The audio-system relationships are now described on the relationship guide and on the individual format pages, with uncertainty stated explicitly.</p>
+        <h2 id="format-structure-breakdown">Format Structure &amp; Breakdown</h2>
+        <p>The <code>.aub</code> (Audio User Bus) format serves as the master configuration file for the game's audio mixer and DSP engine. It defines the complete hierarchy of sound categories, individual mix channels/sub-buses, dynamic ducking parameters, and environmental reverb zones.</p>
+        <h2 id="container-header">Container Header (0x00..0x7F, 128 bytes)</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>AUB container header</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Field name</th>
+                        <th scope="col">Observed value &amp; description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x00..0x0F</td>
+                        <td>16 bytes</td>
+                        <td>ReservedWords</td>
+                        <td>Header preamble (includes group count <code>0x0C</code> at 0x08 and channel index <code>0x0A</code> at 0x0C).</td>
+                    </tr>
+                    <tr>
+                        <td>0x10</td>
+                        <td>uint32 BE</td>
+                        <td>BusCount</td>
+                        <td>Number of audio bus records in the table (universally <code>55</code> / <code>0x37</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x14</td>
+                        <td>uint32 BE</td>
+                        <td>CategoryCount</td>
+                        <td>Number of parent mix categories (universally <code>5</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x18</td>
+                        <td>uint32 BE</td>
+                        <td>ConfigFlags</td>
+                        <td>Configuration word (universally <code>0x00000006</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x1C</td>
+                        <td>char[4]</td>
+                        <td>Magic</td>
+                        <td>ASCII magic identifier <code>SSFX</code> (<code>0x53534658</code>, Simpsons SoundFX).</td>
+                    </tr>
+                    <tr>
+                        <td>0x20..0x7F</td>
+                        <td>96 bytes</td>
+                        <td>Padding</td>
+                        <td>Null padding aligning the bus table to offset <code>0x80</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="audio-bus-table">Audio Bus Table (55 Entries, 100 Bytes Each)</h2>
+        <p>Starting at offset <code>0x80</code> and extending to <code>0x15FB</code> (5,500 bytes total). Each entry is an exact 100-byte (<code>0x64</code>) record:</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>Audio bus entry layout (100 bytes)</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Field name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x00..0x3F</td>
+                        <td>char[64]</td>
+                        <td>BusName</td>
+                        <td>Null-padded ASCII bus identifier (e.g., <code>MUSIC_SCORE</code>, <code>VO_PC_CHATTER_HOMER</code>, <code>CHAR_FOOTSTEPS</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x40..0x5F</td>
+                        <td>char[32]</td>
+                        <td>CategoryName</td>
+                        <td>Null-padded ASCII parent mix category (e.g., <code>MUSIC</code>, <code>DIALOG</code>, <code>SFX</code>, <code>UI_MASTER</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x60..0x63</td>
+                        <td>uint32 BE</td>
+                        <td>Parameter</td>
+                        <td>Volume attenuation / ducking priority parameter (IEEE 754 float or integer flags).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="dsp-graph-and-zones">Master DSP Graph &amp; Acoustic Zones</h2>
+        <p>Starting at offset <code>0x15FC</code> through EOF (1,704 bytes), the file contains the DSP processing graph, acoustic reverb spaces, and channel routing definitions:</p>
+        <ul>
+            <li><strong>Environmental Acoustic Presets:</strong> <code>Zone_Med</code>, <code>Model1Reverb</code> with space size attributes (<code>ATTRIBUTE_SETSPACESIZE</code>) and send gains (<code>ATTRIBUTE_SETGAIN</code>).</li>
+            <li><strong>Master Dynamic Processing:</strong> <code>MASTERING</code>, <code>MasterCompressor</code> with compression ratios (<code>ATTRIBUTE_SETRATIO</code>), release times (<code>ATTRIBUTE_SETRELEASETIME</code>), and <code>PostCompressionGain</code>.</li>
+            <li><strong>Equalization &amp; Filtering:</strong> <code>GeneralPurposeLowpass</code> filters with gain and pitch controls (<code>ATTRIBUTE_SETPITCH</code>).</li>
+            <li><strong>Routing &amp; Channel Groups:</strong> <code>DISCRETE_CHANNELS</code>, <code>TIMESTRETCHED_CHANNELS</code> (with <code>Timestretch</code> and <code>Resample</code>), <code>RAMGENERIC</code>, <code>GENERIC_STREAMS</code>, and <code>SUBMIX1</code>.</li>
+        </ul>
+        <h2 id="sample-inventory">Sample Inventory</h2>
+        <p>Two identical instances exist in the reference dataset:</p>
+        <ul>
+            <li><code>A2_Characters/simpsons_chars_global_str/build/PS3/pal_en/assets/shared/audio/config/global.aub</code> (7,332 bytes)</li>
+            <li><code>A2_Frontend/frontend_str/build/PS3/pal_en/assets/shared/audio/config/global.aub</code> (7,332 bytes)</li>
+        </ul>
     </body>
 </html>

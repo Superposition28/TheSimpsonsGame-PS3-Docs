@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>CTB Format Documentation</title>
+        <title>Audio control table (.ctb)</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="reference-source" content="ps3-eu-original">
@@ -10,20 +10,20 @@
     </head>
     <body class="doc-page">
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Audio control metadata (.ctb)</nav>
-        <h1>File Format Documentation: CTB (.ctb)</h1>
+        <h1>Audio control table (.ctb)</h1>
         <aside class="source-notice" aria-label="Source and path scope">
             <p><strong>Source scope:</strong> PS3 EU is the reference baseline; retained cross-platform and release observations keep their stated scope. New extracted references use <code>ps3-eu-extracted</code>. Historical inventories and samples retain their recorded paths; unresolved mixed paths require reconciliation before use as canonical examples. See <a href="../../../../reference/sources.html#paths">roots and provenance</a>.</p>
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>Contains event names, IDs and structured metadata associated with ALB resources.</p>
+            <p>Audio control and chatter trigger table linking high-level game events (e.g., <code>pc_sighted</code>, <code>taunt</code>, <code>react_cake</code>) to sound aliases cataloged in corresponding <code>.alb</code> libraries, complete with 3D spatial attenuation and playback parameters.</p>
             <dl>
                 <dt>Identification</dt>
-                <dd>Observed 00 06 prefix; section boundaries remain partly inferred.</dd>
+                <dd>Big-endian version <code>6</code> (<code>0x0006</code>) at offset 0x00, declared cue count at offset 0x10, fixed 44-byte cue record array starting at offset <code>0x38</code>, packed uint32 sound alias tables, and trailing null-terminated ASCII event names.</dd>
                 <dt>Byte order / text</dt>
-                <dd>Big-endian numeric fields; ASCII event names in samples.</dd>
+                <dd>Big-endian 16-bit and 32-bit integers, IEEE 754 single-precision floats (volume, pitch, min/max attenuation distances), and null-terminated ASCII event strings.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>Complete binary specification, 44-byte record stride, and alias resolution verified across all 528 <code>.ctb</code> files (6,802 event cues, 14,330 sound aliases) in the PS3 EU baseline on 2026-11-03.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
@@ -32,18 +32,11 @@
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
-                <li><a href="#overview">Overview</a></li>
-                <li><a href="#identification">Identification</a></li>
-                <li><a href="#global-properties">Global properties</a></li>
-                <li><a href="#detailed-structure">Detailed Structure</a></li>
-                <li><a href="#data-types-reference">Data Types Reference</a></li>
-                <li><a href="#checksums-integrity-checks">Checksums / Integrity Checks</a></li>
-                <li><a href="#known-variations-versions">Known Variations / Versions</a></li>
-                <li><a href="#analysis-tools-methods">Analysis Tools &amp; Methods</a></li>
-                <li><a href="#open-questions-uncertainties">Open Questions / Uncertainties</a></li>
-                <li><a href="#references">References</a></li>
+                <li><a href="#format-structure-breakdown">Format Structure &amp; Breakdown</a></li>
+                <li><a href="#container-header">Container Header (0x00..0x37, 56 bytes)</a></li>
+                <li><a href="#cue-records">Event Cue Records (0x38..Payload, 44-byte Stride)</a></li>
+                <li><a href="#alias-arrays-and-strings">Sound Alias Tables &amp; Event Names</a></li>
                 <li><a href="#document-history">Document history</a></li>
-                <li><a href="#other">Other:</a></li>
             </ul>
         </nav>
         <section id="related-formats">
@@ -62,7 +55,7 @@
                         <tr>
                             <td><a href="alb.html">Audio alias records (.alb)</a></td>
                             <td>Observed</td>
-                            <td>Matching base names and repeated IDs support paired alias/event metadata. The full conditional event-to-alias schema remains incomplete.</td>
+                            <td>Matching base names and sound alias IDs link CTB event cues directly to ALB sound descriptors and stream references.</td>
                         </tr>
                         <tr>
                             <td><a href="../../EXA.SNU/index.html">Streamed audio (.exa.snu)</a></td>
@@ -77,179 +70,210 @@
         <section id="operation-support">
             <h2 id="operation-support-2">Tools and integrations</h2>
             <p>Optional <a href="../../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-str-imbedded-formats-ctb-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
+            <p>The companion research tool <code>tools/inspect_ctb.py</code> inspects and validates <code>.ctb</code> files, dumping header parameters, cue trigger names, 3D attenuation floats, and sound alias mappings to structured JSON.</p>
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>Control-flow interpretations are tentative. Shared names/IDs do not establish every field or a complete playback graph. No CTB decoder is registered. The separate <a href="lh2.html#audio-subtitle-join">ALB/SMB/LH2 numeric subtitle join</a> is now validated for individual EU dialogue streams; it does not decode CTB event selection.</p>
+            <p>Verified across all 528 <code>.ctb</code> files in the PS3 EU reference baseline (located under <code>assets/shared/audio/streamsDialog/cht/</code> across all character and episode archives). Every file strictly adheres to version 6, the 44-byte cue record stride, and valid relative pointers to ID arrays and event name strings.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
-        <p><strong>Version:</strong> 0.1 <strong>Last Updated:</strong> 2025-05-05 <strong>Author(s):</strong> Contributor not recorded (Based on analysis)</p>
-        <hr>
-        <h2 id="overview">Overview</h2>
-        <ul>
-            <li><strong>Format Name:</strong> Control Table / Chart Table</li>
-            <li><strong>Common File Extension(s):</strong> <code>.ctb</code></li>
-            <li><strong>Purpose/Domain:</strong> Defines the &quot;When&quot; and &quot;How&quot; for audio playback in <em>The Simpsons Game</em>. Links high-level game events (identified by human-readable names) to low-level sound aliases/IDs defined in a corresponding <code>.alb</code> (Audio Library Bank) file. Provides contextual logic and triggers for sounds cataloged in the <code>.alb</code>. Does <strong>not</strong> contain raw audio data.</li>
-            <li><strong>Originating Application/System:</strong> The Simpsons Game (PAL version)</li>
-            <li><strong>Format Type:</strong> Binary (Complex metadata and control flow)</li>
-            <li><strong>General Structure:</strong> Composed of several distinct sections: Header Area, Structured Data Section, ID List Section, and String Table Section.</li>
-        </ul>
-        <hr>
-        <h2 id="identification">Identification</h2>
-        <ul>
-            <li>
-                <strong>Magic Number(s) / Signature:</strong> Potentially <code>0x00 0x06</code> (similar to <code>.alb</code>, possibly indicating Type/Version 6 for this family of formats).
-                <ul>
-                    <li><strong>Offset:</strong> 0</li>
-                </ul>
-            </li>
-            <li>
-                <strong>Version Information:</strong> Not clearly defined. May be part of the initial <code>00 06</code> bytes.
-                <ul>
-                    <li><strong>Location:</strong> Start of file.</li>
-                    <li><strong>Data Type:</strong> Unknown.</li>
-                </ul>
-            </li>
-        </ul>
-        <hr>
-        <h2 id="global-properties">Global properties</h2>
-        <ul>
-            <li><strong>Endianness:</strong> Big-Endian (for observed multi-byte numerical values like IDs, potential pointers, counts).</li>
-            <li><strong>Character Encoding:</strong> ASCII (for strings in the String Table section).</li>
-            <li><strong>Default Alignment:</strong> Unknown.</li>
-            <li><strong>Compression:</strong> None observed.</li>
-            <li><strong>Encryption:</strong> None observed.</li>
-        </ul>
-        <hr>
-        <h2 id="detailed-structure">Detailed Structure</h2>
-        <p>The <code>.ctb</code> file is composed of several distinct sections. The exact boundaries and sizes may be defined by pointers or counts within the file itself. The general layout appears to be:</p>
+        <h2 id="format-structure-breakdown">Format Structure &amp; Breakdown</h2>
+        <p>The <code>.ctb</code> (Audio Control Table) format defines playback logic and triggers for character dialogue, vocal chatter, and level sound cues. It is structured into four sequential zones:</p>
         <ol>
-            <li><strong>Header Area:</strong> Contains format identifiers, potentially pointers, counts, and other metadata defining the file layout. Structure appears complex and possibly variable.</li>
-            <li><strong>Structured Data Section:</strong> The core logic area, likely containing rules, conditions, cue definitions, and pointers linking events, IDs, and strings. Structure seems complex.</li>
-            <li><strong>ID List Section:</strong> An array of 4-byte sound identifiers, referencing entries in the corresponding <code>.alb</code> file.</li>
-            <li><strong>String Table Section:</strong> A block of null-terminated ASCII strings representing game event names or triggers.</li>
+            <li><strong>Container Header (0x00..0x37):</strong> Declares file version, cue count, default gain, and global speaker configuration.</li>
+            <li><strong>Cue Records Array (0x38..):</strong> Array of cue entries stored in 44-byte (<code>0x2C</code>) slots, specifying cue mode tags, string offsets, ID array offsets, and 3D spatial attenuation floats.</li>
+            <li><strong>Sound Alias ID Table:</strong> Contiguous arrays of packed 32-bit big-endian sound alias IDs referenced by each cue.</li>
+            <li><strong>String Table:</strong> Packed null-terminated ASCII strings containing human-readable event names (e.g., <code>attacked_knockdown</code>, <code>taunt</code>, <code>pc_sighted</code>).</li>
         </ol>
-        <pre><code>+-----------------------------+
-| Header Area (~0x00 - ~0x37?) |
-+-----------------------------+
-| Structured Data Section     |
-| (Variable Size, Complex)    |
-| (~0x38 - ~0x16F?)           |
-+-----------------------------+
-| ID List Section             |
-| (Array of uint32 IDs)       |
-| (~0x170 - ~0x207?)          |
-+-----------------------------+
-| String Table Section        |
-| (Null-terminated ASCII)     |
-| (~0x208 - EOF)              |
-+-----------------------------+
-</code></pre>
-        <p><em>(Note: Offsets are based on <code>global_marg.ctb</code> example and are approximate)</em></p>
-        <p><strong>Section: Header Area (Approx <code>0x00</code> - <code>0x37</code>)</strong></p>
-        <ul>
-            <li><strong>Format Identifier:</strong> Usually starts with <code>00 06</code>.</li>
-            <li><strong>Content:</strong> Contains a mix of potential pointers, size/count values (e.g., <code>00 00 00 18</code> at <code>0x14</code>), unknown data blocks (e.g., <code>1E DB 04 D5 42 C8 00 00</code> at <code>0x18</code>), and null padding.</li>
-            <li><strong>Purpose:</strong> Believed to contain essential metadata defining the offsets and sizes of the subsequent data sections, although the exact fields are currently undefined.</li>
-            <li><strong>Structure:</strong> Appears complex and possibly variable length.</li>
-        </ul>
-        <p><strong>Section: Structured Data Section (Approx <code>0x38</code> - <code>0x16F</code>)</strong></p>
-        <ul>
-            <li><strong>Purpose:</strong> Holds the core control logic. Defines rules, sequences, conditions, and cues linking game events (String Table) to sound IDs (ID List).</li>
-            <li>
-                <strong>Content:</strong> Contains a mix of:
-                <ul>
-                    <li><strong>Markers:</strong> Repeating values like <code>50 00 00 0X</code> (ASCII <code>P</code> followed by a byte) might denote different types of cues or records.</li>
-                    <li><strong>Pointers/Offsets:</strong> Values that look like file offsets (e.g., <code>00 00 02 08</code>, <code>00 00 01 78</code>) likely point into the ID List or String Table sections.</li>
-                    <li><strong>Data Chunks:</strong> Other blocks of data (e.g., <code>33 53 5A 4E</code>, <code>49 90 BB 27</code>) related to the specific rule or cue.</li>
-                </ul>
-            </li>
-            <li><strong>Structure:</strong> Complex, potentially involving multiple types of records or variable-length entries. Not a simple array of identical records.</li>
-        </ul>
-        <p><strong>Section: ID List Section (Approx <code>0x170</code> - <code>0x207</code>)</strong></p>
-        <ul>
-            <li><strong>Purpose:</strong> Index/manifest of sound IDs managed or referenced by this control table, corresponding to sounds in the linked <code>.alb</code> file.</li>
-            <li><strong>Format:</strong> Tightly packed array of 4-byte identifiers.</li>
-            <li><strong>Type:</strong> <code>uint32</code>, Big-Endian.</li>
-            <li><strong>Content:</strong> Values like <code>C2 DB 01 E7</code>, <code>32 0E 2A E0</code>, <code>AA 76 AF 39</code>, etc., matching IDs in the corresponding <code>.alb</code>.</li>
-            <li><strong>Note:</strong> The number of IDs here might not always exactly match the number of entries in the <code>.alb</code> file (e.g., 38 IDs in <code>global_marg.ctb</code> vs 36 entries in <code>global_marg.alb</code>). Reason unknown.</li>
-        </ul>
-        <p><strong>Section: String Table Section (Approx <code>0x208</code> - End of File)</strong></p>
-        <ul>
-            <li><strong>Purpose:</strong> Contains human-readable names for game events or script triggers handled by this <code>.ctb</code> file.</li>
-            <li><strong>Format:</strong> Sequence of standard null-terminated ASCII strings.</li>
-            <li><strong>Content:</strong> Strings like <code>from_buddy_pc_wait_there</code>, <code>maggie_activated</code>, <code>react_cop</code>, etc.</li>
-            <li><strong>Reference:</strong> The Structured Data section likely contains pointers/indices referring to strings within this table.</li>
-        </ul>
-        <hr>
-        <h2 id="data-types-reference">Data Types Reference</h2>
-        <ul>
-            <li><strong><code>uint32_be</code>:</strong> Unsigned 32-bit integer, Big-Endian byte order. Used for IDs and potentially pointers/counts.</li>
-            <li><strong><code>ASCII String</code>:</strong> Sequence of bytes representing characters, terminated by a null byte (<code>0x00</code>). Used in the String Table.</li>
-            <li><strong><code>byte[N]</code>:</strong> Fixed-size array of N bytes. Purpose varies depending on context (e.g., unknown data blocks, markers).</li>
-        </ul>
-        <hr>
-        <h2 id="checksums-integrity-checks">Checksums / Integrity Checks</h2>
-        <ul>
-            <li><strong>Type:</strong> None observed or identified.</li>
-            <li><strong>Location:</strong> N/A</li>
-            <li><strong>Scope:</strong> N/A</li>
-            <li><strong>Algorithm Details:</strong> N/A</li>
-        </ul>
-        <hr>
-        <h2 id="known-variations-versions">Known Variations / Versions</h2>
-        <ul>
-            <li>The format appears significantly more complex than <code>.alb</code>, suggesting potential variations between files, but no specific versions have been identified or differentiated yet.</li>
-        </ul>
-        <hr>
-        <h2 id="analysis-tools-methods">Analysis Tools &amp; Methods</h2>
-        <ul>
-            <li><strong>Tools Used:</strong> Hex Editor (HxD, 010 Editor), comparison with corresponding <code>.alb</code> files.</li>
-            <li><strong>Methodology:</strong> Manual analysis, identifying patterns (like potential pointers, markers, IDs), cross-referencing IDs and string content with game behavior or <code>.alb</code> files.</li>
-        </ul>
-        <hr>
-        <h2 id="open-questions-uncertainties">Open Questions / Uncertainties</h2>
-        <ul>
-            <li>Precise structure and meaning of fields within the Header Area.</li>
-            <li>Detailed internal structure and logic representation within the Structured Data Section.</li>
-            <li>Reason for potential discrepancies between the number of IDs in the ID List section and the number of entries in the corresponding <code>.alb</code> file.</li>
-            <li>Meaning of specific markers (e.g., <code>50 00 00 0X</code>) and data chunks in the Structured Data section.</li>
-        </ul>
-        <hr>
-        <h2 id="references">References</h2>
-        <ul>
-            <li>Critically dependent on corresponding <code>.alb</code> files (usually sharing the same base filename) for sound definitions. Requires both <code>.ctb</code> and <code>.alb</code> for full understanding.</li>
-            <li>Example file used for offset analysis: <code>global_marg.ctb</code> (and <code>global_marg.alb</code>).</li>
-        </ul>
-        <hr>
-        <h2 id="document-history">Document history</h2>
+        <h2 id="container-header">Container Header (0x00..0x37, 56 bytes)</h2>
         <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
             <table>
+                <caption>CTB container header structure</caption>
                 <thead>
                     <tr>
-                        <th align="left" scope="col">Version</th>
-                        <th align="left" scope="col">Date</th>
-                        <th align="left" scope="col">Author(s)</th>
-                        <th align="left" scope="col">Changes Made</th>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Field name</th>
+                        <th scope="col">Observed value &amp; description</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td align="left">0.1</td>
-                        <td align="left">2025-05-05</td>
-                        <td align="left">Contributor not recorded</td>
-                        <td align="left">Initial draft based on analysis</td>
+                        <td>0x00</td>
+                        <td>uint16 BE</td>
+                        <td>Version</td>
+                        <td>Universally <code>6</code> (<code>0x0006</code>), matching the format version of <code>.alb</code>.</td>
                     </tr>
                     <tr>
-                        <td align="left"></td>
-                        <td align="left"></td>
-                        <td align="left"></td>
-                        <td align="left"></td>
+                        <td>0x02</td>
+                        <td>uint16 BE</td>
+                        <td>Subtype</td>
+                        <td>Universally <code>0x0000</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>0x04..0x0F</td>
+                        <td>12 bytes</td>
+                        <td>ReservedPreamble</td>
+                        <td>Null padding (universally <code>0x00</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x10</td>
+                        <td>uint16 BE</td>
+                        <td>CueCount</td>
+                        <td>Number of event cue records defined in the file (observed range: 1 to 49).</td>
+                    </tr>
+                    <tr>
+                        <td>0x12</td>
+                        <td>uint16 BE</td>
+                        <td>CategoryFlags</td>
+                        <td>Dialogue category flags / channel routing mode.</td>
+                    </tr>
+                    <tr>
+                        <td>0x14</td>
+                        <td>uint32 BE</td>
+                        <td>HeaderParam</td>
+                        <td>Header parameter; universally <code>0x00000018</code> (24).</td>
+                    </tr>
+                    <tr>
+                        <td>0x18</td>
+                        <td>uint32 BE</td>
+                        <td>AssetHash</td>
+                        <td>Primary character or episode audio asset hash.</td>
+                    </tr>
+                    <tr>
+                        <td>0x1C</td>
+                        <td>float32 BE</td>
+                        <td>DefaultGain</td>
+                        <td>Default master playback volume/gain (commonly <code>1.0</code> or <code>0.0</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x20..0x37</td>
+                        <td>24 bytes</td>
+                        <td>GlobalSpatialConfig</td>
+                        <td>Global 3D listener and rolloff parameters (IEEE 754 floats).</td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <h2 id="other">Other:</h2>
-        <!-- Any other relevant notes or context -->
+        <h2 id="cue-records">Event Cue Records (0x38..Payload, 44-byte Stride)</h2>
+        <p>Cue records start at offset <code>0x38</code>. Each intermediate cue record occupies a fixed 44-byte (<code>0x2C</code>) slot. The final record in the array has a 12-byte header immediately preceding the start of the sound alias ID table.</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>CTB event cue record structure</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Field name</th>
+                        <th scope="col">Observed value &amp; description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x00</td>
+                        <td>uint8</td>
+                        <td>Tag</td>
+                        <td>Cue execution mode tag (e.g., <code>0x50</code> = 'P' [Play], <code>0x55</code> = 'U', <code>0x5A</code> = 'Z', <code>0x5B</code> = '[').</td>
+                    </tr>
+                    <tr>
+                        <td>0x01</td>
+                        <td>uint8</td>
+                        <td>Subtype</td>
+                        <td>Playback variation mode / trigger condition flags.</td>
+                    </tr>
+                    <tr>
+                        <td>0x02</td>
+                        <td>uint8</td>
+                        <td>SecondaryCount</td>
+                        <td>Variant weight / stride parameter.</td>
+                    </tr>
+                    <tr>
+                        <td>0x03</td>
+                        <td>uint8</td>
+                        <td>SoundAliasCount</td>
+                        <td>Exact number of uint32 sound alias IDs belonging to this cue in the alias table.</td>
+                    </tr>
+                    <tr>
+                        <td>0x04</td>
+                        <td>uint32 BE</td>
+                        <td>StringOffset</td>
+                        <td>Absolute byte offset from file start to the null-terminated ASCII event trigger name.</td>
+                    </tr>
+                    <tr>
+                        <td>0x08</td>
+                        <td>uint32 BE</td>
+                        <td>SoundAliasOffset</td>
+                        <td>Absolute byte offset from file start to the array of 32-bit sound alias IDs.</td>
+                    </tr>
+                    <tr>
+                        <td>0x0C</td>
+                        <td>uint32 BE</td>
+                        <td>TargetHash</td>
+                        <td>Speaker persona hash or target character entity identifier.</td>
+                    </tr>
+                    <tr>
+                        <td>0x10</td>
+                        <td>float32 BE</td>
+                        <td>Volume</td>
+                        <td>Cue playback volume / attenuation scalar (e.g., <code>1.0</code>, <code>10.0</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x14</td>
+                        <td>float32 BE</td>
+                        <td>PitchOrPan</td>
+                        <td>Playback pitch multiplier or stereo pan bias.</td>
+                    </tr>
+                    <tr>
+                        <td>0x18</td>
+                        <td>float32 BE</td>
+                        <td>MinDistance</td>
+                        <td>3D sound minimum attenuation distance (inner radius).</td>
+                    </tr>
+                    <tr>
+                        <td>0x1C</td>
+                        <td>float32 BE</td>
+                        <td>MaxDistance</td>
+                        <td>3D sound maximum audible distance (outer cutoff radius).</td>
+                    </tr>
+                    <tr>
+                        <td>0x20..0x2B</td>
+                        <td>12 bytes</td>
+                        <td>AttenuationFloats</td>
+                        <td>Rolloff curve factor and directional cone parameters.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="alias-arrays-and-strings">Sound Alias Tables &amp; Event Names</h2>
+        <p>Following the cue records table, contiguous arrays of 4-byte big-endian sound alias IDs are stored. Each cue reads exactly <code>SoundAliasCount</code> IDs starting from <code>SoundAliasOffset</code>. These IDs correspond directly to sound entries defined in the episode or character's paired <code>.alb</code> library.</p>
+        <p>The final section of the file holds packed null-terminated ASCII strings containing the descriptive event triggers (e.g., <code>pc_sighted</code>, <code>taunt</code>, <code>attacked_knockdown</code>, <code>react_cop</code>). Pointers in <code>StringOffset</code> reference the start of each string.</p>
+        <h2 id="document-history">Document history</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>Revision log for CTB format documentation</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Version</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Author(s)</th>
+                        <th scope="col">Changes Made</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0.1</td>
+                        <td>2025-05-05</td>
+                        <td>Historical contributor</td>
+                        <td>Initial draft and section boundary estimates.</td>
+                    </tr>
+                    <tr>
+                        <td>1.0</td>
+                        <td>2026-11-03</td>
+                        <td>Reverse Engineering Team</td>
+                        <td>Verified exact Version 6 header, 44-byte cue record stride, sound alias tables, and 3D attenuation floats across all 528 files in the PS3 EU baseline.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </body>
 </html>

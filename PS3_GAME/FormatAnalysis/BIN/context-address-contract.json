@@ -1,0 +1,1153 @@
+{
+  "schema_version": 1,
+  "verified_date": "2026-11-03",
+  "target_sha256": "092a8dbf6530e897ab0395ed45b3941e0723b8d50d361b0e958a5a6991d90fbc",
+  "method": "Static instruction/OPD/import verification and local CFG traversal; no target execution",
+  "limitations": [
+    "Syntactic paths assume normal return from imported calls",
+    "No proof of path feasibility, actual mapping values or valid bank capacity",
+    "Import names are attributed saved labels; actual binding unobserved",
+    "Direct-call inventory excludes indirect or unlisted code"
+  ],
+  "exports": [
+    {
+      "export": "retail_pass36_address_conversion/function_0045228c.md",
+      "entry": "0x0045228c",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 56,
+      "sha256": "b7f2201239bda8d73ee7bd4b4be80b2ce77b55af3b321b5b9db03c4826d60e49"
+    },
+    {
+      "export": "retail_pass37_context_inputs/function_004177c8.md",
+      "entry": "0x004177c8",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 76,
+      "sha256": "3058572411a74d5385a8bc628c3ac9501bbd1eb1875abf03debc34855c4b85a8"
+    },
+    {
+      "export": "retail_pass37_context_inputs/function_0042fc40.md",
+      "entry": "0x0042fc40",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 92,
+      "sha256": "818ff310c837fbb7687d29b24392e1b56a59f951af5f3a38f9a0b69b53afad2a"
+    },
+    {
+      "export": "retail_pass37_context_inputs/function_0043b6fc.md",
+      "entry": "0x0043b6fc",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 57,
+      "sha256": "668dcb60c5809bd8e263a2570340fbe423661d1761df3c1f34b23aaaee2c7a21"
+    },
+    {
+      "export": "retail_pass37_context_inputs/function_00443234.md",
+      "entry": "0x00443234",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 143,
+      "sha256": "efb408239455c808c0d1d2fca1bd4438b9b29db13e8580c3c2216199a8f24329"
+    },
+    {
+      "export": "retail_pass37_context_inputs/function_00452374.md",
+      "entry": "0x00452374",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 15,
+      "sha256": "86604ac5de29de9b57a7a0edd6ea0c8150650497fbb1fbeb06975f3c86608bb2"
+    },
+    {
+      "export": "retail_pass37_context_inputs/function_004527c4.md",
+      "entry": "0x004527c4",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 141,
+      "sha256": "044f700ac234ddaed0222ca8e538072097c28a634af2429dc9457f7255ee0af6"
+    },
+    {
+      "export": "retail_pass37_context_inputs/function_004529f8.md",
+      "entry": "0x004529f8",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 141,
+      "sha256": "ff6c673c845c626ebd22ed82b6fe9bfe593818afa1863d75ddf2433447d5cc05"
+    },
+    {
+      "export": "retail_pass38_bank_lifecycle/function_00436238.md",
+      "entry": "0x00436238",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 14,
+      "sha256": "48cd51543b3b3c031681f3c3093cc5b3651cc1962d498dba69f19b23ed7ddf60"
+    },
+    {
+      "export": "retail_pass38_bank_lifecycle/function_00436270.md",
+      "entry": "0x00436270",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 14,
+      "sha256": "ac9ab3097b8de11871dfc77e2f1d288200caf17092157c0548617aa19be81db7"
+    },
+    {
+      "export": "retail_pass38_bank_lifecycle/function_004362a8.md",
+      "entry": "0x004362a8",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 9,
+      "sha256": "3a2d5b95b37bad01767ee41f2980f24bd69858a9a9b0a7682a4d19adc8319ba0"
+    },
+    {
+      "export": "retail_pass38_bank_lifecycle/function_004362cc.md",
+      "entry": "0x004362cc",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 8,
+      "sha256": "950c001ca6545784112f357b5ce9a02de106ecb7eda4c919a51f13d00e559934"
+    },
+    {
+      "export": "retail_pass38_bank_lifecycle/function_004397bc.md",
+      "entry": "0x004397bc",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 61,
+      "sha256": "3c2466658a59dce6514e661f5ae8c9bc72612c1a45f63cf6be8004b079d6094c"
+    },
+    {
+      "export": "retail_pass38_bank_lifecycle/function_004398b0.md",
+      "entry": "0x004398b0",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 52,
+      "sha256": "11e5195ce9ac0f65c6faec2b48b9076f0ed718560bbcf9bd25b9c7299a1c1c31"
+    },
+    {
+      "export": "retail_pass38_bank_lifecycle/function_00439d34.md",
+      "entry": "0x00439d34",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 64,
+      "sha256": "e5eca10f3c8ffa90871713ff2f682bed40af7e41b682a11de3fe089b5cd6c60d"
+    },
+    {
+      "export": "retail_pass38_bank_lifecycle/function_00439e34.md",
+      "entry": "0x00439e34",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 64,
+      "sha256": "2c1295c616e6b66f5aac63a4e41a8f0890c98e0b5c5ceb09585b9bd216fe80e6"
+    },
+    {
+      "export": "retail_pass39_view_inputs/function_003f5ce8.md",
+      "entry": "0x003f5ce8",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 66,
+      "sha256": "02b000e40ea2e2b7c9482f0eaae6aede57c111fbddfa6ef919c9b95e41a3f7f5"
+    },
+    {
+      "export": "retail_pass40_camera_raster/function_003f5b0c.md",
+      "entry": "0x003f5b0c",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 119,
+      "sha256": "000c584919ff15a2d43893123a3dd0670234bb87f7c214bfc5951f011b25b04d"
+    },
+    {
+      "export": "retail_pass40_camera_raster/function_006a7b54.md",
+      "entry": "0x006a7b54",
+      "entry_toc": "0x00b0da10",
+      "instruction_records": 27,
+      "sha256": "07c9ba8301a7cd2df633729c466cd1b33fb049493bf56cc4f62698888bd8d271"
+    },
+    {
+      "export": "retail_pass40_camera_raster/function_006b035c.md",
+      "entry": "0x006b035c",
+      "entry_toc": "0x00b0da10",
+      "instruction_records": 47,
+      "sha256": "30fc4e5b17bbdc9ef7f30f69c534df590588bebf99c3319d96697d8a822083bb"
+    },
+    {
+      "export": "retail_pass41_bank_callers/function_0004e320.md",
+      "entry": "0x0004e320",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 578,
+      "sha256": "4084b9ff478c5f977901b432af88714d1b2e57d0123d5fb6ec8495dd18e2dfe2"
+    },
+    {
+      "export": "retail_pass41_bank_callers/function_0006644c.md",
+      "entry": "0x0006644c",
+      "entry_toc": "0x00afda30",
+      "instruction_records": 543,
+      "sha256": "b25f92b91c7340a8dfbf77f07151e14ab348f96b07c1c4ff4364b05d6eb601d3"
+    },
+    {
+      "export": "retail_pass42_camera_creation/function_006a81a4.md",
+      "entry": "0x006a81a4",
+      "entry_toc": "0x00b0da10",
+      "instruction_records": 87,
+      "sha256": "a4a392749da9cd0a0a3e9e04b3cf75516e450e801912972d974833c21ca34c8e"
+    },
+    {
+      "export": "retail_pass42_camera_creation/function_006b0418.md",
+      "entry": "0x006b0418",
+      "entry_toc": "0x00b0da10",
+      "instruction_records": 82,
+      "sha256": "7266e0cbb70e258dfccaf01d0affd85f2513325f39d674eb2cb5250533de0b42"
+    }
+  ],
+  "checked_instruction_records": 2556,
+  "range_globals": [
+    {
+      "toc_slot": "0x00b04f04",
+      "global_va": "0x102e5dac",
+      "storage": "PT_LOAD zero-fill; runtime value not read from file"
+    },
+    {
+      "toc_slot": "0x00b04f08",
+      "global_va": "0x102e5da8",
+      "storage": "PT_LOAD zero-fill; runtime value not read from file"
+    },
+    {
+      "toc_slot": "0x00b04f0c",
+      "global_va": "0x102e5db8",
+      "storage": "PT_LOAD zero-fill; runtime value not read from file"
+    },
+    {
+      "toc_slot": "0x00b04f10",
+      "global_va": "0x102e5db4",
+      "storage": "PT_LOAD zero-fill; runtime value not read from file"
+    }
+  ],
+  "declared_imports": [
+    {
+      "library": "cellGcmSys",
+      "index": "2",
+      "nid": "0x21ac3697",
+      "nid_va": "0x00a98c8c",
+      "nid_file_offset": "0x00a88c8c",
+      "slot_va": "0x00aa417c",
+      "slot_file_offset": "0x00a9417c",
+      "stub_va": "0x00a7412c",
+      "stub_file_offset": "0x00a6412c",
+      "stub_roundtrip_verified": "True",
+      "saved_database_label": "cellGcmAddressToOffset"
+    },
+    {
+      "library": "cellGcmSys",
+      "index": "9",
+      "nid": "0xe315a0b2",
+      "nid_va": "0x00a98ca8",
+      "nid_file_offset": "0x00a88ca8",
+      "slot_va": "0x00aa4198",
+      "slot_file_offset": "0x00a94198",
+      "stub_va": "0x00a7420c",
+      "stub_file_offset": "0x00a6420c",
+      "stub_roundtrip_verified": "True",
+      "saved_database_label": "cellGcmGetConfiguration"
+    }
+  ],
+  "helper_paths": [
+    {
+      "outcome": "no_caller_output_writes",
+      "addresses": [
+        "0x0045228c",
+        "0x00452290",
+        "0x00452294",
+        "0x00452298",
+        "0x0045229c",
+        "0x004522a0",
+        "0x004522a4",
+        "0x004522a8",
+        "0x004522ac",
+        "0x004522b0",
+        "0x004522b4",
+        "0x004522b8",
+        "0x004522bc",
+        "0x004522c0",
+        "0x004522c4",
+        "0x004522c8",
+        "0x004522fc",
+        "0x00452300",
+        "0x00452304",
+        "0x00452308",
+        "0x0045230c",
+        "0x00452310",
+        "0x00452314"
+      ],
+      "output_stores": []
+    },
+    {
+      "outcome": "no_caller_output_writes",
+      "addresses": [
+        "0x0045228c",
+        "0x00452290",
+        "0x00452294",
+        "0x00452298",
+        "0x0045229c",
+        "0x004522a0",
+        "0x004522a4",
+        "0x004522a8",
+        "0x004522ac",
+        "0x004522b0",
+        "0x004522b4",
+        "0x004522b8",
+        "0x004522bc",
+        "0x004522c0",
+        "0x004522c4",
+        "0x004522c8",
+        "0x004522cc",
+        "0x004522d0",
+        "0x004522d4",
+        "0x004522d8",
+        "0x004522ec",
+        "0x004522f0",
+        "0x004522f4",
+        "0x004522f8",
+        "0x00452344",
+        "0x00452348",
+        "0x0045234c",
+        "0x00452350",
+        "0x004522fc",
+        "0x00452300",
+        "0x00452304",
+        "0x00452308",
+        "0x0045230c",
+        "0x00452310",
+        "0x00452314"
+      ],
+      "output_stores": []
+    },
+    {
+      "outcome": "write_offset_and_selector_1",
+      "addresses": [
+        "0x0045228c",
+        "0x00452290",
+        "0x00452294",
+        "0x00452298",
+        "0x0045229c",
+        "0x004522a0",
+        "0x004522a4",
+        "0x004522a8",
+        "0x004522ac",
+        "0x004522b0",
+        "0x004522b4",
+        "0x004522b8",
+        "0x004522bc",
+        "0x004522c0",
+        "0x004522c4",
+        "0x004522c8",
+        "0x004522cc",
+        "0x004522d0",
+        "0x004522d4",
+        "0x004522d8",
+        "0x004522ec",
+        "0x004522f0",
+        "0x004522f4",
+        "0x004522f8",
+        "0x00452344",
+        "0x00452348",
+        "0x0045234c",
+        "0x00452350",
+        "0x00452354",
+        "0x00452358",
+        "0x0045235c",
+        "0x00452360",
+        "0x00452364",
+        "0x00452368",
+        "0x004522fc",
+        "0x00452300",
+        "0x00452304",
+        "0x00452308",
+        "0x0045230c",
+        "0x00452310",
+        "0x00452314"
+      ],
+      "output_stores": [
+        "0x00452360",
+        "0x00452364"
+      ]
+    },
+    {
+      "outcome": "no_caller_output_writes",
+      "addresses": [
+        "0x0045228c",
+        "0x00452290",
+        "0x00452294",
+        "0x00452298",
+        "0x0045229c",
+        "0x004522a0",
+        "0x004522a4",
+        "0x004522a8",
+        "0x004522ac",
+        "0x004522b0",
+        "0x004522b4",
+        "0x004522b8",
+        "0x004522bc",
+        "0x004522c0",
+        "0x004522c4",
+        "0x004522c8",
+        "0x004522cc",
+        "0x004522d0",
+        "0x004522d4",
+        "0x004522d8",
+        "0x004522ec",
+        "0x004522f0",
+        "0x004522f4",
+        "0x004522f8",
+        "0x004522fc",
+        "0x00452300",
+        "0x00452304",
+        "0x00452308",
+        "0x0045230c",
+        "0x00452310",
+        "0x00452314"
+      ],
+      "output_stores": []
+    },
+    {
+      "outcome": "write_offset_and_selector_0",
+      "addresses": [
+        "0x0045228c",
+        "0x00452290",
+        "0x00452294",
+        "0x00452298",
+        "0x0045229c",
+        "0x004522a0",
+        "0x004522a4",
+        "0x004522a8",
+        "0x004522ac",
+        "0x004522b0",
+        "0x004522b4",
+        "0x004522b8",
+        "0x004522bc",
+        "0x004522c0",
+        "0x004522c4",
+        "0x004522c8",
+        "0x004522cc",
+        "0x004522d0",
+        "0x004522d4",
+        "0x004522d8",
+        "0x004522dc",
+        "0x004522e0",
+        "0x004522e4",
+        "0x004522e8",
+        "0x00452318",
+        "0x0045231c",
+        "0x00452320",
+        "0x00452324",
+        "0x00452328",
+        "0x0045232c",
+        "0x00452330",
+        "0x00452334",
+        "0x00452338",
+        "0x0045233c",
+        "0x00452340"
+      ],
+      "output_stores": [
+        "0x00452320",
+        "0x00452324"
+      ]
+    },
+    {
+      "outcome": "no_caller_output_writes",
+      "addresses": [
+        "0x0045228c",
+        "0x00452290",
+        "0x00452294",
+        "0x00452298",
+        "0x0045229c",
+        "0x004522a0",
+        "0x004522a4",
+        "0x004522a8",
+        "0x004522ac",
+        "0x004522b0",
+        "0x004522b4",
+        "0x004522b8",
+        "0x004522bc",
+        "0x004522c0",
+        "0x004522c4",
+        "0x004522c8",
+        "0x004522cc",
+        "0x004522d0",
+        "0x004522d4",
+        "0x004522d8",
+        "0x004522dc",
+        "0x004522e0",
+        "0x004522e4",
+        "0x004522e8",
+        "0x004522ec",
+        "0x004522f0",
+        "0x004522f4",
+        "0x004522f8",
+        "0x00452344",
+        "0x00452348",
+        "0x0045234c",
+        "0x00452350",
+        "0x004522fc",
+        "0x00452300",
+        "0x00452304",
+        "0x00452308",
+        "0x0045230c",
+        "0x00452310",
+        "0x00452314"
+      ],
+      "output_stores": []
+    },
+    {
+      "outcome": "write_offset_and_selector_1",
+      "addresses": [
+        "0x0045228c",
+        "0x00452290",
+        "0x00452294",
+        "0x00452298",
+        "0x0045229c",
+        "0x004522a0",
+        "0x004522a4",
+        "0x004522a8",
+        "0x004522ac",
+        "0x004522b0",
+        "0x004522b4",
+        "0x004522b8",
+        "0x004522bc",
+        "0x004522c0",
+        "0x004522c4",
+        "0x004522c8",
+        "0x004522cc",
+        "0x004522d0",
+        "0x004522d4",
+        "0x004522d8",
+        "0x004522dc",
+        "0x004522e0",
+        "0x004522e4",
+        "0x004522e8",
+        "0x004522ec",
+        "0x004522f0",
+        "0x004522f4",
+        "0x004522f8",
+        "0x00452344",
+        "0x00452348",
+        "0x0045234c",
+        "0x00452350",
+        "0x00452354",
+        "0x00452358",
+        "0x0045235c",
+        "0x00452360",
+        "0x00452364",
+        "0x00452368",
+        "0x004522fc",
+        "0x00452300",
+        "0x00452304",
+        "0x00452308",
+        "0x0045230c",
+        "0x00452310",
+        "0x00452314"
+      ],
+      "output_stores": [
+        "0x00452360",
+        "0x00452364"
+      ]
+    },
+    {
+      "outcome": "no_caller_output_writes",
+      "addresses": [
+        "0x0045228c",
+        "0x00452290",
+        "0x00452294",
+        "0x00452298",
+        "0x0045229c",
+        "0x004522a0",
+        "0x004522a4",
+        "0x004522a8",
+        "0x004522ac",
+        "0x004522b0",
+        "0x004522b4",
+        "0x004522b8",
+        "0x004522bc",
+        "0x004522c0",
+        "0x004522c4",
+        "0x004522c8",
+        "0x004522cc",
+        "0x004522d0",
+        "0x004522d4",
+        "0x004522d8",
+        "0x004522dc",
+        "0x004522e0",
+        "0x004522e4",
+        "0x004522e8",
+        "0x004522ec",
+        "0x004522f0",
+        "0x004522f4",
+        "0x004522f8",
+        "0x004522fc",
+        "0x00452300",
+        "0x00452304",
+        "0x00452308",
+        "0x0045230c",
+        "0x00452310",
+        "0x00452314"
+      ],
+      "output_stores": []
+    }
+  ],
+  "helper_path_outcomes": {
+    "no_caller_output_writes": 5,
+    "write_offset_and_selector_1": 2,
+    "write_offset_and_selector_0": 1
+  },
+  "direct_listing_callsites": [
+    {
+      "site": "0x00061140",
+      "owner_entry": "0x000610f8",
+      "be32": "0x483f114d",
+      "link": true
+    },
+    {
+      "site": "0x00061158",
+      "owner_entry": "0x000610f8",
+      "be32": "0x483f1135",
+      "link": true
+    },
+    {
+      "site": "0x0006117c",
+      "owner_entry": "0x000610f8",
+      "be32": "0x483f1111",
+      "link": true
+    },
+    {
+      "site": "0x00062760",
+      "owner_entry": "0x0006231c",
+      "be32": "0x483efb2d",
+      "link": true
+    },
+    {
+      "site": "0x00062778",
+      "owner_entry": "0x0006231c",
+      "be32": "0x483efb15",
+      "link": true
+    },
+    {
+      "site": "0x0006279c",
+      "owner_entry": "0x0006231c",
+      "be32": "0x483efaf1",
+      "link": true
+    },
+    {
+      "site": "0x00062c28",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef665",
+      "link": true
+    },
+    {
+      "site": "0x00062c40",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef64d",
+      "link": true
+    },
+    {
+      "site": "0x00062c64",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef629",
+      "link": true
+    },
+    {
+      "site": "0x00062d1c",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef571",
+      "link": true
+    },
+    {
+      "site": "0x00062d34",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef559",
+      "link": true
+    },
+    {
+      "site": "0x00062d58",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef535",
+      "link": true
+    },
+    {
+      "site": "0x00062e0c",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef481",
+      "link": true
+    },
+    {
+      "site": "0x00062e24",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef469",
+      "link": true
+    },
+    {
+      "site": "0x00062e48",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef445",
+      "link": true
+    },
+    {
+      "site": "0x00062efc",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef391",
+      "link": true
+    },
+    {
+      "site": "0x00062f14",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef379",
+      "link": true
+    },
+    {
+      "site": "0x00062f38",
+      "owner_entry": "0x0006296c",
+      "be32": "0x483ef355",
+      "link": true
+    },
+    {
+      "site": "0x000631bc",
+      "owner_entry": "0x0006317c",
+      "be32": "0x483ef0d1",
+      "link": true
+    },
+    {
+      "site": "0x000631d4",
+      "owner_entry": "0x0006317c",
+      "be32": "0x483ef0b9",
+      "link": true
+    },
+    {
+      "site": "0x000631f8",
+      "owner_entry": "0x0006317c",
+      "be32": "0x483ef095",
+      "link": true
+    },
+    {
+      "site": "0x00417870",
+      "owner_entry": "0x004177c8",
+      "be32": "0x4803aa1d",
+      "link": true
+    },
+    {
+      "site": "0x00424930",
+      "owner_entry": "0x0042481c",
+      "be32": "0x4802d95d",
+      "link": true
+    },
+    {
+      "site": "0x00424b4c",
+      "owner_entry": "0x0042495c",
+      "be32": "0x4802d741",
+      "link": true
+    },
+    {
+      "site": "0x0042fca0",
+      "owner_entry": "0x0042fc40",
+      "be32": "0x480225ed",
+      "link": true
+    },
+    {
+      "site": "0x0042fcc0",
+      "owner_entry": "0x0042fc40",
+      "be32": "0x480225cd",
+      "link": true
+    },
+    {
+      "site": "0x0042fda4",
+      "owner_entry": "0x0042fc40",
+      "be32": "0x480224e9",
+      "link": true
+    },
+    {
+      "site": "0x00438518",
+      "owner_entry": "0x004384ac",
+      "be32": "0x48019d75",
+      "link": true
+    },
+    {
+      "site": "0x00438538",
+      "owner_entry": "0x004384ac",
+      "be32": "0x48019d55",
+      "link": true
+    },
+    {
+      "site": "0x004386b0",
+      "owner_entry": "0x004384ac",
+      "be32": "0x48019bdd",
+      "link": true
+    },
+    {
+      "site": "0x004386cc",
+      "owner_entry": "0x004384ac",
+      "be32": "0x48019bc1",
+      "link": true
+    },
+    {
+      "site": "0x00439a24",
+      "owner_entry": "0x00439980",
+      "be32": "0x48018869",
+      "link": true
+    },
+    {
+      "site": "0x00439a48",
+      "owner_entry": "0x00439980",
+      "be32": "0x48018845",
+      "link": true
+    },
+    {
+      "site": "0x00439c8c",
+      "owner_entry": "0x00439980",
+      "be32": "0x48018601",
+      "link": true
+    },
+    {
+      "site": "0x0043b74c",
+      "owner_entry": "0x0043b6fc",
+      "be32": "0x48016b41",
+      "link": true
+    },
+    {
+      "site": "0x00443360",
+      "owner_entry": "0x00443234",
+      "be32": "0x4800ef2d",
+      "link": true
+    },
+    {
+      "site": "0x0044359c",
+      "owner_entry": "0x00443470",
+      "be32": "0x4800ecf1",
+      "link": true
+    }
+  ],
+  "demo_comparison": {
+    "target_sha256": "d09a27208167c7f35a95d8128247c505b97b707f472a04db89f2432e7e2cde38",
+    "entry": "0x00451d18",
+    "entry_opd": "0x00ac9c40",
+    "entry_toc": "0x00afdab8",
+    "listing_instruction_records": 0,
+    "raw_comparison_words": 56,
+    "raw_comparison_span_bytes": 224,
+    "exact_matching_words": 51,
+    "comparison_scope": "Analyst-selected raw span from retail extent, descriptor/import checked, normalized CFG compared; demo Listing body is one byte",
+    "raw_words": [
+      {
+        "va": "0x00451d18",
+        "file_offset": "0x00441d18",
+        "be32": "0xf821ff61"
+      },
+      {
+        "va": "0x00451d1c",
+        "file_offset": "0x00441d1c",
+        "be32": "0x7c0802a6"
+      },
+      {
+        "va": "0x00451d20",
+        "file_offset": "0x00441d20",
+        "be32": "0xfbc10090"
+      },
+      {
+        "va": "0x00451d24",
+        "file_offset": "0x00441d24",
+        "be32": "0x7c9e2378"
+      },
+      {
+        "va": "0x00451d28",
+        "file_offset": "0x00441d28",
+        "be32": "0xfbe10098"
+      },
+      {
+        "va": "0x00451d2c",
+        "file_offset": "0x00441d2c",
+        "be32": "0x38810070"
+      },
+      {
+        "va": "0x00451d30",
+        "file_offset": "0x00441d30",
+        "be32": "0x7c7f1b78"
+      },
+      {
+        "va": "0x00451d34",
+        "file_offset": "0x00441d34",
+        "be32": "0xfba10088"
+      },
+      {
+        "va": "0x00451d38",
+        "file_offset": "0x00441d38",
+        "be32": "0xf80100b0"
+      },
+      {
+        "va": "0x00451d3c",
+        "file_offset": "0x00441d3c",
+        "be32": "0x7cbd2b78"
+      },
+      {
+        "va": "0x00451d40",
+        "file_offset": "0x00441d40",
+        "be32": "0x486225f5"
+      },
+      {
+        "va": "0x00451d44",
+        "file_offset": "0x00441d44",
+        "be32": "0xe8410028"
+      },
+      {
+        "va": "0x00451d48",
+        "file_offset": "0x00441d48",
+        "be32": "0x2c230000"
+      },
+      {
+        "va": "0x00451d4c",
+        "file_offset": "0x00441d4c",
+        "be32": "0x7c6b1b78"
+      },
+      {
+        "va": "0x00451d50",
+        "file_offset": "0x00441d50",
+        "be32": "0x3860ffff"
+      },
+      {
+        "va": "0x00451d54",
+        "file_offset": "0x00441d54",
+        "be32": "0x40820034"
+      },
+      {
+        "va": "0x00451d58",
+        "file_offset": "0x00441d58",
+        "be32": "0x812271cc"
+      },
+      {
+        "va": "0x00451d5c",
+        "file_offset": "0x00441d5c",
+        "be32": "0x80090000"
+      },
+      {
+        "va": "0x00451d60",
+        "file_offset": "0x00441d60",
+        "be32": "0x7f80f840"
+      },
+      {
+        "va": "0x00451d64",
+        "file_offset": "0x00441d64",
+        "be32": "0x419d0014"
+      },
+      {
+        "va": "0x00451d68",
+        "file_offset": "0x00441d68",
+        "be32": "0x812271d0"
+      },
+      {
+        "va": "0x00451d6c",
+        "file_offset": "0x00441d6c",
+        "be32": "0x80090000"
+      },
+      {
+        "va": "0x00451d70",
+        "file_offset": "0x00441d70",
+        "be32": "0x7f80f840"
+      },
+      {
+        "va": "0x00451d74",
+        "file_offset": "0x00441d74",
+        "be32": "0x419d0030"
+      },
+      {
+        "va": "0x00451d78",
+        "file_offset": "0x00441d78",
+        "be32": "0x812271d4"
+      },
+      {
+        "va": "0x00451d7c",
+        "file_offset": "0x00441d7c",
+        "be32": "0x80090000"
+      },
+      {
+        "va": "0x00451d80",
+        "file_offset": "0x00441d80",
+        "be32": "0x7f80f840"
+      },
+      {
+        "va": "0x00451d84",
+        "file_offset": "0x00441d84",
+        "be32": "0x409d004c"
+      },
+      {
+        "va": "0x00451d88",
+        "file_offset": "0x00441d88",
+        "be32": "0xe80100b0"
+      },
+      {
+        "va": "0x00451d8c",
+        "file_offset": "0x00441d8c",
+        "be32": "0xeba10088"
+      },
+      {
+        "va": "0x00451d90",
+        "file_offset": "0x00441d90",
+        "be32": "0xebc10090"
+      },
+      {
+        "va": "0x00451d94",
+        "file_offset": "0x00441d94",
+        "be32": "0x7c0803a6"
+      },
+      {
+        "va": "0x00451d98",
+        "file_offset": "0x00441d98",
+        "be32": "0xebe10098"
+      },
+      {
+        "va": "0x00451d9c",
+        "file_offset": "0x00441d9c",
+        "be32": "0x382100a0"
+      },
+      {
+        "va": "0x00451da0",
+        "file_offset": "0x00441da0",
+        "be32": "0x4e800020"
+      },
+      {
+        "va": "0x00451da4",
+        "file_offset": "0x00441da4",
+        "be32": "0x80010070"
+      },
+      {
+        "va": "0x00451da8",
+        "file_offset": "0x00441da8",
+        "be32": "0x38600000"
+      },
+      {
+        "va": "0x00451dac",
+        "file_offset": "0x00441dac",
+        "be32": "0x901e0000"
+      },
+      {
+        "va": "0x00451db0",
+        "file_offset": "0x00441db0",
+        "be32": "0x997d0000"
+      },
+      {
+        "va": "0x00451db4",
+        "file_offset": "0x00441db4",
+        "be32": "0xe80100b0"
+      },
+      {
+        "va": "0x00451db8",
+        "file_offset": "0x00441db8",
+        "be32": "0xeba10088"
+      },
+      {
+        "va": "0x00451dbc",
+        "file_offset": "0x00441dbc",
+        "be32": "0xebc10090"
+      },
+      {
+        "va": "0x00451dc0",
+        "file_offset": "0x00441dc0",
+        "be32": "0x7c0803a6"
+      },
+      {
+        "va": "0x00451dc4",
+        "file_offset": "0x00441dc4",
+        "be32": "0xebe10098"
+      },
+      {
+        "va": "0x00451dc8",
+        "file_offset": "0x00441dc8",
+        "be32": "0x382100a0"
+      },
+      {
+        "va": "0x00451dcc",
+        "file_offset": "0x00441dcc",
+        "be32": "0x4e800020"
+      },
+      {
+        "va": "0x00451dd0",
+        "file_offset": "0x00441dd0",
+        "be32": "0x812271d8"
+      },
+      {
+        "va": "0x00451dd4",
+        "file_offset": "0x00441dd4",
+        "be32": "0x80090000"
+      },
+      {
+        "va": "0x00451dd8",
+        "file_offset": "0x00441dd8",
+        "be32": "0x7f80f840"
+      },
+      {
+        "va": "0x00451ddc",
+        "file_offset": "0x00441ddc",
+        "be32": "0x409dffac"
+      },
+      {
+        "va": "0x00451de0",
+        "file_offset": "0x00441de0",
+        "be32": "0x81210070"
+      },
+      {
+        "va": "0x00451de4",
+        "file_offset": "0x00441de4",
+        "be32": "0x38000001"
+      },
+      {
+        "va": "0x00451de8",
+        "file_offset": "0x00441de8",
+        "be32": "0x38600000"
+      },
+      {
+        "va": "0x00451dec",
+        "file_offset": "0x00441dec",
+        "be32": "0x913e0000"
+      },
+      {
+        "va": "0x00451df0",
+        "file_offset": "0x00441df0",
+        "be32": "0x981d0000"
+      },
+      {
+        "va": "0x00451df4",
+        "file_offset": "0x00441df4",
+        "be32": "0x4bffff94"
+      }
+    ],
+    "changed_instruction_offsets": [
+      "0x00000028",
+      "0x00000040",
+      "0x00000050",
+      "0x00000060",
+      "0x000000b8"
+    ],
+    "declared_import": {
+      "library": "cellGcmSys",
+      "index": "2",
+      "nid": "0x21ac3697",
+      "nid_va": "0x00a98ed4",
+      "nid_file_offset": "0x00a88ed4",
+      "slot_va": "0x00aa417c",
+      "slot_file_offset": "0x00a9417c",
+      "stub_va": "0x00a74334",
+      "stub_file_offset": "0x00a64334",
+      "stub_roundtrip_verified": "True",
+      "saved_database_label": ""
+    },
+    "range_globals": [
+      {
+        "relative_instruction_offset": "0x00000040",
+        "toc_slot": "0x00b04c84",
+        "global_va": "0x102e5e2c"
+      },
+      {
+        "relative_instruction_offset": "0x00000050",
+        "toc_slot": "0x00b04c88",
+        "global_va": "0x102e5e28"
+      },
+      {
+        "relative_instruction_offset": "0x00000060",
+        "toc_slot": "0x00b04c8c",
+        "global_va": "0x102e5e38"
+      },
+      {
+        "relative_instruction_offset": "0x000000b8",
+        "toc_slot": "0x00b04c90",
+        "global_va": "0x102e5e34"
+      }
+    ],
+    "normalized_local_paths_equal": true,
+    "export": "demo_pass34_address_conversion/function_00451d18.md",
+    "export_sha256": "981aa3a538b6daa8fd256a3299ea13a422bb1f4dd014330af3a7c9e3be0e50ec"
+  },
+  "sources": [
+    {
+      "url": "https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Emu/RSX/GCM.h",
+      "role": "External type corroboration; not target runtime observation"
+    },
+    {
+      "url": "https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Emu/RSX/gcm_enums.h",
+      "role": "External location constants; not target execution"
+    }
+  ]
+}

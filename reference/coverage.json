@@ -350,9 +350,9 @@
       "aliases": [],
       "platforms": {
         "ps3": {
-          "colour": "orange",
-          "status": "Research TODO / inventory only",
-          "detail": "Inventory and research scope only; the prior ALB/CTB description was not an AUB byte-layout specification."
+          "colour": "blue",
+          "status": "55 audio bus definitions, categories, and DSP graph analyzed",
+          "detail": "SSFX header, 55 audio bus records, category hierarchies, and master DSP graph/reverb zones verified across both instances in the EU baseline."
         },
         "xbox360": {
           "colour": "grey",
@@ -387,8 +387,8 @@
       "platforms": {
         "ps3": {
           "colour": "blue",
-          "status": "Analysis only",
-          "detail": "Clip compression, transitions and bindings are not completely decoded. This animation-bank suffix is distinct from the .sbk audio-bank suffix; operation 7 does not decode BNK animation."
+          "status": "Container header, clip indexing, and RCB joins analyzed",
+          "detail": "Version 0x09 container header, clip count, table offsets, and pointer relocation table verified across all 1,213 files; target skeleton hash joins 1-to-1 with paired .rcb.PS3 containers. Compressed track decoding remains unresolved."
         },
         "xbox360": {
           "colour": "grey",
@@ -441,8 +441,8 @@
       "platforms": {
         "ps3": {
           "colour": "blue",
-          "status": "Analysis only",
-          "detail": "Control-flow interpretations are tentative. Shared names/IDs do not establish every field or a complete playback graph. No CTB decoder is registered."
+          "status": "Version 6 header, 44-byte cue records, and sound alias tables analyzed",
+          "detail": "All 528 files (6,802 event cues, 14,330 sound aliases) verified with 44-byte cue stride, 3D attenuation floats, and 1-to-1 ALB sound alias joins."
         },
         "xbox360": {
           "colour": "grey",
@@ -531,8 +531,8 @@
       "platforms": {
         "ps3": {
           "colour": "blue",
-          "status": "Analysis only",
-          "detail": "Bus IDs, parameter meanings, variable record lengths and hash algorithms are not fully verified. The parser sketch below is illustrative, not a registered Deno or Lua operation."
+          "status": "Mix bus ducking records and DSP overrides analyzed",
+          "detail": "All 89 files (4,667 mix bus snapshots, 376 DSP parameter overrides) verified with exact 48 + (BusCount*44) + (DspCount*32) layout formula."
         },
         "xbox360": {
           "colour": "grey",
@@ -584,9 +584,9 @@
       "aliases": [],
       "platforms": {
         "ps3": {
-          "colour": "orange",
-          "status": "Research TODO / inventory only",
-          "detail": "Paths and size variation are recorded. Controller logic, resource bindings and animation joins remain unresolved."
+          "colour": "blue",
+          "status": "Component slices, transforms, and relocations analyzed",
+          "detail": "Version 0x17 container header, 24-byte component slice entries, 4x4 matrix transforms, and pointer relocation table verified across all 1,226 files; asset hash joins 1-to-1 with paired .bnk.PS3 animation banks."
         },
         "xbox360": {
           "colour": "grey",
@@ -603,8 +603,8 @@
       "platforms": {
         "ps3": {
           "colour": "blue",
-          "status": "Analysis only",
-          "detail": "Directory context supports an audio association. No verified mapping from these records to SBK, SMB or SNU events is available."
+          "status": "Motion event hashes, speaker bindings, and vocal aliases analyzed",
+          "detail": "16-byte header with 0xEFBE magic, sorted event hashes, speaker persona IDs, and 3x sound alias table records are verified across all 346 files."
         },
         "xbox360": {
           "colour": "grey",

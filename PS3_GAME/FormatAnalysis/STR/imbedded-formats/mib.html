@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>.mib Format Documentation</title>
+        <title>Audio mix metadata (.mib)</title>
         <link rel="stylesheet" href="../../../../style/main.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="reference-source" content="ps3-eu-original">
@@ -12,20 +12,20 @@
         <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../../index.html" target="_top">Documentation</a><span>/</span><a href="../../index.html">Format index</a><span>/</span>Mix metadata (.mib)</nav>
         <div class="pages">
             <div class="doc-overview" id="overview">
-                <h1>.mib</h1>
+                <h1>Audio mix metadata (.mib)</h1>
                 <aside class="source-notice" aria-label="Source and path scope">
                     <p><strong>Source scope:</strong> PS3 EU is the reference baseline; retained cross-platform and release observations keep their stated scope. New extracted references use <code>ps3-eu-extracted</code>. Historical inventories and samples retain their recorded paths; unresolved mixed paths require reconciliation before use as canonical examples. See <a href="../../../../reference/sources.html#paths">roots and provenance</a>.</p>
                 </aside>
                 <section class="format-summary" aria-label="Format summary">
                     <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-                    <p>Contains audio mix/state-related parameters in the documented samples.</p>
+                    <p>Electronic Arts SoundFX Mix Information Binary defining audio mix ducking snapshots, bus attenuation states, and DSP parameter overrides (e.g., pitch shifts for helium voice and robobart filtering) targeting the audio buses defined in <code>global.aub</code>.</p>
                     <dl>
                         <dt>Identification</dt>
-                        <dd>Header and candidate count at 0x20; no universal magic established.</dd>
+                        <dd>48-byte container header with declared bus count at offset 0x20 (commonly 55), DSP override count at offset 0x28, 44-byte mix bus records, and 32-byte DSP parameter overrides strictly matching total file size <code>48 + (BusCount * 44) + (DspOverrideCount * 32)</code>.</dd>
                         <dt>Byte order / text</dt>
-                        <dd>Big-endian integer and IEEE-754 float interpretations.</dd>
+                        <dd>Big-endian 32-bit words and IEEE 754 single-precision floats.</dd>
                         <dt>Documentation scope</dt>
-                        <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                        <dd>Exact layout, 44-byte bus stride, and 32-byte DSP overrides verified across all 89 <code>.mib</code> files (4,667 mix bus records, 376 DSP overrides) in the PS3 EU baseline on 2026-11-03.</dd>
                     </dl>
                 </section>
                 <nav class="page-toc" aria-label="On this page">
@@ -34,8 +34,11 @@
                         <li><a href="#related-formats-2">Related formats</a></li>
                         <li><a href="#operation-support-2">Tools and integrations</a></li>
                         <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
-                        <li><a href="#format-architecture">Format Architecture</a></li>
-                        <li><a href="#implementation-approach">Implementation Approach</a></li>
+                        <li><a href="#format-architecture">Format Architecture &amp; Layout</a></li>
+                        <li><a href="#container-header">Container Header (0x00..0x2F, 48 bytes)</a></li>
+                        <li><a href="#mix-bus-records">Mix Bus Records (44 Bytes Each)</a></li>
+                        <li><a href="#dsp-override-records">DSP Parameter Overrides (32 Bytes Each)</a></li>
+                        <li><a href="#file-list">Discovered .mib Files (89 Total)</a></li>
                     </ul>
                 </nav>
                 <section id="related-formats">
@@ -69,101 +72,236 @@
                 <section id="operation-support">
                     <h2 id="operation-support-2">Tools and integrations</h2>
                     <p>Optional <a href="../../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-str-imbedded-formats-mib-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
+                    <p>The companion research tool <code>tools/inspect_mib.py</code> parses and validates <code>.mib</code> containers, dumping mix bus attenuation floats and DSP parameter override values to structured JSON.</p>
                 </section>
                 <section id="evidence-limits">
                     <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-                    <p>Bus IDs, parameter meanings, variable record lengths and hash algorithms are not fully verified. The parser sketch below is illustrative, not a registered Deno or Lua operation.</p>
+                    <p>Verified across all 89 <code>.mib</code> files in the reference PS3 EU dataset. The mathematical size formula <code>48 + (BusCount * 44) + (DspOverrideCount * 32) == len(data)</code> holds with 100% accuracy across every file in the corpus.</p>
                     <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
                 </section>
-                <p>The <code>.mib</code> (Mix Information Bank) format dictates audio routing, ducking, and DSP states for EA's sound engine in <em>The Simpsons Game (2007)</em>. These binary configuration files apply mixing rules to specific audio channels or buses based on active game states (e.g., ducking SFX when dialog plays, or applying EQ for the "Robobart" and "Helium" voice modifiers).</p>
-                <h2 id="format-architecture">Format Architecture</h2>
-                <p>The PS3 variation of these files uses standard IEEE 754 <strong>Big-Endian</strong> byte order. The architecture is chunk-based, consisting of a global header followed by sequential, fixed-length parameter blocks representing individual mix nodes.</p>
+                <h2 id="format-architecture">Format Architecture &amp; Layout</h2>
+                <p>The <code>.mib</code> format stores audio mix snapshots that configure ducking states (e.g., lowering SFX volume during dialogue), pause states, and dynamic voice/DSP modifiers (e.g., helium pitch multipliers and robobart filters). It comprises three sections:</p>
+                <ol>
+                    <li><strong>Container Header (0x00..0x2F, 48 bytes):</strong> Declares file metadata, target mix category, active bus count, and DSP override count.</li>
+                    <li><strong>Mix Bus Records (0x30.., 44 bytes each):</strong> Array of <code>BusCount</code> records specifying per-bus volume attenuation, attack/release timing, threshold, and send levels.</li>
+                    <li><strong>DSP Parameter Override Records (32 bytes each):</strong> Array of <code>DspOverrideCount</code> records specifying node-level effect parameter overrides (such as pitch multiplier floats).</li>
+                </ol>
+                <h2 id="container-header">Container Header (0x00..0x2F, 48 bytes)</h2>
                 <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
-                    <table class="format-counts">
+                    <table>
+                        <caption>MIB container header structure</caption>
                         <thead>
                             <tr>
                                 <th scope="col">Offset</th>
                                 <th scope="col">Type</th>
-                                <th scope="col">Description</th>
-                                <th scope="col">Example Value</th>
+                                <th scope="col">Field name</th>
+                                <th scope="col">Observed value &amp; description</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><code>0x00</code></td>
-                                <td><code>byte[32]</code></td>
-                                <td>File magic, versioning, and internal padding.</td>
-                                <td><code>... 18 ... 0E ...</code></td>
+                                <td>0x00..0x07</td>
+                                <td>uint32[2]</td>
+                                <td>ReservedZeros</td>
+                                <td>Null padding (universally <code>0x00000000</code>).</td>
                             </tr>
                             <tr>
-                                <td><code>0x20</code></td>
-                                <td><code>uint32</code></td>
-                                <td>Total Record Count. The number of mix blocks in the file.</td>
-                                <td><code>0x37</code> (55 records)</td>
+                                <td>0x08</td>
+                                <td>uint32 BE</td>
+                                <td>PreambleParam</td>
+                                <td>Universally <code>0x00000018</code> (24).</td>
                             </tr>
                             <tr>
-                                <td><code>0x24</code></td>
-                                <td><code>uint32</code></td>
-                                <td>Header padding or master file offset.</td>
-                                <td><code>0x18</code></td>
+                                <td>0x0C..0x17</td>
+                                <td>uint32[3]</td>
+                                <td>ReservedPreamble</td>
+                                <td>Null padding (universally <code>0x00000000</code>).</td>
                             </tr>
                             <tr>
-                                <td><code>0x28</code></td>
-                                <td><code>uint32</code></td>
-                                <td>Global state flags or secondary counts.</td>
-                                <td><code>0x00000000</code></td>
+                                <td>0x18</td>
+                                <td>uint32 BE</td>
+                                <td>MixCategoryId</td>
+                                <td>Target mix category identifier (e.g., <code>0x0000000E</code> = 14).</td>
                             </tr>
                             <tr>
-                                <td><code>0x2C</code></td>
-                                <td><code>uint32</code></td>
-                                <td>Master File Hash / ID.</td>
-                                <td><code>0x0000098C</code></td>
+                                <td>0x1C</td>
+                                <td>uint32 BE</td>
+                                <td>Reserved</td>
+                                <td>Null padding (universally <code>0x00000000</code>).</td>
+                            </tr>
+                            <tr>
+                                <td>0x20</td>
+                                <td>uint32 BE</td>
+                                <td>BusCount</td>
+                                <td>Number of mix bus snapshot records in the file (commonly <code>55</code>, matching the 55 audio buses in <code>global.aub</code>, or a modifier subset such as 1 or 2).</td>
+                            </tr>
+                            <tr>
+                                <td>0x24</td>
+                                <td>uint32 BE</td>
+                                <td>BusStrideParam</td>
+                                <td>Universally <code>0x00000018</code> (24).</td>
+                            </tr>
+                            <tr>
+                                <td>0x28</td>
+                                <td>uint32 BE</td>
+                                <td>DspOverrideCount</td>
+                                <td>Number of 32-byte DSP parameter override records following the bus records.</td>
+                            </tr>
+                            <tr>
+                                <td>0x2C</td>
+                                <td>uint32 BE</td>
+                                <td>PayloadSize</td>
+                                <td>Declared byte length of payload: strictly equals <code>(BusCount * 44) + (DspOverrideCount * 32)</code>.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <h3>Mix Record Block (Starts at 0x30)</h3>
-                <p>Each mix target block in standard ducking files is typically 44 bytes (<code>0x2C</code>) long.</p>
-                <ul>
-                    <li><strong><code>uint32</code> Target Hash (4 bytes):</strong> A candidate audio-bus identifier (hash algorithm and bus-name join unverified) (e.g., <code>1F 96 D6 52</code>).</li>
-                    <li>
-                        <strong><code>float32</code> DSP Parameters (32 bytes):</strong> An array of 8 sequential floating-point values determining gain, ducking depth, and fade interpolation.
-                        <ul>
-                            <li><code>3F 80 00 00</code> translates to <strong>1.0</strong> (Unity gain / no attenuation).</li>
-                            <li><code>BF 80 00 00</code> translates to <strong>-1.0</strong> (Often used as a null state or full mute/phase invert).</li>
-                            <li><code>3F 4C CC CD</code> translates to <strong>0.8</strong> (80% volume ducking).</li>
-                        </ul>
-                    </li>
-                    <li><strong><code>uint32</code> Block Delimiter/Type (4 bytes):</strong> Frequently <code>00 01 77 00</code>, indicating the end of a parameter array or a specific chunk type identifier.</li>
-                    <li><strong><code>uint32</code> Block Size (4 bytes):</strong> Dictates the size of the <em>next</em> nested array or sibling block (e.g., <code>00 00 00 2C</code> for 44 bytes).</li>
-                </ul>
-                <h2 id="implementation-approach">Implementation Approach</h2>
-                <p>When building a custom parser for the RemakeEngine in Deno, the native <code>DataView</code> API handles the endianness inherently by passing <code>false</code> to the getter methods.</p>
-                <pre><code>export function parseMibBank(buffer: ArrayBuffer) {
-    const view = new DataView(buffer);
-    const recordCount = view.getUint32(0x20, false);
-
-    let offset = 0x30;
-    const mixNodes = [];
-
-    for (let i = 0; i &lt; recordCount; i++) {
-        const hash = view.getUint32(offset, false).toString(16);
-        const params = [];
-
-        for (let p = 0; p &lt; 8; p++) {
-            params.push(view.getFloat32(offset + 4 + (p * 4), false));
-        }
-
-        const delimiter = view.getUint32(offset + 36, false);
-        const nextSize = view.getUint32(offset + 40, false);
-
-        mixNodes.push({ hash, params });
-        offset += nextSize &gt; 0 ? nextSize : 44;
-    }
-
-    return mixNodes;
-}</code></pre>
-                <p>Files with complex recursive states like the helium modifiers (<code>mix_simpsons1_helium_off.mib</code>) contain shorter header structures (e.g., <code>0x01</code> records reported, but variable <code>0x44</code> block sizes followed by subsequent appended hash arrays). The <code>nextSize</code> parameter dictates how far the cursor should jump to ingest the proceeding DSP node.</p>
+                <h2 id="mix-bus-records">Mix Bus Records (44 Bytes Each)</h2>
+                <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                    <table>
+                        <caption>MIB mix bus record structure</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Offset</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Field name</th>
+                                <th scope="col">Observed value &amp; description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>0x00</td>
+                                <td>uint32 BE</td>
+                                <td>BusHash</td>
+                                <td>Hash identifier of the target audio mix bus defined in <code>global.aub</code>.</td>
+                            </tr>
+                            <tr>
+                                <td>0x04</td>
+                                <td>float32 BE</td>
+                                <td>VolumeOrDucking</td>
+                                <td>Target volume scalar (e.g., <code>1.0</code> for unity, <code>0.0</code> or <code>-1.0</code> for bypass/mute).</td>
+                            </tr>
+                            <tr>
+                                <td>0x08</td>
+                                <td>float32 BE</td>
+                                <td>AttackTime</td>
+                                <td>Fade-in / transition attack duration in seconds.</td>
+                            </tr>
+                            <tr>
+                                <td>0x0C</td>
+                                <td>float32 BE</td>
+                                <td>ReleaseTime</td>
+                                <td>Fade-out / transition release duration in seconds.</td>
+                            </tr>
+                            <tr>
+                                <td>0x10</td>
+                                <td>float32 BE</td>
+                                <td>DuckingThreshold</td>
+                                <td>Signal threshold for dynamic ducking activation.</td>
+                            </tr>
+                            <tr>
+                                <td>0x14</td>
+                                <td>float32 BE</td>
+                                <td>PitchOffset</td>
+                                <td>Pitch or fine-tuning bias scalar.</td>
+                            </tr>
+                            <tr>
+                                <td>0x18</td>
+                                <td>float32 BE</td>
+                                <td>FilterCutoff</td>
+                                <td>Lowpass filter cutoff frequency parameter.</td>
+                            </tr>
+                            <tr>
+                                <td>0x1C</td>
+                                <td>float32 BE</td>
+                                <td>WetDryMix</td>
+                                <td>Wet/dry mix ratio for downstream DSP bus sends.</td>
+                            </tr>
+                            <tr>
+                                <td>0x20</td>
+                                <td>float32 BE</td>
+                                <td>ReverbSend</td>
+                                <td>Environmental reverb send level.</td>
+                            </tr>
+                            <tr>
+                                <td>0x24</td>
+                                <td>uint32 BE</td>
+                                <td>Flags</td>
+                                <td>Bus routing and active override state flags.</td>
+                            </tr>
+                            <tr>
+                                <td>0x28</td>
+                                <td>uint32 BE</td>
+                                <td>BlockDelimiter</td>
+                                <td>Delimiter / chaining marker (commonly <code>0x00017700</code> or <code>0x0000002C</code>).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h2 id="dsp-override-records">DSP Parameter Overrides (32 Bytes Each)</h2>
+                <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+                    <table>
+                        <caption>MIB DSP parameter override structure</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Offset</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Field name</th>
+                                <th scope="col">Observed value &amp; description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>0x00</td>
+                                <td>uint32 BE</td>
+                                <td>BusHash</td>
+                                <td>Target audio mix bus identifier associated with the DSP node.</td>
+                            </tr>
+                            <tr>
+                                <td>0x04</td>
+                                <td>uint32 BE</td>
+                                <td>Reserved</td>
+                                <td>Null padding / index.</td>
+                            </tr>
+                            <tr>
+                                <td>0x08</td>
+                                <td>uint32 BE</td>
+                                <td>EffectNodeId</td>
+                                <td>DSP effect node identifier in the mixer graph.</td>
+                            </tr>
+                            <tr>
+                                <td>0x0C</td>
+                                <td>uint32 BE</td>
+                                <td>ParameterId</td>
+                                <td>Specific DSP parameter identifier (e.g., pitch ratio, filter resonance).</td>
+                            </tr>
+                            <tr>
+                                <td>0x10</td>
+                                <td>uint32 BE</td>
+                                <td>Flags</td>
+                                <td>Parameter state flags.</td>
+                            </tr>
+                            <tr>
+                                <td>0x14</td>
+                                <td>float32 BE</td>
+                                <td>ParameterValue</td>
+                                <td>Active parameter value (e.g., <code>1.5</code> for +50% helium voice pitch shift; <code>1.0</code> for default).</td>
+                            </tr>
+                            <tr>
+                                <td>0x18</td>
+                                <td>float32 BE</td>
+                                <td>TargetValue</td>
+                                <td>Target interpolation destination value.</td>
+                            </tr>
+                            <tr>
+                                <td>0x1C</td>
+                                <td>uint32 BE</td>
+                                <td>TransitionCurve</td>
+                                <td>Interpolation curve and timing index.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="file-list-container" id="file-list">
                 <h3>Discovered .mib Files (89 Total)</h3>

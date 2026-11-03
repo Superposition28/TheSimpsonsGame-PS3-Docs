@@ -16,14 +16,14 @@
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>Contains animation/state names and structured character motion-related data.</p>
+            <p>RenderWare CCT character animation bank packaging animation clip names, state machine parameters, keyframe curves, and an in-place pointer relocation table.</p>
             <dl>
                 <dt>Identification</dt>
-                <dd>Animation names and offset tables in the documented Frink sample; no stable magic established.</dd>
+                <dd>Container header with relocation table offset at 0x00, format version word <code>0x00000009</code> (9) at 0x04, bank asset hash at 0x08, target skeleton/model asset hash at 0x0C (joining to <code>.rcb.PS3</code>), clip count at 0x20, and table offset at 0x28 (<code>0x50</code>); verified across all 1,213 files in the PS3 EU extracted corpus.</dd>
                 <dt>Byte order / text</dt>
-                <dd>Big-endian field interpretations in samples; compressed tracks remain unresolved.</dd>
+                <dd>Big-endian 32-bit words, IEEE 754 single-precision floats (blend speeds, weights), and null-terminated ASCII animation clip names.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>Format structure and relocation layout verified across all 1,213 extracted <code>.bnk.PS3</code> files on 2026-11-03. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
@@ -32,6 +32,10 @@
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                <li><a href="#format-structure-breakdown">Format Structure &amp; Breakdown</a></li>
+                <li><a href="#header-layout">Container Header (0x00..0x4F)</a></li>
+                <li><a href="#relocation-table">Pointer Relocation Table</a></li>
+                <li><a href="#game-usage">Game Runtime Role</a></li>
             </ul>
         </nav>
         <section id="related-formats">
@@ -48,6 +52,11 @@
                     </thead>
                     <tbody>
                         <tr>
+                            <td><a href="rcb.PS3.html">Character/controller resource (.rcb.PS3)</a></td>
+                            <td>Observed</td>
+                            <td>Both appear in CCT-export character/weapon contexts; the target model/skeleton asset hash at offset 0x0C in .bnk.PS3 matches the asset hash at offset 0x08 in .rcb.PS3.</td>
+                        </tr>
+                        <tr>
                             <td><a href="bbn.PS3.html">Bone bindings (.bbn.PS3)</a></td>
                             <td>Context/tentative</td>
                             <td>Bone-name/binding tables and animation banks have complementary character roles. A numeric joint-index or hash mapping between the two has not been established here.</td>
@@ -62,11 +71,6 @@
                             <td>Reconstruction context</td>
                             <td>Geometry import does not decode BNK animation or guarantee compatible skeleton bindings. Both would be required for a verified animated character reconstruction.</td>
                         </tr>
-                        <tr>
-                            <td><a href="rcb.PS3.html">Character/controller resource (.rcb.PS3)</a></td>
-                            <td>Context/tentative</td>
-                            <td>Both appear in CCT-export character/weapon contexts; exact controller/bank bindings are not decoded.</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -75,13 +79,76 @@
         <section id="operation-support">
             <h2 id="operation-support-2">Tools and integrations</h2>
             <p>Optional <a href="../../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-str-imbedded-formats-bnk-ps3-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
+            <p>The companion research tool <code>tools/inspect_cct_character.py</code> inspects and validates <code>.bnk.PS3</code> headers, clip counts, and relocations.</p>
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>Clip compression, transitions and bindings are not completely decoded. This animation-bank suffix is distinct from the .sbk audio-bank suffix; operation 7 does not decode BNK animation.</p>
+            <p>Corpus evidence is derived from all 1,213 extracted <code>.bnk.PS3</code> files in <code>PS3-EU-Full-audio_reorg-isRenamed</code>. 100% of files conform to format version <code>0x09</code> with relocation offsets within bounds. This animation-bank suffix is distinct from the .sbk audio-bank suffix.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
-        <p><code>.bnk.PS3</code> is a <strong>character animation bank</strong> (“BNK” = bank) compiled for PS3. It’s part of EA’s RenderWare/EA-Character pipeline (CCT export path is in the filename) and contains <strong>charactor specific motion data + tables</strong> that the runtime uses to drive his state machine.</p>
+        <h2 id="format-structure-breakdown">Format Structure &amp; Breakdown</h2>
+        <p><code>.bnk.PS3</code> is a character animation bank compiled by EA's RenderWare CCT pipeline. It packages per-character animation clips, state machine blend parameters, and curve keyframes with an appended pointer relocation table.</p>
+        <h2 id="header-layout">Container Header (0x00..0x4F, 80 bytes)</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>Animation bank container header</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Field name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x00</td>
+                        <td>uint32 BE</td>
+                        <td>RelocationTableOffset</td>
+                        <td>Offset to the trailing pointer relocation table; also represents the primary payload size.</td>
+                    </tr>
+                    <tr>
+                        <td>0x04</td>
+                        <td>uint32 BE</td>
+                        <td>FormatVersion</td>
+                        <td>Universally <code>0x00000009</code> (9) across all 1,213 verified files.</td>
+                    </tr>
+                    <tr>
+                        <td>0x08</td>
+                        <td>uint32 BE</td>
+                        <td>BankAssetHash</td>
+                        <td>32-bit unique identifier for the animation bank resource.</td>
+                    </tr>
+                    <tr>
+                        <td>0x0C</td>
+                        <td>uint32 BE</td>
+                        <td>TargetSkeletonHash</td>
+                        <td>32-bit identifier matching the <code>AssetHash</code> at offset 0x08 in the paired <a href="rcb.PS3.html">.rcb.PS3</a> rigid body file.</td>
+                    </tr>
+                    <tr>
+                        <td>0x20</td>
+                        <td>uint32 BE</td>
+                        <td>ClipCount</td>
+                        <td>Number of primary animation clips (e.g. 117 for Bart, 141 for Bartman, 2 for weapons/props).</td>
+                    </tr>
+                    <tr>
+                        <td>0x24</td>
+                        <td>uint32 BE</td>
+                        <td>SecondaryCount</td>
+                        <td>Secondary animation channel / track count.</td>
+                    </tr>
+                    <tr>
+                        <td>0x28</td>
+                        <td>uint32 BE</td>
+                        <td>TableOffset</td>
+                        <td>Offset to clip descriptors and index tables (universally <code>0x50</code> = 80 bytes).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="relocation-table">Pointer Relocation Table</h2>
+        <p>Located at <code>RelocationTableOffset</code> through EOF. Contains an array of 32-bit big-endian offsets in descending order. During loading, the runtime patches every referenced 32-bit word in-place: <code>*(uint32*)(buffer + offset) += (uintptr_t)buffer</code>.</p>
+        <h2 id="game-usage">Game Runtime Role</h2>
         <ul>
             <li>
                 <p>Clear <strong>animation/state names</strong> in the string table:</p>

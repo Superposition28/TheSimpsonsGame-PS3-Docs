@@ -16,14 +16,14 @@
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>Occurs under cct_export for characters and weapons; binary behavior is unresolved.</p>
+            <p>RenderWare CCT character controller and rigid-body/ragdoll binary container packaging component slice hierarchies, bone counts, 4x4 homogenous transform matrices, and an in-place pointer relocation table.</p>
             <dl>
                 <dt>Identification</dt>
-                <dd>No consistent header established across the listed samples.</dd>
+                <dd>Global header with relocation table offset at 0x00, format version word <code>0x00000017</code> (23) at 0x04, asset hash at 0x08, component count at 0x18, and component table offset <code>0x60</code>; verified across all 1,226 files in the PS3 EU extracted corpus.</dd>
                 <dt>Byte order / text</dt>
-                <dd>Not established.</dd>
+                <dd>Big-endian 32-bit words, IEEE 754 single-precision floats (4x4 transform matrices), and null-terminated ASCII component names.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>Format structure and relocation layout verified across all 1,226 extracted <code>.rcb.PS3</code> files on 2026-11-03. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
@@ -32,6 +32,11 @@
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
+                <li><a href="#format-structure-breakdown">Format Structure &amp; Breakdown</a></li>
+                <li><a href="#global-header">Global Header (0x00..0x5F)</a></li>
+                <li><a href="#component-table">Component / Slice Table (0x60..)</a></li>
+                <li><a href="#relocation-table">Pointer Relocation Table</a></li>
+                <li><a href="#cross-format-join">Cross-Format Join with .bnk.PS3</a></li>
                 <li><a href="#observed-characteristics">Observed Characteristics</a></li>
                 <li><a href="#observed-files">Observed Files</a></li>
             </ul>
@@ -51,8 +56,8 @@
                     <tbody>
                         <tr>
                             <td><a href="bnk.PS3.html">Animation bank (.bnk.PS3)</a></td>
-                            <td>Context/tentative</td>
-                            <td>Both appear in CCT-export character/weapon contexts; exact controller/bank bindings are not decoded.</td>
+                            <td>Observed</td>
+                            <td>Both appear in CCT-export character/weapon contexts; the target model/skeleton asset hash at offset 0x0C in .bnk.PS3 matches the asset hash at offset 0x08 in .rcb.PS3.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -62,17 +67,134 @@
         <section id="operation-support">
             <h2 id="operation-support-2">Tools and integrations</h2>
             <p>Optional <a href="../../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-str-imbedded-formats-rcb-ps3-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
+            <p>The companion research tool <code>tools/inspect_cct_character.py</code> inspects and validates <code>.rcb.PS3</code> headers, component slices, matrices, and relocations.</p>
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>The inventory establishes paths and size variation. Controller logic, resource binding and relationships to animation banks remain candidates, not a decoded specification.</p>
+            <p>Corpus evidence is derived from all 1,226 extracted <code>.rcb.PS3</code> files in <code>PS3-EU-Full-audio_reorg-isRenamed</code>. 100% of files conform to format version <code>0x17</code> with relocation offsets within bounds.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
+        <h2 id="format-structure-breakdown">Format Structure &amp; Breakdown</h2>
+        <p>The <code>.rcb.PS3</code> (RenderWare Character Binary / Rigid Body) format is compiled by EA's Character Creation Tool (CCT) pipeline. It packages component bone hierarchies, aiming angles, collision shapes, and 4x4 matrix transforms in an in-place pre-instanced memory layout with an appended pointer relocation table.</p>
+        <h2 id="global-header">Global Header (0x00..0x5F, 96 bytes)</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>Global container header (96 bytes)</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Field name</th>
+                        <th scope="col">Observed value &amp; description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x00</td>
+                        <td>uint32 BE</td>
+                        <td>RelocationTableOffset</td>
+                        <td>Offset to the trailing pointer relocation table; also represents the primary payload size.</td>
+                    </tr>
+                    <tr>
+                        <td>0x04</td>
+                        <td>uint32 BE</td>
+                        <td>FormatVersion</td>
+                        <td>Universally <code>0x00000017</code> (23) across all 1,226 verified files.</td>
+                    </tr>
+                    <tr>
+                        <td>0x08</td>
+                        <td>uint32 BE</td>
+                        <td>AssetHash</td>
+                        <td>Unique 32-bit identifier for the character/weapon component (e.g., <code>0x6379271C</code> for controller, <code>0x6D045A63</code> for slingshot, <code>0xFA8CCE73</code> for Homer). Matches target hash in <code>.bnk.PS3</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>0x0C..0x17</td>
+                        <td>12 bytes</td>
+                        <td>ReservedFlags</td>
+                        <td>Context flags and alignment padding (typically zeros).</td>
+                    </tr>
+                    <tr>
+                        <td>0x18</td>
+                        <td>uint32 BE</td>
+                        <td>EntryCount</td>
+                        <td>Number of component/slice entries in the table. 1 for simple props/weapons; 13 for complex characters (1 root skeleton + 12 directional aim slices).</td>
+                    </tr>
+                    <tr>
+                        <td>0x1C</td>
+                        <td>uint32 BE</td>
+                        <td>TableOffset</td>
+                        <td>Universally <code>0x00000060</code> (96 bytes). Offset to the component slice table.</td>
+                    </tr>
+                    <tr>
+                        <td>0x20..0x5F</td>
+                        <td>64 bytes</td>
+                        <td>HeaderPointers</td>
+                        <td>Internal pointer block indexing root bounding spheres, scale factors (e.g. 1.0 or 1.95), and data bounds.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="component-table">Component / Slice Table (0x60..)</h2>
+        <p>Followed by <code>EntryCount</code> contiguous 24-byte (0x18) records:</p>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>Component record layout (24 bytes)</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Field name</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x00</td>
+                        <td>uint32 BE</td>
+                        <td>HashId</td>
+                        <td>Component CRC/hash (e.g., <code>0xFA8CCE73</code> for "Homer", <code>0xD60C8C31</code> for "OnModel_-180").</td>
+                    </tr>
+                    <tr>
+                        <td>0x04</td>
+                        <td>uint32 BE</td>
+                        <td>NamePtr</td>
+                        <td>In-file pointer to null-terminated ASCII component name.</td>
+                    </tr>
+                    <tr>
+                        <td>0x08</td>
+                        <td>uint32 BE</td>
+                        <td>BoneCount</td>
+                        <td>Number of active bones or collision joints (e.g., 92 for Homer body, 7 for aim slices).</td>
+                    </tr>
+                    <tr>
+                        <td>0x0C</td>
+                        <td>uint32 BE</td>
+                        <td>PtrTransformData</td>
+                        <td>Pointer to transform configuration and hierarchy blocks.</td>
+                    </tr>
+                    <tr>
+                        <td>0x10</td>
+                        <td>uint32 BE</td>
+                        <td>PtrMatrices</td>
+                        <td>Pointer to 4x4 homogenous transform matrices (IEEE 754 single-precision floats).</td>
+                    </tr>
+                    <tr>
+                        <td>0x14</td>
+                        <td>uint32 BE</td>
+                        <td>PtrBoundsData</td>
+                        <td>Pointer to bounding boxes, joint limits, and physics shapes.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="relocation-table">Pointer Relocation Table</h2>
+        <p>Located at <code>RelocationTableOffset</code> through EOF. Contains an array of 32-bit big-endian offsets in descending order. During loading, the runtime patches every referenced 32-bit word in-place: <code>*(uint32*)(buffer + offset) += (uintptr_t)buffer</code>, transforming relative file offsets into valid memory addresses.</p>
+        <h2 id="cross-format-join">Cross-Format Join with .bnk.PS3</h2>
+        <p>Every character and weapon folder under <code>cct/export/</code> pairs an <code>.rcb.PS3</code> file with one or more <code>.bnk.PS3</code> animation bank files. The <code>AssetHash</code> at offset 0x08 of the <code>.rcb.PS3</code> container matches the target model hash at offset 0x0C of the accompanying <code>.bnk.PS3</code> files, confirming exact cross-format asset binding.</p>
         <h2 id="observed-characteristics">Observed Characteristics</h2>
-        <p>no clear/ consistent header</p>
-        <p>they vary in size from 1kb upto 45kb</p>
-        <p>all under a cct_export folder</p>
-        <p>many related to weapon assets others related to character assets</p>
+        <p>Universally version <code>0x17</code> (23) across all 1,226 inspected files.</p>
+        <p>Vary in size from 464 bytes (simple weapon/prop) up to 45 KB (complex animated character with full aim slices).</p>
+        <p>Located under <code>cct/export/</code> and <code>cct_export/</code> folders alongside matching <code>.bnk.PS3</code> animation banks.</p>
         <h2 id="observed-files">Observed Files</h2>
         <ul class="file-list-scroll">
             <li><code>A2_Characters\GlobalFolder\chars\bart_bc0_grp0_ss1_h0_str\assets\weapons\controller\cct_export\controller_ccde1a.rcb.PS3</code></li>

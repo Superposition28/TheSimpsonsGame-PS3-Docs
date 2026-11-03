@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "verified_date": "2026-11-03",
+  "target_sha256": "092a8dbf6530e897ab0395ed45b3941e0723b8d50d361b0e958a5a6991d90fbc",
+  "method": "static exported instruction bytes compared to source ELF; selected dataflow reviewed in note032",
+  "limitations": [
+    "No runtime execution",
+    "Scene context field purposes are partially understood",
+    "Allocation requests do not establish allocator usable size",
+    "Mesh attribute layouts and model traversal remain unresolved"
+  ],
+  "functions": [
+    {
+      "export": "retail_pass32_scene/function_00436a58.md",
+      "export_sha256": "003f84b2a751dcfd1af8a51c77d1b330016b47d75e4989c078b72ed50007bbfe",
+      "instruction_records": 102
+    },
+    {
+      "export": "retail_pass27_spu/function_009a9de0.md",
+      "export_sha256": "c6a66f25f5c37ff800bdfe9049a603882cbbccbd465902536d562d75cb68aae5",
+      "instruction_records": 54
+    },
+    {
+      "export": "retail_pass34_scene_contexts/function_004380fc.md",
+      "export_sha256": "f10b60fbed7acb63d09ba6b390116ae17e4573367564f205314d1dbb4c699b91",
+      "instruction_records": 118
+    },
+    {
+      "export": "retail_pass34_scene_contexts/function_00438880.md",
+      "export_sha256": "1b268419b52a48108446e89d90beafc4f135f85421cafc40bc0acfe294094e1a",
+      "instruction_records": 367
+    },
+    {
+      "export": "retail_pass34_scene_contexts/function_0043927c.md",
+      "export_sha256": "659423c22f50612e9a5ed735723b8050b790c9e88b829f636000c485c35a3ea3",
+      "instruction_records": 52
+    },
+    {
+      "export": "retail_pass34_scene_contexts/function_00439f34.md",
+      "export_sha256": "107f7a19dccaed5c5d9801a18023e90ed294e907a7dce4c07edb00f7d45ef950",
+      "instruction_records": 238
+    },
+    {
+      "export": "retail_pass35_context_updates/function_004382d4.md",
+      "export_sha256": "ac6cd3ba53275ce2768066ccf26bb674cbf6d82eaa8981b31f40c3c4d177b3d6",
+      "instruction_records": 118
+    },
+    {
+      "export": "retail_pass35_context_updates/function_004384ac.md",
+      "export_sha256": "e83a452932a75535d419041f7dc60556637d1f29e50dbf4b3d2d6b80d655c7c2",
+      "instruction_records": 245
+    },
+    {
+      "export": "retail_pass35_context_updates/function_0043934c.md",
+      "export_sha256": "2fe81cb7f04c8e3c345789bf53b4115260d31410f00d9678e8dc189aa34c8573",
+      "instruction_records": 230
+    },
+    {
+      "export": "retail_pass35_context_updates/function_004396e4.md",
+      "export_sha256": "b4045af072970576e105b08b01ccb2990da2a32882e9e222f14e157d5de4bb88",
+      "instruction_records": 54
+    },
+    {
+      "export": "retail_pass35_context_updates/function_00439980.md",
+      "export_sha256": "35fd412ffd9c3e20f738c1b061c97a5c1d55735cfedf3112d4cd4c754005876a",
+      "instruction_records": 237
+    }
+  ],
+  "checked_instruction_records": 1815,
+  "source_words": [
+    {
+      "va": "0x00436af0",
+      "file_offset": "0x00426af0",
+      "be32": "0x386000b4",
+      "observation": "r3=180 before allocator call at 0x436B04"
+    },
+    {
+      "va": "0x00436b1c",
+      "file_offset": "0x00426b1c",
+      "be32": "0x38600124",
+      "observation": "r3=292 before allocator call at 0x436B28"
+    },
+    {
+      "va": "0x00436b24",
+      "file_offset": "0x00426b24",
+      "be32": "0x93890000",
+      "observation": "store first allocation in global reached via r9"
+    },
+    {
+      "va": "0x00436b44",
+      "file_offset": "0x00426b44",
+      "be32": "0x93a90000",
+      "observation": "store second allocation in global reached via r9"
+    },
+    {
+      "va": "0x00436b40",
+      "file_offset": "0x00426b40",
+      "be32": "0x3860000c",
+      "observation": "r3=12 before third allocation at 0x436B48"
+    },
+    {
+      "va": "0x00436b64",
+      "file_offset": "0x00426b64",
+      "be32": "0x93a90000",
+      "observation": "store third allocation in separate global"
+    },
+    {
+      "va": "0x00b046ac",
+      "file_offset": "0x00af46ac",
+      "be32": "0x102df5c4",
+      "observation": "first allocation global TOC slot"
+    },
+    {
+      "va": "0x00b046b0",
+      "file_offset": "0x00af46b0",
+      "be32": "0x102df5c0",
+      "observation": "second allocation global TOC slot"
+    },
+    {
+      "va": "0x00b046f4",
+      "file_offset": "0x00af46f4",
+      "be32": "0x102df5f0",
+      "observation": "third allocation global TOC slot"
+    },
+    {
+      "va": "0x00b0d8c8",
+      "file_offset": "0x00afd8c8",
+      "be32": "0x1005b680",
+      "observation": "carrier word loaded at 0x9A9E34"
+    },
+    {
+      "va": "0x009a9e34",
+      "file_offset": "0x00999e34",
+      "be32": "0x8082feb8",
+      "observation": "load r4 from secondary TOC minus 0x148"
+    },
+    {
+      "va": "0x009a9e40",
+      "file_offset": "0x00999e40",
+      "be32": "0x48000a65",
+      "observation": "branch-and-link to 0x9AA8A4"
+    },
+    {
+      "va": "0x00439290",
+      "file_offset": "0x00429290",
+      "be32": "0x3bc00002",
+      "observation": "constructor loop initial count=2"
+    },
+    {
+      "va": "0x004392a8",
+      "file_offset": "0x004292a8",
+      "be32": "0x392b0088",
+      "observation": "constructor bank stride=0x88"
+    },
+    {
+      "va": "0x004392f8",
+      "file_offset": "0x004292f8",
+      "be32": "0x981f0118",
+      "observation": "constructor stores byte value1 at +0x118"
+    },
+    {
+      "va": "0x00439314",
+      "file_offset": "0x00429314",
+      "be32": "0x901f011c",
+      "observation": "constructor stores returned word at +0x11C"
+    },
+    {
+      "va": "0x0043933c",
+      "file_offset": "0x0042933c",
+      "be32": "0x913f0120",
+      "observation": "constructor stores incremented counter at +0x120"
+    }
+  ],
+  "allocations": [
+    {
+      "global_va": "0x102df5c4",
+      "requested_bytes": 180,
+      "initializer_va": "0x004380fc"
+    },
+    {
+      "global_va": "0x102df5c0",
+      "requested_bytes": 292,
+      "initializer_va": "0x0043927c"
+    },
+    {
+      "global_va": "0x102df5f0",
+      "requested_bytes": 12,
+      "initializer_va": "0x00011ea0"
+    }
+  ],
+  "producer_image": {
+    "producer_va": "0x009a9de0",
+    "carrier_va": "0x1005b680",
+    "index": 1,
+    "file_offset": "0x00b5b680",
+    "extent_bytes": 110848,
+    "sha256": "1158f3941783cd38d35346a60bdd55937a2683b8403ebec5e198ad7614f8c7c6"
+  }
+}

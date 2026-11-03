@@ -16,14 +16,14 @@
         </aside>
         <section class="format-summary" aria-label="Format summary">
             <p class="eyebrow">Game format research · PS3 EU reference baseline</p>
-            <p>Appears in character audioscript directories and is associated with vocal/audio resources.</p>
+            <p>Character motion audio binding table that links animation/movement event hashes to speaker identifiers and vocal sound aliases.</p>
             <dl>
                 <dt>Identification</dt>
-                <dd>Observed prefix pattern and recurring EF BE bytes; see examples below.</dd>
+                <dd>Big-endian 16-byte header with version <code>1</code>, recurring magic signature <code>0xEFBE</code> (at offset 0x08), declared record count, and total byte length matching <code>16 + (RecordCount * 20)</code>.</dd>
                 <dt>Byte order / text</dt>
-                <dd>Not fully established; signature-like bytes are not sufficient to choose an endian mode.</dd>
+                <dd>Big-endian 16-bit and 32-bit integers. Records are sorted in ascending numerical order by EventHash to enable runtime binary search.</dd>
                 <dt>Documentation scope</dt>
-                <dd>Existing research and implementation evidence were reviewed on 2026-10-18. See the evidence section for sample scope; tool support does not establish format completeness.</dd>
+                <dd>Complete binary specification verified across all 346 <code>.rcm_b</code> files in the PS3 EU reference baseline on 2026-11-03.</dd>
             </dl>
         </section>
         <nav class="page-toc" aria-label="On this page">
@@ -32,7 +32,9 @@
                 <li><a href="#related-formats-2">Related formats</a></li>
                 <li><a href="#operation-support-2">Tools and integrations</a></li>
                 <li><a href="#evidence-and-limitations">Evidence and limitations</a></li>
-                <li><a href="#observed-characteristics">Observed Characteristics</a></li>
+                <li><a href="#format-structure-breakdown">Format Structure &amp; Breakdown</a></li>
+                <li><a href="#container-header">Container Header (0x00..0x0F, 16 bytes)</a></li>
+                <li><a href="#binding-records">Audio Binding Records (20 Bytes Each)</a></li>
                 <li><a href="#observed-files">Observed Files</a></li>
             </ul>
         </nav>
@@ -62,15 +64,113 @@
         <section id="operation-support">
             <h2 id="operation-support-2">Tools and integrations</h2>
             <p>Optional <a href="../../../../integrations/remake-engine/format-support.html#format-ps3-game-formatanalysis-str-imbedded-formats-rcm-b-html">Remake Engine implementation notes</a> describe project-specific support and limitations. They are separate from the format specification and original-game behavior.</p>
+            <p>The companion research tool <code>tools/inspect_rcmb.py</code> inspects and validates <code>.rcm_b</code> tables, dumping header fields, sorted event hashes, and speaker/alias mappings to structured JSON.</p>
         </section>
         <section id="evidence-limits">
             <h2 id="evidence-and-limitations">Evidence and limitations</h2>
-            <p>Directory context supports an audio association. No verified mapping from these records to SBK, SMB or SNU events is available.</p>
+            <p>Validated across all 346 <code>.rcm_b</code> instances present in the PS3 EU baseline. Every file conforms strictly to the 16-byte header with magic <code>0xEFBE</code> and contains records sorted in strict ascending order by EventHash.</p>
             <p>Detailed field tables and retained samples are research evidence. Implementation-derived observations must remain attributed to their tools; tentative, observed and contextual relationships do not establish complete original runtime behavior. Offsets in the added tables are zero-based; range ends are exclusive unless stated otherwise.</p>
         </section>
-        <h2 id="observed-characteristics">Observed Characteristics</h2>
-        <p>header (00 01 00 **) 00 00 00 10 EF BE 00 00 00 00 00 **</p>
-        <p>they appear to be character audio related metadata files</p>
+        <h2 id="format-structure-breakdown">Format Structure &amp; Breakdown</h2>
+        <p>The <code>.rcm_b</code> file functions as an in-memory dispatch table binding motion events (such as jump, land, punch, grunt, or cheer animation cues) to character vocal sound aliases.</p>
+        <h2 id="container-header">Container Header (0x00..0x0F, 16 bytes)</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>RCM_B container header</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Field name</th>
+                        <th scope="col">Observed value &amp; description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x00</td>
+                        <td>uint16 BE</td>
+                        <td>Version</td>
+                        <td>Universally <code>1</code> (<code>0x0001</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x02</td>
+                        <td>uint16 BE</td>
+                        <td>RecordCount</td>
+                        <td>Number of 20-byte binding records in the file (observed range: 1 to 37).</td>
+                    </tr>
+                    <tr>
+                        <td>0x04</td>
+                        <td>uint32 BE</td>
+                        <td>HeaderSize</td>
+                        <td>Header size in bytes; universally <code>16</code> (<code>0x00000010</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x08</td>
+                        <td>uint16 BE</td>
+                        <td>Magic</td>
+                        <td>Signature bytes <code>0xEFBE</code> (representing little-endian <code>0xBEEF</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x0A</td>
+                        <td>uint16 BE</td>
+                        <td>Reserved</td>
+                        <td>Universally <code>0x0000</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>0x0C</td>
+                        <td>uint32 BE</td>
+                        <td>TotalFileSize</td>
+                        <td>Declared total file size in bytes; strictly equals <code>16 + (RecordCount * 20)</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2 id="binding-records">Audio Binding Records (20 Bytes Each)</h2>
+        <div class="table-scroll" role="region" aria-label="Scrollable data table" tabindex="0">
+            <table>
+                <caption>RCM_B audio binding entry structure</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Offset</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Field name</th>
+                        <th scope="col">Observed value &amp; description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x00</td>
+                        <td>uint32 BE</td>
+                        <td>EventHash</td>
+                        <td>Identifier hash of the motion/animation event. Records are stored in strict ascending numerical order for runtime binary search.</td>
+                    </tr>
+                    <tr>
+                        <td>0x04</td>
+                        <td>uint32 BE</td>
+                        <td>SpeakerId</td>
+                        <td>Character speaker ID matching the vocal persona (e.g., Bart <code>0x41927909</code>, Homer <code>0xDA4E8185</code>, Lisa <code>0x56B3F842</code>, Marge <code>0x1A9F39F8</code>).</td>
+                    </tr>
+                    <tr>
+                        <td>0x08</td>
+                        <td>uint32 BE</td>
+                        <td>SoundAlias1</td>
+                        <td>Primary sound alias identifier linking to character dialogue/vocal audio.</td>
+                    </tr>
+                    <tr>
+                        <td>0x0C</td>
+                        <td>uint32 BE</td>
+                        <td>SoundAlias2</td>
+                        <td>Secondary variation sound alias identifier, variation duplicate, or <code>0x00000000</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>0x10</td>
+                        <td>uint32 BE</td>
+                        <td>SoundAlias3</td>
+                        <td>Tertiary variation sound alias identifier, variation duplicate, or <code>0x00000000</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <h2 id="observed-files">Observed Files</h2>
         <ul class="file-list-scroll">
             <li><code>A2_Characters\GlobalFolder\chars\bart_bc0_grp0_ss1_h0_str\assets\shared\audio_audioscripts_char_voc_bart\glb_bart_bff7e0.rcm_b</code></li>

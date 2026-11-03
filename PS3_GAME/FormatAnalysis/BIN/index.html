@@ -15,7 +15,7 @@
             <p><strong>Source scope:</strong> inspected PS3 EU retail <code>BLES00142</code>, US retail <code>BLUS30065</code> and EU demo <code>NPEB90029</code>. The supplied EU/US wrappers are byte-identical; demo is a separate executable. These are local-copy observations, not a claim about every published revision or whole-disc equality. Paths below use the <a href="../../../reference/sources.html#paths">original source namespaces</a>.</p>
         </aside>
         <section class="format-summary" aria-label="Format summary">
-            <p class="eyebrow">Game format research · verified 2026-11-02</p>
+            <p class="eyebrow">Game format research · updated 2026-11-03</p>
             <p>The executable has an outer SCE/SELF container and an inspected ELF64 big-endian PowerPC payload. This reference records byte layouts and reviewed static code paths. Whole-program reverse engineering remains incomplete.</p>
             <dl>
                 <dt>Container signature</dt>
@@ -2146,44 +2146,45 @@
                     </tbody>
                 </table>
             </div>
-            <p>The declared extent runs from the nested ELF header through the maximum declared file-backed range or metadata-table end, including interior gaps. Corresponding retail/demo extents are byte-equal. Named SPU <code>.text</code> sections total 112,392 bytes (28,098 instructions across all three images), 100.0% disassembled and verified with zero unhandled opcodes using the standalone Cell SPU ISA v1.2 disassembler based on GNU Binutils opcode specifications.</p>
-            <div class="table-scroll" role="region" aria-label="Verified SPU workloads" tabindex="0">
+            <p>The declared extent runs from the nested ELF header through the maximum declared file-backed range or metadata-table end, including interior gaps. Corresponding retail/demo extents are byte-equal. Named SPU <code>.text</code> sections total 112,392 bytes (28,098 aligned words). The GNU Binutils table decoder recognizes an opcode for every word in those sections. This measures opcode recognition, not reachable-code coverage, complete ISA validation or workload understanding; other executable sections remain outside that count.</p>
+            <div class="table-scroll" role="region" aria-label="SPU identity evidence" tabindex="0">
                 <table>
-                    <caption>Verified SPU image identities, instruction counts, and binary workloads</caption>
+                    <caption>SPU names, text-section word counts and embedded identifiers</caption>
                     <thead>
                         <tr>
                             <th scope="col">Index</th>
                             <th scope="col">Identifier / SPUNAME</th>
-                            <th scope="col">Text bytes (Instructions)</th>
-                            <th scope="col">Decode rate</th>
-                            <th scope="col">Binary ground-truth workload</th>
+                            <th scope="col">Text bytes (Words)</th>
+                            <th scope="col">Recognized opcodes</th>
+                            <th scope="col">Observed identity evidence and limits</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>0</td>
                             <td><code>VfxSPUCull.elf</code></td>
-                            <td>4,784 B (1,196 insns)</td>
-                            <td>100.0%</td>
-                            <td>Visual Effects (VFX) particle and geometry bounding-box frustum culling. Enforces 128-byte cache-line aligned DMA buffers (<code>[SPU]: DMA data buffer must be 128 byte aligned.</code>).</td>
+                            <td>4,784 B (1,196 words)</td>
+                            <td>1,196</td>
+                            <td>SPUNAME identifies the image by this name. Embedded text includes <code>[SPU]: DMA data buffer must be 128 byte aligned.</code> Exact culling inputs, outputs and algorithms remain unverified.</td>
                         </tr>
                         <tr>
                             <td>1</td>
-                            <td>On2 VP6 Video Decoder (<code>v6.1.0.5</code>)</td>
-                            <td>101,440 B (25,360 insns)</td>
-                            <td>100.0%</td>
-                            <td>Full-motion video (FMV) cutscene movie decompression (<code>VP6 Library assertion failed (SPU)</code>, <code>JobExecuteParams</code>, <code>inputChunk</code>, <code>inputChunkSize</code>). Intensive mailbox/DMA streaming (29 <code>MFC_WrTagMask</code>, 25 <code>MFC_WrOutMbox</code>, 24 <code>MFC_RdInMbox</code>).</td>
+                            <td>VP6 diagnostic strings; version text <code>6.1.0.5</code></td>
+                            <td>101,440 B (25,360 words)</td>
+                            <td>25,360</td>
+                            <td>Embedded strings include <code>VP6 Library assertion failed (SPU)</code>, <code>JobExecuteParams</code>, <code>inputChunk</code> and <code>inputChunkSize</code>. Its SPUNAME is a 32-byte non-NUL-terminated build-path fragment, not a decoder filename. Exact asset-suffix associations and the complete decode protocol remain unverified.</td>
                         </tr>
                         <tr>
                             <td>2</td>
                             <td><code>spu_kernel_spu_threads.elf</code></td>
-                            <td>6,168 B (1,542 insns)</td>
-                            <td>100.0%</td>
-                            <td>SPU Task Scheduler Worker Kernel coordinating with the PPU queue manager. Entry <code>0x3F980</code> sets stack to <code>0x3DFB0</code>, protects stack frame with canary <code>0xDEADBEEF</code>, and handles mailbox work dispatch.</td>
+                            <td>6,168 B (1,542 words)</td>
+                            <td>1,542</td>
+                            <td>SPUNAME identifies the image by this name; its carrier is passed to the PPU thread-group loader. The complete worker protocol and the meaning of the <code>0xDEADBEEF</code> literal require further dataflow review.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+            <p>The decoder audit corrected channel labels: DMA local-store address is channel 16, DMA command is 21, tag mask/update/status are 22/23/24 and atomic status is 27; outbound/inbound/interrupt mailboxes are 28/29/30. These assignments are corroborated by the <a href="https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Emu/Cell/SPUThread.h">RPCS3 channel definitions</a>. Earlier reports calling channel 16 or 21 a mailbox were incorrect. Static channel-site counts do not measure transfers or runtime frequency.</p>
             <h3 id="ppu-spu-links">PPU carrier references</h3>
             <div class="table-scroll" role="region" aria-label="Source-checked retail carrier loads (descriptor-TOC arithmetic)" tabindex="0">
                 <table>
@@ -2399,6 +2400,46 @@
             <p>Retail <code>0x3F6E40</code> orchestrates stage queues. Reviewed records have stride <code>0x30</code>: sort mode at +0, two pre-callback descriptor pointers at +4/+8, a job-pointer array at +0x14, job count at +0x18, and two post-callback pointers at +0x20/+0x24. Job records contain execution descriptor, optional cleanup descriptor, unsigned sort key and argument at +0/+4/+8/+0x0C. These are runtime structures, not serialized ELF sections.</p>
             <p><code>0x41BB10</code> sorts a half-open stage range; <code>0x41AC54</code> executes an inclusive range. The common orchestration uses arguments 0 and 18, so sorting visits 0–17 and execution visits 0–18. Cleanup at <code>0x41A6F8</code> visits fixed indices 0–20, subject to the configured stage count. This establishes a 21-index cleanup boundary, not the rendering purpose of every stage. Opaque/transparent labels and complete draw-job producers remain unresolved.</p>
             <p>The reviewed exports at <code>0x438E3C</code> and <code>0x43A2EC</code> access the object reached through TOC slot <code>0xB04720</code>, whose original word is <code>0x10380310</code>. They compare a current-pointer field at +8 against a limit at +4, write command words and advance the current pointer. Complete hardware-method decoding, vertex formats and presentation behavior require further corroboration. See the <a href="../STR/imbedded-formats/preinstanced.html">preinstanced format reference</a> for source-scoped model observations.</p>
+            <h3 id="scene-context-layout">Dispatch context allocation and initialization</h3>
+            <p>Source-checked constructor <code>0x436A58</code> requests <strong>180 bytes</strong> for the object stored through global <code>0x102DF5C4</code>, then initializes it through <code>0x4380FC</code>. It requests <strong>292 bytes</strong> for <code>0x102DF5C0</code>, initialized through <code>0x43927C</code>. The subsequent 12-byte allocation belongs to separate global <code>0x102DF5F0</code>. These are requested sizes; previous 292/12 assignments to the first two globals were incorrect. The <a href="continuation-audit.json">portable continuation evidence</a> records source hashes, checked instruction counts, allocation sites and TOC words.</p>
+            <p><code>0x43927C</code> initializes two banks with stride <code>0x88</code>, then writes control fields at +0x110 through +0x120. <code>0x439980</code> selects a bank by comparing stored words at bank+0x70/+0x74 with source+0x0C/+0x10, stores the selected pointer at context+0x114 and increments the count at +0x110 on a miss. No local capacity check is visible in that function. Its caller constraints remain unverified.</p>
+            <p>Wrappers <code>0x436118</code> and <code>0x4361C4</code> pass these contexts and their incoming argument to <code>0x438E3C</code> and <code>0x43A2EC</code>. Reviewed update bodies prepare command-state fields from input object pointers at +0x60/+0x64; this does not establish a link to EARS_MESH vertex attributes. Model traversal, skinning attributes and the complete role of every context field remain open.</p>
+            <h3 id="context-address-contract">Address conversion and location fields</h3>
+            <p>Helper <code>0x45228C</code> calls the declared <code>cellGcmSys</code> import NID <code>0x21AC3697</code> at stub <code>0xA7412C</code>, whose saved database label is <code>cellGcmAddressToOffset</code>. The import receives the incoming address and a local output-word pointer. If it returns nonzero, the helper returns -1 without writing either caller output. On zero, the helper compares the address's low 32 bits unsigned against these ranges in order:</p>
+            <div class="table-scroll" role="region" aria-label="Address conversion range selection" tabindex="0">
+                <table>
+                    <caption>Runtime bounds and output selectors in 0x45228C</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Range</th>
+                            <th scope="col">Lower-bound global</th>
+                            <th scope="col">Exclusive upper-bound global</th>
+                            <th scope="col">Selector byte</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>First</td>
+                            <td><code>0x102E5DAC</code></td>
+                            <td><code>0x102E5DA8</code></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td>Second, after first misses</td>
+                            <td><code>0x102E5DB8</code></td>
+                            <td><code>0x102E5DB4</code></td>
+                            <td>1</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>A match writes the imported offset word to the caller's second argument, writes the selector byte through its third argument and returns 0. If neither range matches, it returns -1 and leaves both caller outputs unchanged. The first range takes priority if they overlap. These globals occupy zero-fill storage; their runtime values are not original file-backed words. Setup variants <code>0x4527C4</code>/<code>0x4529F8</code> derive the first range from the configuration import and the second from their incoming base and size. Selectors 0/1 correspond to local/main location names in the external <a href="https://github.com/RPCS3/rpcs3/blob/master/rpcs3/Emu/RSX/gcm_enums.h">RPCS3 constants</a>; that comparison does not observe this game's runtime bindings.</p>
+            <p>Updater <code>0x4384AC</code> passes the address word at <code>BE32(BE32(input+0x60))+4</code> to context+0x0C/+0x10, and the address word at <code>BE32(input+0x64)+4</code> to context+0x14/+0x18, as offset/selector outputs. Its helper return values are ignored, so those fields cannot be assumed freshly valid after a failed conversion. Resource initializer <code>0x6B0418</code> sets the parent word to itself; subresource helper <code>0x6B035C</code> can copy a source parent after its engine callback succeeds. The pointer/parent chain is established; the engine callback's complete data allocation and rendering behavior remains open.</p>
+            <p>Separate predicate <code>0x452374</code> accepts only when second-range lower &le; address and low32(address+length) &lt; upper. Equality at the end is rejected and no local addition-overflow guard is present. The <a href="context-address-contract.json">source-bound contract evidence</a> records 24 exports, 2,556 checked instruction records, four range-global TOC slots, import declarations and 37 direct helper call sites from the verified listing index. Its eight local CFG paths are static possibilities, with imported calls assumed to return normally; they are not runtime observations.</p>
+            <p><strong>Demo comparison:</strong> descriptor <code>0xAC9C40</code> identifies code <code>0x451D18</code>, TOC <code>0xAFDAB8</code>. In an explicitly compared 224-byte raw span, 51 of 56 words equal retail; the other five are one call to the same declared library/NID and four TOC loads. The demo range globals are <code>0x102E5E2C/0x102E5E28</code> and <code>0x102E5E38/0x102E5E34</code>. Local control-flow paths match after normalizing entry addresses. The saved demo function body spans only one byte and yields zero exported Listing instructions, so this raw-byte comparison is kept separate from completed function-export counts. A plausible decompilation does not repair that saved-analysis gap.</p>
+            <h3 id="context-bank-lifecycle">Bank trimming and lifetime limits</h3>
+            <p>Cleanup <code>0x4397BC</code> visits indices 1 through count-1, invoking cleanup calls and clearing the first word for each record whose first word is nonzero; record 0 is preserved. It then writes count=1, even for an incoming count of 0, and leaves selected pointer+0x114 unchanged. Variants <code>0x439D34</code>/<code>0x439E34</code> perform the same trimming before another helper call. The found direct trim path is <code>0x4E320:0x4E954 &rarr; 0x436270 &rarr; 0x4397BC</code>. The caller places it between calls to <code>0x32BEEC</code> and <code>0x490848</code>; a per-frame reset is not established.</p>
+            <p>Flush <code>0x439F34</code> clears pending byte+0x119 without clearing count+0x110 or selected pointer+0x114. Two initialized records, a trim-to-one helper and FIFO dispatch do not establish a safe two-record runtime bound or double buffering. Allowed key pairs and caller initialization order remain unresolved.</p>
         </section>
         <section id="actor-registry">
             <h2>Named registrations and format callbacks</h2>
